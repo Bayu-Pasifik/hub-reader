@@ -19,7 +19,7 @@ class KomikuSource extends HttpSource {
   @override
   String get lang => 'id';
   @override
-  String get baseUrl => 'https://komiku.org';
+  String get defaultBaseUrl => 'https://komiku.org';
   @override
   ContentWarning get contentWarning => ContentWarning.safe;
   @override

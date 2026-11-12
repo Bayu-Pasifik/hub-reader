@@ -6,8 +6,21 @@ import '../sources/registry.dart';
 import '../sources/source.dart';
 import '../sources/source_exception.dart';
 import 'download_providers.dart';
+import 'source_settings_provider.dart';
 
-final sourceRegistryProvider = Provider<SourceRegistry>((ref) => SourceRegistry(builtInSources()));
+/// Registry dibuat ulang saat domain sumber diubah di pengaturan, jadi
+/// semua provider turunan (daftar, detail, halaman) ikut memuat ulang.
+final sourceRegistryProvider = Provider<SourceRegistry>((ref) {
+  final settings = ref.watch(sourceBaseUrlProvider);
+  final sources = builtInSources();
+  for (final source in sources.whereType<HttpSource>()) {
+    final setting = settings[source.id];
+    if (setting == null) continue;
+    if (setting.hasOverride) source.baseUrlOverride = setting.url;
+    source.previousHosts = setting.previousHosts.toSet();
+  }
+  return SourceRegistry(sources);
+});
 
 final sourceProvider = Provider.family<MangaSource?, String>(
   (ref, id) => ref.watch(sourceRegistryProvider).byId(id),

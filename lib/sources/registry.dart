@@ -1,4 +1,5 @@
 import 'id/komiku.dart';
+import 'id/shinigami.dart';
 import 'source.dart';
 import 'templates/mangathemesia.dart';
 
@@ -8,6 +9,12 @@ import 'templates/mangathemesia.dart';
 /// terbaru di keiyoushi/extensions-source (`src/id/<nama>/build.gradle.kts`).
 List<MangaSource> builtInSources() => [
       KomikuSource(),
+      ShinigamiSource(),
+      MangaThemesiaSource(
+        id: 'id.apkomik',
+        name: 'APKOMIK',
+        baseUrl: 'https://01.apkomik.com',
+      ),
       MangaThemesiaSource(
         id: 'id.komikstation',
         name: 'Komik Station',

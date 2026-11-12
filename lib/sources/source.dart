@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:html/dom.dart';
 import 'package:html/parser.dart' as html_parser;
@@ -71,6 +73,32 @@ abstract class HttpSource extends MangaSource {
   /// Cookie per host (mis. cf_clearance). Diganti versi persisten di main().
   static SourceCookieStore cookies = SourceCookieStore();
 
+  /// Domain bawaan sumber.
+  String get defaultBaseUrl;
+
+  /// Domain pengganti dari pengaturan (situs sering pindah domain).
+  String? baseUrlOverride;
+
+  /// Host lama yang pernah dipakai sumber ini. URL tersimpan (favorit,
+  /// riwayat) yang memakai host ini dialihkan ke [baseUrl] saat ini.
+  Set<String> previousHosts = {};
+
+  @override
+  String get baseUrl {
+    final override = baseUrlOverride?.trim();
+    if (override == null || override.isEmpty) return defaultBaseUrl;
+    return override.endsWith('/') ? override.substring(0, override.length - 1) : override;
+  }
+
+  /// Alihkan URL berhost lama milik sumber ini ke domain saat ini.
+  Uri rewriteToCurrentHost(Uri url) {
+    final current = baseUri;
+    if (url.host == current.host) return url;
+    final known = {Uri.parse(defaultBaseUrl).host, ...previousHosts};
+    if (!known.contains(url.host)) return url;
+    return url.replace(scheme: current.scheme, host: current.host, port: current.hasPort ? current.port : null);
+  }
+
   /// Maksimal request per detik ke situs ini (padanan `rateLimit(n)`).
   int get requestsPerSecond => 2;
 
@@ -116,11 +144,27 @@ abstract class HttpSource extends MangaSource {
     await _throttle();
     try {
       final response = await dio.getUri<String>(
-        url,
+        rewriteToCurrentHost(url),
         options: Options(headers: headers),
       );
       final body = response.data ?? '';
       return HtmlResponse(html_parser.parse(body), body, response.realUri);
+    } catch (error) {
+      throw toSourceException(error);
+    }
+  }
+
+  /// GET JSON (untuk sumber berbasis API, mis. Shinigami).
+  Future<Object?> fetchJson(Uri url, {Map<String, String>? headers}) async {
+    await _throttle();
+    try {
+      final response = await dio.getUri<String>(
+        url,
+        options: Options(headers: {'Accept': 'application/json', ...?headers}),
+      );
+      return jsonDecode(response.data ?? 'null');
+    } on FormatException {
+      throw const SourceException(SourceErrorKind.parse, detail: 'Respons API bukan JSON.');
     } catch (error) {
       throw toSourceException(error);
     }

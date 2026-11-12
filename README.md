@@ -67,7 +67,8 @@ lib/sources/
 ├── source_exception.dart       # error situs (Cloudflare, timeout, format berubah)
 ├── html_utils.dart             # pengganti util Jsoup: absUrl, imgAttr, ownText, parse tanggal/nomor bab
 ├── templates/mangathemesia.dart  # template tema WP MangaThemesia (dipakai 29 situs id)
-├── id/komiku.dart              # sumber kustom (non-template)
+├── id/komiku.dart              # sumber kustom, scraping HTML
+├── id/shinigami.dart           # sumber kustom, API JSON (api.shngm.io)
 └── registry.dart               # daftar sumber bawaan
 lib/state/source_providers.dart # infinite scroll, detail, halaman bab
 lib/ui/screens/sources/         # daftar sumber, jelajah, detail, reader
@@ -101,7 +102,13 @@ Batasan saat ini:
   dan indeksnya ada di SharedPreferences (`downloads.index.v1`). Reader otomatis memakai
   file lokal bila babnya lengkap terunduh. Antrean hanya ada di memori, jadi bab yang
   belum selesai hilang dari antrean saat aplikasi ditutup dan perlu diunduh ulang.
-- Domain situs sering pindah, jadi perbarui `baseUrl` di `registry.dart` bila perlu.
+- Sumber bawaan (8): Komiku, Shinigami, APKOMIK, Komik Station, Izanami Scans, Ngomik,
+  Noromax, dan IsekaiKomik.
+- Domain situs sering pindah. Ketuk ikon gir di tab Sumber untuk mengganti domain tanpa
+  build ulang (ada tombol Tes koneksi). Host lama diingat, jadi URL favorit, riwayat, dan
+  unduhan dari domain lama otomatis dialihkan (`HttpSource.rewriteToCurrentHost`).
+  Progres baca per bab terikat ke URL bab, jadi bab yang dimuat ulang dari domain baru
+  dianggap bab berbeda.
 
 **Lisensi:** template dan selector di-port dari
 [keiyoushi/extensions-source](https://github.com/keiyoushi/extensions-source)

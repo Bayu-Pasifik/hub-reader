@@ -26,21 +26,21 @@ class MangaThemesiaSource extends HttpSource {
   MangaThemesiaSource({
     required this.id,
     required this.name,
-    required this.baseUrl,
+    required String baseUrl,
     this.lang = 'id',
     this.contentWarning = ContentWarning.safe,
     this.mangaUrlDirectory = '/manga',
     this.requestsPerSecond = 2,
     this.pageSelector = 'div#readerarea img',
     super.dio,
-  });
+  }) : defaultBaseUrl = baseUrl;
 
   @override
   final String id;
   @override
   final String name;
   @override
-  final String baseUrl;
+  final String defaultBaseUrl;
   @override
   final String lang;
   @override
