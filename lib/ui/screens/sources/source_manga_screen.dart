@@ -92,6 +92,7 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
         error: (error, _) => SourceErrorView(
           error: error,
           onRetry: () => ref.invalidate(sourceDetailsProvider(_key)),
+          verifyUrl: widget.url,
         ),
         data: (manga) {
           final chapters = _oldestFirst ? manga.chapters.reversed.toList() : manga.chapters;

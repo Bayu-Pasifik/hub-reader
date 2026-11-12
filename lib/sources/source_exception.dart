@@ -85,10 +85,13 @@ class SourceException implements Exception {
           'Periksa koneksi internet. Domain situs mungkin juga sudah pindah atau diblokir provider (coba DNS/VPN).',
         SourceErrorKind.timeout => 'Coba lagi beberapa saat lagi.',
         SourceErrorKind.cloudflare =>
-          'Situs meminta verifikasi browser. Buka situs di browser untuk melihatnya; dukungan bypass Cloudflare belum ada.',
+          'Situs meminta verifikasi browser. Ketuk "Buka di WebView", selesaikan verifikasinya, lalu halaman dimuat ulang otomatis.',
         SourceErrorKind.notFound =>
           'URL mungkin sudah berubah atau seri dihapus dari situs.',
         SourceErrorKind.rateLimited => 'Tunggu sebentar lalu coba lagi.',
+        // 520–526: Cloudflare tidak bisa menghubungi server asli situs.
+        SourceErrorKind.server when statusCode != null && statusCode! >= 520 && statusCode! <= 526 =>
+          'Server situs tidak merespons ($statusCode dari Cloudflare). Biasanya situsnya sedang down; coba lagi nanti.',
         SourceErrorKind.server =>
           'Situs mengembalikan error${statusCode != null ? ' ($statusCode)' : ''}.',
         SourceErrorKind.parse =>

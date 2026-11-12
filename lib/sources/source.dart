@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:html/dom.dart';
 import 'package:html/parser.dart' as html_parser;
 
+import 'cookie_store.dart';
 import 'models.dart';
 import 'source_exception.dart';
 
@@ -52,9 +53,16 @@ abstract class HttpSource extends MangaSource {
 
   final Dio? _injectedDio;
 
-  static const userAgent =
+  static const fallbackUserAgent =
       'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 '
       '(KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36';
+
+  /// Di Android diganti saat startup dengan UA asli WebView perangkat, supaya
+  /// cookie Cloudflare dari WebView berlaku juga untuk request Dio.
+  static String userAgent = fallbackUserAgent;
+
+  /// Cookie per host (mis. cf_clearance). Diganti versi persisten di main().
+  static SourceCookieStore cookies = SourceCookieStore();
 
   /// Maksimal request per detik ke situs ini (padanan `rateLimit(n)`).
   int get requestsPerSecond => 2;
@@ -63,18 +71,25 @@ abstract class HttpSource extends MangaSource {
   Map<String, String> get extraHeaders => const {};
 
   late final Dio dio = _injectedDio ??
-      Dio(BaseOptions(
+      (Dio(BaseOptions(
         connectTimeout: const Duration(seconds: 15),
         receiveTimeout: const Duration(seconds: 25),
         responseType: ResponseType.plain,
         headers: {
-          'User-Agent': userAgent,
           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
           'Accept-Language': 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7',
           'Referer': '$baseUrl/',
           ...extraHeaders,
         },
-      ));
+      ))
+        ..interceptors.add(InterceptorsWrapper(onRequest: (options, handler) {
+          // UA & cookie dibaca per request: keduanya bisa berubah setelah
+          // verifikasi Cloudflare di WebView.
+          options.headers.putIfAbsent('User-Agent', () => userAgent);
+          final cookie = cookies.cookieHeaderFor(options.uri);
+          if (cookie != null) options.headers['Cookie'] = cookie;
+          handler.next(options);
+        })));
 
   Uri get baseUri => Uri.parse(baseUrl);
 
@@ -105,9 +120,13 @@ abstract class HttpSource extends MangaSource {
   }
 
   @override
-  Map<String, String> imageHeaders({String? referer}) => {
-        'User-Agent': userAgent,
-        'Referer': referer ?? '$baseUrl/',
-        'Accept': 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
-      };
+  Map<String, String> imageHeaders({String? referer}) {
+    final cookie = cookies.cookieHeaderFor(baseUri);
+    return {
+      'User-Agent': userAgent,
+      'Referer': referer ?? '$baseUrl/',
+      'Accept': 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
+      if (cookie != null) 'Cookie': cookie,
+    };
+  }
 }

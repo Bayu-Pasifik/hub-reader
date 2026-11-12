@@ -15,6 +15,7 @@ import 'screens/sources/source_favorites_screen.dart';
 import 'screens/sources/source_history_screen.dart';
 import 'screens/sources/source_manga_screen.dart';
 import 'screens/sources/source_reader_screen.dart';
+import 'screens/sources/source_webview_screen.dart';
 import 'screens/sources/sources_screen.dart';
 import 'shell/main_shell.dart';
 
@@ -36,6 +37,9 @@ String sourceReaderLocation(String sourceId, String mangaUrl, String chapterUrl)
       path: '/source/${Uri.encodeComponent(sourceId)}/read',
       queryParameters: {'manga': mangaUrl, 'chapter': chapterUrl},
     ).toString();
+
+String sourceWebViewLocation(String url) =>
+    Uri(path: '/webview', queryParameters: {'url': url}).toString();
 
 /// Rute:
 ///   /sources, /favorites, /history         → tab (sumber on-device)
@@ -102,6 +106,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           builder: (_, __) => const SettingsScreen(),
         ),
       ],
+      GoRoute(
+        path: '/webview',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, state) => SourceWebViewScreen(url: state.uri.queryParameters['url'] ?? ''),
+      ),
       GoRoute(
         path: '/source/:sid',
         parentNavigatorKey: _rootNavigatorKey,

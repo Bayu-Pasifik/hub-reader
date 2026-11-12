@@ -113,7 +113,11 @@ class _MangaGrid extends ConsumerWidget {
     final headers = source.imageHeaders();
 
     if (state.error != null) {
-      return SourceErrorView(error: state.error!, onRetry: notifier.refresh);
+      return SourceErrorView(
+        error: state.error!,
+        onRetry: notifier.refresh,
+        verifyUrl: source.baseUrl,
+      );
     }
     if (state.isLoading && state.items.isEmpty) {
       return const Center(child: CircularProgressIndicator());
@@ -169,6 +173,7 @@ class _MangaGrid extends ConsumerWidget {
                           compact: true,
                           error: state.loadMoreError!,
                           onRetry: () => notifier.loadMore(retry: true),
+                          verifyUrl: source.baseUrl,
                         )
                       : const Center(child: CircularProgressIndicator()),
                 ),

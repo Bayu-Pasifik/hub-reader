@@ -1,8 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../sources/models.dart';
 import '../../sources/source_exception.dart';
+import '../router.dart';
 import 'state_views.dart';
 
 /// Sampul 3:4 dari situs sumber, dengan header (Referer) milik sumber.
@@ -76,11 +78,25 @@ class SourceMangaCard extends StatelessWidget {
 
 /// Error dari situs sumber (pesan berbeda dari error server scraper-hub).
 class SourceErrorView extends StatelessWidget {
-  const SourceErrorView({super.key, required this.error, this.onRetry, this.compact = false});
+  const SourceErrorView({
+    super.key,
+    required this.error,
+    this.onRetry,
+    this.compact = false,
+    this.verifyUrl,
+  });
 
   final Object error;
   final VoidCallback? onRetry;
   final bool compact;
+
+  /// Halaman yang dibuka di WebView bila situs diblokir Cloudflare.
+  final String? verifyUrl;
+
+  Future<void> _verify(BuildContext context) async {
+    final ok = await context.push<bool>(sourceWebViewLocation(verifyUrl!));
+    if (ok == true) onRetry?.call();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -98,13 +114,25 @@ class SourceErrorView extends StatelessWidget {
       },
       title: e.title,
       message: e.message,
-      action: onRetry == null
-          ? null
-          : FilledButton.tonalIcon(
+      action: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        alignment: WrapAlignment.center,
+        children: [
+          if (e.kind == SourceErrorKind.cloudflare && verifyUrl != null)
+            FilledButton.icon(
+              onPressed: () => _verify(context),
+              icon: const Icon(Icons.open_in_browser),
+              label: const Text('Buka di WebView'),
+            ),
+          if (onRetry != null)
+            FilledButton.tonalIcon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
               label: const Text('Coba lagi'),
             ),
+        ],
+      ),
     );
   }
 }

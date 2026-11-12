@@ -88,7 +88,11 @@ Catatan port dari Kotlin/Jsoup: package `html` **tidak** mendukung `:contains()`
 dan `:has()`. Pakai `whereContains()` atau filter manual.
 
 Batasan saat ini:
-- Belum ada bypass Cloudflare. Situs yang meminta verifikasi browser akan menampilkan error.
+- Cloudflare: bila situs meminta verifikasi, error-nya menampilkan tombol **Buka di WebView**.
+  Setelah lolos, cookie `cf_clearance` disalin dari `CookieManager` Android (lewat
+  MethodChannel `hub_reader/cookies` di `MainActivity.kt`) ke `SourceCookieStore`, lalu
+  dipakai Dio dan pemuat gambar. Dio memakai User-Agent asli WebView karena cookie
+  itu terikat ke UA. Cookie berlaku sampai kedaluwarsa, lalu verifikasi diulang.
 - Filter genre/status per sumber belum ada (baru populer, terbaru, dan pencarian judul).
 - Domain situs sering pindah, jadi perbarui `baseUrl` di `registry.dart` bila perlu.
 

@@ -178,6 +178,7 @@ class _PagesState extends ConsumerState<_Pages> {
       error: (error, _) => SourceErrorView(
         error: error,
         onRetry: () => ref.invalidate(sourcePagesProvider(key)),
+        verifyUrl: widget.chapter.url,
       ),
       data: (urls) {
         _total = urls.length;

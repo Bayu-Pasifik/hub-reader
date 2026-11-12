@@ -14,8 +14,8 @@ List<MangaSource> builtInSources() => [
         baseUrl: 'https://komikstation.org',
         requestsPerSecond: 4,
       ),
-      // Diuji 12 Nov 2026 & dikeluarkan: kuromanga.id (Cloudflare 403),
-      // m1.manhwalist.my.id (situs "under construction").
+      // Dikeluarkan (12 Nov 2026): m1.manhwalist.my.id ("under construction"),
+      // kuromanga.id (lolos Cloudflare lewat WebView, tapi server asal 522/down).
       MangaThemesiaSource(
         id: 'id.izanamiscans',
         name: 'Izanami Scans',
