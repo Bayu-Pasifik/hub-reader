@@ -14,7 +14,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga', 'loneseal', 'natsuid', 'colorlibanime', 'hwalumi', 'keyoapp', 'vinetheme']);
+const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga', 'loneseal', 'natsuid', 'colorlibanime', 'hwalumi', 'keyoapp', 'vinetheme', 'mangacatalog']);
 
 const [root, outArg] = process.argv.slice(2);
 if (!root) {
@@ -84,6 +84,14 @@ for (const langDir of listDirs(path.join(root, 'src'))) {
       const sub = str(kt, /mangaSubString[^=\n]*=\s*"([^"]*)"/);
       if (sub && sub !== 'manga') options.mangaSubString = sub;
       if (/filterNonMangaItems[^=\n]*=\s*false/.test(kt)) options.filterNonMangaItems = false;
+    } else if (theme === 'mangacatalog') {
+      // Daftar judul ditulis tangan: Pair("Judul", "$baseUrl/manga/x/"),
+      // "Judul" to "$baseUrl/...", atau Pair("Judul", baseUrl). Baris komentar dilewati.
+      const code = kt.split('\n').filter((l) => !/^\s*\/\//.test(l)).join('\n');
+      options.titles = [...code.matchAll(/"((?:[^"\\]|\\.)+)"\s*(?:,|\bto\b)\s*(?:"\$baseUrl([^"]*)"|baseUrl\b)/g)]
+        .map((m) => [JSON.parse(`"${m[1]}"`), m[2] ?? '']);
+      if (/chapterListSelector\(\)[^=]*=\s*"tbody > tr"/.test(kt)) options.layout = 'table';
+      else if (/blogger\.googleusercontent/.test(kt)) options.layout = 'blogger';
     } else if (theme === 'keyoapp') {
       // Varian: KeyoappV2, atau Livewire (override ArtLapsa & kawan-kawan).
       if (/:\s*KeyoappV2\s*\(/.test(kt)) options.variant = 'v2';
@@ -108,7 +116,7 @@ for (const langDir of listDirs(path.join(root, 'src'))) {
     if (/setQueryParameter\("page", "1"\)/.test(kt)) vals.chapterPageOne = true;
     if (Object.keys(vals).length) options.vals = vals;
     // Keyoapp: override yang dikenal (Livewire, V2, populer via pencarian) sudah ditangani port Dart.
-    if (theme !== 'keyoapp' && /getPopularManga|getSearchMangaList|parseArchive|pageListParse|parsePages|mangaDetailsParse|parseDetails|getChapterFeedUrl|parsePopularManga|parseSearchManga/.test(kt)) {
+    if (!['keyoapp', 'mangacatalog'].includes(theme) && /getPopularManga|getSearchMangaList|parseArchive|pageListParse|parsePages|mangaDetailsParse|parseDetails|getChapterFeedUrl|parsePopularManga|parseSearchManga/.test(kt)) {
       options.customized = true; // Kotlin meng-override logika inti; port Dart bisa kurang pas.
     }
 

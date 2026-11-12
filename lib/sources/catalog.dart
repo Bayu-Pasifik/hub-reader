@@ -6,6 +6,7 @@ import 'source.dart';
 import 'templates/keyoapp.dart';
 import 'templates/loneseal.dart';
 import 'templates/madara.dart';
+import 'templates/mangacatalog.dart';
 import 'templates/mangathemesia.dart';
 import 'templates/natsuid.dart';
 import 'templates/small_templates.dart';
@@ -120,6 +121,18 @@ class CatalogEntry {
           ),
         'vinetheme' =>
           VineThemeSource(id: id, name: name, lang: lang, baseUrl: baseUrl, contentWarning: contentWarning),
+        'mangacatalog' => MangaCatalogSource(
+            id: id,
+            name: name,
+            lang: lang,
+            baseUrl: baseUrl,
+            contentWarning: contentWarning,
+            layout: mangaCatalogLayoutFrom(asString(options['layout'])),
+            titles: [
+              for (final t in asList(options['titles']))
+                if (asList(t) case [final String title, final String path]) (title, path),
+            ],
+          ),
         _ => null,
       };
 }
