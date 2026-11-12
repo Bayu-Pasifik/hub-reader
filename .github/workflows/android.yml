@@ -24,7 +24,7 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: '21' # AGP 9.x butuh JDK 21+ (lokal memakai JDK 25 dari Android Studio)
 
       - name: Pasang Android NDK
         # Flutter 3.50 butuh NDK 28.2; instalasi otomatis Gradle gagal di runner.
