@@ -1,0 +1,35 @@
+name: hub_reader
+description: Aplikasi pembaca novel & komik yang mengambil data dari API scraper-hub.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # State management
+  flutter_riverpod: ^2.6.1
+  # HTTP client (timeout, interceptor, error typing)
+  dio: ^5.7.0
+  # Navigasi deklaratif + bottom navigation yang mempertahankan state tiap tab
+  go_router: ^14.6.2
+  # Gambar sampul & halaman komik dengan cache disk
+  cached_network_image: ^3.4.1
+  # Penyimpanan lokal: favorit, riwayat, pengaturan
+  shared_preferences: ^2.3.3
+  # Lokasi folder cache untuk respons API (mode offline)
+  path_provider: ^2.1.5
+  # Menampilkan halaman bab dari situs sumber (fallback reader)
+  webview_flutter: ^4.10.0
+  # Parser HTML untuk extension sumber on-device (lib/sources)
+  html: ^0.15.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
