@@ -7,6 +7,7 @@ import '../sources/registry.dart';
 import '../sources/source.dart';
 import '../sources/source_exception.dart';
 import 'download_providers.dart';
+import 'source_health_provider.dart';
 import 'source_settings_provider.dart';
 
 /// Registry dibuat ulang saat domain sumber diubah di pengaturan, jadi
@@ -121,6 +122,15 @@ class SourceListNotifier extends AutoDisposeFamilyNotifier<SourceListState, Sour
         SourceListing.search => source.search(next, arg.query, filters: arg.filters),
       };
       if (_disposed || generation != _generation) return;
+      // Membuka sumber = cek kesehatan gratis.
+      if (current.page == 0 && arg.listing != SourceListing.search) {
+        ref.read(sourceHealthProvider.notifier).record(
+              arg.sourceId,
+              result.items.isEmpty
+                  ? SourceHealth(HealthStatus.broken, DateTime.now(), detail: 'Daftar kosong')
+                  : SourceHealth(HealthStatus.ok, DateTime.now()),
+            );
+      }
       final seen = current.items.toSet();
       final fresh = result.items.where(seen.add).toList();
       state = SourceListState(
@@ -132,6 +142,9 @@ class SourceListNotifier extends AutoDisposeFamilyNotifier<SourceListState, Sour
     } catch (error) {
       if (_disposed || generation != _generation) return;
       final e = toSourceException(error);
+      if (current.page == 0 && arg.listing != SourceListing.search) {
+        ref.read(sourceHealthProvider.notifier).record(arg.sourceId, SourceHealth.fromError(e));
+      }
       state = current.page == 0
           ? SourceListState(error: e)
           : SourceListState(

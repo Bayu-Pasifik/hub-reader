@@ -103,6 +103,13 @@ diblokir ISP), Cloudflare (64, umumnya bisa diatasi di HP lewat "Buka di WebView
 situs yang wajib login/password, struktur HTML khusus, atau gambar terenkripsi
 (*chapter protector*, belum didukung).
 
+**Cek kesehatan sumber:** menu ⋮ → "Cek N sumber" mencoba halaman populer tiap sumber
+dari HP itu sendiri (jaringan, DNS/VPN, dan cookie Cloudflare milik pengguna), 6 sumber
+paralel. Statusnya: Jalan, Perlu verifikasi (Cloudflare), Rusak (respons tidak bisa diparse),
+atau Mati (tidak terhubung, timeout, 404, 5xx). Hasilnya disimpan (`sources.health.v1`) dan
+diperbarui otomatis setiap kali sumber dibuka. Daftar diurutkan dari yang jalan, sumber mati
+diredupkan dan bisa disembunyikan, dan tekan lama sebuah sumber untuk mengecek ulang.
+
 Situs dengan struktur lain dibuat sebagai subclass `HttpSource` (contoh: `id/komiku.dart`,
 `id/shinigami.dart`) lalu didaftarkan di `customSources()` pada `registry.dart`.
 

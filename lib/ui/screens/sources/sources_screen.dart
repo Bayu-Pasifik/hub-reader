@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../sources/models.dart';
 import '../../../sources/source.dart';
 import '../../../state/download_providers.dart';
+import '../../../state/source_health_provider.dart';
 import '../../../state/source_settings_provider.dart';
 import '../../../state/source_providers.dart';
 import '../../router.dart';
@@ -70,9 +71,15 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
     final showNsfw = ref.watch(showNsfwSourcesProvider);
     final selectedLang = ref.watch(sourceLanguageProvider);
     final queueCount = ref.watch(downloadQueueProvider.select((q) => q.length));
+    final health = ref.watch(sourceHealthProvider);
+    final hideDead = ref.watch(hideDeadSourcesProvider);
+    final run = ref.watch(healthRunProvider);
     final scheme = Theme.of(context).colorScheme;
 
-    final visible = registry.sources.where((s) => showNsfw || s.contentWarning != ContentWarning.nsfw).toList();
+    final visible = registry.sources
+        .where((s) => showNsfw || s.contentWarning != ContentWarning.nsfw)
+        .where((s) => !hideDead || health[s.id]?.status != HealthStatus.dead)
+        .toList();
     final counts = <String, int>{};
     for (final s in visible) {
       counts[s.lang] = (counts[s.lang] ?? 0) + 1;
@@ -90,8 +97,12 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
     // Baris datar: header bahasa lalu sumbernya (urut nama).
     final rows = <Object>[];
     for (final l in languages) {
+      // Yang jalan di atas, yang mati di bawah; lalu urut nama.
       final group = filtered.where((s) => s.lang == l).toList()
-        ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+        ..sort((a, b) {
+          final r = healthRank(health[a.id]).compareTo(healthRank(health[b.id]));
+          return r != 0 ? r : a.name.toLowerCase().compareTo(b.name.toLowerCase());
+        });
       if (group.isEmpty) continue;
       rows.add((lang: l, count: group.length));
       rows.addAll(group);
@@ -127,40 +138,64 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
           ),
           PopupMenuButton<String>(
             onSelected: (v) {
-              if (v == 'nsfw') ref.read(showNsfwSourcesProvider.notifier).set(!showNsfw);
+              final healthNotifier = ref.read(sourceHealthProvider.notifier);
+              switch (v) {
+                case 'check':
+                  // Cek sumber yang sedang tampil (ikut filter bahasa & pencarian).
+                  healthNotifier.checkAll(filtered);
+                case 'stop':
+                  healthNotifier.stop();
+                case 'nsfw':
+                  ref.read(showNsfwSourcesProvider.notifier).set(!showNsfw);
+                case 'dead':
+                  ref.read(hideDeadSourcesProvider.notifier).set(!hideDead);
+              }
             },
             itemBuilder: (_) => [
+              run.running
+                  ? const PopupMenuItem(value: 'stop', child: Text('Hentikan pengecekan'))
+                  : PopupMenuItem(value: 'check', child: Text('Cek ${filtered.length} sumber')),
+              CheckedPopupMenuItem(value: 'dead', checked: hideDead, child: const Text('Sembunyikan sumber mati')),
               CheckedPopupMenuItem(value: 'nsfw', checked: showNsfw, child: const Text('Tampilkan sumber 18+')),
             ],
           ),
         ],
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(52),
-          child: SizedBox(
-            height: 52,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 6),
-                  child: ChoiceChip(
-                    label: Text('Semua (${visible.length})'),
-                    selected: lang == null,
-                    onSelected: (_) => ref.read(sourceLanguageProvider.notifier).set(null),
-                  ),
-                ),
-                for (final l in languages)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 6),
-                    child: ChoiceChip(
-                      label: Text('${l.toUpperCase()} (${counts[l]})'),
-                      selected: lang == l,
-                      onSelected: (_) => ref.read(sourceLanguageProvider.notifier).set(l),
+          preferredSize: const Size.fromHeight(56),
+          child: Column(
+            children: [
+              SizedBox(
+                height: 52,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(right: 6),
+                      child: ChoiceChip(
+                        label: Text('Semua (${visible.length})'),
+                        selected: lang == null,
+                        onSelected: (_) => ref.read(sourceLanguageProvider.notifier).set(null),
+                      ),
                     ),
-                  ),
-              ],
-            ),
+                    for (final l in languages)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: ChoiceChip(
+                          label: Text('${l.toUpperCase()} (${counts[l]})'),
+                          selected: lang == l,
+                          onSelected: (_) => ref.read(sourceLanguageProvider.notifier).set(l),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: 4,
+                child:
+                    run.running ? LinearProgressIndicator(value: run.total == 0 ? null : run.done / run.total) : null,
+              ),
+            ],
           ),
         ),
       ),
@@ -184,6 +219,7 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
                 return _SourceTile(
                   source: source,
                   experimental: registry.experimentalIds.contains(source.id),
+                  health: health[source.id],
                 );
               },
             ),
@@ -191,27 +227,59 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
   }
 }
 
-class _SourceTile extends StatelessWidget {
-  const _SourceTile({required this.source, required this.experimental});
+class _SourceTile extends ConsumerWidget {
+  const _SourceTile({required this.source, required this.experimental, required this.health});
 
   final MangaSource source;
   final bool experimental;
+  final SourceHealth? health;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final s = source;
     final host = Uri.tryParse(s.baseUrl)?.host ?? s.baseUrl;
     final overridden = s is HttpSource && s.baseUrl != s.defaultBaseUrl;
     final scheme = Theme.of(context).colorScheme;
-    return ListTile(
-      leading: CircleAvatar(child: Text(s.name.characters.first.toUpperCase())),
+    final status = health?.status;
+    final (Color? color, IconData? icon) = switch (status) {
+      HealthStatus.ok => (Colors.green.shade600, Icons.check_circle),
+      HealthStatus.cloudflare => (Colors.orange.shade700, Icons.shield),
+      HealthStatus.broken => (Colors.amber.shade800, Icons.warning_rounded),
+      HealthStatus.dead => (scheme.error, Icons.cancel),
+      null => (null, null),
+    };
+    final detail = health?.detail;
+    final info = [
+      if (status != null) status.label + (status != HealthStatus.ok && detail != null ? ' ($detail)' : ''),
+      host + (overridden ? ' (diubah)' : ''),
+      if (experimental) 'eksperimental',
+    ].join(' · ');
+
+    final tile = ListTile(
+      leading: Badge(
+        isLabelVisible: icon != null,
+        backgroundColor: Colors.transparent,
+        offset: const Offset(4, 26),
+        label: icon == null ? null : Icon(icon, size: 16, color: color),
+        child: CircleAvatar(child: Text(s.name.characters.first.toUpperCase())),
+      ),
       title: Text(s.name, maxLines: 1, overflow: TextOverflow.ellipsis),
       subtitle: Text(
-        '$host${overridden ? ' (diubah)' : ''}${experimental ? ' · eksperimental' : ''}',
+        info,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: experimental ? TextStyle(color: scheme.tertiary) : null,
+        style: TextStyle(color: color ?? (experimental ? scheme.tertiary : null)),
       ),
+      // Tekan lama = cek ulang sumber ini saja.
+      onLongPress: () async {
+        final messenger = ScaffoldMessenger.of(context);
+        messenger.showSnackBar(SnackBar(content: Text('Mengecek ${s.name}…'), duration: const Duration(seconds: 1)));
+        final h = await ref.read(sourceHealthProvider.notifier).check(s);
+        final d = h.detail;
+        messenger
+          ..hideCurrentSnackBar()
+          ..showSnackBar(SnackBar(content: Text('${s.name}: ${h.status.label}${d != null ? ' ($d)' : ''}')));
+      },
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -229,6 +297,8 @@ class _SourceTile extends StatelessWidget {
       ),
       onTap: () => context.push(sourceBrowseLocation(s.id)),
     );
+    // Sumber mati diredupkan, tapi tetap bisa dibuka (mis. setelah ganti domain).
+    return status == HealthStatus.dead ? Opacity(opacity: 0.55, child: tile) : tile;
   }
 }
 
