@@ -144,6 +144,26 @@ tetap milik situs atau pemegang haknya.
 5. Build APK: `flutter build apk --release --dart-define=...` → `build/app/outputs/flutter-apk/app-release.apk`.
 6. Tes: `flutter test`.
 
+## Rilis & CI
+
+- **Ikon:** ikon adaptif vektor ada di `android/app/src/main/res/drawable/ic_launcher_*.xml`
+  dan `mipmap-anydpi-v26/`, plus PNG untuk Android lama di `mipmap-*`. Versi 512px
+  ada di `assets/branding/icon-512.png`. Glyph-nya ikon Material `auto_stories` (Apache-2.0).
+- **Signing:** `android/app/build.gradle.kts` membaca `android/key.properties`
+  (`storeFile`, `storePassword`, `keyAlias`, `keyPassword`). File ini dan `*.jks`
+  di-gitignore. Tanpa `key.properties`, APK release ditandatangani debug key.
+  **Simpan cadangan keystore dan password-nya.** Tanpa keduanya, update aplikasi tidak
+  bisa dipasang di atas versi lama.
+- **Cleartext:** HTTP biasa hanya diizinkan di build debug (`src/debug/AndroidManifest.xml`).
+  Build rilis HTTPS saja. Kalau scraper-hub diaktifkan lagi di rilis, pakai HTTPS.
+- **GitHub Actions** (`.github/workflows/android.yml`): setiap push atau PR menjalankan
+  `analyze`, `test`, dan build APK release, lalu APK diunggah sebagai artifact
+  *hub-reader-apk*. Push tag `v*` (mis. `git tag v1.0.0 && git push --tags`) juga
+  melampirkan APK ke GitHub Release.
+- **Secrets CI** (Settings → Secrets and variables → Actions):
+  - `KEYSTORE_BASE64`: isi file `.jks` dalam base64 (`base64 -w0 hub-reader-release.jks`)
+  - `KEYSTORE_PASSWORD`: password keystore (store dan key memakai password yang sama)
+
 ## TODO / batasan yang diketahui
 
 - **Isi bab belum ada di API.** scraper-hub hanya menyimpan metadata bab (nomor,
@@ -156,4 +176,3 @@ tetap milik situs atau pemegang haknya.
   `APP_URL` di-set ke alamat yang bisa dijangkau HP, lalu `php artisan storage:link`.
 - **Sinkronisasi akun** (opsional): login Sanctum + `PUT /library/{type}/{id}` dan
   `POST /{type}/{id}/progress` belum diintegrasikan (lihat TODO di `scraper_hub_api.dart`).
-- `usesCleartextTraffic="true"` hanya untuk pengembangan; pakai HTTPS di produksi.

@@ -2,16 +2,12 @@
     <!-- Wajib: tanpa izin ini build release tidak bisa mengakses jaringan. -->
     <uses-permission android:name="android.permission.INTERNET"/>
 
-    <!--
-      usesCleartextTraffic="true" mengizinkan HTTP biasa (mis. http://10.0.2.2:8000)
-      selama pengembangan. Matikan / ganti dengan network_security_config
-      setelah scraper-hub dipasang di balik HTTPS.
-    -->
+    <!-- HTTP biasa (cleartext) hanya diizinkan di build debug, lihat
+         src/debug/AndroidManifest.xml. Build rilis HTTPS saja. -->
     <application
         android:label="Hub Reader"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher"
-        android:usesCleartextTraffic="true">
+        android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
             android:exported="true"
