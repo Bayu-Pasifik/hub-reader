@@ -1,0 +1,19 @@
+{
+  "name": "lnreader-runtime",
+  "private": true,
+  "type": "module",
+  "description": "JS runtime bundle that lets hub_reader run LNReader plugins inside QuickJS",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "@noble/ciphers": "2.2.0",
+    "cheerio": "1.0.0-rc.12",
+    "core-js": "3.45.1",
+    "dayjs": "1.11.18",
+    "htmlparser2": "9.1.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.10"
+  }
+}

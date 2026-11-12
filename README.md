@@ -1,9 +1,9 @@
 # Hub Reader
 
-Aplikasi Android (Flutter) bergaya Aniyomi/Mihon untuk membaca komik.
+Aplikasi Android (Flutter) bergaya Aniyomi/Mihon untuk membaca komik dan novel.
 
 **Mode saat ini:** fokus ke *sumber on-device*. Aplikasi mengambil konten langsung
-dari situs komik, dengan tiga tab: Sumber, Favorit, dan Riwayat. Integrasi API scraper-hub
+dari situsnya, dengan empat tab: Komik (sumber on-device), Novel (plugin LNReader), Favorit, dan Riwayat. Integrasi API scraper-hub
 (`D:\Coding\Web\scraper-hub`, Laravel, `/api/v1`) masih ada di kode tetapi
 disembunyikan. Aktifkan lagi dengan:
 
@@ -156,6 +156,62 @@ Batasan saat ini:
 [keiyoushi/extensions-source](https://github.com/keiyoushi/extensions-source)
 (Apache License 2.0). Atribusi ada di kepala setiap file hasil port. Hak cipta konten
 tetap milik situs atau pemegang haknya.
+
+## Sumber novel (plugin LNReader)
+
+Tab **Novel** memakai plugin dari [lnreader/lnreader-plugins](https://github.com/lnreader/lnreader-plugins)
+apa adanya: JS hasil compile di branch `plugins/v3.0.0` (manifest `.dist/plugins.min.json`,
+371 plugin dalam 17 bahasa) dijalankan langsung di HP dengan QuickJS
+([flutter_js](https://pub.dev/packages/flutter_js)), sama seperti aplikasi LNReader menjalankannya
+di Hermes. Plugin baru atau perbaikan dari upstream langsung terpakai tanpa rilis aplikasi.
+
+```
+lib/novels/
+├── lnreader/js_engine.dart      # QuickJS + host `__host(op, payload)`: fetch, timer, storage, decode
+├── lnreader/engine_isolate.dart # engine di isolate latar; fetch & storage dikerjakan isolate UI
+├── lnreader/http_bridge.dart    # fetch() plugin → Dio (UA & cookie bersama sumber komik)
+├── plugin_repository.dart       # manifest + kode plugin, disimpan di <support>/lnreader/
+├── novel_source.dart            # popularNovels/searchNovels/parseNovel/parsePage/parseChapter
+└── novel_models.dart            # NovelItem, NovelDetails, NovelChapter, filter LNReader
+lib/state/novel_providers.dart   # engine, manifest, daftar, detail, isi bab, pengaturan baca
+lib/ui/screens/novels/           # daftar plugin, jelajah + filter, detail, pembaca teks
+assets/lnreader/runtime.js       # dibuat oleh tool/lnreader_runtime (jangan diedit)
+```
+
+`assets/lnreader/runtime.js` menyediakan `require()` yang sama dengan LNReader
+(`cheerio` 1.0.0-rc.12, `htmlparser2`, `dayjs`, `@libs/fetch`, `@libs/storage`,
+`@libs/filterInputs`, `@libs/novelStatus`, `@libs/defaultCover`, `@libs/aes`, ...) plus API web
+yang tidak ada di QuickJS: `fetch`/`Response`/`Headers`/`FormData`, `URL`/`URLSearchParams`
+(core-js), `setTimeout`, `AbortController`, `TextEncoder`/`TextDecoder`, `atob`/`btoa`, `Buffer`.
+Request dari plugin dijalankan Dio di Dart, jadi cookie `cf_clearance` hasil "Buka di WebView"
+ikut terkirim. `@libs/storage` disimpan di SharedPreferences (`lnr.kv.*`).
+
+Pembaca novel mengubah HTML bab menjadi teks dengan gaya sendiri (tema terang/sepia/gelap/hitam,
+ukuran huruf, jarak baris, margin, serif, rata kiri-kanan), menyimpan posisi baca per bab
+(persen), lalu pindah bab sebelumnya/berikutnya, termasuk lintas halaman untuk plugin
+berhalaman (`parsePage`). Favorit & riwayat novel berbagi tab dengan komik (id `lnr:<plugin>`).
+
+Bangun ulang runtime / uji semua plugin dari PC (Node 20+):
+
+```bash
+cd tool/lnreader_runtime && npm install
+node build.mjs                      # → assets/lnreader/runtime.js
+node check.mjs --lang "Bahasa Indonesia"   # popular → novel → bab, per plugin
+```
+
+Tes engine (`test/lnreader_engine_test.dart`) butuh library QuickJS milik flutter_js. Di Windows,
+tambahkan `%LOCALAPPDATA%\Pub\Cache\hosted\pub.dev\flutter_js-0.8.7\windows\shared` ke `PATH`;
+tanpa itu tes dilewati. Uji live plugin asli lewat engine Dart:
+`LNR_LIVE=1 LNR_IDS=IDWN.id,novelfire flutter test test/lnreader_live_test.dart`.
+
+Hasil uji langsung dari PC (13 Nov 2026, `node check.mjs`): **190 dari 371 plugin jalan penuh**
+(daftar populer → detail → isi bab). Sisanya gagal di sisi situs: Cloudflare/403/captcha
+(umumnya bisa diatasi di HP lewat "Buka di WebView"), domain mati atau sertifikat TLS rusak,
+dan daftar kosong (situs berubah atau memblokir; hasilnya sama bila plugin dijalankan di Node biasa).
+
+Batasan: `fetchProto` (1 plugin) belum didukung; plugin yang butuh login/WebView storage
+(`webStorageUtilized`) dan `pluginSettings` belum punya UI; charset non-UTF-8 selain Latin-1
+didekode sebagai UTF-8.
 
 ## Menjalankan di Android
 

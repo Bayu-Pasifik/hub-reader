@@ -7,6 +7,10 @@ import '../core/utils/formatters.dart';
 import '../data/models/series.dart';
 import 'screens/browse_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/novels/novel_browse_screen.dart';
+import 'screens/novels/novel_detail_screen.dart';
+import 'screens/novels/novel_reader_screen.dart';
+import 'screens/novels/novel_sources_screen.dart';
 import 'screens/reader_screen.dart';
 import 'screens/series_detail_screen.dart';
 import 'screens/settings_screen.dart';
@@ -39,6 +43,18 @@ String sourceReaderLocation(String sourceId, String mangaUrl, String chapterUrl)
       queryParameters: {'manga': mangaUrl, 'chapter': chapterUrl},
     ).toString();
 
+String novelBrowseLocation(String pluginId) => '/novel/${Uri.encodeComponent(pluginId)}';
+
+String novelDetailLocation(String pluginId, String path) => Uri(
+      path: '/novel/${Uri.encodeComponent(pluginId)}/info',
+      queryParameters: {'path': path},
+    ).toString();
+
+String novelReaderLocation(String pluginId, String novelPath, String chapterPath, {int page = 1}) => Uri(
+      path: '/novel/${Uri.encodeComponent(pluginId)}/read',
+      queryParameters: {'novel': novelPath, 'chapter': chapterPath, if (page > 1) 'page': '$page'},
+    ).toString();
+
 String sourceWebViewLocation(String url) =>
     Uri(path: '/webview', queryParameters: {'url': url}).toString();
 
@@ -50,6 +66,9 @@ String sourceWebViewLocation(String url) =>
 ///   /source/:sid                           → jelajah satu sumber on-device
 ///   /source/:sid/manga?url=                → detail seri dari sumber
 ///   /source/:sid/read?manga=&chapter=      → pembaca bab dari sumber
+///   /novels                                → tab sumber novel (plugin LNReader)
+///   /novel/:pid, /novel/:pid/info?path=,   → jelajah, detail, pembaca novel
+///   /novel/:pid/read?novel=&chapter=&page=
 final routerProvider = Provider<GoRouter>((ref) {
   const hub = AppConfig.enableScraperHub;
   final tabs = <ShellTab>[
@@ -57,7 +76,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       ShellTab('/home', Icons.home_outlined, Icons.home, 'Beranda'),
       ShellTab('/browse', Icons.explore_outlined, Icons.explore, 'Jelajah'),
     ],
-    const ShellTab('/sources', Icons.extension_outlined, Icons.extension, 'Sumber'),
+    const ShellTab('/sources', Icons.extension_outlined, Icons.extension, 'Komik'),
+    const ShellTab('/novels', Icons.menu_book_outlined, Icons.menu_book, 'Novel'),
     const ShellTab('/favorites', Icons.favorite_outline, Icons.favorite, 'Favorit'),
     const ShellTab('/history', Icons.history_outlined, Icons.history, 'Riwayat'),
   ];
@@ -67,6 +87,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         '/browse' => const BrowseScreen(),
         '/favorites' => const SourceFavoritesScreen(),
         '/history' => const SourceHistoryScreen(),
+        '/novels' => const NovelSourcesScreen(),
         _ => const SourcesScreen(),
       };
 
@@ -116,6 +137,31 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/webview',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (_, state) => SourceWebViewScreen(url: state.uri.queryParameters['url'] ?? ''),
+      ),
+      GoRoute(
+        path: '/novel/:pid',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, state) => NovelBrowseScreen(pluginId: state.pathParameters['pid'] ?? ''),
+        routes: [
+          GoRoute(
+            path: 'info',
+            parentNavigatorKey: _rootNavigatorKey,
+            builder: (_, state) => NovelDetailScreen(
+              pluginId: state.pathParameters['pid'] ?? '',
+              path: state.uri.queryParameters['path'] ?? '',
+            ),
+          ),
+          GoRoute(
+            path: 'read',
+            parentNavigatorKey: _rootNavigatorKey,
+            builder: (_, state) => NovelReaderScreen(
+              pluginId: state.pathParameters['pid'] ?? '',
+              novelPath: state.uri.queryParameters['novel'] ?? '',
+              chapterPath: state.uri.queryParameters['chapter'] ?? '',
+              page: int.tryParse(state.uri.queryParameters['page'] ?? '') ?? 1,
+            ),
+          ),
+        ],
       ),
       GoRoute(
         path: '/source/:sid',

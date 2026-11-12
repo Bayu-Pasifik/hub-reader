@@ -4,8 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/utils/formatters.dart';
 import '../../../state/source_library_providers.dart';
-import '../../../state/source_providers.dart';
-import '../../router.dart';
+import '../../widgets/library_routing.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/state_views.dart';
 
@@ -56,25 +55,23 @@ class SourceHistoryScreen extends ConsumerWidget {
               itemBuilder: (context, i) {
                 final entry = history[i];
                 final item = entry.item;
-                final source = ref.watch(sourceProvider(item.sourceId));
+                final source = librarySourceInfo(ref, item.sourceId);
                 return ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                   leading: SourceCover(
                     url: item.thumbnailUrl,
-                    headers: source?.imageHeaders() ?? const {},
+                    headers: source.imageHeaders,
                     width: 44,
                   ),
                   title: Text(item.title, maxLines: 1, overflow: TextOverflow.ellipsis),
                   subtitle: Text(
-                    '${entry.chapterName} · ${source?.name ?? item.sourceId} · ${relativeTime(entry.readAt)}',
+                    '${entry.chapterName} · ${source.isNovel ? 'Novel · ' : ''}${source.name} · ${relativeTime(entry.readAt)}',
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   // Ketuk = lanjut baca; tekan lama = buka detail seri.
-                  onTap: () => context.push(
-                    sourceReaderLocation(item.sourceId, item.url, entry.chapterUrl),
-                  ),
-                  onLongPress: () => context.push(sourceMangaLocation(item.sourceId, item.url)),
+                  onTap: () => context.push(source.readerLocation(item.url, entry.chapterUrl)),
+                  onLongPress: () => context.push(source.detailLocation(item.url)),
                   trailing: IconButton(
                     tooltip: 'Hapus dari riwayat',
                     icon: const Icon(Icons.close),

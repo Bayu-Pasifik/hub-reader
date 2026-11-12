@@ -29,6 +29,7 @@ dependencies:
   scrollable_positioned_list: ^0.3.8
   # AES + MD5 untuk gambar bab terenkripsi Madara "chapter protector"
   pointycastle: ^4.0.0
+  flutter_js: ^0.8.7
 
 dev_dependencies:
   flutter_test:
@@ -40,3 +41,5 @@ flutter:
   assets:
     # Katalog sumber template, dibuat oleh tool/generate_source_catalog.mjs
     - assets/sources/catalog.json
+    # Runtime plugin novel LNReader (QuickJS), dibuat oleh tool/lnreader_runtime
+    - assets/lnreader/runtime.js

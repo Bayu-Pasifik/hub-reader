@@ -1,0 +1,441 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show ScrollDirection;
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../data/models/source_library.dart';
+import '../../../novels/novel_models.dart';
+import '../../../novels/novel_source.dart';
+import '../../../sources/models.dart';
+import '../../../state/novel_providers.dart';
+import '../../../state/source_library_providers.dart';
+import '../../router.dart';
+import '../../widgets/novel_html.dart';
+import '../../widgets/source_widgets.dart';
+import 'novel_detail_screen.dart';
+
+/// Pembaca novel: teks bab dengan gaya sendiri (ukuran huruf, tema), posisi
+/// baca tersimpan per bab, dan pindah bab sebelumnya/berikutnya.
+class NovelReaderScreen extends ConsumerStatefulWidget {
+  const NovelReaderScreen({
+    super.key,
+    required this.pluginId,
+    required this.novelPath,
+    required this.chapterPath,
+    this.page = 1,
+  });
+
+  final String pluginId;
+  final String novelPath;
+  final String chapterPath;
+
+  /// Halaman daftar bab tempat bab ini berada (plugin berhalaman).
+  final int page;
+
+  @override
+  ConsumerState<NovelReaderScreen> createState() => _NovelReaderScreenState();
+}
+
+class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> {
+  late String _chapterPath = widget.chapterPath;
+  late int _page = widget.page;
+  final _scroll = ScrollController();
+  bool _chrome = true;
+  Timer? _saveTimer;
+  String? _restoredFor;
+  String? _recordedFor;
+
+  SourceItemKey get _libKey => (sourceId: novelLibraryId(widget.pluginId), url: widget.novelPath);
+
+  @override
+  void initState() {
+    super.initState();
+    _scroll.addListener(_onScroll);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  }
+
+  @override
+  void dispose() {
+    _saveTimer?.cancel();
+    _saveProgress();
+    _scroll.dispose();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    super.dispose();
+  }
+
+  double get _fraction {
+    if (!_scroll.hasClients) return 0;
+    final max = _scroll.position.maxScrollExtent;
+    if (max <= 0) return 1;
+    return (_scroll.offset / max).clamp(0.0, 1.0);
+  }
+
+  void _onScroll() {
+    if (_chrome && _scroll.position.userScrollDirection != ScrollDirection.idle) {
+      setState(() => _chrome = false);
+    }
+    _saveTimer?.cancel();
+    _saveTimer = Timer(const Duration(milliseconds: 600), _saveProgress);
+  }
+
+  /// Progres disimpan sebagai persen (0–99), total 100; 99 = selesai.
+  void _saveProgress() {
+    if (!_scroll.hasClients || _restoredFor != _chapterPath) return;
+    final percent = (_fraction * 100).floor().clamp(0, 99);
+    ref.read(sourceProgressProvider.notifier).update(_libKey, _chapterPath, page: percent, total: 100);
+  }
+
+  void _restorePosition(String path) {
+    if (_restoredFor == path) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_scroll.hasClients) return;
+      final p = ref.read(sourceSeriesProgressProvider(_libKey))[path];
+      final max = _scroll.position.maxScrollExtent;
+      if (p != null && !p.done && p.page > 0 && max > 0) _scroll.jumpTo(max * p.page / 100);
+      _restoredFor = path;
+    });
+  }
+
+  void _record(NovelChapter chapter) {
+    if (_recordedFor == chapter.path) return;
+    final details = ref.read(novelDetailsProvider((pluginId: widget.pluginId, path: widget.novelPath))).valueOrNull;
+    final history = ref.read(sourceLastReadProvider(_libKey));
+    final item = details != null
+        ? SourceLibraryItem(
+            sourceId: novelLibraryId(widget.pluginId),
+            url: widget.novelPath,
+            title: details.name,
+            thumbnailUrl: details.cover,
+          )
+        : history?.item;
+    if (item == null) return;
+    _recordedFor = chapter.path;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(sourceHistoryProvider.notifier).record(item, SourceChapter(url: chapter.path, name: chapter.name));
+    });
+  }
+
+  void _goTo(NovelChapter chapter, int page) {
+    _saveProgress();
+    saveNovelLastPage(ref, widget.pluginId, widget.novelPath, page);
+    setState(() {
+      _chapterPath = chapter.path;
+      _page = page;
+      _restoredFor = null;
+      _chrome = true;
+    });
+    if (_scroll.hasClients) _scroll.jumpTo(0);
+  }
+
+  /// Bab sebelum/sesudah dalam urutan plugin (lama → baru), lintas halaman.
+  Future<void> _step(int delta, List<NovelChapter> chapters, int totalPages) async {
+    final i = chapters.indexWhere((c) => c.path == _chapterPath);
+    final j = i + delta;
+    if (i >= 0 && j >= 0 && j < chapters.length) return _goTo(chapters[j], _page);
+    final targetPage = _page + delta;
+    if (targetPage < 1 || targetPage > totalPages) return;
+    try {
+      final list = await ref.read(
+        novelChapterPageProvider((pluginId: widget.pluginId, path: widget.novelPath, page: targetPage)).future,
+      );
+      if (list.isEmpty || !mounted) return;
+      _goTo(delta > 0 ? list.first : list.last, targetPage);
+    } catch (_) {
+      // tombol cukup tidak melakukan apa-apa
+    }
+  }
+
+  Color _bg(NovelReaderTheme t, ColorScheme scheme) => switch (t) {
+        NovelReaderTheme.system => scheme.surface,
+        NovelReaderTheme.light => const Color(0xFFFFFFFF),
+        NovelReaderTheme.sepia => const Color(0xFFF4ECD8),
+        NovelReaderTheme.dark => const Color(0xFF1E1F22),
+        NovelReaderTheme.black => const Color(0xFF000000),
+      };
+
+  Color _fg(NovelReaderTheme t, ColorScheme scheme) => switch (t) {
+        NovelReaderTheme.system => scheme.onSurface,
+        NovelReaderTheme.light => const Color(0xFF1B1B1B),
+        NovelReaderTheme.sepia => const Color(0xFF5B4636),
+        NovelReaderTheme.dark => const Color(0xFFD7D7D7),
+        NovelReaderTheme.black => const Color(0xFFBDBDBD),
+      };
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = ref.watch(novelReaderSettingsProvider);
+    final source = ref.watch(novelSourceProvider(widget.pluginId)).valueOrNull;
+    final details = ref.watch(novelDetailsProvider((pluginId: widget.pluginId, path: widget.novelPath)));
+    final chaptersAsync =
+        ref.watch(novelChapterPageProvider((pluginId: widget.pluginId, path: widget.novelPath, page: _page)));
+    final chapters = chaptersAsync.valueOrNull ?? const <NovelChapter>[];
+    final totalPages = details.valueOrNull?.totalPages ?? 1;
+    final content = ref.watch(novelChapterProvider((pluginId: widget.pluginId, path: _chapterPath)));
+    final scheme = Theme.of(context).colorScheme;
+    final bg = _bg(settings.theme, scheme);
+    final fg = _fg(settings.theme, scheme);
+
+    final index = chapters.indexWhere((c) => c.path == _chapterPath);
+    final chapter = index >= 0
+        ? chapters[index]
+        : NovelChapter(path: _chapterPath, name: ref.read(sourceLastReadProvider(_libKey))?.chapterName ?? 'Bab');
+    if (chaptersAsync.hasValue) _record(chapter);
+    final hasPrev = index > 0 || (index == 0 && _page > 1);
+    final hasNext = (index >= 0 && index < chapters.length - 1) || (index == chapters.length - 1 && _page < totalPages);
+
+    // Prefetch bab berikutnya agar pindah bab terasa instan.
+    if (index >= 0 && index < chapters.length - 1 && content.hasValue) {
+      ref.listen(novelChapterProvider((pluginId: widget.pluginId, path: chapters[index + 1].path)), (_, __) {});
+    }
+
+    final textStyle = TextStyle(
+      fontSize: settings.fontSize,
+      height: settings.lineHeight,
+      color: fg,
+      fontFamily: settings.serif ? 'serif' : null,
+    );
+
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: ThemeData.estimateBrightnessForColor(bg) == Brightness.dark
+          ? SystemUiOverlayStyle.light
+          : SystemUiOverlayStyle.dark,
+      child: Scaffold(
+        backgroundColor: bg,
+        body: Stack(
+          children: [
+            Positioned.fill(
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: () => setState(() => _chrome = !_chrome),
+                child: content.when(
+                  loading: () => Center(child: CircularProgressIndicator(color: fg)),
+                  error: (e, _) => SafeArea(
+                    child: SourceErrorView(
+                      error: novelError(e, site: source?.site),
+                      verifyUrl: source?.site,
+                      onRetry: () =>
+                          ref.invalidate(novelChapterProvider((pluginId: widget.pluginId, path: _chapterPath))),
+                    ),
+                  ),
+                  data: (html) {
+                    final blocks = parseNovelHtml(html, baseUrl: source == null ? null : Uri.tryParse(source.site));
+                    _restorePosition(_chapterPath);
+                    return SingleChildScrollView(
+                      controller: _scroll,
+                      padding: EdgeInsets.fromLTRB(
+                        settings.padding,
+                        MediaQuery.paddingOf(context).top + 64,
+                        settings.padding,
+                        MediaQuery.paddingOf(context).bottom + 32,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.only(bottom: settings.fontSize * 1.2),
+                            child: Text(
+                              chapter.name,
+                              style: textStyle.copyWith(fontSize: settings.fontSize * 1.3, fontWeight: FontWeight.w700),
+                            ),
+                          ),
+                          if (blocks.isEmpty)
+                            Text('(Bab ini kosong)', style: textStyle)
+                          else
+                            for (final b in blocks)
+                              NovelBlockView(
+                                block: b,
+                                style: textStyle,
+                                justify: settings.justify,
+                                imageHeaders: source?.imageHeaders ?? const {},
+                              ),
+                          const SizedBox(height: 24),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: hasPrev ? () => _step(-1, chapters, totalPages) : null,
+                                  icon: const Icon(Icons.chevron_left),
+                                  label: const Text('Sebelumnya'),
+                                  style: OutlinedButton.styleFrom(foregroundColor: fg),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: FilledButton.icon(
+                                  onPressed: hasNext ? () => _step(1, chapters, totalPages) : null,
+                                  icon: const Icon(Icons.chevron_right),
+                                  label: const Text('Berikutnya'),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+            // Bilah atas
+            AnimatedPositioned(
+              duration: const Duration(milliseconds: 180),
+              top: _chrome ? 0 : -120,
+              left: 0,
+              right: 0,
+              child: Material(
+                color: scheme.surfaceContainer,
+                elevation: 2,
+                child: SafeArea(
+                  bottom: false,
+                  child: ListTile(
+                    leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.pop()),
+                    title: Text(chapter.name, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    subtitle: Text(
+                      details.valueOrNull?.name ?? source?.name ?? '',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          tooltip: 'Buka di WebView',
+                          icon: const Icon(Icons.public),
+                          onPressed: source == null
+                              ? null
+                              : () async {
+                                  final url = await source.webUrl(_chapterPath, isNovel: false);
+                                  if (!context.mounted) return;
+                                  final ok = await context.push<bool>(sourceWebViewLocation(url));
+                                  if (ok == true) {
+                                    ref.invalidate(
+                                        novelChapterProvider((pluginId: widget.pluginId, path: _chapterPath)));
+                                  }
+                                },
+                        ),
+                        IconButton(
+                          tooltip: 'Tampilan',
+                          icon: const Icon(Icons.text_fields),
+                          onPressed: () => showModalBottomSheet<void>(
+                            context: context,
+                            showDragHandle: true,
+                            builder: (_) => const _ReaderSettingsSheet(),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            // Bilah bawah
+            AnimatedPositioned(
+              duration: const Duration(milliseconds: 180),
+              bottom: _chrome ? 0 : -120,
+              left: 0,
+              right: 0,
+              child: Material(
+                color: scheme.surfaceContainer,
+                elevation: 2,
+                child: SafeArea(
+                  top: false,
+                  child: Row(
+                    children: [
+                      IconButton(
+                        tooltip: 'Bab sebelumnya',
+                        onPressed: hasPrev ? () => _step(-1, chapters, totalPages) : null,
+                        icon: const Icon(Icons.skip_previous),
+                      ),
+                      Expanded(
+                        child: Text(
+                          index >= 0 ? 'Bab ${index + 1} dari ${chapters.length}${totalPages > 1 ? ' · hal. $_page/$totalPages' : ''}' : '',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: 'Bab berikutnya',
+                        onPressed: hasNext ? () => _step(1, chapters, totalPages) : null,
+                        icon: const Icon(Icons.skip_next),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ReaderSettingsSheet extends ConsumerWidget {
+  const _ReaderSettingsSheet();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = ref.watch(novelReaderSettingsProvider);
+    final n = ref.read(novelReaderSettingsProvider.notifier);
+    const themes = {
+      NovelReaderTheme.system: 'Sistem',
+      NovelReaderTheme.light: 'Terang',
+      NovelReaderTheme.sepia: 'Sepia',
+      NovelReaderTheme.dark: 'Gelap',
+      NovelReaderTheme.black: 'Hitam',
+    };
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Wrap(spacing: 6, runSpacing: 6, children: [
+              for (final e in themes.entries)
+                ChoiceChip(
+                  label: Text(e.value),
+                  selected: s.theme == e.key,
+                  onSelected: (_) => n.update((x) => x.copyWith(theme: e.key)),
+                ),
+            ]),
+            const SizedBox(height: 8),
+            _slider(context, 'Ukuran huruf', s.fontSize, 12, 32, 20, (v) => n.update((x) => x.copyWith(fontSize: v)),
+                s.fontSize.toStringAsFixed(0)),
+            _slider(context, 'Jarak baris', s.lineHeight, 1.1, 2.4, 13,
+                (v) => n.update((x) => x.copyWith(lineHeight: v)), s.lineHeight.toStringAsFixed(1)),
+            _slider(context, 'Margin', s.padding, 6, 40, 17, (v) => n.update((x) => x.copyWith(padding: v)),
+                s.padding.toStringAsFixed(0)),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Huruf serif'),
+              value: s.serif,
+              onChanged: (v) => n.update((x) => x.copyWith(serif: v)),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Rata kiri-kanan'),
+              value: s.justify,
+              onChanged: (v) => n.update((x) => x.copyWith(justify: v)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _slider(BuildContext context, String label, double value, double min, double max, int divisions,
+          ValueChanged<double> onChanged, String display) =>
+      Row(
+        children: [
+          SizedBox(width: 110, child: Text(label)),
+          Expanded(
+            child: Slider(value: value.clamp(min, max), min: min, max: max, divisions: divisions, onChanged: onChanged),
+          ),
+          SizedBox(width: 36, child: Text(display, textAlign: TextAlign.end)),
+        ],
+      );
+}

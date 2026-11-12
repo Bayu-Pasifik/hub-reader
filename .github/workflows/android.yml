@@ -44,7 +44,12 @@ jobs:
         run: flutter analyze --no-fatal-infos
 
       - name: Test
-        run: flutter test
+        # Tes engine plugin novel butuh library QuickJS milik flutter_js; tanpa itu dilewati.
+        run: |
+          LIB="$(find "${PUB_CACHE:-$HOME/.pub-cache}" -path '*flutter_js*/linux/shared/libquickjs_c_bridge_plugin.so' | head -1)"
+          if [ -n "$LIB" ]; then export LIBQUICKJSC_TEST_PATH="$LIB"; fi
+          echo "QuickJS: ${LIB:-tidak ada}"
+          flutter test
 
       - name: Siapkan keystore rilis
         # Secrets: KEYSTORE_BASE64 (isi .jks di-base64) dan KEYSTORE_PASSWORD.

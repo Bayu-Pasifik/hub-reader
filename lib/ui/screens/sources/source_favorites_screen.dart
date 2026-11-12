@@ -3,8 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../state/source_library_providers.dart';
-import '../../../state/source_providers.dart';
-import '../../router.dart';
+import '../../widgets/library_routing.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/state_views.dart';
 
@@ -36,10 +35,10 @@ class SourceFavoritesScreen extends ConsumerWidget {
               itemBuilder: (context, i) {
                 final entry = favorites[i];
                 final item = entry.item;
-                final source = ref.watch(sourceProvider(item.sourceId));
+                final source = librarySourceInfo(ref, item.sourceId);
                 return InkWell(
                   borderRadius: BorderRadius.circular(8),
-                  onTap: () => context.push(sourceMangaLocation(item.sourceId, item.url)),
+                  onTap: () => context.push(source.detailLocation(item.url)),
                   onLongPress: () {
                     ref.read(sourceFavoritesProvider.notifier).remove(item.key);
                     ScaffoldMessenger.of(context)
@@ -58,7 +57,7 @@ class SourceFavoritesScreen extends ConsumerWidget {
                     children: [
                       SourceCover(
                         url: item.thumbnailUrl,
-                        headers: source?.imageHeaders() ?? const {},
+                        headers: source.imageHeaders,
                       ),
                       const SizedBox(height: 6),
                       Text(
@@ -71,7 +70,7 @@ class SourceFavoritesScreen extends ConsumerWidget {
                             ?.copyWith(fontWeight: FontWeight.w600),
                       ),
                       Text(
-                        source?.name ?? item.sourceId,
+                        source.isNovel ? 'Novel · ${source.name}' : source.name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodySmall,
