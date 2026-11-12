@@ -6,12 +6,14 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import '../../../data/models/source_library.dart';
 import '../../../sources/models.dart';
 import '../../../sources/source.dart';
+import '../../../state/reader_settings_provider.dart';
 import '../../../state/source_library_providers.dart';
 import '../../../state/source_providers.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/state_views.dart';
 
-/// Pembaca komik vertikal (webtoon) untuk sumber on-device.
+/// Pembaca komik untuk sumber on-device: mode webtoon (vertikal) atau per
+/// halaman (kiri→kanan / kanan→kiri), dengan halaman transisi ke bab berikutnya.
 class SourceReaderScreen extends ConsumerStatefulWidget {
   const SourceReaderScreen({
     super.key,
@@ -43,17 +45,18 @@ class _SourceReaderScreenState extends ConsumerState<SourceReaderScreen> {
     });
   }
 
+  void _goTo(SourceChapter chapter) => setState(() => _chapterUrl = chapter.url);
+
   @override
   Widget build(BuildContext context) {
     final source = ref.watch(sourceProvider(widget.sourceId));
     final details = ref.watch(sourceDetailsProvider((sourceId: widget.sourceId, url: widget.mangaUrl)));
+    final mode = ref.watch(readerModeProvider);
 
     // Daftar situs: terbaru → terlama. "Berikutnya" = indeks lebih kecil.
     final chapters = details.valueOrNull?.chapters ?? const <SourceChapter>[];
     final index = chapters.indexWhere((c) => c.url == _chapterUrl);
-    final chapter = index >= 0
-        ? chapters[index]
-        : SourceChapter(url: _chapterUrl, name: 'Bab');
+    final chapter = index >= 0 ? chapters[index] : SourceChapter(url: _chapterUrl, name: 'Bab');
     final next = index > 0 ? chapters[index - 1] : null;
     final prev = index >= 0 && index < chapters.length - 1 ? chapters[index + 1] : null;
     final manga = details.valueOrNull;
@@ -65,23 +68,38 @@ class _SourceReaderScreenState extends ConsumerState<SourceReaderScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(chapter.name, style: Theme.of(context).textTheme.titleMedium),
-            if (details.valueOrNull != null)
+            if (manga != null)
               Text(
-                details.valueOrNull!.title,
+                manga.title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodySmall,
               ),
           ],
         ),
+        actions: [
+          PopupMenuButton<ReaderMode>(
+            tooltip: 'Mode baca',
+            icon: const Icon(Icons.chrome_reader_mode_outlined),
+            initialValue: mode,
+            onSelected: (m) => ref.read(readerModeProvider.notifier).set(m),
+            itemBuilder: (_) => [
+              for (final m in ReaderMode.values) CheckedPopupMenuItem(value: m, checked: m == mode, child: Text(m.label)),
+            ],
+          ),
+        ],
       ),
       body: source == null
           ? const EmptyView(title: 'Sumber tidak ditemukan')
           : _Pages(
-              key: ValueKey(chapter.url),
+              // Kunci menyertakan mode: ganti mode = posisi dibaca ulang dari progres.
+              key: ValueKey('${chapter.url}|${mode.name}'),
               source: source,
               series: (sourceId: widget.sourceId, url: widget.mangaUrl),
               chapter: chapter,
+              next: next,
+              mode: mode,
+              onNext: next == null ? null : () => _goTo(next),
             ),
       bottomNavigationBar: index < 0
           ? null
@@ -90,7 +108,7 @@ class _SourceReaderScreenState extends ConsumerState<SourceReaderScreen> {
               child: Row(
                 children: [
                   TextButton.icon(
-                    onPressed: prev == null ? null : () => setState(() => _chapterUrl = prev.url),
+                    onPressed: prev == null ? null : () => _goTo(prev),
                     icon: const Icon(Icons.chevron_left),
                     label: const Text('Sebelumnya'),
                   ),
@@ -98,7 +116,7 @@ class _SourceReaderScreenState extends ConsumerState<SourceReaderScreen> {
                   Text('${chapters.length - index}/${chapters.length}'),
                   const Spacer(),
                   TextButton(
-                    onPressed: next == null ? null : () => setState(() => _chapterUrl = next.url),
+                    onPressed: next == null ? null : () => _goTo(next),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [Text('Berikutnya'), Icon(Icons.chevron_right)],
@@ -112,11 +130,22 @@ class _SourceReaderScreenState extends ConsumerState<SourceReaderScreen> {
 }
 
 class _Pages extends ConsumerStatefulWidget {
-  const _Pages({super.key, required this.source, required this.series, required this.chapter});
+  const _Pages({
+    super.key,
+    required this.source,
+    required this.series,
+    required this.chapter,
+    required this.next,
+    required this.mode,
+    required this.onNext,
+  });
 
   final MangaSource source;
   final SourceItemKey series;
   final SourceChapter chapter;
+  final SourceChapter? next;
+  final ReaderMode mode;
+  final VoidCallback? onNext;
 
   @override
   ConsumerState<_Pages> createState() => _PagesState();
@@ -124,9 +153,14 @@ class _Pages extends ConsumerStatefulWidget {
 
 class _PagesState extends ConsumerState<_Pages> {
   final _positions = ItemPositionsListener.create();
+  PageController? _pageController;
   int _current = 0;
   int? _saved;
   int _total = 0;
+  bool _nextPrecached = false;
+
+  /// Mulai pra-muat bab berikutnya saat tersisa sekian halaman.
+  static const _preloadWithin = 3;
 
   /// Halaman awal: lanjut dari posisi tersimpan, kecuali bab sudah selesai.
   late final int _initialPage = () {
@@ -144,27 +178,82 @@ class _PagesState extends ConsumerState<_Pages> {
   @override
   void dispose() {
     _positions.itemPositions.removeListener(_onScroll);
+    _pageController?.dispose();
     super.dispose();
+  }
+
+  /// Simpan posisi; dibandingkan dengan nilai tersimpan terakhir (bukan
+  /// _current) supaya bab 1 halaman tetap tercatat selesai.
+  void _setPage(int page) {
+    if (page != _current) setState(() => _current = page);
+    if (page == _saved || _total == 0) return;
+    _saved = page;
+    ref.read(sourceProgressProvider.notifier).update(widget.series, widget.chapter.url, page: page, total: _total);
   }
 
   void _onScroll() {
     final visible = _positions.itemPositions.value
-        .where((p) => p.itemTrailingEdge > 0 && p.itemLeadingEdge < 1);
+        // indeks == _total adalah kartu transisi, bukan halaman.
+        .where((p) => p.index < _total && p.itemTrailingEdge > 0 && p.itemLeadingEdge < 1);
     if (visible.isEmpty || _total == 0) return;
-    // Halaman "sekarang" = halaman teratas yang terlihat; bila halaman
-    // terakhir sudah tampil, anggap selesai.
     final top = visible.map((p) => p.index).reduce((a, b) => a < b ? a : b);
     final bottom = visible.map((p) => p.index).reduce((a, b) => a > b ? a : b);
-    final page = bottom >= _total - 1 ? _total - 1 : top;
-    if (page != _current) setState(() => _current = page);
-    // Dibandingkan dengan yang terakhir disimpan (bukan _current), supaya
-    // bab 1 halaman tetap tercatat selesai pada event pertama.
-    if (page == _saved) return;
-    _saved = page;
-    ref
-        .read(sourceProgressProvider.notifier)
-        .update(widget.series, widget.chapter.url, page: page, total: _total);
+    _setPage(bottom >= _total - 1 ? _total - 1 : top);
   }
+
+  void _onPageChanged(int index) {
+    if (index >= _total) {
+      // Menggeser melewati halaman terakhir = niat lanjut; bab tetap
+      // ditandai selesai lalu pindah ke bab berikutnya.
+      _setPage(_total - 1);
+      widget.onNext?.call();
+      return;
+    }
+    _setPage(index);
+  }
+
+  /// Ketuk sepertiga kiri/kanan layar untuk pindah halaman (mode per halaman).
+  void _onTapPaged(TapUpDetails details, double width) {
+    final controller = _pageController;
+    if (controller == null || !controller.hasClients) return;
+    final x = details.localPosition.dx;
+    final rtl = widget.mode == ReaderMode.pagedRtl;
+    final forward = x > width * 2 / 3 ? !rtl : (x < width / 3 ? rtl : null);
+    if (forward == null) return;
+    const duration = Duration(milliseconds: 200);
+    forward
+        ? controller.nextPage(duration: duration, curve: Curves.easeOut)
+        : controller.previousPage(duration: duration, curve: Curves.easeOut);
+  }
+
+  /// Ambil daftar halaman bab berikutnya + simpan 2 gambar pertama ke cache,
+  /// supaya pindah bab terasa instan.
+  void _preloadNext() {
+    final next = widget.next;
+    if (next == null || _total == 0 || _current < _total - _preloadWithin) return;
+    final pages = ref.watch(sourcePagesProvider((sourceId: widget.source.id, chapter: next)));
+    final urls = pages.valueOrNull;
+    if (urls == null || _nextPrecached) return;
+    _nextPrecached = true;
+    final nextHeaders = widget.source.imageHeaders(referer: next.url);
+    for (final url in urls.take(2)) {
+      precacheImage(CachedNetworkImageProvider(url, headers: nextHeaders), context).ignore();
+    }
+  }
+
+  Widget _image(String url, int i, Map<String, String> headers, BoxFit fit) => CachedNetworkImage(
+        imageUrl: url,
+        httpHeaders: headers,
+        fit: fit,
+        placeholder: (_, __) => const SizedBox(
+          height: 400,
+          child: Center(child: CircularProgressIndicator()),
+        ),
+        errorWidget: (_, __, ___) => SizedBox(
+          height: 200,
+          child: Center(child: Text('Halaman ${i + 1} gagal dimuat')),
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -172,6 +261,7 @@ class _PagesState extends ConsumerState<_Pages> {
     final pages = ref.watch(sourcePagesProvider(key));
     // Banyak CDN menolak gambar tanpa Referer halaman bab.
     final headers = widget.source.imageHeaders(referer: widget.chapter.url);
+    _preloadNext();
 
     return pages.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -183,32 +273,54 @@ class _PagesState extends ConsumerState<_Pages> {
       data: (urls) {
         _total = urls.length;
         final initial = _initialPage.clamp(0, urls.isEmpty ? 0 : urls.length - 1);
-        return Stack(
-          children: [
-            InteractiveViewer(
-              minScale: 1,
-              maxScale: 3,
-              child: ScrollablePositionedList.builder(
-                itemCount: urls.length,
-                initialScrollIndex: initial,
-                itemPositionsListener: _positions,
-                // Pra-muat beberapa layar ke bawah.
-                minCacheExtent: 2500,
-                itemBuilder: (_, i) => CachedNetworkImage(
-                  imageUrl: urls[i],
-                  httpHeaders: headers,
-                  fit: BoxFit.fitWidth,
-                  placeholder: (_, __) => const SizedBox(
-                    height: 400,
-                    child: Center(child: CircularProgressIndicator()),
-                  ),
-                  errorWidget: (_, __, ___) => SizedBox(
-                    height: 200,
-                    child: Center(child: Text('Halaman ${i + 1} gagal dimuat')),
-                  ),
-                ),
+        final transition = _ChapterTransition(
+          finished: widget.chapter,
+          next: widget.next,
+          onNext: widget.onNext,
+        );
+
+        final Widget body;
+        if (widget.mode.isPaged) {
+          _pageController ??= PageController(initialPage: initial);
+          body = LayoutBuilder(
+            builder: (context, constraints) => GestureDetector(
+              onTapUp: (d) => _onTapPaged(d, constraints.maxWidth),
+              child: PageView.builder(
+                controller: _pageController,
+                reverse: widget.mode == ReaderMode.pagedRtl,
+                // Halaman transisi hanya bila ada bab berikutnya.
+                itemCount: urls.length + (widget.next != null ? 1 : 0),
+                onPageChanged: _onPageChanged,
+                itemBuilder: (_, i) => i >= urls.length
+                    ? transition
+                    : InteractiveViewer(
+                        minScale: 1,
+                        maxScale: 4,
+                        child: Center(child: _image(urls[i], i, headers, BoxFit.contain)),
+                      ),
               ),
             ),
+          );
+        } else {
+          body = InteractiveViewer(
+            minScale: 1,
+            maxScale: 3,
+            child: ScrollablePositionedList.builder(
+              itemCount: urls.length + 1,
+              initialScrollIndex: initial,
+              itemPositionsListener: _positions,
+              // Pra-muat beberapa layar ke bawah.
+              minCacheExtent: 2500,
+              itemBuilder: (_, i) => i >= urls.length
+                  ? SizedBox(height: 320, child: transition)
+                  : _image(urls[i], i, headers, BoxFit.fitWidth),
+            ),
+          );
+        }
+
+        return Stack(
+          children: [
+            Positioned.fill(child: body),
             Positioned(
               right: 12,
               bottom: 12,
@@ -231,6 +343,44 @@ class _PagesState extends ConsumerState<_Pages> {
           ],
         );
       },
+    );
+  }
+}
+
+/// Kartu di akhir bab: "Selesai: X · Berikutnya: Y".
+class _ChapterTransition extends StatelessWidget {
+  const _ChapterTransition({required this.finished, required this.next, required this.onNext});
+
+  final SourceChapter finished;
+  final SourceChapter? next;
+  final VoidCallback? onNext;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Selesai', style: theme.textTheme.labelLarge),
+            Text(finished.name, style: theme.textTheme.titleMedium, textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            if (next != null) ...[
+              Text('Berikutnya', style: theme.textTheme.labelLarge),
+              Text(next!.name, style: theme.textTheme.titleMedium, textAlign: TextAlign.center),
+              const SizedBox(height: 12),
+              FilledButton.icon(
+                onPressed: onNext,
+                icon: const Icon(Icons.skip_next),
+                label: const Text('Lanjut ke bab berikutnya'),
+              ),
+            ] else
+              Text('Ini bab terbaru.', style: theme.textTheme.bodyMedium),
+          ],
+        ),
+      ),
     );
   }
 }
