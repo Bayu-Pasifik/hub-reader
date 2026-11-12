@@ -20,11 +20,15 @@ enum SourceErrorKind {
 /// Error dari extension sumber. Terpisah dari ApiException karena pesannya
 /// tentang situs sumber, bukan server scraper-hub.
 class SourceException implements Exception {
-  const SourceException(this.kind, {this.statusCode, this.detail});
+  const SourceException(this.kind, {this.statusCode, this.detail, this.url});
 
   final SourceErrorKind kind;
   final int? statusCode;
   final String? detail;
+
+  /// URL request yang gagal. Untuk Cloudflare, URL inilah yang perlu dibuka
+  /// di WebView (tantangan bisa hanya muncul di halaman tertentu, mis. pencarian).
+  final Uri? url;
 
   factory SourceException.fromDio(DioException error) {
     switch (error.type) {
@@ -45,7 +49,11 @@ class SourceException implements Exception {
                 body.contains('cf-chl') ||
                 body.contains('Just a moment'));
         if (isCloudflare) {
-          return SourceException(SourceErrorKind.cloudflare, statusCode: status);
+          return SourceException(
+            SourceErrorKind.cloudflare,
+            statusCode: status,
+            url: error.requestOptions.uri,
+          );
         }
         return SourceException(
           switch (status) {

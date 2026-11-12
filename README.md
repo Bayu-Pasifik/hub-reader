@@ -93,7 +93,10 @@ Batasan saat ini:
   MethodChannel `hub_reader/cookies` di `MainActivity.kt`) ke `SourceCookieStore`, lalu
   dipakai Dio dan pemuat gambar. Dio memakai User-Agent asli WebView karena cookie
   itu terikat ke UA. Cookie berlaku sampai kedaluwarsa, lalu verifikasi diulang.
-- Filter genre/status per sumber belum ada (baru populer, terbaru, dan pencarian judul).
+- Filter per sumber ada lewat tombol filter di layar jelajah. Sumber mendefinisikannya
+  lewat `filters()` (`SelectFilterDef` atau `MultiSelectFilterDef`, lihat `sources/filters.dart`).
+  MangaThemesia mendukung urutan, status, tipe, dan genre (genre diambil dari `ul.genrez`
+  di situs). Komiku mendukung urutan, tipe, status, genre 1, dan genre 2.
 - Domain situs sering pindah, jadi perbarui `baseUrl` di `registry.dart` bila perlu.
 
 **Lisensi:** template dan selector di-port dari

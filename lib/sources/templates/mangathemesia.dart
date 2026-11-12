@@ -61,21 +61,80 @@ class MangaThemesiaSource extends HttpSource {
   Future<MangaPage> latest(int page) => _list(page, '', order: 'update');
 
   @override
-  Future<MangaPage> search(int page, String query) => _list(page, query.trim());
+  Future<MangaPage> search(int page, String query, {FilterValues filters = FilterValues.empty}) =>
+      _list(page, query.trim(), filters: filters);
 
-  Uri searchUrl(int page, String query, {String? order}) => baseUri.replace(
-        path: '$mangaUrlDirectory/',
-        queryParameters: {
-          if (query.isNotEmpty) 'title': query,
-          'page': '$page',
-          if (order != null) 'order': order,
-        },
-      );
+  /// Parameter sama dengan `searchMangaUrl` di Kotlin:
+  /// `title`, `page`, `status`, `type`, `order`, `genre[]`.
+  Uri searchUrl(int page, String query, {String? order, FilterValues filters = FilterValues.empty}) {
+    final selectedOrder = filters.single('order') ?? order;
+    return baseUri.replace(
+      path: '$mangaUrlDirectory/',
+      queryParameters: <String, dynamic>{
+        if (query.isNotEmpty) 'title': query,
+        'page': '$page',
+        if (filters.single('status') case final status?) 'status': status,
+        if (filters.single('type') case final type?) 'type': type,
+        if (selectedOrder != null) 'order': selectedOrder,
+        if (filters.multi('genre').isNotEmpty) 'genre[]': filters.multi('genre'),
+      },
+    );
+  }
 
-  Future<MangaPage> _list(int page, String query, {String? order}) async {
-    final res = await fetchHtml(searchUrl(page, query, order: order));
+  Future<MangaPage> _list(int page, String query, {String? order, FilterValues filters = FilterValues.empty}) async {
+    final res = await fetchHtml(searchUrl(page, query, order: order, filters: filters));
     return parseMangaList(res.document, res.url);
   }
+
+  // ---------------------------------------------------------------- filter
+
+  List<FilterOption>? _genres;
+
+  @override
+  Future<List<FilterDef>> filters() async {
+    // Daftar genre diambil sekali dari halaman daftar seri (ul.genrez).
+    // Bila gagal, filter lain tetap tersedia.
+    if (_genres == null) {
+      try {
+        final res = await fetchHtml(baseUri.replace(path: '$mangaUrlDirectory/'));
+        _genres = parseGenres(res.document);
+      } on SourceException {
+        _genres = null;
+      }
+    }
+    return [
+      const SelectFilterDef('order', 'Urutkan', [
+        FilterOption('Default', ''),
+        FilterOption('Populer', 'popular'),
+        FilterOption('Update terbaru', 'update'),
+        FilterOption('Baru ditambahkan', 'latest'),
+        FilterOption('A-Z', 'title'),
+        FilterOption('Z-A', 'titlereverse'),
+      ]),
+      const SelectFilterDef('status', 'Status', [
+        FilterOption('Semua', ''),
+        FilterOption('Berjalan', 'ongoing'),
+        FilterOption('Tamat', 'completed'),
+        FilterOption('Hiatus', 'hiatus'),
+        FilterOption('Dihentikan', 'dropped'),
+      ]),
+      const SelectFilterDef('type', 'Tipe', [
+        FilterOption('Semua', ''),
+        FilterOption('Manga', 'Manga'),
+        FilterOption('Manhwa', 'Manhwa'),
+        FilterOption('Manhua', 'Manhua'),
+        FilterOption('Comic', 'Comic'),
+      ]),
+      if (_genres case final genres? when genres.isNotEmpty) MultiSelectFilterDef('genre', 'Genre', genres),
+    ];
+  }
+
+  List<FilterOption> parseGenres(Document doc) => [
+        for (final li in doc.querySelectorAll('ul.genrez li'))
+          if (li.querySelector('input[type=checkbox]')?.attributes['value'] case final value?
+              when value.isNotEmpty)
+            FilterOption(clean(li.querySelector('label')?.text ?? value), value),
+      ];
 
   static const listSelector = '.utao .uta .imgu, .listupd .bs .bsx, .listo .bs .bsx';
   static const nextPageSelector = 'div.pagination .next, div.hpage .r';

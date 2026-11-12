@@ -93,14 +93,16 @@ class SourceErrorView extends StatelessWidget {
   /// Halaman yang dibuka di WebView bila situs diblokir Cloudflare.
   final String? verifyUrl;
 
-  Future<void> _verify(BuildContext context) async {
-    final ok = await context.push<bool>(sourceWebViewLocation(verifyUrl!));
+  Future<void> _verify(BuildContext context, String url) async {
+    final ok = await context.push<bool>(sourceWebViewLocation(url));
     if (ok == true) onRetry?.call();
   }
 
   @override
   Widget build(BuildContext context) {
     final e = toSourceException(error);
+    final verifyTarget =
+        e.kind == SourceErrorKind.cloudflare ? (e.url?.toString() ?? verifyUrl) : null;
     return EmptyView(
       compact: compact,
       icon: switch (e.kind) {
@@ -119,9 +121,9 @@ class SourceErrorView extends StatelessWidget {
         runSpacing: 8,
         alignment: WrapAlignment.center,
         children: [
-          if (e.kind == SourceErrorKind.cloudflare && verifyUrl != null)
+          if (verifyTarget != null)
             FilledButton.icon(
-              onPressed: () => _verify(context),
+              onPressed: () => _verify(context, verifyTarget),
               icon: const Icon(Icons.open_in_browser),
               label: const Text('Buka di WebView'),
             ),

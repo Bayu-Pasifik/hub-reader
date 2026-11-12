@@ -18,7 +18,9 @@ SourceException _missing(String id) =>
 
 enum SourceListing { popular, latest, search }
 
-typedef SourceListKey = ({String sourceId, SourceListing listing, String query});
+/// [filters] hanya dipakai untuk listing search (FilterValues punya equality
+/// struktural, jadi aman jadi bagian kunci provider).
+typedef SourceListKey = ({String sourceId, SourceListing listing, String query, FilterValues filters});
 
 class SourceListState {
   const SourceListState({
@@ -92,7 +94,7 @@ class SourceListNotifier extends AutoDisposeFamilyNotifier<SourceListState, Sour
       final result = await switch (arg.listing) {
         SourceListing.popular => source.popular(next),
         SourceListing.latest => source.latest(next),
-        SourceListing.search => source.search(next, arg.query),
+        SourceListing.search => source.search(next, arg.query, filters: arg.filters),
       };
       if (_disposed || generation != _generation) return;
       final seen = current.items.toSet();
@@ -150,3 +152,13 @@ final sourcePagesProvider =
     }
   },
 );
+
+// ------------------------------------------------------------------ filter
+
+/// Definisi filter per sumber. Tidak autoDispose: daftar genre cukup diambil
+/// sekali per sesi.
+final sourceFiltersProvider = FutureProvider.family<List<FilterDef>, String>((ref, id) async {
+  final source = ref.watch(sourceProvider(id));
+  if (source == null) throw _missing(id);
+  return source.filters();
+});

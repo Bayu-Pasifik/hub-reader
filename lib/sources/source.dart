@@ -3,7 +3,10 @@ import 'package:html/dom.dart';
 import 'package:html/parser.dart' as html_parser;
 
 import 'cookie_store.dart';
+import 'filters.dart';
 import 'models.dart';
+
+export 'filters.dart';
 import 'source_exception.dart';
 
 /// Kontrak satu extension sumber (padanan `Source`/`KeiSource` di Mihon).
@@ -23,7 +26,11 @@ abstract class MangaSource {
 
   Future<MangaPage> popular(int page);
   Future<MangaPage> latest(int page);
-  Future<MangaPage> search(int page, String query);
+  Future<MangaPage> search(int page, String query, {FilterValues filters = FilterValues.empty});
+
+  /// Definisi filter yang didukung (boleh mengambil data dari situs, mis.
+  /// daftar genre). Kosong = sumber tidak punya filter.
+  Future<List<FilterDef>> filters() async => const [];
 
   /// Detail + daftar bab dari URL seri (absolut).
   Future<SourceMangaDetails> details(String mangaUrl);
