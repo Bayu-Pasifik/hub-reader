@@ -6,6 +6,7 @@ import 'source.dart';
 import 'templates/loneseal.dart';
 import 'templates/madara.dart';
 import 'templates/mangathemesia.dart';
+import 'templates/natsuid.dart';
 import 'templates/zeistmanga.dart';
 
 /// Satu entri di `assets/sources/catalog.json` (dihasilkan oleh
@@ -92,6 +93,14 @@ class CatalogEntry {
             urlLayout: asString(asMap(options['vals'])['urlLayout']) ?? 'SLUG',
             includeChapterTitle: asMap(options['vals'])['includeChapterTitle'] == true,
             apiOnBase: asMap(options['vals'])['apiOnBase'] == true,
+          ),
+        'natsuid' => NatsuIdSource(
+            id: id,
+            name: name,
+            lang: lang,
+            baseUrl: baseUrl,
+            contentWarning: contentWarning,
+            chapterPageOne: asMap(options['vals'])['chapterPageOne'] == true,
           ),
         _ => null,
       };

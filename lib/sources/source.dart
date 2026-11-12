@@ -171,6 +171,32 @@ abstract class HttpSource extends MangaSource {
     }
   }
 
+  /// POST multipart/form-data, hasil berupa teks (HTML/JSON mentah).
+  Future<String> postMultipart(Uri url, Map<String, String> fields, {Map<String, String>? headers}) async {
+    await _throttle();
+    try {
+      final response = await dio.postUri<String>(
+        rewriteToCurrentHost(url),
+        data: FormData.fromMap(fields),
+        options: Options(headers: headers),
+      );
+      return response.data ?? '';
+    } catch (error) {
+      throw toSourceException(error);
+    }
+  }
+
+  /// GET teks mentah (fragmen HTML dari admin-ajax, dsb.).
+  Future<String> fetchText(Uri url, {Map<String, String>? headers}) async {
+    await _throttle();
+    try {
+      final response = await dio.getUri<String>(rewriteToCurrentHost(url), options: Options(headers: headers));
+      return response.data ?? '';
+    } catch (error) {
+      throw toSourceException(error);
+    }
+  }
+
   /// GET JSON (untuk sumber berbasis API, mis. Shinigami).
   Future<Object?> fetchJson(Uri url, {Map<String, String>? headers}) async {
     await _throttle();

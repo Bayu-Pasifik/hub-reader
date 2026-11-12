@@ -14,7 +14,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga', 'loneseal']);
+const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga', 'loneseal', 'natsuid']);
 
 const [root, outArg] = process.argv.slice(2);
 if (!root) {
@@ -99,6 +99,8 @@ for (const langDir of listDirs(path.join(root, 'src'))) {
     for (const m of kt.matchAll(/override\s+val\s+(\w+)\s*=\s*[A-Z]\w*\.([A-Z][A-Z0-9_]+)\b/g)) vals[m[1]] = m[2];
     // API LoneSeal di <baseUrl>/api.
     if (/apiUrl[^\n]*"\$baseUrl\/api"/.test(kt)) vals.apiOnBase = true;
+    // NatsuId (Kiryuu): daftar bab memakai page=1.
+    if (/setQueryParameter\("page", "1"\)/.test(kt)) vals.chapterPageOne = true;
     if (Object.keys(vals).length) options.vals = vals;
     if (/getPopularManga|getSearchMangaList|parseArchive|pageListParse|parsePages|mangaDetailsParse|parseDetails|getChapterFeedUrl|parsePopularManga|parseSearchManga/.test(kt)) {
       options.customized = true; // Kotlin meng-override logika inti; port Dart bisa kurang pas.

@@ -2,7 +2,7 @@
  "source": "https://github.com/keiyoushi/extensions-source",
  "license": "Apache-2.0",
  "generatedAt": "2026-11-12",
- "count": 397,
+ "count": 400,
  "sources": [
   {
    "id": "all.allporncomicsco",
@@ -3045,6 +3045,19 @@
    "theme": "mangathemesia"
   },
   {
+   "id": "id.kiryuu",
+   "name": "Kiryuu",
+   "lang": "id",
+   "baseUrl": "https://v7.kiryuu.to",
+   "contentWarning": "mixed",
+   "theme": "natsuid",
+   "options": {
+    "vals": {
+     "chapterPageOne": true
+    }
+   }
+  },
+  {
    "id": "id.klikmanga",
    "name": "KlikManga",
    "lang": "id",
@@ -3308,6 +3321,14 @@
    "baseUrl": "https://mihentai.net",
    "contentWarning": "nsfw",
    "theme": "mangathemesia"
+  },
+  {
+   "id": "id.natsu",
+   "name": "Natsu",
+   "lang": "id",
+   "baseUrl": "https://natsu.one",
+   "contentWarning": "safe",
+   "theme": "natsuid"
   },
   {
    "id": "id.ngamenkomik",
@@ -3579,6 +3600,14 @@
     "noAjax": true,
     "chapterMode": "MangaAjax"
    }
+  },
+  {
+   "id": "ja.rawkuma",
+   "name": "Rawkuma",
+   "lang": "ja",
+   "baseUrl": "https://rawkuma.net",
+   "contentWarning": "mixed",
+   "theme": "natsuid"
   },
   {
    "id": "ko.goodtoon",
