@@ -14,7 +14,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga', 'loneseal', 'natsuid', 'colorlibanime', 'hwalumi', 'keyoapp', 'vinetheme', 'mangacatalog']);
+const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga', 'loneseal', 'natsuid', 'colorlibanime', 'hwalumi', 'keyoapp', 'vinetheme', 'mangacatalog', 'iken']);
 
 const [root, outArg] = process.argv.slice(2);
 if (!root) {
@@ -92,6 +92,9 @@ for (const langDir of listDirs(path.join(root, 'src'))) {
         .map((m) => [JSON.parse(`"${m[1]}"`), m[2] ?? '']);
       if (/chapterListSelector\(\)[^=]*=\s*"tbody > tr"/.test(kt)) options.layout = 'table';
       else if (/blogger\.googleusercontent/.test(kt)) options.layout = 'blogger';
+    } else if (theme === 'iken') {
+      const perPage = str(kt, /override\s+val\s+perPage\s*=\s*(\d+)/);
+      if (perPage) options.perPage = Number(perPage);
     } else if (theme === 'keyoapp') {
       // Varian: KeyoappV2, atau Livewire (override ArtLapsa & kawan-kawan).
       if (/:\s*KeyoappV2\s*\(/.test(kt)) options.variant = 'v2';

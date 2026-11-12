@@ -2,7 +2,7 @@
  "source": "https://github.com/keiyoushi/extensions-source",
  "license": "Apache-2.0",
  "generatedAt": "2026-11-12",
- "count": 444,
+ "count": 453,
  "sources": [
   {
    "id": "all.allporncomicsco",
@@ -174,6 +174,14 @@
    "options": {
     "chapterMode": "MangaAjax"
    }
+  },
+  {
+   "id": "ar.azora",
+   "name": "Azora",
+   "lang": "ar",
+   "baseUrl": "https://azorafly.com",
+   "contentWarning": "safe",
+   "theme": "iken"
   },
   {
    "id": "ar.comicverse",
@@ -1101,6 +1109,22 @@
    }
   },
   {
+   "id": "en.hijalascans",
+   "name": "Hijala Scans",
+   "lang": "en",
+   "baseUrl": "https://en-hijala.com",
+   "contentWarning": "safe",
+   "theme": "iken"
+  },
+  {
+   "id": "en.hivescans",
+   "name": "Hive Scans",
+   "lang": "en",
+   "baseUrl": "https://hivetoons.org",
+   "contentWarning": "safe",
+   "theme": "iken"
+  },
+  {
    "id": "en.hm2d",
    "name": "HM2D",
    "lang": "en",
@@ -1159,6 +1183,14 @@
    "baseUrl": "https://kaynscans.com",
    "contentWarning": "safe",
    "theme": "vinetheme"
+  },
+  {
+   "id": "en.kenscans",
+   "name": "Ken Scans",
+   "lang": "en",
+   "baseUrl": "https://kencomics.com",
+   "contentWarning": "safe",
+   "theme": "iken"
   },
   {
    "id": "en.kensscan",
@@ -1383,6 +1415,19 @@
     "vals": {
      "mangaSubString": "title",
      "genreDirectory": "genre"
+    }
+   }
+  },
+  {
+   "id": "en.magusmanga",
+   "name": "Magus Manga",
+   "lang": "en",
+   "baseUrl": "https://magustoon.org",
+   "contentWarning": "safe",
+   "theme": "iken",
+   "options": {
+    "vals": {
+     "sortPagesByFilename": true
     }
    }
   },
@@ -1834,6 +1879,19 @@
    }
   },
   {
+   "id": "en.nyxscans",
+   "name": "Nyx Scans",
+   "lang": "en",
+   "baseUrl": "https://nyxscans.com",
+   "contentWarning": "safe",
+   "theme": "iken",
+   "options": {
+    "vals": {
+     "hideNovelsListedAsComics": true
+    }
+   }
+  },
+  {
    "id": "en.octopusmanga",
    "name": "OctopusManga",
    "lang": "en",
@@ -1857,6 +1915,14 @@
      "mangaSubString": "comic"
     }
    }
+  },
+  {
+   "id": "en.orionscans",
+   "name": "Orion Scans",
+   "lang": "en",
+   "baseUrl": "https://orion-scans.com",
+   "contentWarning": "safe",
+   "theme": "iken"
   },
   {
    "id": "en.paritehaber",
@@ -2846,6 +2912,20 @@
    "theme": "madara"
   },
   {
+   "id": "en.sanascans",
+   "name": "Sana Scans",
+   "lang": "en",
+   "baseUrl": "https://sanascans.com",
+   "contentWarning": "safe",
+   "theme": "iken",
+   "options": {
+    "perPage": 30,
+    "vals": {
+     "sortPagesByFilename": true
+    }
+   }
+  },
+  {
    "id": "en.erosscans",
    "name": "Scythe Scans",
    "lang": "en",
@@ -3064,6 +3144,19 @@
     "vals": {
      "mangaUrlDirectory": "/comics",
      "seriesAltNameSelector": ".alternative .desktop-titles"
+    }
+   }
+  },
+  {
+   "id": "en.vortexscans",
+   "name": "Vortex Scans",
+   "lang": "en",
+   "baseUrl": "https://vortexscans.org",
+   "contentWarning": "safe",
+   "theme": "iken",
+   "options": {
+    "vals": {
+     "hideNovelsListedAsComics": true
     }
    }
   },

@@ -3,6 +3,7 @@ import 'dart:convert';
 import '../core/utils/json.dart';
 import 'models.dart';
 import 'source.dart';
+import 'templates/iken.dart';
 import 'templates/keyoapp.dart';
 import 'templates/loneseal.dart';
 import 'templates/madara.dart';
@@ -132,6 +133,15 @@ class CatalogEntry {
               for (final t in asList(options['titles']))
                 if (asList(t) case [final String title, final String path]) (title, path),
             ],
+          ),
+        'iken' => IkenSource(
+            id: id,
+            name: name,
+            lang: lang,
+            baseUrl: baseUrl,
+            contentWarning: contentWarning,
+            perPage: asInt(options['perPage']) ?? 18,
+            sortPagesByFilename: asMap(options['vals'])['sortPagesByFilename'] == true,
           ),
         _ => null,
       };
