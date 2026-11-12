@@ -14,7 +14,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const SUPPORTED = new Set(['madara', 'mangathemesia']);
+const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga']);
 
 const [root, outArg] = process.argv.slice(2);
 if (!root) {
@@ -90,7 +90,13 @@ for (const langDir of listDirs(path.join(root, 'src'))) {
       const pageSel = str(kt, /pageSelector\s*=\s*"([^"]*)"/);
       if (pageSel) options.pageSelector = pageSel;
     }
-    if (/getPopularManga|getSearchMangaList|parseArchive|pageListParse|parsePages|mangaDetailsParse|parseDetails/.test(kt)) {
+    // Override sederhana generik: `override val nama = "teks"` atau true/false.
+    const vals = {};
+    for (const m of kt.matchAll(/override\s+val\s+(\w+)(?:\s*:\s*\w+)?\s*=\s*("(?:[^"\\]|\\.)*"|true|false)/g)) {
+      vals[m[1]] = m[2] === 'true' ? true : m[2] === 'false' ? false : JSON.parse(m[2]);
+    }
+    if (Object.keys(vals).length) options.vals = vals;
+    if (/getPopularManga|getSearchMangaList|parseArchive|pageListParse|parsePages|mangaDetailsParse|parseDetails|getChapterFeedUrl|parsePopularManga|parseSearchManga/.test(kt)) {
       options.customized = true; // Kotlin meng-override logika inti; port Dart bisa kurang pas.
     }
 

@@ -5,6 +5,7 @@ import 'models.dart';
 import 'source.dart';
 import 'templates/madara.dart';
 import 'templates/mangathemesia.dart';
+import 'templates/zeistmanga.dart';
 
 /// Satu entri di `assets/sources/catalog.json` (dihasilkan oleh
 /// `tool/generate_source_catalog.mjs` dari keiyoushi/extensions-source).
@@ -72,6 +73,14 @@ class CatalogEntry {
             chapterMode: madaraChapterModeFrom(asString(options['chapterMode'])),
             noAjax: options['noAjax'] == true,
             filterNonMangaItems: options['filterNonMangaItems'] != false,
+          ),
+        'zeistmanga' => ZeistMangaSource(
+            id: id,
+            name: name,
+            lang: lang,
+            baseUrl: baseUrl,
+            contentWarning: contentWarning,
+            vals: asMap(options['vals']),
           ),
         _ => null,
       };
