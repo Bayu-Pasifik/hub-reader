@@ -107,11 +107,17 @@ sederhana di Kotlin (`mangaSubString`, `chapterMode`, `MadaraNoAjax`, `mangaUrlD
 `pageSelector`). Situs yang meng-override logika inti (list, detail, halaman) ditandai
 **eksperimental** di UI, karena port template mungkin kurang pas untuk situs itu.
 
-Hasil uji langsung ke 359 situs dari PC (12 Nov 2026): **140 jalan penuh** (daftar → detail →
-gambar halaman). Sisanya gagal karena tidak bisa terhubung (84: domain mati/pindah atau
-diblokir ISP), Cloudflare (64, umumnya bisa diatasi di HP lewat "Buka di WebView"),
-situs yang wajib login/password, struktur HTML khusus, atau gambar terenkripsi
-(*chapter protector*, belum didukung).
+Hasil uji langsung Madara + MangaThemesia dari PC (12 Nov 2026): **159 dari 359 jalan penuh**
+(daftar → detail → gambar halaman): Madara 111/244, MangaThemesia 48/115. Sisanya gagal karena
+tidak bisa terhubung (89: domain mati/pindah, atau koneksi TLS diputus, pola blokir ISP;
+coba DNS/VPN), Cloudflare (64, umumnya bisa diatasi di HP lewat "Buka di WebView"), situs yang
+wajib login/member, atau struktur HTML/JS khusus.
+
+Port Madara memakai override selector Kotlin per situs (`options.vals`, mis.
+`mangaDetailsSelectorTitle`, `archiveUrlSelector`, `pageListParseSelector`) bila selectornya
+bisa dipakai parser Dart (tanpa `:contains`/`:has`), mendekripsi *chapter protector*
+(AES CryptoJS, lewat `pointycastle`), dan punya cadangan judul `og:title` serta gambar di
+`<canvas data-page-url>`.
 
 **Cek kesehatan sumber:** menu ⋮ → "Cek N sumber" mencoba halaman populer tiap sumber
 dari HP itu sendiri (jaringan, DNS/VPN, dan cookie Cloudflare milik pengguna), 6 sumber

@@ -65,7 +65,9 @@ class SourceException implements Exception {
           statusCode: status,
         );
       case DioExceptionType.unknown:
-        if (error.error is SocketException || error.error is HttpException) {
+        // TlsException/HandshakeException: koneksi TLS diputus di tengah
+        // jalan, umumnya situs diblokir provider (SNI) atau domain mati.
+        if (error.error is SocketException || error.error is HttpException || error.error is TlsException) {
           return const SourceException(SourceErrorKind.noConnection);
         }
         return SourceException(SourceErrorKind.unknown, detail: error.message);

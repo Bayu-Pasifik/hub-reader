@@ -27,6 +27,8 @@ dependencies:
   html: ^0.15.5
   # Reader: tahu halaman mana yang terlihat & bisa lompat ke halaman tersimpan
   scrollable_positioned_list: ^0.3.8
+  # AES + MD5 untuk gambar bab terenkripsi Madara "chapter protector"
+  pointycastle: ^4.0.0
 
 dev_dependencies:
   flutter_test:

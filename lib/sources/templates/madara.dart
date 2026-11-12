@@ -5,8 +5,13 @@
 // Madara adalah tema WordPress "WP Manga" yang dipakai ratusan situs di banyak
 // bahasa. Pseudo-selector Jsoup (:contains, :has) diganti filter manual.
 
-import 'package:html/dom.dart';
+import 'dart:convert';
+import 'dart:typed_data';
 
+import 'package:html/dom.dart';
+import 'package:pointycastle/export.dart';
+
+import '../../core/utils/json.dart';
 import '../html_utils.dart';
 import '../models.dart';
 import '../source.dart';
@@ -35,6 +40,7 @@ class MadaraSource extends HttpSource {
     this.noAjax = false,
     this.filterNonMangaItems = true,
     this.requestsPerSecond = 2,
+    this.vals = const {},
     super.dio,
   }) : defaultBaseUrl = baseUrl;
 
@@ -57,6 +63,43 @@ class MadaraSource extends HttpSource {
   /// Situs turunan MadaraNoAjax: daftar dari halaman arsip HTML biasa.
   final bool noAjax;
   final bool filterNonMangaItems;
+
+  /// Override selector/teks dari Kotlin situs (`override val x = "..."`),
+  /// disalin generator katalog ke `options.vals`.
+  final Map<String, Object?> vals;
+
+  /// Selector override [key] bila bisa dipakai parser Dart. Pseudo khusus
+  /// Jsoup (:contains, :has, :eq, ...) diabaikan; default yang dipakai.
+  String? sel(String key) {
+    final value = vals[key];
+    if (value is! String || value.trim().isEmpty) return null;
+    if (_jsoupOnly.hasMatch(value)) return null;
+    return value;
+  }
+
+  static final _jsoupOnly =
+      RegExp(r':(contains|containsOwn|has|eq|gt|lt|matches|matchesOwn|containsData|parent|lastOfType)\b');
+
+  /// querySelector yang tidak melempar untuk selector tak didukung.
+  static Element? _first(Node root, String? selector) {
+    if (selector == null) return null;
+    try {
+      return root is Document ? root.querySelector(selector) : (root as Element).querySelector(selector);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static List<Element> _all(Node root, String? selector) {
+    if (selector == null) return const [];
+    try {
+      return root is Document ? root.querySelectorAll(selector) : (root as Element).querySelectorAll(selector);
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  String get _searchParam => (vals['searchQueryParameter'] as String?) ?? 's';
 
   static const pageSize = 25;
   static const _xhr = {'X-Requested-With': 'XMLHttpRequest'};
@@ -176,8 +219,9 @@ class MadaraSource extends HttpSource {
 
   List<SourceManga> parseArchive(Document doc, Uri pageUrl) {
     final items = <SourceManga>[];
+    final urlSelector = sel('archiveUrlSelector');
     for (final element in doc.querySelectorAll(archiveSelector)) {
-      final link = element.querySelector('.post-title a');
+      final link = _first(element, urlSelector) ?? element.querySelector('.post-title a');
       final url = attrAbs(link, 'href', pageUrl);
       if (url == null) continue;
       final manga = SourceManga(
@@ -186,6 +230,26 @@ class MadaraSource extends HttpSource {
         thumbnailUrl: madaraImage(element.querySelector('img'), pageUrl),
       );
       if (!items.contains(manga)) items.add(manga);
+    }
+    // Kartu arsip kustom (mis. Aqua Manga): ambil tautannya langsung, sampul
+    // dari leluhur terdekat yang punya gambar.
+    if (items.isEmpty && urlSelector != null) {
+      for (final link in _all(doc, urlSelector)) {
+        final url = attrAbs(link, 'href', pageUrl);
+        if (url == null) continue;
+        Element? card = link;
+        Element? img;
+        for (var i = 0; i < 5 && card != null && img == null; i++) {
+          img = card.querySelector('img');
+          card = card.parent;
+        }
+        final manga = SourceManga(
+          url: url,
+          title: clean(link.text).isEmpty ? (link.attributes['title'] ?? 'Tanpa judul') : clean(link.text),
+          thumbnailUrl: madaraImage(img, pageUrl),
+        );
+        if (!items.contains(manga)) items.add(manga);
+      }
     }
     return items;
   }
@@ -196,7 +260,7 @@ class MadaraSource extends HttpSource {
       path: page > 1 ? '${base.path.replaceFirst(RegExp(r'/?$'), '/')}page/$page/' : base.path,
       queryParameters: {
         if (order.isNotEmpty) 'm_orderby': order,
-        if (query.trim().isNotEmpty) 's': query.trim(),
+        if (query.trim().isNotEmpty) _searchParam: query.trim(),
       },
     );
     final res = await fetchHtml(url);
@@ -209,7 +273,7 @@ class MadaraSource extends HttpSource {
   Future<MangaPage> _htmlSearch(int page, String query) async {
     final url = Uri.parse(baseUrl).replace(
       path: page > 1 ? '/page/$page/' : '/',
-      queryParameters: {'s': query, 'post_type': 'wp-manga'},
+      queryParameters: {_searchParam: query, 'post_type': 'wp-manga'},
     );
     final res = await fetchHtml(url);
     return MangaPage(
@@ -278,7 +342,7 @@ class MadaraSource extends HttpSource {
     final result = <FilterOption>[];
     for (final a in doc.querySelectorAll('div.genres a')) {
       final href = attrAbs(a, 'href', pageUrl);
-      if (href == null || !href.contains('/manga-genre/')) continue;
+      if (href == null || !href.contains('/${(vals['genreDirectory'] as String?) ?? 'manga-genre'}/')) continue;
       final path = Uri.parse(href).path;
       final slug = path.split('/').where((s) => s.isNotEmpty).lastOrNull;
       final label = clean(a.text);
@@ -292,7 +356,16 @@ class MadaraSource extends HttpSource {
 
   @override
   Future<SourceMangaDetails> details(String mangaUrl) async {
-    final res = await fetchHtml(Uri.parse(mangaUrl));
+    final requested = Uri.parse(mangaUrl);
+    final res = await fetchHtml(requested);
+    if (res.url.path.contains('wp-login.php')) {
+      throw const SourceException(SourceErrorKind.parse,
+          detail: 'Situs ini wajib login untuk membuka seri. Login lewat "Buka di WebView".');
+    }
+    // Dialihkan ke beranda: seri dihapus/pindah (sering terjadi di situs satu judul).
+    if (res.url.path.replaceAll('/', '').isEmpty && requested.path.replaceAll('/', '').isNotEmpty) {
+      throw SourceException(SourceErrorKind.notFound, url: requested);
+    }
     final details = parseDetails(res.document, res.url);
     final chapters = await _chapters(res.document, res.url);
     return SourceMangaDetails(
@@ -328,15 +401,46 @@ class MadaraSource extends HttpSource {
     return null;
   }
 
+  /// `og:title` tanpa akhiran nama situs ("Judul - Situs" / "Judul – Situs").
+  static String _ogTitle(Document doc) {
+    final og = clean(doc.querySelector('meta[property="og:title"]')?.attributes['content']);
+    final site = clean(doc.querySelector('meta[property="og:site_name"]')?.attributes['content']);
+    if (site.isEmpty) return og;
+    for (final sep in const [' - ', ' – ', ' | ']) {
+      if (og.endsWith('$sep$site')) return og.substring(0, og.length - sep.length - site.length).trim();
+    }
+    return og == site ? '' : og;
+  }
+
+  static Element? _imgOf(Element? el) => el == null ? null : (el.localName == 'img' ? el : el.querySelector('img'));
+
+  String? _joinedOverride(Document doc, String key) {
+    final selector = sel(key);
+    if (selector == null) return null;
+    try {
+      return _joined(doc, selector);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  SourceMangaStatus? _statusOverride(Document doc) {
+    final status = madaraStatus(_all(doc, sel('mangaDetailsSelectorStatus')).lastOrNull?.text);
+    return status == SourceMangaStatus.unknown ? null : status;
+  }
+
   /// Detail tanpa daftar bab (dipisah supaya bisa dites tanpa jaringan).
   SourceMangaDetails parseDetails(Document doc, Uri pageUrl) {
-    final titleEl = doc.querySelector('div.post-title h3, div.post-title h1, #manga-title > h1');
-    final title = titleEl == null ? '' : ownOrFullText(titleEl);
+    final titleEl = _first(doc, sel('mangaDetailsSelectorTitle')) ??
+        doc.querySelector('div.post-title h3, div.post-title h1, #manga-title > h1');
+    var title = titleEl == null ? '' : ownOrFullText(titleEl);
+    // Tema turunan (mis. Toonizy, ManhwaToon) memindah judul; og:title tetap ada.
+    if (title.isEmpty) title = _ogTitle(doc);
     if (title.isEmpty) {
       throw const SourceException(SourceErrorKind.parse, detail: 'Judul seri tidak ditemukan.');
     }
 
-    final descEl = doc.querySelector(
+    final descEl = _first(doc, sel('mangaDetailsSelectorDescription')) ?? doc.querySelector(
       'div.description-summary div.summary__content, '
       'div.summary_content div.post-content_item > h5 + div, '
       'div.summary_content div.manga-excerpt',
@@ -348,8 +452,12 @@ class MadaraSource extends HttpSource {
       description = [if (description != null) description, 'Judul alternatif: $alt'].join('\n\n');
     }
 
+    final genreSelector = [sel('mangaDetailsSelectorGenre'), sel('mangaDetailsSelectorTag')].nonNulls.join(', ');
     final genres = <String>{
-      for (final a in doc.querySelectorAll('div.genres-content a, div.tags-content a'))
+      for (final a in [
+        ..._all(doc, genreSelector.isEmpty ? null : genreSelector),
+        ...doc.querySelectorAll('div.genres-content a, div.tags-content a'),
+      ])
         if (clean(a.text).isNotEmpty) clean(a.text),
     };
     if (_infoItem(doc, const ['Type']) case final type?) genres.add(type);
@@ -357,12 +465,15 @@ class MadaraSource extends HttpSource {
     return SourceMangaDetails(
       url: pageUrl.toString(),
       title: title,
-      thumbnailUrl: madaraImage(doc.querySelector('div.summary_image img'), pageUrl),
-      author: _joined(doc, 'div.author-content > a, div.manga-authors > a'),
-      artist: _joined(doc, 'div.artist-content > a'),
+      thumbnailUrl: madaraImage(
+          _imgOf(_first(doc, sel('mangaDetailsSelectorThumbnail'))) ?? doc.querySelector('div.summary_image img'),
+          pageUrl),
+      author: _joinedOverride(doc, 'mangaDetailsSelectorAuthor') ??
+          _joined(doc, 'div.author-content > a, div.manga-authors > a'),
+      artist: _joinedOverride(doc, 'mangaDetailsSelectorArtist') ?? _joined(doc, 'div.artist-content > a'),
       description: description,
       genres: genres.toList(),
-      status: madaraStatus(doc.querySelectorAll('div.summary-content').lastOrNull?.text),
+      status: _statusOverride(doc) ?? madaraStatus(doc.querySelectorAll('div.summary-content').lastOrNull?.text),
     );
   }
 
@@ -432,13 +543,17 @@ class MadaraSource extends HttpSource {
   List<SourceChapter> parseChapters(Document doc, Uri pageUrl) {
     final seen = <String>{};
     final chapters = <SourceChapter>[];
+    final urlSelector = sel('chapterUrlSelector');
+    final nameSelector = sel('chapterNameSelector');
+    final dateSelector = sel('chapterDateSelector');
     for (final li in doc.querySelectorAll('li.wp-manga-chapter')) {
-      final a = li.querySelector('a');
+      final a = (urlSelector == 'a' ? null : _first(li, urlSelector)) ?? li.querySelector('a');
       final url = attrAbs(a, 'href', pageUrl);
       if (url == null || !seen.add(url)) continue;
-      final name = clean(a!.text);
+      final name = clean((_first(li, nameSelector) ?? a!).text);
       final dateText = li.querySelectorAll('img').where((i) => !i.classes.contains('thumb')).firstOrNull?.attributes['alt'] ??
           li.querySelector('span a')?.attributes['title'] ??
+          _first(li, dateSelector)?.text ??
           li.querySelector('span.chapter-release-date')?.text;
       chapters.add(SourceChapter(
         url: url,
@@ -459,29 +574,91 @@ class MadaraSource extends HttpSource {
       final url = Uri.parse(chapter.url);
       res = await fetchHtml(url.replace(queryParameters: {...url.queryParameters, 'style': 'list'}));
     }
-    if (res.document.querySelector('#chapter-protector-data') != null) {
-      throw const SourceException(
-        SourceErrorKind.parse,
-        detail: 'Situs ini mengenkripsi gambar bab (chapter protector); belum didukung.',
-      );
+    if (res.document.querySelector('.content-blocked.login-required') != null) {
+      throw const SourceException(SourceErrorKind.parse,
+          detail: 'Situs ini wajib login (member) untuk membaca bab. Login lewat "Buka di WebView".');
     }
-    final pages = parsePages(res.document, res.url);
+    final protector = res.document.querySelector('#chapter-protector-data');
+    final pages = protector != null ? decryptProtectedPages(protector) : parsePages(res.document, res.url);
     if (pages.isEmpty) {
       throw const SourceException(SourceErrorKind.parse, detail: 'Gambar bab tidak ditemukan.');
     }
     return pages;
   }
 
+  /// Plugin "WP Manga Chapter Protector": daftar gambar dienkripsi CryptoJS
+  /// (AES-256-CBC, kunci & IV dari EVP_BytesToKey MD5 atas nonce + salt).
+  static List<String> decryptProtectedPages(Element protector) {
+    final src = protector.attributes['src'] ?? '';
+    const prefix = 'data:text/javascript;base64,';
+    final script = src.startsWith(prefix) ? utf8.decode(base64.decode(src.substring(prefix.length))) : protector.text;
+    String between(String start, String end) {
+      final i = script.indexOf(start);
+      if (i < 0) return '';
+      final from = i + start.length;
+      final j = script.indexOf(end, from);
+      return j < 0 ? '' : script.substring(from, j);
+    }
+
+    try {
+      final password = between("wpmangaprotectornonce='", "';");
+      final data = asMap(jsonDecode(between("chapter_data='", "';").replaceAll(r'\/', '/')));
+      final plain = cryptoJsDecrypt(asString(data['ct']) ?? '', asString(data['s']) ?? '', password);
+      // Isinya string JSON yang membungkus array JSON.
+      return [for (final url in asList(jsonDecode(jsonDecode(plain) as String))) '$url'];
+    } catch (_) {
+      throw const SourceException(SourceErrorKind.parse, detail: 'Gagal mendekripsi gambar bab (chapter protector).');
+    }
+  }
+
   List<String> parsePages(Document doc, Uri pageUrl) {
     final seen = <String>{};
-    return [
+    final custom = [
+      for (final el in _all(doc, sel('pageListParseSelector')))
+        if (madaraImage(_imgOf(el), pageUrl) case final url? when seen.add(url)) url,
+    ];
+    if (custom.isNotEmpty) return custom;
+    final standard = [
       for (final img in doc.querySelectorAll('div.page-break img, li.blocks-gallery-item img, .reading-content .text-left img'))
+        if (madaraImage(img, pageUrl) case final url? when seen.add(url)) url,
+    ];
+    if (standard.isNotEmpty) return standard;
+    // Cadangan: gambar digambar ke <canvas data-page-url> (proteksi klik
+    // kanan), atau <img> langsung di dalam .reading-content.
+    return [
+      for (final canvas in doc.querySelectorAll('.reading-content canvas[data-page-url]'))
+        if (absUrl(pageUrl, canvas.attributes['data-page-url']) case final url? when seen.add(url)) url,
+      for (final img in doc.querySelectorAll('.reading-content img'))
         if (madaraImage(img, pageUrl) case final url? when seen.add(url)) url,
     ];
   }
 }
 
 // ------------------------------------------------------------- utilitas
+
+/// Dekripsi format CryptoJS `{ct, s}`: kunci 32 byte + IV 16 byte dari
+/// MD5(prev + password + salt) berulang, lalu AES-256-CBC + PKCS7.
+String cryptoJsDecrypt(String ciphertextBase64, String saltHex, String password) {
+  final salt = Uint8List.fromList([
+    for (var i = 0; i + 1 < saltHex.length; i += 2) int.parse(saltHex.substring(i, i + 2), radix: 16),
+  ]);
+  final pass = utf8.encode(password);
+  final keyIv = <int>[];
+  var previous = Uint8List(0);
+  while (keyIv.length < 48) {
+    previous = MD5Digest().process(Uint8List.fromList([...previous, ...pass, ...salt]));
+    keyIv.addAll(previous);
+  }
+  final cipher = PaddedBlockCipherImpl(PKCS7Padding(), CBCBlockCipher(AESEngine()))
+    ..init(
+      false,
+      PaddedBlockCipherParameters<ParametersWithIV<KeyParameter>, Null>(
+        ParametersWithIV(KeyParameter(Uint8List.fromList(keyIv.sublist(0, 32))), Uint8List.fromList(keyIv.sublist(32, 48))),
+        null,
+      ),
+    );
+  return utf8.decode(cipher.process(base64.decode(ciphertextBase64)));
+}
 
 final _whitespace = RegExp(r'\s+');
 

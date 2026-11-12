@@ -81,6 +81,7 @@ class CatalogEntry {
             chapterMode: madaraChapterModeFrom(asString(options['chapterMode'])),
             noAjax: options['noAjax'] == true,
             filterNonMangaItems: options['filterNonMangaItems'] != false,
+            vals: asMap(options['vals']),
           ),
         'zeistmanga' => ZeistMangaSource(
             id: id,
