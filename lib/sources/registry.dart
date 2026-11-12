@@ -1,9 +1,11 @@
 import 'catalog.dart';
+import 'id/holotoon.dart';
 import 'id/komiknextgonline.dart';
 import 'id/komikrealm.dart';
 import 'id/komiku.dart';
 import 'id/koronaxscan.dart';
 import 'id/shinigami.dart';
+import 'id/themanga.dart';
 import 'source.dart';
 
 /// Sumber yang ditulis tangan (bukan template). Ditaruh di depan dan menang
@@ -14,6 +16,8 @@ List<MangaSource> customSources() => [
       KomikNextGOnlineSource(),
       KoronaxScanSource(),
       KomikRealmSource(),
+      TheMangaSource(),
+      HolotoonSource(),
     ];
 
 /// Semua sumber: sumber kustom + katalog template (Madara, MangaThemesia)
