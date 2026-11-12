@@ -97,6 +97,10 @@ Batasan saat ini:
   lewat `filters()` (`SelectFilterDef` atau `MultiSelectFilterDef`, lihat `sources/filters.dart`).
   MangaThemesia mendukung urutan, status, tipe, dan genre (genre diambil dari `ul.genrez`
   di situs). Komiku mendukung urutan, tipe, status, genre 1, dan genre 2.
+- Unduhan offline: gambar bab disimpan di `<documents>/downloads/<sumber>/<hash seri>/<hash bab>/`,
+  dan indeksnya ada di SharedPreferences (`downloads.index.v1`). Reader otomatis memakai
+  file lokal bila babnya lengkap terunduh. Antrean hanya ada di memori, jadi bab yang
+  belum selesai hilang dari antrean saat aplikasi ditutup dan perlu diunduh ulang.
 - Domain situs sering pindah, jadi perbarui `baseUrl` di `registry.dart` bila perlu.
 
 **Lisensi:** template dan selector di-port dari

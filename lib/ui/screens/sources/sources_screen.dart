@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../state/download_providers.dart';
 import '../../../state/source_providers.dart';
 import '../../router.dart';
 import '../../widgets/source_widgets.dart';
@@ -14,9 +15,23 @@ class SourcesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final sources = ref.watch(sourceRegistryProvider).sources;
     final scheme = Theme.of(context).colorScheme;
+    final queueCount = ref.watch(downloadQueueProvider.select((q) => q.length));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Sumber')),
+      appBar: AppBar(
+        title: const Text('Sumber'),
+        actions: [
+          IconButton(
+            tooltip: 'Unduhan',
+            icon: Badge(
+              isLabelVisible: queueCount > 0,
+              label: Text('$queueCount'),
+              child: const Icon(Icons.download_outlined),
+            ),
+            onPressed: () => context.push('/downloads'),
+          ),
+        ],
+      ),
       body: ListView.separated(
         itemCount: sources.length + 1,
         separatorBuilder: (_, i) => i == 0 ? const SizedBox.shrink() : const Divider(height: 1),

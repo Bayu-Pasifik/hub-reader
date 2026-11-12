@@ -10,6 +10,7 @@ import 'screens/home_screen.dart';
 import 'screens/reader_screen.dart';
 import 'screens/series_detail_screen.dart';
 import 'screens/settings_screen.dart';
+import 'screens/sources/downloads_screen.dart';
 import 'screens/sources/source_browse_screen.dart';
 import 'screens/sources/source_favorites_screen.dart';
 import 'screens/sources/source_history_screen.dart';
@@ -106,6 +107,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           builder: (_, __) => const SettingsScreen(),
         ),
       ],
+      GoRoute(
+        path: '/downloads',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, __) => const DownloadsScreen(),
+      ),
       GoRoute(
         path: '/webview',
         parentNavigatorKey: _rootNavigatorKey,

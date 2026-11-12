@@ -1,9 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/models/download.dart';
 import '../sources/models.dart';
 import '../sources/registry.dart';
 import '../sources/source.dart';
 import '../sources/source_exception.dart';
+import 'download_providers.dart';
 
 final sourceRegistryProvider = Provider<SourceRegistry>((ref) => SourceRegistry(builtInSources()));
 
@@ -143,6 +145,9 @@ final sourceDetailsProvider =
 final sourcePagesProvider =
     FutureProvider.autoDispose.family<List<String>, ({String sourceId, SourceChapter chapter})>(
   (ref, key) async {
+    // Bab yang sudah diunduh dibaca dari file lokal (path absolut).
+    final local = ref.watch(localPagesProvider(chapterKey(key.sourceId, key.chapter.url)));
+    if (local != null) return local;
     final source = ref.watch(sourceProvider(key.sourceId));
     if (source == null) throw _missing(key.sourceId);
     try {

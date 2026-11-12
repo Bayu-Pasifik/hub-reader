@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -236,12 +238,24 @@ class _PagesState extends ConsumerState<_Pages> {
     if (urls == null || _nextPrecached) return;
     _nextPrecached = true;
     final nextHeaders = widget.source.imageHeaders(referer: next.url);
-    for (final url in urls.take(2)) {
+    for (final url in urls.take(2).where((u) => u.startsWith('http'))) {
       precacheImage(CachedNetworkImageProvider(url, headers: nextHeaders), context).ignore();
     }
   }
 
-  Widget _image(String url, int i, Map<String, String> headers, BoxFit fit) => CachedNetworkImage(
+  Widget _image(String url, int i, Map<String, String> headers, BoxFit fit) {
+    // Bab yang diunduh: path absolut di penyimpanan aplikasi.
+    if (!url.startsWith('http')) {
+      return Image.file(
+        File(url),
+        fit: fit,
+        errorBuilder: (_, __, ___) => SizedBox(
+          height: 200,
+          child: Center(child: Text('Halaman ${i + 1} gagal dibaca dari unduhan')),
+        ),
+      );
+    }
+    return CachedNetworkImage(
         imageUrl: url,
         httpHeaders: headers,
         fit: fit,
@@ -254,6 +268,7 @@ class _PagesState extends ConsumerState<_Pages> {
           child: Center(child: Text('Halaman ${i + 1} gagal dimuat')),
         ),
       );
+  }
 
   @override
   Widget build(BuildContext context) {

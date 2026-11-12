@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/utils/formatters.dart';
+import '../../../data/models/download.dart';
 import '../../../data/models/source_library.dart';
 import '../../../sources/models.dart';
+import '../../../state/download_providers.dart';
 import '../../../state/source_library_providers.dart';
 import '../../../state/source_providers.dart';
 import '../../router.dart';
@@ -55,6 +57,30 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
       ));
   }
 
+  /// Unduh massal. [unreadOnly]: lewati bab yang sudah selesai dibaca.
+  /// [limit]: hanya N bab berikutnya setelah bab terakhir dibaca.
+  void _downloadMany(SourceMangaDetails manga, {int? limit}) {
+    final progress = ref.read(sourceSeriesProgressProvider(_key));
+    final lastRead = ref.read(sourceLastReadProvider(_key));
+    // Urut lama → baru supaya antrean mengikuti urutan baca.
+    var chapters = manga.chapters.reversed.toList();
+    if (limit != null && lastRead != null) {
+      final from = chapters.indexWhere((c) => c.url == lastRead.chapterUrl);
+      if (from >= 0) chapters = chapters.sublist(from + 1);
+    }
+    chapters = chapters.where((c) => !(progress[c.url]?.done ?? false)).toList();
+    if (limit != null) chapters = chapters.take(limit).toList();
+    ref.read(downloadQueueProvider.notifier).enqueue(
+          sourceId: widget.sourceId,
+          mangaUrl: widget.url,
+          manga: manga,
+          chapters: chapters,
+        );
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text('${chapters.length} bab masuk antrean unduhan')));
+  }
+
   void _openChapter(String chapterUrl) =>
       context.push(sourceReaderLocation(widget.sourceId, widget.url, chapterUrl));
 
@@ -79,6 +105,16 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
               icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border),
               color: isFavorite ? Theme.of(context).colorScheme.primary : null,
               onPressed: () => _toggleFavorite(loaded),
+            ),
+          if (loaded != null)
+            PopupMenuButton<int?>(
+              tooltip: 'Unduh',
+              icon: const Icon(Icons.download_outlined),
+              onSelected: (limit) => _downloadMany(loaded, limit: limit == 0 ? null : limit),
+              itemBuilder: (_) => const [
+                PopupMenuItem(value: 5, child: Text('Unduh 5 bab berikutnya')),
+                PopupMenuItem(value: 0, child: Text('Unduh semua yang belum dibaca')),
+              ],
             ),
           IconButton(
             tooltip: _oldestFirst ? 'Urutkan terbaru dulu' : 'Urutkan terlama dulu',
@@ -136,7 +172,18 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
                                 subtitle,
                                 style: fade ? TextStyle(color: Theme.of(context).disabledColor) : null,
                               ),
-                        trailing: done ? const Icon(Icons.done_all, size: 18) : null,
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (done) const Icon(Icons.done_all, size: 18),
+                            _ChapterDownloadButton(
+                              sourceId: widget.sourceId,
+                              mangaUrl: widget.url,
+                              manga: manga,
+                              chapter: chapter,
+                            ),
+                          ],
+                        ),
                         onTap: () => _openChapter(chapter.url),
                         onLongPress: () {
                           ref.read(sourceProgressProvider.notifier).setDone(_key, chapter.url, done: !done);
@@ -232,5 +279,61 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
         ],
       ),
     );
+  }
+}
+
+/// Status unduhan satu bab: unduh / progres / terunduh (ketuk untuk hapus).
+class _ChapterDownloadButton extends ConsumerWidget {
+  const _ChapterDownloadButton({
+    required this.sourceId,
+    required this.mangaUrl,
+    required this.manga,
+    required this.chapter,
+  });
+
+  final String sourceId;
+  final String mangaUrl;
+  final SourceMangaDetails manga;
+  final SourceChapter chapter;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final key = chapterKey(sourceId, chapter.url);
+    final downloaded = ref.watch(downloadIndexProvider.select((i) => i.containsKey(key)));
+    final task = ref.watch(downloadTaskProvider(key));
+    final queue = ref.read(downloadQueueProvider.notifier);
+
+    if (downloaded) {
+      return IconButton(
+        tooltip: 'Hapus unduhan',
+        icon: Icon(Icons.offline_pin, color: Theme.of(context).colorScheme.primary),
+        onPressed: () => ref.read(downloadIndexProvider.notifier).remove(key),
+      );
+    }
+    return switch (task?.status) {
+      DownloadStatus.queued || DownloadStatus.downloading => IconButton(
+          tooltip: 'Batalkan unduhan',
+          onPressed: () => queue.cancel(key),
+          icon: SizedBox.square(
+            dimension: 22,
+            child: CircularProgressIndicator(strokeWidth: 2.5, value: task!.progress),
+          ),
+        ),
+      DownloadStatus.failed => IconButton(
+          tooltip: 'Gagal: ${task!.error ?? ''}. Coba lagi',
+          icon: Icon(Icons.error_outline, color: Theme.of(context).colorScheme.error),
+          onPressed: () => queue.retry(key),
+        ),
+      null => IconButton(
+          tooltip: 'Unduh',
+          icon: const Icon(Icons.download_for_offline_outlined),
+          onPressed: () => queue.enqueue(
+            sourceId: sourceId,
+            mangaUrl: mangaUrl,
+            manga: manga,
+            chapters: [chapter],
+          ),
+        ),
+    };
   }
 }
