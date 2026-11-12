@@ -1,7 +1,15 @@
 # Hub Reader
 
-Aplikasi Android (Flutter) bergaya Aniyomi untuk membaca **novel** dan **komik**
-dari API scraper-hub (`D:\Coding\Web\scraper-hub`, Laravel, `/api/v1`).
+Aplikasi Android (Flutter) bergaya Aniyomi/Mihon untuk membaca komik.
+
+**Mode saat ini:** fokus ke *sumber on-device*. Aplikasi mengambil konten langsung
+dari situs komik, dengan tiga tab: Sumber, Favorit, dan Riwayat. Integrasi API scraper-hub
+(`D:\Coding\Web\scraper-hub`, Laravel, `/api/v1`) masih ada di kode tetapi
+disembunyikan. Aktifkan lagi dengan:
+
+```bash
+flutter run --dart-define=ENABLE_SCRAPER_HUB=true --dart-define=API_KEY=<key>
+```
 
 ## Struktur folder
 
@@ -81,7 +89,6 @@ dan `:has()`. Pakai `whereContains()` atau filter manual.
 
 Batasan saat ini:
 - Belum ada bypass Cloudflare. Situs yang meminta verifikasi browser akan menampilkan error.
-- Favorit dan riwayat belum mencakup seri dari sumber on-device.
 - Filter genre/status per sumber belum ada (baru populer, terbaru, dan pencarian judul).
 - Domain situs sering pindah, jadi perbarui `baseUrl` di `registry.dart` bila perlu.
 
