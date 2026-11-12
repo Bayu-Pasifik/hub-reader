@@ -2,8 +2,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../data/models/source_library.dart';
 import '../../../sources/models.dart';
 import '../../../sources/source.dart';
+import '../../../state/source_library_providers.dart';
 import '../../../state/source_providers.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/state_views.dart';
@@ -27,6 +29,18 @@ class SourceReaderScreen extends ConsumerStatefulWidget {
 
 class _SourceReaderScreenState extends ConsumerState<SourceReaderScreen> {
   late String _chapterUrl = widget.chapterUrl;
+  String? _recordedFor;
+
+  /// Catat ke riwayat sekali per bab, setelah detail seri tersedia.
+  void _recordHistory(SourceMangaDetails manga, SourceChapter chapter) {
+    if (_recordedFor == chapter.url) return;
+    _recordedFor = chapter.url;
+    final item = SourceLibraryItem.fromDetails(widget.sourceId, widget.mangaUrl, manga);
+    // Ditunda ke setelah frame: provider tidak boleh diubah saat build.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ref.read(sourceHistoryProvider.notifier).record(item, chapter);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +55,8 @@ class _SourceReaderScreenState extends ConsumerState<SourceReaderScreen> {
         : SourceChapter(url: _chapterUrl, name: 'Bab');
     final next = index > 0 ? chapters[index - 1] : null;
     final prev = index >= 0 && index < chapters.length - 1 ? chapters[index + 1] : null;
+    final manga = details.valueOrNull;
+    if (manga != null && index >= 0) _recordHistory(manga, chapter);
 
     return Scaffold(
       appBar: AppBar(

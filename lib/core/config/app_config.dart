@@ -7,6 +7,11 @@
 class AppConfig {
   const AppConfig({required this.baseUrl, required this.apiKey});
 
+  /// Fitur scraper-hub (Beranda, Jelajah, Pengaturan server) sedang
+  /// disembunyikan; aplikasi fokus ke sumber on-device. Aktifkan lagi dengan
+  /// `--dart-define=ENABLE_SCRAPER_HUB=true`.
+  static const bool enableScraperHub = bool.fromEnvironment('ENABLE_SCRAPER_HUB');
+
   /// 10.0.2.2 = alamat "localhost" komputer host bila dilihat dari emulator Android.
   static const String defaultBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
