@@ -9,6 +9,7 @@ import 'templates/madara.dart';
 import 'templates/mangathemesia.dart';
 import 'templates/natsuid.dart';
 import 'templates/small_templates.dart';
+import 'templates/vinetheme.dart';
 import 'templates/zeistmanga.dart';
 
 /// Satu entri di `assets/sources/catalog.json` (dihasilkan oleh
@@ -117,6 +118,8 @@ class CatalogEntry {
             variant: keyoappVariantFrom(asString(options['variant'])),
             popularFromSearch: options['popularFromSearch'] == true,
           ),
+        'vinetheme' =>
+          VineThemeSource(id: id, name: name, lang: lang, baseUrl: baseUrl, contentWarning: contentWarning),
         _ => null,
       };
 }

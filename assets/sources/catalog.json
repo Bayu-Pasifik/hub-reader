@@ -2,7 +2,7 @@
  "source": "https://github.com/keiyoushi/extensions-source",
  "license": "Apache-2.0",
  "generatedAt": "2026-11-12",
- "count": 420,
+ "count": 426,
  "sources": [
   {
    "id": "all.allporncomicsco",
@@ -829,6 +829,14 @@
    }
   },
   {
+   "id": "en.divascans",
+   "name": "Diva Scans",
+   "lang": "en",
+   "baseUrl": "https://divascans.org",
+   "contentWarning": "mixed",
+   "theme": "vinetheme"
+  },
+  {
    "id": "en.dragontea",
    "name": "DragonTea",
    "lang": "en",
@@ -842,6 +850,22 @@
      "mangaSubString": "novel"
     }
    }
+  },
+  {
+   "id": "en.drakescans",
+   "name": "Drake Scans",
+   "lang": "en",
+   "baseUrl": "https://drakecomic.net",
+   "contentWarning": "safe",
+   "theme": "vinetheme"
+  },
+  {
+   "id": "en.elftoon",
+   "name": "Elf Toon",
+   "lang": "en",
+   "baseUrl": "https://elftoon.net",
+   "contentWarning": "safe",
+   "theme": "vinetheme"
   },
   {
    "id": "en.erisscans",
@@ -1129,6 +1153,14 @@
    }
   },
   {
+   "id": "en.kaynscans",
+   "name": "Kayn Scans",
+   "lang": "en",
+   "baseUrl": "https://kaynscans.com",
+   "contentWarning": "safe",
+   "theme": "vinetheme"
+  },
+  {
    "id": "en.kensscan",
    "name": "Kensscan",
    "lang": "en",
@@ -1145,6 +1177,14 @@
     },
     "customized": true
    }
+  },
+  {
+   "id": "en.keroscans",
+   "name": "KeroScans",
+   "lang": "en",
+   "baseUrl": "https://keroscans.net",
+   "contentWarning": "mixed",
+   "theme": "vinetheme"
   },
   {
    "id": "en.kewnscans",
@@ -2144,6 +2184,14 @@
    "options": {
     "chapterMode": "MangaAjax"
    }
+  },
+  {
+   "id": "en.valirscans",
+   "name": "Valir Scans",
+   "lang": "en",
+   "baseUrl": "https://valirscans.org",
+   "contentWarning": "safe",
+   "theme": "vinetheme"
   },
   {
    "id": "en.violetscans",
