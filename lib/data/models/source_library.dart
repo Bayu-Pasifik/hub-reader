@@ -64,6 +64,42 @@ class SourceFavorite {
   JsonMap toJson() => {'item': item.toJson(), 'added_at': addedAt.toIso8601String()};
 }
 
+/// Posisi baca satu bab.
+class SourceChapterProgress {
+  const SourceChapterProgress({
+    required this.page,
+    required this.total,
+    required this.done,
+    required this.updatedAt,
+  });
+
+  /// Indeks halaman terakhir yang terlihat (0-based).
+  final int page;
+  final int total;
+
+  /// true bila halaman terakhir sudah tercapai.
+  final bool done;
+  final DateTime updatedAt;
+
+  static SourceChapterProgress? tryParse(JsonMap json) {
+    final page = asInt(json['page']);
+    if (page == null) return null;
+    return SourceChapterProgress(
+      page: page,
+      total: asInt(json['total']) ?? 0,
+      done: json['done'] == true,
+      updatedAt: asDate(json['updated_at']) ?? DateTime.now(),
+    );
+  }
+
+  JsonMap toJson() => {
+        'page': page,
+        'total': total,
+        'done': done,
+        'updated_at': updatedAt.toIso8601String(),
+      };
+}
+
 /// Satu entri per seri: bab terakhir yang dibuka.
 class SourceHistoryEntry {
   const SourceHistoryEntry({

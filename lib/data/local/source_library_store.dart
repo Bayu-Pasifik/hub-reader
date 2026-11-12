@@ -22,6 +22,34 @@ class SourceLibraryStore {
 
   Future<void> writeHistory(List<SourceHistoryEntry> entries) => _write(_historyKey, entries.map((e) => e.toJson()));
 
+  static const _progressKey = 'source_library.progress.v1';
+
+  /// `{kunci seri: {URL bab: progres}}`
+  Map<String, Map<String, SourceChapterProgress>> readProgress() {
+    final raw = _prefs.getString(_progressKey);
+    if (raw == null) return {};
+    try {
+      return {
+        for (final series in asMap(jsonDecode(raw)).entries)
+          series.key: {
+            for (final ch in asMap(series.value).entries)
+              if (SourceChapterProgress.tryParse(asMap(ch.value)) case final p?) ch.key: p,
+          },
+      };
+    } catch (_) {
+      return {};
+    }
+  }
+
+  Future<void> writeProgress(Map<String, Map<String, SourceChapterProgress>> progress) =>
+      _prefs.setString(
+        _progressKey,
+        jsonEncode({
+          for (final s in progress.entries)
+            s.key: {for (final c in s.value.entries) c.key: c.value.toJson()},
+        }),
+      );
+
   Future<void> _write(String key, Iterable<JsonMap> items) =>
       _prefs.setString(key, jsonEncode(items.toList()));
 

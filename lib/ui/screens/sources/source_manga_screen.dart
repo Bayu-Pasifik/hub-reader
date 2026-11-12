@@ -65,6 +65,7 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
     final headers = source?.imageHeaders() ?? const <String, String>{};
     final isFavorite = ref.watch(isSourceFavoriteProvider(_key));
     final lastRead = ref.watch(sourceLastReadProvider(_key));
+    final progress = ref.watch(sourceSeriesProgressProvider(_key));
     final loaded = details.valueOrNull;
     if (loaded != null) _syncFavorite(loaded);
 
@@ -110,16 +111,43 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
                     itemBuilder: (context, i) {
                       final chapter = chapters[i];
                       final isLastRead = chapter.url == lastRead?.chapterUrl;
+                      final p = progress[chapter.url];
+                      final done = p?.done ?? false;
+                      final inProgress = p != null && !done && p.total > 0;
+                      final subtitle = [
+                        if (chapter.uploadedAt != null) relativeTime(chapter.uploadedAt!),
+                        if (inProgress) 'Hal. ${p.page + 1}/${p.total}',
+                      ].join(' · ');
+                      // Bab selesai diredupkan, seperti Mihon.
+                      final fade = done && !isLastRead;
                       return ListTile(
                         leading: isLastRead ? const Icon(Icons.bookmark, size: 20) : null,
                         title: Text(
                           chapter.name,
-                          style: isLastRead ? const TextStyle(fontWeight: FontWeight.w700) : null,
+                          style: TextStyle(
+                            fontWeight: isLastRead ? FontWeight.w700 : null,
+                            color: fade ? Theme.of(context).disabledColor : null,
+                          ),
                         ),
-                        subtitle: chapter.uploadedAt == null
+                        subtitle: subtitle.isEmpty
                             ? null
-                            : Text(relativeTime(chapter.uploadedAt!)),
+                            : Text(
+                                subtitle,
+                                style: fade ? TextStyle(color: Theme.of(context).disabledColor) : null,
+                              ),
+                        trailing: done ? const Icon(Icons.done_all, size: 18) : null,
                         onTap: () => _openChapter(chapter.url),
+                        onLongPress: () {
+                          ref.read(sourceProgressProvider.notifier).setDone(_key, chapter.url, done: !done);
+                          ScaffoldMessenger.of(context)
+                            ..hideCurrentSnackBar()
+                            ..showSnackBar(SnackBar(
+                              content: Text(done
+                                  ? '${chapter.name} ditandai belum dibaca'
+                                  : '${chapter.name} ditandai sudah dibaca'),
+                              duration: const Duration(seconds: 2),
+                            ));
+                        },
                       );
                     },
                   ),

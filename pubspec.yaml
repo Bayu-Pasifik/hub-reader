@@ -25,6 +25,8 @@ dependencies:
   webview_flutter: ^4.10.0
   # Parser HTML untuk extension sumber on-device (lib/sources)
   html: ^0.15.5
+  # Reader: tahu halaman mana yang terlihat & bisa lompat ke halaman tersimpan
+  scrollable_positioned_list: ^0.3.8
 
 dev_dependencies:
   flutter_test:

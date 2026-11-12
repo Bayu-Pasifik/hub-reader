@@ -107,3 +107,59 @@ final sourceLastReadProvider = Provider.autoDispose.family<SourceHistoryEntry?, 
     return null;
   },
 );
+
+// ------------------------------------------------------------ posisi baca
+
+/// Progres per bab: `{kunci seri: {URL bab: progres}}`.
+final sourceProgressProvider = NotifierProvider<SourceProgressNotifier,
+    Map<String, Map<String, SourceChapterProgress>>>(SourceProgressNotifier.new);
+
+class SourceProgressNotifier extends Notifier<Map<String, Map<String, SourceChapterProgress>>> {
+  SourceLibraryStore get _store => ref.read(sourceLibraryStoreProvider);
+
+  @override
+  Map<String, Map<String, SourceChapterProgress>> build() =>
+      ref.watch(sourceLibraryStoreProvider).readProgress();
+
+  /// Simpan halaman yang sedang terlihat. Bab yang sudah selesai tetap
+  /// berstatus selesai walau dibaca ulang.
+  Future<void> update(SourceItemKey series, String chapterUrl, {required int page, required int total}) async {
+    final key = _key(series);
+    final old = state[key]?[chapterUrl];
+    final done = (old?.done ?? false) || (total > 0 && page >= total - 1);
+    if (old != null && old.page == page && old.total == total && old.done == done) return;
+    _set(key, chapterUrl, SourceChapterProgress(
+      page: page,
+      total: total,
+      done: done,
+      updatedAt: DateTime.now(),
+    ));
+    await _store.writeProgress(state);
+  }
+
+  /// Tandai sudah/belum dibaca secara manual (dari daftar bab).
+  Future<void> setDone(SourceItemKey series, String chapterUrl, {required bool done}) async {
+    final key = _key(series);
+    final old = state[key]?[chapterUrl];
+    _set(key, chapterUrl, SourceChapterProgress(
+      page: done ? (old?.page ?? 0) : 0,
+      total: old?.total ?? 0,
+      done: done,
+      updatedAt: DateTime.now(),
+    ));
+    await _store.writeProgress(state);
+  }
+
+  void _set(String seriesKey, String chapterUrl, SourceChapterProgress progress) {
+    state = {
+      ...state,
+      seriesKey: {...?state[seriesKey], chapterUrl: progress},
+    };
+  }
+}
+
+/// Progres semua bab satu seri.
+final sourceSeriesProgressProvider =
+    Provider.autoDispose.family<Map<String, SourceChapterProgress>, SourceItemKey>(
+  (ref, k) => ref.watch(sourceProgressProvider.select((all) => all[_key(k)] ?? const {})),
+);

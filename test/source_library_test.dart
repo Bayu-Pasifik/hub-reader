@@ -38,6 +38,28 @@ void main() {
     expect(c.read(sourceFavoritesProvider), isEmpty);
   });
 
+  test('progress saves page, marks done at last page, and persists', () async {
+    final c = await _container();
+    const series = (sourceId: 'id.komiku', url: 'https://komiku.org/manga/one-piece/');
+    const ch = 'https://komiku.org/ch-1/';
+    final notifier = c.read(sourceProgressProvider.notifier);
+
+    await notifier.update(series, ch, page: 4, total: 16);
+    expect(c.read(sourceSeriesProgressProvider(series))[ch]?.done, isFalse);
+
+    await notifier.update(series, ch, page: 15, total: 16);
+    expect(c.read(sourceSeriesProgressProvider(series))[ch]?.done, isTrue);
+
+    // Membaca ulang dari awal tidak menghapus status selesai.
+    await notifier.update(series, ch, page: 0, total: 16);
+    final c2 = await _container();
+    final saved = c2.read(sourceSeriesProgressProvider(series))[ch]!;
+    expect((saved.page, saved.done), (0, true));
+
+    await c2.read(sourceProgressProvider.notifier).setDone(series, ch, done: false);
+    expect(c2.read(sourceSeriesProgressProvider(series))[ch]?.done, isFalse);
+  });
+
   test('history keeps one entry per series, newest first', () async {
     final c = await _container();
     final notifier = c.read(sourceHistoryProvider.notifier);
