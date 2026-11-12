@@ -33,7 +33,9 @@ void main() {
     expect(d.description, 'Satu\n\nDua & tiga');
     expect(d.status, SourceMangaStatus.ongoing);
     expect(d.genres, ['Action', 'Fantasy']);
-    expect(d.chapters.map((c) => c.name), ['Chapter 2', 'Chapter 1.50'.replaceFirst('.50', '.5')]);
+    // Sama dengan Kotlin: hanya akhiran ".00" yang dibuang.
+    expect(d.chapters.map((c) => c.name), ['Chapter 2', 'Chapter 1.50']);
+    expect(d.chapters.last.number, 1.5);
     expect(d.chapters.first.url, 'https://x.com/comic/solo/chapter/ch-2');
   });
 
