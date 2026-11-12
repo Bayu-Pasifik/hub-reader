@@ -2,7 +2,7 @@
  "source": "https://github.com/keiyoushi/extensions-source",
  "license": "Apache-2.0",
  "generatedAt": "2026-11-12",
- "count": 392,
+ "count": 397,
  "sources": [
   {
    "id": "all.allporncomicsco",
@@ -2891,6 +2891,20 @@
    }
   },
   {
+   "id": "id.ainzscansid",
+   "name": "Ainz Scans ID",
+   "lang": "id",
+   "baseUrl": "https://v3.ainzscans01.com",
+   "contentWarning": "safe",
+   "theme": "loneseal",
+   "options": {
+    "vals": {
+     "includeProjectOnlyFilter": true,
+     "urlLayout": "LEGACY_COMIC"
+    }
+   }
+  },
+  {
    "id": "id.apkomik",
    "name": "APKOMIK",
    "lang": "id",
@@ -2939,6 +2953,21 @@
    "options": {
     "vals": {
      "datePattern": "d MMMM yyyy"
+    }
+   }
+  },
+  {
+   "id": "id.dreamteamsscans",
+   "name": "DreamTeams Scans",
+   "lang": "id",
+   "baseUrl": "https://dreamteams.space",
+   "contentWarning": "nsfw",
+   "theme": "loneseal",
+   "options": {
+    "vals": {
+     "includeChapterTitle": true,
+     "includeSeriesTagFilter": true,
+     "urlLayout": "LEGACY_ROOT"
     }
    }
   },
@@ -3216,6 +3245,19 @@
    }
   },
   {
+   "id": "id.mangakuri",
+   "name": "Mangakuri",
+   "lang": "id",
+   "baseUrl": "https://lc2.mangakuri.online",
+   "contentWarning": "nsfw",
+   "theme": "loneseal",
+   "options": {
+    "vals": {
+     "urlLayout": "LEGACY_COMIC"
+    }
+   }
+  },
+  {
    "id": "id.mangasusu",
    "name": "Mangasusu",
    "lang": "id",
@@ -3372,6 +3414,14 @@
    }
   },
   {
+   "id": "id.roseveil",
+   "name": "Roseveil",
+   "lang": "id",
+   "baseUrl": "https://roseveil.org",
+   "contentWarning": "mixed",
+   "theme": "loneseal"
+  },
+  {
    "id": "id.rosyscans",
    "name": "Rosyscans",
    "lang": "id",
@@ -3435,6 +3485,21 @@
     "vals": {
      "supportsPostId": false,
      "mangaSubString": "komik"
+    }
+   }
+  },
+  {
+   "id": "id.soulscans",
+   "name": "Soul Scans",
+   "lang": "id",
+   "baseUrl": "https://v1.soulscans.asia",
+   "contentWarning": "safe",
+   "theme": "loneseal",
+   "options": {
+    "vals": {
+     "includeProjectOnlyFilter": true,
+     "urlLayout": "LEGACY_COMIC",
+     "apiOnBase": true
     }
    }
   },

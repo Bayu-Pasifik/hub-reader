@@ -14,7 +14,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga']);
+const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga', 'loneseal']);
 
 const [root, outArg] = process.argv.slice(2);
 if (!root) {
@@ -95,6 +95,10 @@ for (const langDir of listDirs(path.join(root, 'src'))) {
     for (const m of kt.matchAll(/override\s+val\s+(\w+)(?:\s*:\s*\w+)?\s*=\s*("(?:[^"\\]|\\.)*"|true|false)/g)) {
       vals[m[1]] = m[2] === 'true' ? true : m[2] === 'false' ? false : JSON.parse(m[2]);
     }
+    // Nilai enum, mis. `override val urlLayout = UrlLayout.LEGACY_COMIC`.
+    for (const m of kt.matchAll(/override\s+val\s+(\w+)\s*=\s*[A-Z]\w*\.([A-Z][A-Z0-9_]+)\b/g)) vals[m[1]] = m[2];
+    // API LoneSeal di <baseUrl>/api.
+    if (/apiUrl[^\n]*"\$baseUrl\/api"/.test(kt)) vals.apiOnBase = true;
     if (Object.keys(vals).length) options.vals = vals;
     if (/getPopularManga|getSearchMangaList|parseArchive|pageListParse|parsePages|mangaDetailsParse|parseDetails|getChapterFeedUrl|parsePopularManga|parseSearchManga/.test(kt)) {
       options.customized = true; // Kotlin meng-override logika inti; port Dart bisa kurang pas.

@@ -3,6 +3,7 @@ import 'dart:convert';
 import '../core/utils/json.dart';
 import 'models.dart';
 import 'source.dart';
+import 'templates/loneseal.dart';
 import 'templates/madara.dart';
 import 'templates/mangathemesia.dart';
 import 'templates/zeistmanga.dart';
@@ -81,6 +82,16 @@ class CatalogEntry {
             baseUrl: baseUrl,
             contentWarning: contentWarning,
             vals: asMap(options['vals']),
+          ),
+        'loneseal' => LoneSealSource(
+            id: id,
+            name: name,
+            lang: lang,
+            baseUrl: baseUrl,
+            contentWarning: contentWarning,
+            urlLayout: asString(asMap(options['vals'])['urlLayout']) ?? 'SLUG',
+            includeChapterTitle: asMap(options['vals'])['includeChapterTitle'] == true,
+            apiOnBase: asMap(options['vals'])['apiOnBase'] == true,
           ),
         _ => null,
       };
