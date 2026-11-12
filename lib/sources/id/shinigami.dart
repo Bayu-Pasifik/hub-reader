@@ -33,12 +33,10 @@ class ShinigamiSource extends HttpSource {
   // ---------------------------------------------------------------- daftar
 
   @override
-  Future<MangaPage> popular(int page) =>
-      search(page, '', filters: FilterValues.empty.withSingle('sort', 'popularity'));
+  Future<MangaPage> popular(int page) => search(page, '', filters: FilterValues.empty.withSingle('sort', 'popularity'));
 
   @override
-  Future<MangaPage> latest(int page) =>
-      search(page, '', filters: FilterValues.empty.withSingle('sort', 'latest'));
+  Future<MangaPage> latest(int page) => search(page, '', filters: FilterValues.empty.withSingle('sort', 'latest'));
 
   @override
   Future<MangaPage> search(int page, String query, {FilterValues filters = FilterValues.empty}) async {
@@ -135,17 +133,15 @@ class ShinigamiSource extends HttpSource {
       },
       chapters: [
         for (final raw in asList(chaptersJson['data']))
-          if (asString(asMap(raw)['chapter_id']) case final cid? when cid.isNotEmpty)
-            _chapter(asMap(raw), cid),
+          if (asString(asMap(raw)['chapter_id']) case final cid? when cid.isNotEmpty) _chapter(asMap(raw), cid),
       ],
     );
   }
 
   SourceChapter _chapter(JsonMap c, String chapterId) {
     final number = asDouble(c['chapter_number']);
-    final numberText = number == null
-        ? ''
-        : (number == number.roundToDouble() ? number.toInt().toString() : number.toString());
+    final numberText =
+        number == null ? '' : (number == number.roundToDouble() ? number.toInt().toString() : number.toString());
     final title = asString(c['chapter_title'])?.trim() ?? '';
     return SourceChapter(
       url: '$baseUrl/chapter/$chapterId',

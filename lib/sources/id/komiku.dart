@@ -35,8 +35,7 @@ class KomikuSource extends HttpSource {
       ).replace(queryParameters: {'orderby': 'meta_value_num'}));
 
   @override
-  Future<MangaPage> latest(int page) =>
-      _list(_mangaApiUrl(page).replace(queryParameters: {'orderby': 'modified'}));
+  Future<MangaPage> latest(int page) => _list(_mangaApiUrl(page).replace(queryParameters: {'orderby': 'modified'}));
 
   @override
   Future<MangaPage> search(int page, String query, {FilterValues filters = FilterValues.empty}) =>
@@ -176,8 +175,7 @@ class KomikuSource extends HttpSource {
     FilterOption('Yuri', 'yuri'),
   ];
 
-  Uri _mangaApiUrl(int page) =>
-      Uri.parse(page > 1 ? '$apiUrl/manga/page/$page/' : '$apiUrl/manga/');
+  Uri _mangaApiUrl(int page) => Uri.parse(page > 1 ? '$apiUrl/manga/page/$page/' : '$apiUrl/manga/');
 
   Future<MangaPage> _list(Uri url) async {
     final res = await fetchHtml(url);

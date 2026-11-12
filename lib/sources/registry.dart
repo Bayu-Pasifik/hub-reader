@@ -1,6 +1,8 @@
 import 'catalog.dart';
 import 'id/komiknextgonline.dart';
+import 'id/komikrealm.dart';
 import 'id/komiku.dart';
+import 'id/koronaxscan.dart';
 import 'id/shinigami.dart';
 import 'source.dart';
 
@@ -10,6 +12,8 @@ List<MangaSource> customSources() => [
       KomikuSource(),
       ShinigamiSource(),
       KomikNextGOnlineSource(),
+      KoronaxScanSource(),
+      KomikRealmSource(),
     ];
 
 /// Semua sumber: sumber kustom + katalog template (Madara, MangaThemesia)

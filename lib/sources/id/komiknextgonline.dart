@@ -59,7 +59,8 @@ class KomikNextGOnlineSource extends HttpSource {
     final res = await fetchHtml(url);
     return MangaPage(
       [
-        for (final el in res.document.querySelectorAll('#left-content ul#comic-list li.comic, #left-content article.comic'))
+        for (final el
+            in res.document.querySelectorAll('#left-content ul#comic-list li.comic, #left-content article.comic'))
           if (attrAbs(el.querySelector('a'), 'href', res.url) case final href?)
             SourceManga(
               url: href,
@@ -82,7 +83,8 @@ class KomikNextGOnlineSource extends HttpSource {
         ]),
       ];
 
-  String? _meta(Document doc, String property) => doc.querySelector('meta[property="$property"]')?.attributes['content'];
+  String? _meta(Document doc, String property) =>
+      doc.querySelector('meta[property="$property"]')?.attributes['content'];
 
   @override
   Future<SourceMangaDetails> details(String mangaUrl) async {
