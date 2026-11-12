@@ -35,3 +35,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    # Katalog sumber template, dibuat oleh tool/generate_source_catalog.mjs
+    - assets/sources/catalog.json

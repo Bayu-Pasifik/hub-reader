@@ -77,3 +77,36 @@ class SourceBaseUrlNotifier extends Notifier<Map<String, BaseUrlSetting>> {
       .read(sharedPreferencesProvider)
       .setString(_key, jsonEncode({for (final e in state.entries) e.key: e.value.toJson()}));
 }
+
+// ------------------------------------------------------- tampilan daftar
+
+/// Tampilkan sumber 18+ (NSFW) di daftar. Default: tidak.
+final showNsfwSourcesProvider = NotifierProvider<ShowNsfwNotifier, bool>(ShowNsfwNotifier.new);
+
+class ShowNsfwNotifier extends Notifier<bool> {
+  static const _key = 'sources.show_nsfw.v1';
+
+  @override
+  bool build() => ref.watch(sharedPreferencesProvider).getBool(_key) ?? false;
+
+  Future<void> set(bool value) async {
+    state = value;
+    await ref.read(sharedPreferencesProvider).setBool(_key, value);
+  }
+}
+
+/// Bahasa yang dipilih di tab Sumber (null = semua).
+final sourceLanguageProvider = NotifierProvider<SourceLanguageNotifier, String?>(SourceLanguageNotifier.new);
+
+class SourceLanguageNotifier extends Notifier<String?> {
+  static const _key = 'sources.language.v1';
+
+  @override
+  String? build() => ref.watch(sharedPreferencesProvider).getString(_key);
+
+  Future<void> set(String? lang) async {
+    state = lang;
+    final prefs = ref.read(sharedPreferencesProvider);
+    lang == null ? await prefs.remove(_key) : await prefs.setString(_key, lang);
+  }
+}

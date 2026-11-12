@@ -1,58 +1,42 @@
+import 'catalog.dart';
 import 'id/komiku.dart';
 import 'id/shinigami.dart';
 import 'source.dart';
-import 'templates/mangathemesia.dart';
 
-/// Daftar extension bawaan. Tambah sumber baru di sini.
-///
-/// Domain situs sering pindah; bila sumber gagal terhubung, cek `baseUrl`
-/// terbaru di keiyoushi/extensions-source (`src/id/<nama>/build.gradle.kts`).
-List<MangaSource> builtInSources() => [
+/// Sumber yang ditulis tangan (bukan template). Ditaruh di depan dan menang
+/// bila ID-nya sama dengan entri katalog.
+List<MangaSource> customSources() => [
       KomikuSource(),
       ShinigamiSource(),
-      MangaThemesiaSource(
-        id: 'id.apkomik',
-        name: 'APKOMIK',
-        baseUrl: 'https://01.apkomik.com',
-      ),
-      MangaThemesiaSource(
-        id: 'id.komikstation',
-        name: 'Komik Station',
-        baseUrl: 'https://komikstation.org',
-        requestsPerSecond: 4,
-      ),
-      // Dikeluarkan (12 Nov 2026): m1.manhwalist.my.id ("under construction"),
-      // kuromanga.id (lolos Cloudflare lewat WebView, tapi server asal 522/down).
-      MangaThemesiaSource(
-        id: 'id.izanamiscans',
-        name: 'Izanami Scans',
-        baseUrl: 'https://izanamiscans.my.id',
-        requestsPerSecond: 3,
-      ),
-      MangaThemesiaSource(
-        id: 'id.ngomik',
-        name: 'Ngomik',
-        baseUrl: 'https://02.ngomik.cc',
-      ),
-      MangaThemesiaSource(
-        id: 'id.noromax',
-        name: 'Noromax',
-        baseUrl: 'https://noromax02.my.id',
-      ),
-      MangaThemesiaSource(
-        id: 'id.isekaikomik',
-        name: 'IsekaiKomik',
-        baseUrl: 'https://ch1.isekaikomik.site',
-      ),
     ];
 
+/// Semua sumber: sumber kustom + katalog template (Madara, MangaThemesia)
+/// yang dihasilkan dari keiyoushi/extensions-source.
+///
+/// Domain situs sering pindah; ganti lewat ikon gir di tab Sumber, atau
+/// perbarui katalog dengan `tool/generate_source_catalog.mjs`.
+List<MangaSource> builtInSources({SourceCatalog catalog = SourceCatalog.empty}) {
+  final sources = customSources();
+  final ids = sources.map((s) => s.id).toSet();
+  for (final entry in catalog.entries) {
+    if (!ids.add(entry.id)) continue;
+    final source = entry.create();
+    if (source != null) sources.add(source);
+  }
+  return sources;
+}
+
 class SourceRegistry {
-  SourceRegistry(List<MangaSource> sources)
+  SourceRegistry(List<MangaSource> sources, {this.experimentalIds = const {}})
       : sources = List.unmodifiable(sources),
         _byId = {for (final s in sources) s.id: s};
 
   final List<MangaSource> sources;
   final Map<String, MangaSource> _byId;
+
+  /// Sumber katalog yang di Kotlin punya logika khusus; port template bisa
+  /// kurang pas (ditandai "eksperimental" di UI).
+  final Set<String> experimentalIds;
 
   MangaSource? byId(String id) => _byId[id];
 }

@@ -13,6 +13,7 @@ import '../html_utils.dart';
 import '../models.dart';
 import '../source.dart';
 import '../source_exception.dart';
+import 'madara.dart' show madaraStatus;
 
 /// Tema WordPress komik paling umum di situs Indonesia (29 situs id di
 /// keiyoushi). Situs baru cukup:
@@ -175,11 +176,18 @@ class MangaThemesiaSource extends HttpSource {
 
   static const detailsSelector = 'div.bigcontent, div.animefull, div.main-info, div.postbody';
 
-  static const _authorLabels = ['author', 'autor', 'mangaka', 'seniman', 'pengarang', 'penulis'];
-  static const _artistLabels = ['artist', 'artista', 'ilustrator'];
-  static const _statusLabels = ['status'];
-  static const _typeLabels = ['type', 'tipe', 'jenis'];
-  static const _altLabels = ['alternative', 'alternatif'];
+  // Label multi-bahasa, mengikuti daftar di MangaThemesia.kt.
+  static const _authorLabels = [
+    'author', 'auteur', 'autor', 'المؤلف', 'mangaka', 'seniman', 'pengarang', 'penulis', 'yazar', 'ผู้แต่ง', 'นักเขียน',
+  ];
+  static const _artistLabels = [
+    'artist', 'artiste', 'artista', 'الرسام', 'الناشر', 'i̇llüstratör', 'illüstratör', 'çizer', 'sanatçı', 'นักวาด', 'ilustrator',
+  ];
+  static const _statusLabels = [
+    'status', 'statut', 'durum', '連載状況', 'estado', 'الحالة', 'حالة العمل', 'สถานะ', 'stato', 'statüsü',
+  ];
+  static const _typeLabels = ['type', 'ประเภท', 'النوع', 'tipe', 'türü', 'jenis', 'tipo'];
+  static const _altLabels = ['alternative', 'alternatif', 'الأسماء الثانوية'];
 
   /// Padanan selector berpola
   /// `.infotable tr:contains(L) td:last-child, .tsinfo .imptdt:contains(L) i, .fmed b:contains(L)+span`.
@@ -258,9 +266,15 @@ class MangaThemesiaSource extends HttpSource {
       artist: findLabeled(root, _artistLabels),
       description: description,
       genres: genres.map(_titleCase).toList(),
-      status: parseStatus(findLabeled(root, _statusLabels)),
+      status: _status(findLabeled(root, _statusLabels)),
       chapters: parseChapters(doc, pageUrl),
     );
+  }
+
+  /// Status multi-bahasa (daftar Madara), lalu parser lama sebagai cadangan.
+  static SourceMangaStatus _status(String? raw) {
+    final status = madaraStatus(raw);
+    return status == SourceMangaStatus.unknown ? parseStatus(raw) : status;
   }
 
   static String _titleCase(String s) => s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);

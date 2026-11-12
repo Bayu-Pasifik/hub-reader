@@ -66,24 +66,45 @@ lib/sources/
 ├── models.dart                 # SourceManga, SourceMangaDetails, SourceChapter, MangaPage
 ├── source_exception.dart       # error situs (Cloudflare, timeout, format berubah)
 ├── html_utils.dart             # pengganti util Jsoup: absUrl, imgAttr, ownText, parse tanggal/nomor bab
-├── templates/mangathemesia.dart  # template tema WP MangaThemesia (dipakai 29 situs id)
+├── templates/mangathemesia.dart  # template tema WP MangaThemesia
+├── templates/madara.dart       # template tema WP Madara (AJAX & non-AJAX, 5 mode bab)
+├── catalog.dart                # baca assets/sources/catalog.json → instance template
 ├── id/komiku.dart              # sumber kustom, scraping HTML
 ├── id/shinigami.dart           # sumber kustom, API JSON (api.shngm.io)
-└── registry.dart               # daftar sumber bawaan
+└── registry.dart               # sumber kustom + katalog
+assets/sources/catalog.json     # 359 sumber template, dibuat oleh tool/
+tool/generate_source_catalog.mjs  # generator katalog dari keiyoushi/extensions-source
 lib/state/source_providers.dart # infinite scroll, detail, halaman bab
-lib/ui/screens/sources/         # daftar sumber, jelajah, detail, reader
+lib/ui/screens/sources/         # daftar sumber per bahasa, jelajah, detail, reader
 ```
 
-**Menambah situs bertema MangaThemesia** cukup satu entri di `registry.dart`:
+### Katalog sumber
 
-```dart
-MangaThemesiaSource(id: 'id.namasitus', name: 'Nama Situs', baseUrl: 'https://domain.tld'),
+Semua extension keiyoushi yang memakai template **Madara** (244) atau **MangaThemesia** (115)
+masuk otomatis, jadi totalnya 359 sumber dalam 16 bahasa. Tab Sumber mengelompokkannya per
+bahasa, lengkap dengan chip filter bahasa dan pencarian. Sumber 18+ disembunyikan secara
+default; aktifkan lewat menu ⋮ → "Tampilkan sumber 18+".
+
+Perbarui katalog dari checkout extensions-source terbaru:
+
+```bash
+git clone --depth 1 https://github.com/keiyoushi/extensions-source /tmp/ks
+node tool/generate_source_catalog.mjs /tmp/ks assets/sources/catalog.json
 ```
 
-Opsi: `mangaUrlDirectory: '/komik'`, `pageSelector`, `requestsPerSecond`, `contentWarning`.
-Situs dengan struktur lain dibuat sebagai subclass `HttpSource` (contoh: `id/komiku.dart`).
-Referensi selector tiap situs ada di keiyoushi/extensions-source
-(`src/id/<nama>/` dan `lib-multisrc/<tema>/`).
+Generator membaca `build.gradle.kts` (nama, bahasa, `baseUrl`, label konten) dan override
+sederhana di Kotlin (`mangaSubString`, `chapterMode`, `MadaraNoAjax`, `mangaUrlDirectory`,
+`pageSelector`). Situs yang meng-override logika inti (list, detail, halaman) ditandai
+**eksperimental** di UI, karena port template mungkin kurang pas untuk situs itu.
+
+Hasil uji langsung ke 359 situs dari PC (12 Nov 2026): **140 jalan penuh** (daftar → detail →
+gambar halaman). Sisanya gagal karena tidak bisa terhubung (84: domain mati/pindah atau
+diblokir ISP), Cloudflare (64, umumnya bisa diatasi di HP lewat "Buka di WebView"),
+situs yang wajib login/password, struktur HTML khusus, atau gambar terenkripsi
+(*chapter protector*, belum didukung).
+
+Situs dengan struktur lain dibuat sebagai subclass `HttpSource` (contoh: `id/komiku.dart`,
+`id/shinigami.dart`) lalu didaftarkan di `customSources()` pada `registry.dart`.
 
 Catatan port dari Kotlin/Jsoup: package `html` **tidak** mendukung `:contains()`
 dan `:has()`. Pakai `whereContains()` atau filter manual.
@@ -102,8 +123,6 @@ Batasan saat ini:
   dan indeksnya ada di SharedPreferences (`downloads.index.v1`). Reader otomatis memakai
   file lokal bila babnya lengkap terunduh. Antrean hanya ada di memori, jadi bab yang
   belum selesai hilang dari antrean saat aplikasi ditutup dan perlu diunduh ulang.
-- Sumber bawaan (8): Komiku, Shinigami, APKOMIK, Komik Station, Izanami Scans, Ngomik,
-  Noromax, dan IsekaiKomik.
 - Domain situs sering pindah. Ketuk ikon gir di tab Sumber untuk mengganti domain tanpa
   build ulang (ada tombol Tes koneksi). Host lama diingat, jadi URL favorit, riwayat, dan
   unduhan dari domain lama otomatis dialihkan (`HttpSource.rewriteToCurrentHost`).

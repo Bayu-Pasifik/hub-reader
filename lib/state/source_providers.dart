@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/models/download.dart';
+import '../sources/catalog.dart';
 import '../sources/models.dart';
 import '../sources/registry.dart';
 import '../sources/source.dart';
@@ -10,16 +11,24 @@ import 'source_settings_provider.dart';
 
 /// Registry dibuat ulang saat domain sumber diubah di pengaturan, jadi
 /// semua provider turunan (daftar, detail, halaman) ikut memuat ulang.
+/// Katalog sumber template (assets/sources/catalog.json). Di-override di
+/// main() setelah aset dibaca; kosong di tes.
+final sourceCatalogProvider = Provider<SourceCatalog>((ref) => SourceCatalog.empty);
+
 final sourceRegistryProvider = Provider<SourceRegistry>((ref) {
   final settings = ref.watch(sourceBaseUrlProvider);
-  final sources = builtInSources();
+  final catalog = ref.watch(sourceCatalogProvider);
+  final sources = builtInSources(catalog: catalog);
   for (final source in sources.whereType<HttpSource>()) {
     final setting = settings[source.id];
     if (setting == null) continue;
     if (setting.hasOverride) source.baseUrlOverride = setting.url;
     source.previousHosts = setting.previousHosts.toSet();
   }
-  return SourceRegistry(sources);
+  return SourceRegistry(
+    sources,
+    experimentalIds: {for (final e in catalog.entries) if (e.customized) e.id},
+  );
 });
 
 final sourceProvider = Provider.family<MangaSource?, String>(

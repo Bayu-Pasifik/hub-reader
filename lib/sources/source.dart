@@ -154,6 +154,23 @@ abstract class HttpSource extends MangaSource {
     }
   }
 
+  /// POST form (application/x-www-form-urlencoded), hasil berupa HTML.
+  /// Dipakai template WordPress seperti Madara (`admin-ajax.php`).
+  Future<HtmlResponse> postHtml(Uri url, Map<String, String> form, {Map<String, String>? headers}) async {
+    await _throttle();
+    try {
+      final response = await dio.postUri<String>(
+        rewriteToCurrentHost(url),
+        data: form,
+        options: Options(contentType: Headers.formUrlEncodedContentType, headers: headers),
+      );
+      final body = response.data ?? '';
+      return HtmlResponse(html_parser.parse(body), body, response.realUri);
+    } catch (error) {
+      throw toSourceException(error);
+    }
+  }
+
   /// GET JSON (untuk sumber berbasis API, mis. Shinigami).
   Future<Object?> fetchJson(Uri url, {Map<String, String>? headers}) async {
     await _throttle();

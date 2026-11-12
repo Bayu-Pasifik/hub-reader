@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hub_reader/sources/catalog.dart';
 import 'package:hub_reader/sources/id/shinigami.dart';
 import 'package:hub_reader/sources/models.dart';
 import 'package:hub_reader/sources/source.dart';
@@ -25,7 +26,13 @@ void main() {
     test('settings apply to the registry, remember old hosts, and reset', () async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
-      final c = ProviderContainer(overrides: [sharedPreferencesProvider.overrideWithValue(prefs)]);
+      final c = ProviderContainer(overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        sourceCatalogProvider.overrideWithValue(SourceCatalog.fromJsonString(
+          '{"sources":[{"id":"id.komikstation","name":"Komik Station","lang":"id",'
+          '"baseUrl":"https://komikstation.org","theme":"mangathemesia","contentWarning":"safe"}]}',
+        )),
+      ]);
       addTearDown(c.dispose);
 
       HttpSource src() => c.read(sourceProvider('id.komikstation'))! as HttpSource;
