@@ -2,7 +2,7 @@
  "source": "https://github.com/keiyoushi/extensions-source",
  "license": "Apache-2.0",
  "generatedAt": "2026-11-12",
- "count": 400,
+ "count": 404,
  "sources": [
   {
    "id": "all.allporncomicsco",
@@ -2972,6 +2972,14 @@
    }
   },
   {
+   "id": "id.hwago",
+   "name": "Hwago",
+   "lang": "id",
+   "baseUrl": "https://01.hwago.com",
+   "contentWarning": "mixed",
+   "theme": "hwalumi"
+  },
+  {
    "id": "id.iniotaku",
    "name": "IniOtaku",
    "lang": "id",
@@ -3172,6 +3180,14 @@
    "theme": "mangathemesia"
   },
   {
+   "id": "id.komikzoid",
+   "name": "Komikzoid",
+   "lang": "id",
+   "baseUrl": "https://01.komikzoid.id",
+   "contentWarning": "safe",
+   "theme": "colorlibanime"
+  },
+  {
    "id": "id.kumapoi",
    "name": "KumaPoi",
    "lang": "id",
@@ -3225,6 +3241,14 @@
      "hasProjectPage": true
     }
    }
+  },
+  {
+   "id": "id.lumoskomik",
+   "name": "LumosKomik",
+   "lang": "id",
+   "baseUrl": "https://03.lumosgg.com",
+   "contentWarning": "safe",
+   "theme": "hwalumi"
   },
   {
    "id": "id.luvyaa",
@@ -3476,6 +3500,14 @@
    "baseUrl": "https://sektedoujin.cc",
    "contentWarning": "nsfw",
    "theme": "mangathemesia"
+  },
+  {
+   "id": "id.sektekomik",
+   "name": "Sekte Komik",
+   "lang": "id",
+   "baseUrl": "https://01.sektekomik.id",
+   "contentWarning": "safe",
+   "theme": "colorlibanime"
   },
   {
    "id": "id.shiyurasub",

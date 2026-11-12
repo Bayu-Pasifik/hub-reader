@@ -7,6 +7,7 @@ import 'templates/loneseal.dart';
 import 'templates/madara.dart';
 import 'templates/mangathemesia.dart';
 import 'templates/natsuid.dart';
+import 'templates/small_templates.dart';
 import 'templates/zeistmanga.dart';
 
 /// Satu entri di `assets/sources/catalog.json` (dihasilkan oleh
@@ -63,7 +64,8 @@ class CatalogEntry {
             baseUrl: baseUrl,
             contentWarning: contentWarning,
             mangaUrlDirectory: asString(options['mangaUrlDirectory']) ?? '/manga',
-            pageSelector: asString(options['pageSelector'])?.replaceAll(':not(noscript img)', '') ?? 'div#readerarea img',
+            pageSelector:
+                asString(options['pageSelector'])?.replaceAll(':not(noscript img)', '') ?? 'div#readerarea img',
           ),
         'madara' => MadaraSource(
             id: id,
@@ -102,6 +104,9 @@ class CatalogEntry {
             contentWarning: contentWarning,
             chapterPageOne: asMap(options['vals'])['chapterPageOne'] == true,
           ),
+        'colorlibanime' =>
+          ColorlibAnimeSource(id: id, name: name, lang: lang, baseUrl: baseUrl, contentWarning: contentWarning),
+        'hwalumi' => HwalumiSource(id: id, name: name, lang: lang, baseUrl: baseUrl, contentWarning: contentWarning),
         _ => null,
       };
 }
