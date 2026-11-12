@@ -68,11 +68,12 @@ lib/sources/
 ├── html_utils.dart             # pengganti util Jsoup: absUrl, imgAttr, ownText, parse tanggal/nomor bab
 ├── templates/mangathemesia.dart  # template tema WP MangaThemesia
 ├── templates/madara.dart       # template tema WP Madara (AJAX & non-AJAX, 5 mode bab)
+├── templates/keyoapp.dart      # template Keyoapp (situs scanlation English: classic, Livewire, V2)
 ├── catalog.dart                # baca assets/sources/catalog.json → instance template
 ├── id/komiku.dart              # sumber kustom, scraping HTML
 ├── id/shinigami.dart           # sumber kustom, API JSON (api.shngm.io)
 └── registry.dart               # sumber kustom + katalog
-assets/sources/catalog.json     # 359 sumber template, dibuat oleh tool/
+assets/sources/catalog.json     # 420 sumber template, dibuat oleh tool/
 tool/generate_source_catalog.mjs  # generator katalog dari keiyoushi/extensions-source
 lib/state/source_providers.dart # infinite scroll, detail, halaman bab
 lib/ui/screens/sources/         # daftar sumber per bahasa, jelajah, detail, reader
@@ -80,8 +81,11 @@ lib/ui/screens/sources/         # daftar sumber per bahasa, jelajah, detail, rea
 
 ### Katalog sumber
 
-Semua extension keiyoushi yang memakai template **Madara** (244) atau **MangaThemesia** (115)
-masuk otomatis, jadi totalnya 359 sumber dalam 16 bahasa. Tab Sumber mengelompokkannya per
+Semua extension keiyoushi yang memakai template yang sudah di-port masuk otomatis:
+**Madara** (244), **MangaThemesia** (115), **ZeistManga** (33), **Keyoapp** (16), LoneSeal (5),
+NatsuId (3), Hwalumi (2), dan ColorlibAnime (2), jadi totalnya 420 sumber dalam 16 bahasa.
+Keyoapp (12 Nov 2026): 11 dari 16 situs English jalan penuh; 3 di balik Cloudflare
+(Meitoon, Luna Toons, Kaizen Scans) dan 2 sedang down (Mist Scans, Grim Scans). Tab Sumber mengelompokkannya per
 bahasa, lengkap dengan chip filter bahasa dan pencarian. Sumber 18+ disembunyikan secara
 default; aktifkan lewat menu ⋮ → "Tampilkan sumber 18+".
 

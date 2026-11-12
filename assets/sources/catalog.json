@@ -2,7 +2,7 @@
  "source": "https://github.com/keiyoushi/extensions-source",
  "license": "Apache-2.0",
  "generatedAt": "2026-11-12",
- "count": 404,
+ "count": 420,
  "sources": [
   {
    "id": "all.allporncomicsco",
@@ -640,6 +640,37 @@
    "theme": "mangathemesia"
   },
   {
+   "id": "en.artlapsa",
+   "name": "Art Lapsa",
+   "lang": "en",
+   "baseUrl": "https://artlapsa.com",
+   "contentWarning": "mixed",
+   "theme": "keyoapp",
+   "options": {
+    "variant": "livewire",
+    "vals": {
+     "altNameSelector": "details[data-testid=series-other-names] li.select-all",
+     "statusSelector": "a[aria-label=Status]",
+     "typeSelector": "a[aria-label=Type]",
+     "genreSelector": "div:has(>h1) a[href*='/genres/']",
+     "authorSelector": "dt:contains(Author) + dd",
+     "artistSelector": "dt:contains(Artist) + dd",
+     "paidChapterSelector": "img[alt~=Coin], img[src*=star-circle]"
+    }
+   }
+  },
+  {
+   "id": "en.asmotoon",
+   "name": "Asmodeus Scans",
+   "lang": "en",
+   "baseUrl": "https://asmotoon.com",
+   "contentWarning": "safe",
+   "theme": "keyoapp",
+   "options": {
+    "variant": "v2"
+   }
+  },
+  {
    "id": "en.asterscans",
    "name": "Aster Scans",
    "lang": "en",
@@ -813,6 +844,23 @@
    }
   },
   {
+   "id": "en.erisscans",
+   "name": "Eris Scans",
+   "lang": "en",
+   "baseUrl": "https://erisscans.com",
+   "contentWarning": "mixed",
+   "theme": "keyoapp",
+   "options": {
+    "vals": {
+     "altNameSelector": "div.font-medium:containsOwn(Alternative titles) ~ div span.select-all",
+     "statusSelector": "div[alt=Status]",
+     "authorSelector": "div[alt=Author]",
+     "artistSelector": "div[alt=Artist]",
+     "typeSelector": "div[alt='Series Type']"
+    }
+   }
+  },
+  {
    "id": "en.ero18x",
    "name": "Ero18x",
    "lang": "en",
@@ -905,6 +953,17 @@
    }
   },
   {
+   "id": "en.suryascans",
+   "name": "Genz Toons",
+   "lang": "en",
+   "baseUrl": "https://genztoons.org",
+   "contentWarning": "safe",
+   "theme": "keyoapp",
+   "options": {
+    "popularFromSearch": true
+   }
+  },
+  {
    "id": "en.gingertoon",
    "name": "GingeRTooN",
    "lang": "en",
@@ -931,6 +990,14 @@
      "ajaxTemplate": "wp-manga/content/content-archive"
     }
    }
+  },
+  {
+   "id": "en.grimscans",
+   "name": "Grim Scans",
+   "lang": "en",
+   "baseUrl": "https://grimscans.com",
+   "contentWarning": "safe",
+   "theme": "keyoapp"
   },
   {
    "id": "en.hadesscans",
@@ -1043,6 +1110,14 @@
    }
   },
   {
+   "id": "en.kaizenscan",
+   "name": "Kaizen Scan",
+   "lang": "en",
+   "baseUrl": "https://kaizenscan.com",
+   "contentWarning": "nsfw",
+   "theme": "keyoapp"
+  },
+  {
    "id": "en.kaliscanorg",
    "name": "KaliScan.org (unoriginal)",
    "lang": "en",
@@ -1072,6 +1147,14 @@
    }
   },
   {
+   "id": "en.kewnscans",
+   "name": "Kewn Scans",
+   "lang": "en",
+   "baseUrl": "https://kewnscans.org",
+   "contentWarning": "safe",
+   "theme": "keyoapp"
+  },
+  {
    "id": "en.kingofshojo",
    "name": "King of Shojo",
    "lang": "en",
@@ -1091,6 +1174,26 @@
     "mangaSubString": "kissmanga",
     "vals": {
      "mangaSubString": "kissmanga"
+    }
+   }
+  },
+  {
+   "id": "en.kitsunedawn",
+   "name": "Kitsune Dawn",
+   "lang": "en",
+   "baseUrl": "https://kitsunedawn.com",
+   "contentWarning": "nsfw",
+   "theme": "keyoapp",
+   "options": {
+    "variant": "livewire",
+    "vals": {
+     "altNameSelector": "details[data-testid=series-other-names] li.select-all",
+     "statusSelector": "a[aria-label=Status]",
+     "typeSelector": "a[aria-label=Type]",
+     "genreSelector": "div:has(>h1) a[href*='/genres/']",
+     "authorSelector": "dt:contains(Author) + dd",
+     "artistSelector": "dt:contains(Artist) + dd",
+     "paidChapterSelector": "img[alt~=Coin], img[src*=star-circle]"
     }
    }
   },
@@ -1201,6 +1304,17 @@
    "theme": "madara",
    "options": {
     "chapterMode": "MangaAjaxPaginated"
+   }
+  },
+  {
+   "id": "en.lunatoons",
+   "name": "Luna Toons",
+   "lang": "en",
+   "baseUrl": "https://lunatoons.net",
+   "contentWarning": "mixed",
+   "theme": "keyoapp",
+   "options": {
+    "variant": "v2"
    }
   },
   {
@@ -1610,6 +1724,22 @@
    }
   },
   {
+   "id": "en.meitoon",
+   "name": "MeiToon",
+   "lang": "en",
+   "baseUrl": "https://meitoon.org",
+   "contentWarning": "safe",
+   "theme": "keyoapp"
+  },
+  {
+   "id": "en.mistscans",
+   "name": "Mist Scans",
+   "lang": "en",
+   "baseUrl": "https://mistscans.com",
+   "contentWarning": "safe",
+   "theme": "keyoapp"
+  },
+  {
    "id": "en.murimscan",
    "name": "MurimScan",
    "lang": "en",
@@ -1645,6 +1775,22 @@
      "mangaDetailsSelectorAuthor": "div.artist-content > a"
     },
     "customized": true
+   }
+  },
+  {
+   "id": "en.nyanukafe",
+   "name": "Nyanu Kafe",
+   "lang": "en",
+   "baseUrl": "https://nyanukafe.com",
+   "contentWarning": "safe",
+   "theme": "keyoapp",
+   "options": {
+    "vals": {
+     "statusSelector": "div.w-full.flex-wrap > div:eq(3) > div:last-child",
+     "authorSelector": "div.w-full.flex-wrap > div:eq(0) > div:last-child",
+     "artistSelector": "div.w-full.flex-wrap > div:eq(1) > div:last-child",
+     "typeSelector": "div.w-full.flex-wrap > div:eq(2) > div:last-child"
+    }
    }
   },
   {
@@ -1725,6 +1871,26 @@
    "options": {
     "vals": {
      "mangaUrlDirectory": "/manga"
+    }
+   }
+  },
+  {
+   "id": "en.ritharscans",
+   "name": "RitharScans",
+   "lang": "en",
+   "baseUrl": "https://ritharscans.com",
+   "contentWarning": "safe",
+   "theme": "keyoapp",
+   "options": {
+    "variant": "livewire",
+    "vals": {
+     "altNameSelector": "details[data-testid=series-other-names] li.select-all",
+     "statusSelector": "a[aria-label=Status]",
+     "typeSelector": "a[aria-label=Type]",
+     "genreSelector": "div:has(>h1) a[href*='/genres/']",
+     "authorSelector": "dt:contains(Author) + dd",
+     "artistSelector": "dt:contains(Artist) + dd",
+     "paidChapterSelector": "img[alt~=Coin], img[src*=star-circle]"
     }
    }
   },
@@ -1831,6 +1997,17 @@
    }
   },
   {
+   "id": "en.sirenscans",
+   "name": "Siren Scans",
+   "lang": "en",
+   "baseUrl": "https://sirenscans.com",
+   "contentWarning": "safe",
+   "theme": "keyoapp",
+   "options": {
+    "variant": "v2"
+   }
+  },
+  {
    "id": "en.sleepytranslations",
    "name": "Sleepy Translations",
    "lang": "en",
@@ -1854,6 +2031,14 @@
      "mangaUrlDirectory": "/comics"
     }
    }
+  },
+  {
+   "id": "en.timelesstoons",
+   "name": "TimelessToons",
+   "lang": "en",
+   "baseUrl": "https://timelesstoons.org",
+   "contentWarning": "safe",
+   "theme": "keyoapp"
   },
   {
    "id": "en.toongod",
@@ -2012,6 +2197,14 @@
      "mangaUrlDirectory": "/webtoon"
     }
    }
+  },
+  {
+   "id": "en.writerscans",
+   "name": "Writer Scans",
+   "lang": "en",
+   "baseUrl": "https://writerscans.com",
+   "contentWarning": "safe",
+   "theme": "keyoapp"
   },
   {
    "id": "en.wuxiaworld",

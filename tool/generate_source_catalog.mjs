@@ -14,7 +14,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga', 'loneseal', 'natsuid', 'colorlibanime', 'hwalumi']);
+const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga', 'loneseal', 'natsuid', 'colorlibanime', 'hwalumi', 'keyoapp']);
 
 const [root, outArg] = process.argv.slice(2);
 if (!root) {
@@ -84,6 +84,11 @@ for (const langDir of listDirs(path.join(root, 'src'))) {
       const sub = str(kt, /mangaSubString[^=\n]*=\s*"([^"]*)"/);
       if (sub && sub !== 'manga') options.mangaSubString = sub;
       if (/filterNonMangaItems[^=\n]*=\s*false/.test(kt)) options.filterNonMangaItems = false;
+    } else if (theme === 'keyoapp') {
+      // Varian: KeyoappV2, atau Livewire (override ArtLapsa & kawan-kawan).
+      if (/:\s*KeyoappV2\s*\(/.test(kt)) options.variant = 'v2';
+      else if (/wire:model\.live/.test(kt)) options.variant = 'livewire';
+      if (/getPopularManga\(page: Int\)\s*=\s*getSearchMangaList/.test(kt)) options.popularFromSearch = true;
     } else {
       const dir = str(kt, /mangaUrlDirectory\s*=\s*"([^"]*)"/);
       if (dir != null && dir !== '/manga') options.mangaUrlDirectory = dir;
@@ -102,7 +107,8 @@ for (const langDir of listDirs(path.join(root, 'src'))) {
     // NatsuId (Kiryuu): daftar bab memakai page=1.
     if (/setQueryParameter\("page", "1"\)/.test(kt)) vals.chapterPageOne = true;
     if (Object.keys(vals).length) options.vals = vals;
-    if (/getPopularManga|getSearchMangaList|parseArchive|pageListParse|parsePages|mangaDetailsParse|parseDetails|getChapterFeedUrl|parsePopularManga|parseSearchManga/.test(kt)) {
+    // Keyoapp: override yang dikenal (Livewire, V2, populer via pencarian) sudah ditangani port Dart.
+    if (theme !== 'keyoapp' && /getPopularManga|getSearchMangaList|parseArchive|pageListParse|parsePages|mangaDetailsParse|parseDetails|getChapterFeedUrl|parsePopularManga|parseSearchManga/.test(kt)) {
       options.customized = true; // Kotlin meng-override logika inti; port Dart bisa kurang pas.
     }
 

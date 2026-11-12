@@ -3,6 +3,7 @@ import 'dart:convert';
 import '../core/utils/json.dart';
 import 'models.dart';
 import 'source.dart';
+import 'templates/keyoapp.dart';
 import 'templates/loneseal.dart';
 import 'templates/madara.dart';
 import 'templates/mangathemesia.dart';
@@ -107,6 +108,15 @@ class CatalogEntry {
         'colorlibanime' =>
           ColorlibAnimeSource(id: id, name: name, lang: lang, baseUrl: baseUrl, contentWarning: contentWarning),
         'hwalumi' => HwalumiSource(id: id, name: name, lang: lang, baseUrl: baseUrl, contentWarning: contentWarning),
+        'keyoapp' => KeyoappSource(
+            id: id,
+            name: name,
+            lang: lang,
+            baseUrl: baseUrl,
+            contentWarning: contentWarning,
+            variant: keyoappVariantFrom(asString(options['variant'])),
+            popularFromSearch: options['popularFromSearch'] == true,
+          ),
         _ => null,
       };
 }
