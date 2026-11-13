@@ -204,6 +204,12 @@ mencapai jumlah bab. Token tracker termasuk data rahasia di cadangan.
 **Mode samaran** (ikon mata di Riwayat, atau Pengaturan): riwayat dan posisi baca otomatis tidak
 dicatat; tanda dibaca manual tetap bisa. Bilah kecil di atas navigasi menandai mode ini aktif.
 
+**Statistik** (ikon grafik di Riwayat, atau Pengaturan → Data): lama membaca hari ini / 7 hari / total,
+rentetan hari membaca, grafik 14 hari, bab selesai (komik & novel), favorit, dan 5 seri paling banyak
+dibaca. Lama membaca dihitung dari aktivitas di reader (gulir, ganti halaman, auto-scroll, TTS) dengan
+jeda maksimal 3 menit per aktivitas; disimpan per hari di `stats.reading.v1` (ikut cadangan, tidak
+dicatat saat mode samaran).
+
 **Pengaturan** (menu ⋮ di tab Komik/Novel/Favorit): tema sistem/terang/gelap, hitam pekat (OLED),
 warna aksen; kunci aplikasi dengan sidik jari/PIN perangkat (`local_auth`, `MainActivity` kini
 `FlutterFragmentActivity`, tema `LaunchTheme`/`NormalTheme` turunan `Theme.AppCompat` agar dialog

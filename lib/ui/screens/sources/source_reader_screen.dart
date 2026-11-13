@@ -9,6 +9,7 @@ import '../../../data/models/source_library.dart';
 import '../../../sources/models.dart';
 import '../../../sources/source.dart';
 import '../../../state/reader_settings_provider.dart';
+import '../../../state/reading_stats_provider.dart';
 import '../../../state/source_library_providers.dart';
 import '../../../state/tracker_providers.dart';
 import '../../../state/source_providers.dart';
@@ -172,15 +173,26 @@ class _PagesState extends ConsumerState<_Pages> {
     return saved == null || saved.done ? 0 : saved.page;
   }();
 
+  /// Lama membaca untuk statistik.
+  late final ReadingSession _session = () {
+    final stats = ref.read(readingStatsProvider.notifier);
+    return ReadingSession(stats.addReadingTime);
+  }();
+  late final AppLifecycleListener _lifecycle;
+
   @override
   void initState() {
     super.initState();
     _current = _initialPage;
     _positions.itemPositions.addListener(_onScroll);
+    _session.activity();
+    _lifecycle = AppLifecycleListener(onPause: _session.pause, onResume: _session.activity);
   }
 
   @override
   void dispose() {
+    _lifecycle.dispose();
+    _session.pause();
     _positions.itemPositions.removeListener(_onScroll);
     _pageController?.dispose();
     super.dispose();
@@ -189,6 +201,7 @@ class _PagesState extends ConsumerState<_Pages> {
   /// Simpan posisi; dibandingkan dengan nilai tersimpan terakhir (bukan
   /// _current) supaya bab 1 halaman tetap tercatat selesai.
   void _setPage(int page) {
+    _session.activity();
     if (page != _current) setState(() => _current = page);
     if (page == _saved || _total == 0) return;
     _saved = page;

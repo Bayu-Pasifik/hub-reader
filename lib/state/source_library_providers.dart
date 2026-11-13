@@ -5,6 +5,8 @@ import '../data/models/source_library.dart';
 import '../sources/models.dart';
 import 'app_settings_provider.dart';
 import 'core_providers.dart';
+import 'novel_providers.dart' show isNovelSourceId;
+import 'reading_stats_provider.dart';
 
 final sourceLibraryStoreProvider = Provider<SourceLibraryStore>(
   (ref) => SourceLibraryStore(ref.watch(sharedPreferencesProvider)),
@@ -253,6 +255,9 @@ class SourceProgressNotifier extends Notifier<Map<String, Map<String, SourceChap
     final old = state[key]?[chapterUrl];
     final done = (old?.done ?? false) || (total > 0 && page >= total - 1);
     if (old != null && old.page == page && old.total == total && old.done == done) return;
+    if (done && !(old?.done ?? false)) {
+      ref.read(readingStatsProvider.notifier).chapterFinished(novel: isNovelSourceId(series.sourceId));
+    }
     _set(
         key,
         chapterUrl,

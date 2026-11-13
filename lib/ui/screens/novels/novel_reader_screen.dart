@@ -15,6 +15,7 @@ import '../../../novels/novel_tts.dart';
 import '../../../state/app_settings_provider.dart';
 import '../../../sources/models.dart';
 import '../../../state/novel_providers.dart';
+import '../../../state/reading_stats_provider.dart';
 import '../../../state/source_library_providers.dart';
 import '../../../state/tracker_providers.dart';
 import '../../router.dart';
@@ -81,9 +82,18 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
 
   SourceItemKey get _libKey => (sourceId: novelLibraryId(widget.pluginId), url: widget.novelPath);
 
+  /// Lama membaca untuk statistik (gulir, auto-scroll, TTS).
+  late final ReadingSession _session = () {
+    final stats = ref.read(readingStatsProvider.notifier);
+    return ReadingSession(stats.addReadingTime);
+  }();
+  late final AppLifecycleListener _lifecycle;
+
   @override
   void initState() {
     super.initState();
+    _session.activity();
+    _lifecycle = AppLifecycleListener(onPause: _session.pause, onResume: _session.activity);
     _scroll.addListener(_onScroll);
     _tts.addListener(_onTts);
     _tts.onChapterEnd = _onTtsChapterEnd;
@@ -143,6 +153,8 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
 
   @override
   void dispose() {
+    _lifecycle.dispose();
+    _session.pause();
     _saveTimer?.cancel();
     _saveProgress();
     _tts.dispose();
@@ -162,6 +174,7 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
   }
 
   void _onScroll() {
+    _session.activity();
     if (_chrome && _scroll.position.userScrollDirection != ScrollDirection.idle) {
       setState(() => _chrome = false);
     }
@@ -221,6 +234,7 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
   // ------------------------------------------------------------------ TTS
 
   void _onTts() {
+    _session.activity();
     if (!mounted) return;
     final i = _tts.index;
     setState(() {});

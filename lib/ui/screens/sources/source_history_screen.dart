@@ -38,6 +38,11 @@ class SourceHistoryScreen extends ConsumerWidget {
         title: const Text('Riwayat'),
         actions: [
           IconButton(
+            tooltip: 'Statistik',
+            icon: const Icon(Icons.insights_outlined),
+            onPressed: () => context.push('/stats'),
+          ),
+          IconButton(
             tooltip: incognito ? 'Matikan mode samaran' : 'Mode samaran',
             icon: Icon(incognito ? Icons.visibility_off : Icons.visibility_off_outlined),
             color: incognito ? Theme.of(context).colorScheme.primary : null,

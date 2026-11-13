@@ -227,6 +227,12 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
           ),
           header('Data'),
           ListTile(
+            leading: const Icon(Icons.insights_outlined),
+            title: const Text('Statistik baca'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/stats'),
+          ),
+          ListTile(
             leading: const Icon(Icons.backup_outlined),
             title: const Text('Cadangkan & pulihkan'),
             trailing: const Icon(Icons.chevron_right),

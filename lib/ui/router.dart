@@ -19,6 +19,7 @@ import 'screens/sources/downloads_screen.dart';
 import 'screens/app_settings_screen.dart';
 import 'screens/backup_screen.dart';
 import 'screens/migrate_screen.dart';
+import 'screens/stats_screen.dart';
 import 'screens/updates_screen.dart';
 import 'screens/sources/source_browse_screen.dart';
 import 'screens/sources/source_favorites_screen.dart';
@@ -157,6 +158,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/backup',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (_, __) => const BackupScreen(),
+      ),
+      GoRoute(
+        path: '/stats',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, __) => const StatsScreen(),
       ),
       GoRoute(
         path: '/updates',
