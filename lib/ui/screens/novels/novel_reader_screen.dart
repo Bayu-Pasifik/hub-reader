@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/platform/reader_bridge.dart';
 import '../../../data/models/source_library.dart';
+import '../../../novels/local_epub.dart';
 import '../../../novels/novel_models.dart';
 import '../../../novels/novel_source.dart';
 import '../../../novels/novel_tts.dart';
@@ -535,6 +536,7 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        if (widget.pluginId != LocalNovelSource.pluginId)
                         IconButton(
                           tooltip: 'Buka di WebView',
                           icon: const Icon(Icons.public),

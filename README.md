@@ -212,6 +212,13 @@ akar folder = seri satu bab; `cover.*` dan `description.txt` opsional. Arsip die
 dibaca (nama file diganti nomor urut, jadi entri `../` tidak bisa keluar folder). Menu detail seri punya
 **Hapus dari perangkat**; unduh & cek kesehatan tidak berlaku untuk sumber ini.
 
+**Novel EPUB lokal** (`lib/novels/local_epub.dart`): ubin **Lokal (EPUB)** paling atas di tab Novel (tombol
+impor di kanan) atau impor .epub dari menu Sumber. File disalin ke `files/local_novels/`, diekstrak ke cache
+(entri `../` dilewati), lalu dibaca dari OPF: judul, penulis, sinopsis, subjek, sampul (`cover-image` /
+`<meta name="cover">`). Bab = urutan spine dengan judul dari daftar isi EPUB3 (nav) atau EPUB2 (NCX), atau
+heading pertama; halaman kosong dilewati. Gambar di bab diarahkan ke file hasil ekstrak (`file://`) dan
+dirender di reader. `NovelSource.custom` memungkinkan sumber novel tanpa mesin plugin JS.
+
 **Statistik** (ikon grafik di Riwayat, atau Pengaturan → Data): lama membaca hari ini / 7 hari / total,
 rentetan hari membaca, grafik 14 hari, bab selesai (komik & novel), favorit, dan 5 seri paling banyak
 dibaca. Lama membaca dihitung dari aktivitas di reader (gulir, ganti halaman, auto-scroll, TTS) dengan

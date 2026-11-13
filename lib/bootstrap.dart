@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'core/platform/webview_bridge.dart';
 import 'core/storage/json_cache.dart';
 import 'data/local/download_store.dart';
+import 'novels/local_epub.dart';
 import 'novels/plugin_repository.dart';
 import 'sources/catalog.dart';
 import 'sources/cookie_store.dart';
@@ -60,8 +61,11 @@ class AppDependencies {
     }
     LocalSource.root = Directory('${(external ?? supportDir).path}/local');
     LocalSource.cacheDir = Directory('${(await getTemporaryDirectory()).path}/local_pages');
+    LocalNovelSource.root = Directory('${(external ?? supportDir).path}/local_novels');
+    LocalNovelSource.cacheDir = Directory('${(await getTemporaryDirectory()).path}/local_epub');
     try {
       await LocalSource.root!.create(recursive: true);
+      await LocalNovelSource.root!.create(recursive: true);
     } catch (_) {
       // dibuat ulang saat impor
     }

@@ -5,6 +5,7 @@ import 'package:html/parser.dart' as html_parser;
 
 import '../../../data/models/download.dart';
 import '../../../data/models/source_library.dart';
+import '../../../novels/local_epub.dart';
 import '../../../novels/novel_models.dart';
 import '../../../novels/novel_source.dart';
 import '../../../sources/html_utils.dart';
@@ -203,6 +204,25 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
     if (ok == true) ref.invalidate(novelDetailsProvider(_key));
   }
 
+  Future<void> _deleteLocal(NovelDetails novel) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Hapus "${novel.name}"?'),
+        content: const Text('File EPUB di perangkat ikut dihapus dan tidak bisa dikembalikan.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Hapus')),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    await LocalNovelSource.delete(widget.path);
+    if (ref.read(isSourceFavoriteProvider(_libKey))) _toggleFavorite(novel);
+    ref.invalidate(novelListProvider);
+    if (mounted) context.pop();
+  }
+
   @override
   Widget build(BuildContext context) {
     final source = ref.watch(novelSourceProvider(widget.pluginId)).valueOrNull;
@@ -230,7 +250,7 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
                       color: isFavorite ? Theme.of(context).colorScheme.primary : null,
                       onPressed: () => _toggleFavorite(loaded),
                     ),
-                  if (loaded != null)
+                  if (loaded != null && source is! LocalNovelSource)
                     PopupMenuButton<int>(
                       tooltip: 'Unduh',
                       icon: const Icon(Icons.download_outlined),
@@ -255,15 +275,18 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
                     PopupMenuButton<String>(
                       onSelected: (v) {
                         if (v == 'web') _openWeb(source);
+                        if (v == 'delete' && loaded != null) _deleteLocal(loaded);
                         if (v == 'track' && loaded != null) _openTracking(loaded);
                         if (v == 'migrate' && loaded != null) {
                           context.push(migrateLocation(novelLibraryId(widget.pluginId), widget.path, loaded.name));
                         }
                       },
-                      itemBuilder: (_) => const [
-                        PopupMenuItem(value: 'web', child: Text('Buka di WebView')),
-                        PopupMenuItem(value: 'track', child: Text('Tracking')),
-                        PopupMenuItem(value: 'migrate', child: Text('Pindah sumber')),
+                      itemBuilder: (_) => [
+                        if (source is! LocalNovelSource) const PopupMenuItem(value: 'web', child: Text('Buka di WebView')),
+                        const PopupMenuItem(value: 'track', child: Text('Tracking')),
+                        const PopupMenuItem(value: 'migrate', child: Text('Pindah sumber')),
+                        if (source is LocalNovelSource)
+                          const PopupMenuItem(value: 'delete', child: Text('Hapus dari perangkat')),
                       ],
                     ),
                 ],
@@ -410,6 +433,7 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (done) const Icon(Icons.done_all, size: 18),
+                  if (widget.pluginId != LocalNovelSource.pluginId)
                   _NovelChapterDownloadButton(
                     chapterKey: chapterKey(novelLibraryId(widget.pluginId), c.path),
                     onDownload: () => _enqueue(novel, [c]),

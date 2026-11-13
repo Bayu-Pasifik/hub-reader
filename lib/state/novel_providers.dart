@@ -9,6 +9,7 @@ import '../data/models/download.dart';
 import '../novels/lnreader/engine_isolate.dart';
 import '../novels/lnreader/http_bridge.dart';
 import '../novels/lnreader/js_engine.dart';
+import '../novels/local_epub.dart';
 import '../novels/novel_models.dart';
 import '../novels/novel_source.dart';
 import '../novels/plugin_repository.dart';
@@ -146,6 +147,7 @@ class NovelLanguageNotifier extends Notifier<String?> {
 
 /// Plugin dimuat sekali per sesi (tidak autoDispose).
 final novelSourceProvider = FutureProvider.family<NovelSource, String>((ref, id) async {
+  if (id == LocalNovelSource.pluginId) return LocalNovelSource();
   final manifest = await ref.watch(novelManifestProvider.future);
   final info = manifest.byId(id);
   if (info == null) {

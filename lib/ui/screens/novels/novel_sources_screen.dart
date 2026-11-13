@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../novels/local_epub.dart';
 import '../../../novels/novel_models.dart';
 import '../../../novels/plugin_repository.dart';
 import '../../../state/download_providers.dart';
@@ -10,6 +11,7 @@ import '../../../state/novel_health_provider.dart';
 import '../../../state/novel_providers.dart';
 import '../../../state/source_health_provider.dart';
 import '../../router.dart';
+import '../../widgets/local_import.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/state_views.dart';
 import '../sources/sources_screen.dart' show languageName;
@@ -151,6 +153,7 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
     final hiddenCount = hideBroken ? filtered.where((p) => !novelUsable(health[p.id])).length : 0;
     if (hideBroken) filtered.removeWhere((p) => !novelUsable(health[p.id]));
     final rows = <Object>[];
+    if (query.isEmpty && lang == null) rows.add(LocalNovelSource.pluginInfo);
     final used = filtered.where((p) => installed.contains(NovelPluginRepository.safeId(p.id))).toList()
       ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
     if (used.isNotEmpty && query.isEmpty) {
@@ -254,6 +257,19 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
                         );
                       }
                       final p = row as NovelPluginInfo;
+                      if (p.id == LocalNovelSource.pluginId) {
+                        return ListTile(
+                          leading: const CircleAvatar(child: Icon(Icons.folder_outlined)),
+                          title: Text(p.name),
+                          subtitle: const Text('File EPUB di perangkat'),
+                          trailing: IconButton(
+                            tooltip: 'Impor EPUB',
+                            icon: const Icon(Icons.upload_file_outlined),
+                            onPressed: () => importLocalFiles(context, epubOnly: true),
+                          ),
+                          onTap: () => context.push(novelBrowseLocation(p.id)),
+                        );
+                      }
                       return _PluginTile(plugin: p, health: health[p.id]);
                     },
                   ),

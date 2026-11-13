@@ -9,8 +9,9 @@ import 'novel_models.dart';
 
 /// Satu plugin LNReader yang sudah dimuat ke [LnEngine].
 class NovelSource {
-  NovelSource({required this.info, required this.engine, required Map<String, Object?> meta})
-      : name = asString(meta['name']) ?? info.name,
+  NovelSource({required this.info, required LnEngine engine, required Map<String, Object?> meta})
+      : _engine = engine,
+        name = asString(meta['name']) ?? info.name,
         site = asString(meta['site']) ?? info.site,
         version = asString(meta['version']) ?? info.version,
         filters = NovelFilterDef.parseAll(meta['filters']),
@@ -21,8 +22,22 @@ class NovelSource {
           for (final e in asMap(asMap(meta['imageRequestInit'])['headers']).entries) e.key: '${e.value}',
         };
 
+  /// Sumber tanpa plugin JS (mis. EPUB lokal). Subkelas wajib meng-override
+  /// popular, search, detailsRaw, chapterPageRaw, chapter, dan webUrl.
+  NovelSource.custom({required this.info})
+      : _engine = null,
+        name = info.name,
+        site = info.site,
+        version = info.version,
+        filters = const [],
+        settings = const [],
+        hasParsePage = false,
+        hasResolveUrl = false,
+        imageHeaders = const {};
+
   final NovelPluginInfo info;
-  final LnEngine engine;
+  final LnEngine? _engine;
+  LnEngine get engine => _engine ?? (throw StateError('Sumber ${info.id} tidak memakai plugin JS.'));
   final String name;
   final String site;
   final String version;

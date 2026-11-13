@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:html/dom.dart' as dom;
@@ -151,7 +153,8 @@ List<NovelBlock> parseNovelHtml(String html, {Uri? baseUrl}) {
         if (src != null) {
           flush();
           final resolved = baseUrl != null ? baseUrl.resolve(src).toString() : src;
-          if (resolved.startsWith('http')) blocks.add(ImageBlock(resolved));
+          // file:// = gambar dari EPUB lokal yang sudah diekstrak.
+          if (resolved.startsWith('http') || resolved.startsWith('file://')) blocks.add(ImageBlock(resolved));
         }
         return;
     }
@@ -221,13 +224,19 @@ class NovelBlockView extends StatelessWidget {
       case ImageBlock():
         return Padding(
           padding: EdgeInsets.symmetric(vertical: size * 0.5),
-          child: CachedNetworkImage(
-            imageUrl: b.url,
-            httpHeaders: imageHeaders,
-            fit: BoxFit.fitWidth,
-            placeholder: (_, __) => const SizedBox(height: 120, child: Center(child: CircularProgressIndicator())),
-            errorWidget: (_, __, ___) => Icon(Icons.broken_image_outlined, color: style.color),
-          ),
+          child: b.url.startsWith('file://')
+              ? Image.file(
+                  File.fromUri(Uri.parse(b.url)),
+                  fit: BoxFit.fitWidth,
+                  errorBuilder: (_, __, ___) => Icon(Icons.broken_image_outlined, color: style.color),
+                )
+              : CachedNetworkImage(
+                  imageUrl: b.url,
+                  httpHeaders: imageHeaders,
+                  fit: BoxFit.fitWidth,
+                  placeholder: (_, __) => const SizedBox(height: 120, child: Center(child: CircularProgressIndicator())),
+                  errorWidget: (_, __, ___) => Icon(Icons.broken_image_outlined, color: style.color),
+                ),
         );
       case TextBlock():
         final scale = switch (b.heading) { 1 => 1.5, 2 => 1.35, 3 => 1.2, 4 || 5 || 6 => 1.1, _ => 1.0 };

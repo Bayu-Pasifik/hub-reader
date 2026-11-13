@@ -162,7 +162,7 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
               run.running
                   ? const PopupMenuItem(value: 'stop', child: Text('Hentikan pengecekan'))
                   : PopupMenuItem(value: 'check', child: Text('Cek ${filtered.where((s) => s is! LocalSource).length} sumber')),
-              const PopupMenuItem(value: 'import', child: Text('Impor komik (CBZ/ZIP)')),
+              const PopupMenuItem(value: 'import', child: Text('Impor file (CBZ/ZIP/EPUB)')),
               CheckedPopupMenuItem(value: 'dead', checked: hideDead, child: const Text('Sembunyikan sumber mati')),
               CheckedPopupMenuItem(value: 'nsfw', checked: showNsfw, child: const Text('Tampilkan sumber 18+')),
               const PopupMenuItem(value: 'settings', child: Text('Pengaturan')),

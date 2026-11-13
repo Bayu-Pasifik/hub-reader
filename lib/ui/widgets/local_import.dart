@@ -2,6 +2,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../novels/local_epub.dart';
 import '../../sources/local/local_source.dart';
 import '../router.dart';
 
@@ -35,24 +36,52 @@ String guessSeriesName(List<String> fileNames) {
   return common.isNotEmpty ? common : names.first;
 }
 
-/// Pilih CBZ/ZIP, tanya nama seri, salin ke folder lokal, lalu buka serinya.
-Future<void> importLocalFiles(BuildContext context) async {
+/// Pilih CBZ/ZIP (komik) dan/atau EPUB (novel). EPUB langsung disalin ke
+/// sumber novel Lokal; arsip komik ditanya nama serinya lalu disalin ke
+/// folder seri. Setelah selesai, seri/novel yang diimpor dibuka.
+Future<void> importLocalFiles(BuildContext context, {bool epubOnly = false}) async {
   final List<PlatformFile> picked;
   try {
     picked = await FilePicker.pickFiles(
-      dialogTitle: 'Pilih komik (CBZ/ZIP)',
+      dialogTitle: epubOnly ? 'Pilih novel (EPUB)' : 'Pilih komik (CBZ/ZIP) atau novel (EPUB)',
       type: FileType.custom,
-      allowedExtensions: const ['cbz', 'zip'],
+      allowedExtensions: epubOnly ? const ['epub'] : const ['cbz', 'zip', 'epub'],
     );
   } catch (e) {
     if (context.mounted) _snack(context, 'Gagal membuka pemilih file: $e');
     return;
   }
-  final files = picked.where((f) => LocalSource.isArchive(f.name)).toList();
+  final epubs = picked.where((f) => f.name.toLowerCase().endsWith('.epub')).toList();
+  final files = epubOnly ? <PlatformFile>[] : picked.where((f) => LocalSource.isArchive(f.name)).toList();
   if (!context.mounted) return;
-  if (files.isEmpty) {
-    if (picked.isNotEmpty) _snack(context, 'Hanya file .cbz atau .zip yang bisa diimpor.');
+  if (files.isEmpty && epubs.isEmpty) {
+    if (picked.isNotEmpty) {
+      _snack(context, epubOnly ? 'Hanya file .epub yang bisa diimpor.' : 'Hanya file .cbz, .zip, atau .epub yang bisa diimpor.');
+    }
     return;
+  }
+  if (epubs.isNotEmpty) {
+    final paths = <String>[];
+    Object? error;
+    await _withProgress(context, () async {
+      for (final f in epubs) {
+        try {
+          paths.add(await LocalNovelSource.importFile(f.name, f.xFile.saveTo));
+        } catch (e) {
+          error = e;
+        }
+      }
+    });
+    if (!context.mounted) return;
+    _snack(context, error == null ? '${paths.length} EPUB diimpor' : '${paths.length} EPUB diimpor, sebagian gagal: $error');
+    if (files.isEmpty) {
+      if (paths.length == 1) {
+        context.push(novelDetailLocation(LocalNovelSource.pluginId, paths.single));
+      } else if (paths.isNotEmpty) {
+        context.push(novelBrowseLocation(LocalNovelSource.pluginId));
+      }
+      return;
+    }
   }
 
   final controller = TextEditingController(text: guessSeriesName([for (final f in files) f.name]));
@@ -84,9 +113,31 @@ Future<void> importLocalFiles(BuildContext context) async {
   );
   if (series == null || series.isEmpty || !context.mounted) return;
 
+  String? url;
+  Object? error;
+  await _withProgress(context, () async {
+    try {
+      url = await LocalSource.importFiles(series, [
+        for (final f in files) (name: f.name, saveTo: f.xFile.saveTo),
+      ]);
+    } catch (e) {
+      error = e;
+    }
+  });
+  if (!context.mounted) return;
+  if (url == null) {
+    _snack(context, 'Impor gagal: $error');
+    return;
+  }
+  _snack(context, '${files.length} file diimpor ke "$series"');
+  context.push(sourceMangaLocation(LocalSource.sourceId, url!));
+}
+
+Future<void> _withProgress(BuildContext context, Future<void> Function() work) async {
   showDialog<void>(
     context: context,
     barrierDismissible: false,
+    useRootNavigator: true,
     builder: (_) => const PopScope(
       canPop: false,
       child: AlertDialog(
@@ -94,23 +145,11 @@ Future<void> importLocalFiles(BuildContext context) async {
       ),
     ),
   );
-  String? url;
-  Object? error;
   try {
-    url = await LocalSource.importFiles(series, [
-      for (final f in files) (name: f.name, saveTo: f.xFile.saveTo),
-    ]);
-  } catch (e) {
-    error = e;
+    await work();
+  } finally {
+    if (context.mounted) Navigator.of(context, rootNavigator: true).pop();
   }
-  if (!context.mounted) return;
-  Navigator.of(context, rootNavigator: true).pop();
-  if (url == null) {
-    _snack(context, 'Impor gagal: $error');
-    return;
-  }
-  _snack(context, '${files.length} file diimpor ke "$series"');
-  context.push(sourceMangaLocation(LocalSource.sourceId, url));
 }
 
 void _snack(BuildContext context, String text) => ScaffoldMessenger.of(context)
