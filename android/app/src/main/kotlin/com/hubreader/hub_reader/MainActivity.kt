@@ -1,6 +1,8 @@
 package com.hubreader.hub_reader
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.WindowManager
@@ -57,6 +59,21 @@ class MainActivity : FlutterFragmentActivity() {
                     "initial" -> {
                         result.success(initialLink)
                         initialLink = null
+                    }
+                    "appVersion" -> result.success(packageManager.getPackageInfo(packageName, 0).versionName)
+                    // Hanya https (halaman rilis / APK di GitHub), dibuka di browser.
+                    "openUrl" -> {
+                        val url = call.arguments as? String
+                        if (url == null || !url.startsWith("https://")) {
+                            result.error("ARG", "url https wajib", null)
+                        } else {
+                            try {
+                                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                                result.success(true)
+                            } catch (e: ActivityNotFoundException) {
+                                result.success(false)
+                            }
+                        }
                     }
                     else -> result.notImplemented()
                 }

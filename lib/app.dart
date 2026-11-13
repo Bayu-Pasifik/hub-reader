@@ -5,6 +5,7 @@ import 'state/app_settings_provider.dart';
 import 'state/download_providers.dart';
 import 'ui/deep_links.dart';
 import 'ui/router.dart';
+import 'ui/widgets/app_update_ui.dart';
 import 'ui/widgets/app_lock.dart';
 
 class HubReaderApp extends ConsumerStatefulWidget {
@@ -23,6 +24,8 @@ class _HubReaderAppState extends ConsumerState<HubReaderApp> {
       DeepLinks.listen((location) => ref.read(routerProvider).push(location));
       // Lanjutkan antrean unduhan yang tersimpan dari sesi sebelumnya.
       ref.read(downloadQueueProvider);
+      // Rilis baru di GitHub (paling sering sekali sehari).
+      autoCheckForUpdates(() => ref.read(routerProvider).routerDelegate.navigatorKey.currentContext, ref).ignore();
     });
   }
 

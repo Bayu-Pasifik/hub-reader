@@ -116,6 +116,11 @@ Batasan saat ini:
   (hitam putih, balik warna, redupkan). Mode dan potong tepi bisa disimpan khusus per seri
   (`reader.series.v1`); filter warna berlaku umum (`reader.display.v1`). Deteksi tepi memakai salinan
   gambar selebar 256 px di isolate. Di mode webtoon hanya kiri-kanan yang dipotong.
+- Pembaruan aplikasi: Pengaturan → **Periksa pembaruan**, plus cek otomatis saat aplikasi dibuka
+  (maks. sekali sehari, bisa dimatikan). Versi terbaru dibaca dari redirect
+  `github.com/<repo>/releases/latest` (tanpa REST API, jadi tidak kena batas 60 request/jam), lalu
+  APK `hub-reader-<versi>.apk` hasil CI dibuka di browser. Rilis dibuat dengan push tag `v<versi>`
+  yang sama dengan `version:` di `pubspec.yaml`.
 - Domain situs sering pindah. Ketuk ikon gir di tab Sumber untuk mengganti domain tanpa
   build ulang (ada tombol Tes koneksi). Host lama diingat, jadi URL favorit, riwayat, dan
   unduhan dari domain lama otomatis dialihkan (`HttpSource.rewriteToCurrentHost`).

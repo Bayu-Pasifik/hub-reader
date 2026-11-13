@@ -15,8 +15,14 @@ class AppBackup {
   static const format = 'hub_reader-backup';
   static const version = 1;
 
-  /// Indeks & antrean unduhan merujuk file di perangkat ini; tidak pernah dicadangkan.
-  static const _neverKeys = {'downloads.index.v1', 'downloads.queue.v1'};
+  /// Indeks & antrean unduhan merujuk file di perangkat ini; jadwal cek
+  /// pembaruan juga milik instalasi ini. Tidak pernah dicadangkan.
+  static const _neverKeys = {
+    'downloads.index.v1',
+    'downloads.queue.v1',
+    'app.update_checked_at.v1',
+    'app.update_skipped.v1',
+  };
 
   /// Berisi sesi login / cookie situs.
   static bool isSecretKey(String key) =>

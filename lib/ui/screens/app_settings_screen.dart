@@ -7,10 +7,12 @@ import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../state/app_settings_provider.dart';
+import '../../state/app_update_provider.dart';
 import '../../state/core_providers.dart';
 import '../../state/download_providers.dart';
 import '../../state/tracker_providers.dart';
 import 'tracker_screens.dart';
+import '../widgets/app_update_ui.dart';
 import '../widgets/app_lock.dart';
 
 /// Ukuran folder (byte), 0 bila tidak ada.
@@ -236,6 +238,23 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
             title: const Text('Cadangkan & pulihkan'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/backup'),
+          ),
+          header('Tentang'),
+          ListTile(
+            leading: const Icon(Icons.system_update_outlined),
+            title: const Text('Periksa pembaruan'),
+            subtitle: Text(switch (ref.watch(appVersionProvider)) {
+              AsyncData(:final value) when value != null => 'Versi $value · dari GitHub Releases',
+              _ => 'Dari GitHub Releases',
+            }),
+            onTap: () => checkForUpdatesNow(context, ref),
+          ),
+          SwitchListTile(
+            secondary: const Icon(Icons.update),
+            title: const Text('Cek pembaruan otomatis'),
+            subtitle: const Text('Saat aplikasi dibuka, paling sering sekali sehari'),
+            value: ref.watch(checkUpdatesProvider),
+            onChanged: (v) => ref.read(checkUpdatesProvider.notifier).set(v),
           ),
           const SizedBox(height: 24),
         ],
