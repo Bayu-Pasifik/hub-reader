@@ -21,8 +21,7 @@ class SourceLibraryItem {
 
   /// [url] = URL rute (bukan `details.url` yang bisa berbeda setelah redirect),
   /// supaya kunci favorit/riwayat konsisten dengan yang dibuka pengguna.
-  factory SourceLibraryItem.fromDetails(String sourceId, String url, SourceMangaDetails details) =>
-      SourceLibraryItem(
+  factory SourceLibraryItem.fromDetails(String sourceId, String url, SourceMangaDetails details) => SourceLibraryItem(
         sourceId: sourceId,
         url: url,
         title: details.title,
@@ -50,18 +49,32 @@ class SourceLibraryItem {
 }
 
 class SourceFavorite {
-  const SourceFavorite({required this.item, required this.addedAt});
+  const SourceFavorite({required this.item, required this.addedAt, this.categories = const []});
 
   final SourceLibraryItem item;
   final DateTime addedAt;
 
+  /// Nama kategori (rak) tempat favorit ini; kosong = tanpa kategori.
+  final List<String> categories;
+
+  SourceFavorite copyWith({SourceLibraryItem? item, List<String>? categories}) =>
+      SourceFavorite(item: item ?? this.item, addedAt: addedAt, categories: categories ?? this.categories);
+
   static SourceFavorite? tryParse(JsonMap json) {
     final item = SourceLibraryItem.tryParse(asMap(json['item']));
     if (item == null) return null;
-    return SourceFavorite(item: item, addedAt: asDate(json['added_at']) ?? DateTime.now());
+    return SourceFavorite(
+      item: item,
+      addedAt: asDate(json['added_at']) ?? DateTime.now(),
+      categories: asStringList(json['categories']),
+    );
   }
 
-  JsonMap toJson() => {'item': item.toJson(), 'added_at': addedAt.toIso8601String()};
+  JsonMap toJson() => {
+        'item': item.toJson(),
+        'added_at': addedAt.toIso8601String(),
+        if (categories.isNotEmpty) 'categories': categories,
+      };
 }
 
 /// Posisi baca satu bab.

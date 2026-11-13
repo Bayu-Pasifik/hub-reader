@@ -47,8 +47,128 @@ class SourceFavoritesNotifier extends Notifier<List<SourceFavorite>> {
     if (index < 0) return;
     final old = state[index];
     if (old.item.title == item.title && old.item.thumbnailUrl == item.thumbnailUrl) return;
-    state = [...state]..[index] = SourceFavorite(item: item, addedAt: old.addedAt);
+    state = [...state]..[index] = old.copyWith(item: item);
     await _store.writeFavorites(state);
+  }
+
+  /// Atur kategori satu favorit.
+  Future<void> setCategories(String key, List<String> categories) async {
+    state = [for (final f in state) f.item.key == key ? f.copyWith(categories: categories) : f];
+    await _store.writeFavorites(state);
+  }
+
+  /// Ganti nama / hapus ([to] null) kategori di semua favorit.
+  Future<void> renameCategory(String from, String? to) async {
+    state = [
+      for (final f in state)
+        f.categories.contains(from)
+            ? f.copyWith(categories: [
+                for (final c in f.categories)
+                  if (c != from) c else if (to != null && !f.categories.contains(to)) to,
+              ])
+            : f,
+    ];
+    await _store.writeFavorites(state);
+  }
+}
+
+// --------------------------------------------------------------- kategori
+
+/// Daftar kategori (urutan tab di Favorit).
+final libraryCategoriesProvider =
+    NotifierProvider<LibraryCategoriesNotifier, List<String>>(LibraryCategoriesNotifier.new);
+
+class LibraryCategoriesNotifier extends Notifier<List<String>> {
+  static const _key = 'library.categories.v1';
+
+  @override
+  List<String> build() => ref.watch(sharedPreferencesProvider).getStringList(_key) ?? const [];
+
+  Future<void> _save() => ref.read(sharedPreferencesProvider).setStringList(_key, state);
+
+  /// false bila nama kosong atau sudah ada.
+  Future<bool> add(String name) async {
+    final n = name.trim();
+    if (n.isEmpty || state.contains(n)) return false;
+    state = [...state, n];
+    await _save();
+    return true;
+  }
+
+  Future<bool> rename(String from, String to) async {
+    final n = to.trim();
+    if (n.isEmpty || (n != from && state.contains(n))) return false;
+    state = [for (final c in state) c == from ? n : c];
+    await _save();
+    await ref.read(sourceFavoritesProvider.notifier).renameCategory(from, n);
+    return true;
+  }
+
+  Future<void> remove(String name) async {
+    state = state.where((c) => c != name).toList();
+    await _save();
+    await ref.read(sourceFavoritesProvider.notifier).renameCategory(name, null);
+  }
+
+  Future<void> move(String name, int delta) async {
+    final i = state.indexOf(name);
+    final j = i + delta;
+    if (i < 0 || j < 0 || j >= state.length) return;
+    final list = [...state];
+    list[i] = list[j];
+    list[j] = name;
+    state = list;
+    await _save();
+  }
+}
+
+// ------------------------------------------------------ tampilan favorit
+
+enum LibrarySort {
+  added('Terakhir ditambahkan'),
+  title('Judul A–Z'),
+  lastRead('Terakhir dibaca'),
+  unread('Bab baru belum dibaca');
+
+  const LibrarySort(this.label);
+
+  final String label;
+}
+
+enum LibraryKind {
+  all('Semua'),
+  comic('Komik'),
+  novel('Novel');
+
+  const LibraryKind(this.label);
+
+  final String label;
+}
+
+typedef LibraryView = ({LibrarySort sort, LibraryKind kind, bool unreadOnly});
+
+final libraryViewProvider = NotifierProvider<LibraryViewNotifier, LibraryView>(LibraryViewNotifier.new);
+
+class LibraryViewNotifier extends Notifier<LibraryView> {
+  static const _key = 'library.view.v1';
+
+  @override
+  LibraryView build() {
+    final raw = ref.watch(sharedPreferencesProvider).getStringList(_key) ?? const [];
+    T pick<T extends Enum>(List<T> values, int i, T fallback) =>
+        raw.length > i ? values.where((v) => v.name == raw[i]).firstOrNull ?? fallback : fallback;
+    return (
+      sort: pick(LibrarySort.values, 0, LibrarySort.added),
+      kind: pick(LibraryKind.values, 1, LibraryKind.all),
+      unreadOnly: raw.length > 2 && raw[2] == '1',
+    );
+  }
+
+  Future<void> set({LibrarySort? sort, LibraryKind? kind, bool? unreadOnly}) async {
+    state = (sort: sort ?? state.sort, kind: kind ?? state.kind, unreadOnly: unreadOnly ?? state.unreadOnly);
+    await ref
+        .read(sharedPreferencesProvider)
+        .setStringList(_key, [state.sort.name, state.kind.name, state.unreadOnly ? '1' : '0']);
   }
 }
 
@@ -111,15 +231,15 @@ final sourceLastReadProvider = Provider.autoDispose.family<SourceHistoryEntry?, 
 // ------------------------------------------------------------ posisi baca
 
 /// Progres per bab: `{kunci seri: {URL bab: progres}}`.
-final sourceProgressProvider = NotifierProvider<SourceProgressNotifier,
-    Map<String, Map<String, SourceChapterProgress>>>(SourceProgressNotifier.new);
+final sourceProgressProvider =
+    NotifierProvider<SourceProgressNotifier, Map<String, Map<String, SourceChapterProgress>>>(
+        SourceProgressNotifier.new);
 
 class SourceProgressNotifier extends Notifier<Map<String, Map<String, SourceChapterProgress>>> {
   SourceLibraryStore get _store => ref.read(sourceLibraryStoreProvider);
 
   @override
-  Map<String, Map<String, SourceChapterProgress>> build() =>
-      ref.watch(sourceLibraryStoreProvider).readProgress();
+  Map<String, Map<String, SourceChapterProgress>> build() => ref.watch(sourceLibraryStoreProvider).readProgress();
 
   /// Simpan halaman yang sedang terlihat. Bab yang sudah selesai tetap
   /// berstatus selesai walau dibaca ulang.
@@ -128,12 +248,15 @@ class SourceProgressNotifier extends Notifier<Map<String, Map<String, SourceChap
     final old = state[key]?[chapterUrl];
     final done = (old?.done ?? false) || (total > 0 && page >= total - 1);
     if (old != null && old.page == page && old.total == total && old.done == done) return;
-    _set(key, chapterUrl, SourceChapterProgress(
-      page: page,
-      total: total,
-      done: done,
-      updatedAt: DateTime.now(),
-    ));
+    _set(
+        key,
+        chapterUrl,
+        SourceChapterProgress(
+          page: page,
+          total: total,
+          done: done,
+          updatedAt: DateTime.now(),
+        ));
     await _store.writeProgress(state);
   }
 
@@ -141,12 +264,15 @@ class SourceProgressNotifier extends Notifier<Map<String, Map<String, SourceChap
   Future<void> setDone(SourceItemKey series, String chapterUrl, {required bool done}) async {
     final key = _key(series);
     final old = state[key]?[chapterUrl];
-    _set(key, chapterUrl, SourceChapterProgress(
-      page: done ? (old?.page ?? 0) : 0,
-      total: old?.total ?? 0,
-      done: done,
-      updatedAt: DateTime.now(),
-    ));
+    _set(
+        key,
+        chapterUrl,
+        SourceChapterProgress(
+          page: done ? (old?.page ?? 0) : 0,
+          total: old?.total ?? 0,
+          done: done,
+          updatedAt: DateTime.now(),
+        ));
     await _store.writeProgress(state);
   }
 
@@ -177,7 +303,6 @@ class SourceProgressNotifier extends Notifier<Map<String, Map<String, SourceChap
 }
 
 /// Progres semua bab satu seri.
-final sourceSeriesProgressProvider =
-    Provider.autoDispose.family<Map<String, SourceChapterProgress>, SourceItemKey>(
+final sourceSeriesProgressProvider = Provider.autoDispose.family<Map<String, SourceChapterProgress>, SourceItemKey>(
   (ref, k) => ref.watch(sourceProgressProvider.select((all) => all[_key(k)] ?? const {})),
 );

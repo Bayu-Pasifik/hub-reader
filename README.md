@@ -192,6 +192,11 @@ ukuran huruf, jarak baris, margin, serif, rata kiri-kanan), menyimpan posisi bac
 (persen), lalu pindah bab sebelumnya/berikutnya, termasuk lintas halaman untuk plugin
 berhalaman (`parsePage`). Favorit & riwayat novel berbagi tab dengan komik (id `lnr:<plugin>`).
 
+**Favorit** bisa dikelompokkan ke kategori (tab; menu ⋮ → Kelola kategori untuk tambah, ganti nama,
+urutkan, hapus). Tekan lama sampul untuk memilih kategori atau menghapus dari favorit. Ikon filter:
+jenis (komik/novel), hanya yang ada bab baru belum dibaca, dan urutan (ditambahkan, judul, terakhir
+dibaca, jumlah bab baru). Sampul menampilkan jumlah bab baru yang belum dibaca; ada juga pencarian judul.
+
 **Pembaruan** (ikon di tab Favorit): semua favorit komik & novel dicek bab barunya (3 seri
 bersamaan), otomatis saat aplikasi dibuka bila pengecekan terakhir lebih dari 6 jam (bisa dimatikan),
 atau tarik untuk cek manual. Bab yang sudah dikenal per seri disimpan di `<support>/library_updates.json`;
