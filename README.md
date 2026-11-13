@@ -192,6 +192,10 @@ ukuran huruf, jarak baris, margin, serif, rata kiri-kanan), menyimpan posisi bac
 (persen), lalu pindah bab sebelumnya/berikutnya, termasuk lintas halaman untuk plugin
 berhalaman (`parsePage`). Favorit & riwayat novel berbagi tab dengan komik (id `lnr:<plugin>`).
 
+Tombol headphone di pembaca membacakan bab (TTS, `flutter_tts`) mulai dari paragraf yang terlihat:
+paragraf aktif disorot dan diikuti layar, ada jeda/lompat paragraf, kecepatan & nada, dan lanjut
+otomatis ke bab berikutnya. Bahasa suara mengikuti bahasa plugin.
+
 Bab novel bisa diunduh (per bab, 5/10 berikutnya, atau semua yang belum dibaca) lewat antrean
 unduhan yang sama dengan komik; isinya disimpan sebagai `chapter.html`. Detail & daftar bab novel
 di-cache, jadi bab terunduh tetap bisa dibuka beserta navigasi babnya saat offline.

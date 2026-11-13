@@ -1,0 +1,19 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:hub_reader/novels/novel_tts.dart';
+
+void main() {
+  test('splitForTts keeps short text and splits long text by sentence', () {
+    expect(splitForTts('Halo dunia.'), ['Halo dunia.']);
+    final long = List.generate(50, (i) => 'Kalimat nomor $i cukup panjang untuk diuji. ').join();
+    final parts = splitForTts(long, max: 200);
+    expect(parts.length, greaterThan(1));
+    expect(parts.every((p) => p.length <= 200), isTrue);
+    expect(parts.join(), long);
+  });
+
+  test('ttsLanguageFor maps LNReader language names', () {
+    expect(ttsLanguageFor('Bahasa Indonesia'), 'id-ID');
+    expect(ttsLanguageFor('English'), 'en-US');
+    expect(ttsLanguageFor('Klingon'), isNull);
+  });
+}

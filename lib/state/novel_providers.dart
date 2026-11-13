@@ -330,6 +330,9 @@ class NovelReaderSettings {
     this.justify = false,
     this.theme = NovelReaderTheme.system,
     this.padding = 18,
+    this.ttsRate = 0.5,
+    this.ttsPitch = 1.0,
+    this.ttsAutoNext = true,
   });
 
   final double fontSize;
@@ -339,6 +342,13 @@ class NovelReaderSettings {
   final NovelReaderTheme theme;
   final double padding;
 
+  /// Kecepatan suara TTS (0.1–1.0; 0.5 = normal di Android).
+  final double ttsRate;
+  final double ttsPitch;
+
+  /// Lanjut membacakan bab berikutnya setelah bab selesai.
+  final bool ttsAutoNext;
+
   NovelReaderSettings copyWith({
     double? fontSize,
     double? lineHeight,
@@ -346,6 +356,9 @@ class NovelReaderSettings {
     bool? justify,
     NovelReaderTheme? theme,
     double? padding,
+    double? ttsRate,
+    double? ttsPitch,
+    bool? ttsAutoNext,
   }) =>
       NovelReaderSettings(
         fontSize: fontSize ?? this.fontSize,
@@ -354,6 +367,9 @@ class NovelReaderSettings {
         justify: justify ?? this.justify,
         theme: theme ?? this.theme,
         padding: padding ?? this.padding,
+        ttsRate: ttsRate ?? this.ttsRate,
+        ttsPitch: ttsPitch ?? this.ttsPitch,
+        ttsAutoNext: ttsAutoNext ?? this.ttsAutoNext,
       );
 
   Map<String, Object> toJson() => {
@@ -363,6 +379,9 @@ class NovelReaderSettings {
         'justify': justify,
         'theme': theme.name,
         'padding': padding,
+        'tts_rate': ttsRate,
+        'tts_pitch': ttsPitch,
+        'tts_auto_next': ttsAutoNext,
       };
 
   static NovelReaderSettings fromJson(Map<String, Object?> json) => NovelReaderSettings(
@@ -372,6 +391,9 @@ class NovelReaderSettings {
         justify: json['justify'] == true,
         theme: NovelReaderTheme.values.where((t) => t.name == json['theme']).firstOrNull ?? NovelReaderTheme.system,
         padding: (json['padding'] as num?)?.toDouble() ?? 18,
+        ttsRate: (json['tts_rate'] as num?)?.toDouble() ?? 0.5,
+        ttsPitch: (json['tts_pitch'] as num?)?.toDouble() ?? 1.0,
+        ttsAutoNext: json['tts_auto_next'] != false,
       );
 }
 

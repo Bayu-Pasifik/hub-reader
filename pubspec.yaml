@@ -30,6 +30,7 @@ dependencies:
   # AES + MD5 untuk gambar bab terenkripsi Madara "chapter protector"
   pointycastle: ^4.0.0
   flutter_js: ^0.8.7
+  flutter_tts: ^4.2.5
 
 dev_dependencies:
   flutter_test:

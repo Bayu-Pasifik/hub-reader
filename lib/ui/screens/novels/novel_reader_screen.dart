@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import '../../../data/models/source_library.dart';
 import '../../../novels/novel_models.dart';
 import '../../../novels/novel_source.dart';
+import '../../../novels/novel_tts.dart';
 import '../../../sources/models.dart';
 import '../../../state/novel_providers.dart';
 import '../../../state/source_library_providers.dart';
@@ -48,12 +49,27 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> {
   String? _restoredFor;
   String? _recordedFor;
 
+  // ---- TTS
+  final _tts = NovelTts();
+  List<GlobalKey> _blockKeys = const [];
+  List<NovelBlock> _blocks = const [];
+  String? _blocksFor;
+  int _lastTtsIndex = -1;
+
+  /// Bab berikutnya sedang dimuat untuk dilanjutkan TTS.
+  bool _ttsContinue = false;
+  List<NovelChapter> _chapters = const [];
+  int _totalPages = 1;
+  bool _hasNext = false;
+
   SourceItemKey get _libKey => (sourceId: novelLibraryId(widget.pluginId), url: widget.novelPath);
 
   @override
   void initState() {
     super.initState();
     _scroll.addListener(_onScroll);
+    _tts.addListener(_onTts);
+    _tts.onChapterEnd = _onTtsChapterEnd;
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   }
 
@@ -61,6 +77,7 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> {
   void dispose() {
     _saveTimer?.cancel();
     _saveProgress();
+    _tts.dispose();
     _scroll.dispose();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.dispose();
@@ -118,7 +135,58 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> {
     });
   }
 
+  // ------------------------------------------------------------------ TTS
+
+  void _onTts() {
+    if (!mounted) return;
+    final i = _tts.index;
+    setState(() {});
+    if (i >= 0 && i != _lastTtsIndex && i < _blockKeys.length) {
+      _lastTtsIndex = i;
+      final ctx = _blockKeys[i].currentContext;
+      if (ctx != null) {
+        Scrollable.ensureVisible(ctx, alignment: 0.25, duration: const Duration(milliseconds: 300));
+      }
+    }
+    if (i < 0) _lastTtsIndex = -1;
+  }
+
+  List<String?> get _ttsTexts => [for (final b in _blocks) b is TextBlock ? b.plain : null];
+
+  /// Blok pertama yang terlihat di layar (titik mulai TTS).
+  int _firstVisibleBlock() {
+    final top = MediaQuery.paddingOf(context).top + 64;
+    for (var i = 0; i < _blockKeys.length; i++) {
+      final box = _blockKeys[i].currentContext?.findRenderObject() as RenderBox?;
+      if (box == null || !box.attached) continue;
+      final y = box.localToGlobal(Offset.zero).dy;
+      if (y + box.size.height > top) return i;
+    }
+    return 0;
+  }
+
+  Future<void> _startTts({int? from}) async {
+    if (_blocks.isEmpty) return;
+    final settings = ref.read(novelReaderSettingsProvider);
+    final lang = ref.read(novelManifestProvider).valueOrNull?.byId(widget.pluginId)?.lang;
+    await _tts.configure(
+      rate: settings.ttsRate,
+      pitch: settings.ttsPitch,
+      language: lang == null ? null : ttsLanguageFor(lang),
+    );
+    await _tts.start(_ttsTexts, from: from ?? _firstVisibleBlock());
+  }
+
+  void _onTtsChapterEnd() {
+    if (!mounted) return;
+    if (ref.read(novelReaderSettingsProvider).ttsAutoNext && _hasNext) {
+      _ttsContinue = true;
+      _step(1, _chapters, _totalPages);
+    }
+  }
+
   void _goTo(NovelChapter chapter, int page) {
+    if (!_ttsContinue) _tts.stop();
     _saveProgress();
     saveNovelLastPage(ref, widget.pluginId, widget.novelPath, page);
     setState(() {
@@ -173,6 +241,8 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> {
         ref.watch(novelChapterPageProvider((pluginId: widget.pluginId, path: widget.novelPath, page: _page)));
     final chapters = chaptersAsync.valueOrNull ?? const <NovelChapter>[];
     final totalPages = details.valueOrNull?.totalPages ?? 1;
+    _chapters = chapters;
+    _totalPages = totalPages;
     final content = ref.watch(novelChapterProvider((pluginId: widget.pluginId, path: _chapterPath)));
     final scheme = Theme.of(context).colorScheme;
     final bg = _bg(settings.theme, scheme);
@@ -185,6 +255,7 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> {
     if (chaptersAsync.hasValue) _record(chapter);
     final hasPrev = index > 0 || (index == 0 && _page > 1);
     final hasNext = (index >= 0 && index < chapters.length - 1) || (index == chapters.length - 1 && _page < totalPages);
+    _hasNext = hasNext;
 
     // Prefetch bab berikutnya agar pindah bab terasa instan.
     if (index >= 0 && index < chapters.length - 1 && content.hasValue) {
@@ -221,7 +292,19 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> {
                     ),
                   ),
                   data: (html) {
-                    final blocks = parseNovelHtml(html, baseUrl: source == null ? null : Uri.tryParse(source.site));
+                    if (_blocksFor != _chapterPath || _blocks.isEmpty && html.isNotEmpty) {
+                      _blocks = parseNovelHtml(html, baseUrl: source == null ? null : Uri.tryParse(source.site));
+                      _blockKeys = List.generate(_blocks.length, (_) => GlobalKey());
+                      _blocksFor = _chapterPath;
+                      if (_ttsContinue) {
+                        _ttsContinue = false;
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (mounted) _startTts(from: 0);
+                        });
+                      }
+                    }
+                    final blocks = _blocks;
+                    final ttsIndex = _tts.index;
                     _restorePosition(_chapterPath);
                     return SingleChildScrollView(
                       controller: _scroll,
@@ -244,12 +327,21 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> {
                           if (blocks.isEmpty)
                             Text('(Bab ini kosong)', style: textStyle)
                           else
-                            for (final b in blocks)
-                              NovelBlockView(
-                                block: b,
-                                style: textStyle,
-                                justify: settings.justify,
-                                imageHeaders: source?.imageHeaders ?? const {},
+                            for (var i = 0; i < blocks.length; i++)
+                              Container(
+                                key: _blockKeys[i],
+                                decoration: i == ttsIndex
+                                    ? BoxDecoration(
+                                        color: scheme.primary.withValues(alpha: 0.14),
+                                        borderRadius: BorderRadius.circular(6),
+                                      )
+                                    : null,
+                                child: NovelBlockView(
+                                  block: blocks[i],
+                                  style: textStyle,
+                                  justify: settings.justify,
+                                  imageHeaders: source?.imageHeaders ?? const {},
+                                ),
                               ),
                           const SizedBox(height: 24),
                           Row(
@@ -317,11 +409,17 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> {
                                 },
                         ),
                         IconButton(
+                          tooltip: 'Bacakan (TTS)',
+                          icon: Icon(_tts.active ? Icons.stop_circle_outlined : Icons.headphones),
+                          onPressed: content.hasValue ? () => _tts.active ? _tts.stop() : _startTts() : null,
+                        ),
+                        IconButton(
                           tooltip: 'Tampilan',
                           icon: const Icon(Icons.text_fields),
                           onPressed: () => showModalBottomSheet<void>(
                             context: context,
                             showDragHandle: true,
+                            isScrollControlled: true,
                             builder: (_) => const _ReaderSettingsSheet(),
                           ),
                         ),
@@ -342,27 +440,31 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> {
                 elevation: 2,
                 child: SafeArea(
                   top: false,
-                  child: Row(
-                    children: [
-                      IconButton(
-                        tooltip: 'Bab sebelumnya',
-                        onPressed: hasPrev ? () => _step(-1, chapters, totalPages) : null,
-                        icon: const Icon(Icons.skip_previous),
-                      ),
-                      Expanded(
-                        child: Text(
-                          index >= 0 ? 'Bab ${index + 1} dari ${chapters.length}${totalPages > 1 ? ' · hal. $_page/$totalPages' : ''}' : '',
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.bodySmall,
+                  child: _tts.active
+                      ? _ttsBar(context)
+                      : Row(
+                          children: [
+                            IconButton(
+                              tooltip: 'Bab sebelumnya',
+                              onPressed: hasPrev ? () => _step(-1, chapters, totalPages) : null,
+                              icon: const Icon(Icons.skip_previous),
+                            ),
+                            Expanded(
+                              child: Text(
+                                index >= 0
+                                    ? 'Bab ${index + 1} dari ${chapters.length}${totalPages > 1 ? ' · hal. $_page/$totalPages' : ''}'
+                                    : '',
+                                textAlign: TextAlign.center,
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ),
+                            IconButton(
+                              tooltip: 'Bab berikutnya',
+                              onPressed: hasNext ? () => _step(1, chapters, totalPages) : null,
+                              icon: const Icon(Icons.skip_next),
+                            ),
+                          ],
                         ),
-                      ),
-                      IconButton(
-                        tooltip: 'Bab berikutnya',
-                        onPressed: hasNext ? () => _step(1, chapters, totalPages) : null,
-                        icon: const Icon(Icons.skip_next),
-                      ),
-                    ],
-                  ),
                 ),
               ),
             ),
@@ -371,6 +473,25 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> {
       ),
     );
   }
+}
+
+extension on _NovelReaderScreenState {
+  Widget _ttsBar(BuildContext context) => Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          IconButton(
+              tooltip: 'Paragraf sebelumnya', icon: const Icon(Icons.fast_rewind), onPressed: () => _tts.skip(-1)),
+          IconButton.filled(
+            tooltip: _tts.playing ? 'Jeda' : 'Lanjutkan',
+            iconSize: 32,
+            icon: Icon(_tts.playing ? Icons.pause : Icons.play_arrow),
+            onPressed: () => _tts.playing ? _tts.pause() : _tts.resume(),
+          ),
+          IconButton(
+              tooltip: 'Paragraf berikutnya', icon: const Icon(Icons.fast_forward), onPressed: () => _tts.skip(1)),
+          IconButton(tooltip: 'Berhenti', icon: const Icon(Icons.stop), onPressed: _tts.stop),
+        ],
+      );
 }
 
 class _ReaderSettingsSheet extends ConsumerWidget {
@@ -388,7 +509,7 @@ class _ReaderSettingsSheet extends ConsumerWidget {
       NovelReaderTheme.black: 'Hitam',
     };
     return SafeArea(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -420,6 +541,18 @@ class _ReaderSettingsSheet extends ConsumerWidget {
               title: const Text('Rata kiri-kanan'),
               value: s.justify,
               onChanged: (v) => n.update((x) => x.copyWith(justify: v)),
+            ),
+            const Divider(),
+            Text('Suara (TTS)', style: Theme.of(context).textTheme.titleSmall),
+            _slider(context, 'Kecepatan', s.ttsRate, 0.1, 1.0, 18, (v) => n.update((x) => x.copyWith(ttsRate: v)),
+                '${(s.ttsRate * 2).toStringAsFixed(1)}x'),
+            _slider(context, 'Nada', s.ttsPitch, 0.5, 2.0, 15, (v) => n.update((x) => x.copyWith(ttsPitch: v)),
+                s.ttsPitch.toStringAsFixed(1)),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Lanjut ke bab berikutnya'),
+              value: s.ttsAutoNext,
+              onChanged: (v) => n.update((x) => x.copyWith(ttsAutoNext: v)),
             ),
           ],
         ),
