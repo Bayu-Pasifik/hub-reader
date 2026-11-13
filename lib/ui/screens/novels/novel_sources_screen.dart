@@ -97,6 +97,8 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
                   health.stop();
                 case 'hide':
                   ref.read(novelHideBrokenProvider.notifier).set(!ref.read(novelHideBrokenProvider));
+                case 'settings':
+                  context.push('/app-settings');
               }
             },
             itemBuilder: (_) => [
@@ -113,6 +115,7 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
                 checked: ref.read(novelHideBrokenProvider),
                 child: const Text('Sembunyikan yang rusak'),
               ),
+              const PopupMenuItem(value: 'settings', child: Text('Pengaturan')),
             ],
           ),
         ],

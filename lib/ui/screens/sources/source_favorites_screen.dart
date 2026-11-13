@@ -139,6 +139,7 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
             PopupMenuButton<String>(
               onSelected: (v) {
                 if (v == 'backup') context.push('/backup');
+                if (v == 'settings') context.push('/app-settings');
                 if (v == 'categories') {
                   showDialog<void>(context: context, useRootNavigator: true, builder: (_) => const _CategoriesDialog());
                 }
@@ -146,6 +147,7 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
               itemBuilder: (_) => const [
                 PopupMenuItem(value: 'categories', child: Text('Kelola kategori')),
                 PopupMenuItem(value: 'backup', child: Text('Cadangkan & pulihkan')),
+                PopupMenuItem(value: 'settings', child: Text('Pengaturan')),
               ],
             ),
           ],

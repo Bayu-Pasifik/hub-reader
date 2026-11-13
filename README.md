@@ -192,6 +192,11 @@ ukuran huruf, jarak baris, margin, serif, rata kiri-kanan), menyimpan posisi bac
 (persen), lalu pindah bab sebelumnya/berikutnya, termasuk lintas halaman untuk plugin
 berhalaman (`parsePage`). Favorit & riwayat novel berbagi tab dengan komik (id `lnr:<plugin>`).
 
+**Pengaturan** (menu ⋮ di tab Komik/Novel/Favorit): tema sistem/terang/gelap, hitam pekat (OLED),
+warna aksen; kunci aplikasi dengan sidik jari/PIN perangkat (`local_auth`, `MainActivity` kini
+`FlutterFragmentActivity`), kunci lagi setelah di latar 0/1/5/30 menit; ukuran & hapus cache gambar,
+cache data, kode plugin novel, dan tautan ke Unduhan & Cadangan.
+
 **Pindah sumber** (menu ⋮ di detail seri, atau tekan lama sampul favorit): judul dicari di sumber lain
 sebahasa (atau plugin yang pernah dibuka), lalu favorit, kategori, tanda sudah dibaca (dicocokkan lewat
 nomor bab) dan bab terakhir dibaca dipindah ke sumber pilihan. Favorit lama bisa disimpan atau dihapus.

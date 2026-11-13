@@ -2,6 +2,7 @@
     <!-- Wajib: tanpa izin ini build release tidak bisa mengakses jaringan. -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
 
     <!-- HTTP biasa (cleartext) hanya diizinkan di build debug, lihat
          src/debug/AndroidManifest.xml. Build rilis HTTPS saja. -->

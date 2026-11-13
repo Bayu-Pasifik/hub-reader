@@ -4,11 +4,12 @@ import android.view.KeyEvent
 import android.view.WindowManager
 import android.webkit.CookieManager
 import android.webkit.WebSettings
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
-class MainActivity : FlutterActivity() {
+// FlutterFragmentActivity: dibutuhkan local_auth (kunci aplikasi).
+class MainActivity : FlutterFragmentActivity() {
     private var readerChannel: MethodChannel? = null
 
     /// Tombol volume dipakai pembaca novel untuk menggulir.
