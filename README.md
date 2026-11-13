@@ -284,8 +284,7 @@ Hasil uji langsung dari PC (13 Nov 2026, `node check.mjs`): **190 dari 371 plugi
 dan daftar kosong (situs berubah atau memblokir; hasilnya sama bila plugin dijalankan di Node biasa).
 
 Batasan: `fetchProto` (1 plugin) belum didukung; plugin yang butuh login/WebView storage
-(`webStorageUtilized`) dan `pluginSettings` belum punya UI; charset non-UTF-8 selain Latin-1
-didekode sebagai UTF-8.
+(`webStorageUtilized`) belum didukung; charset non-UTF-8 selain Latin-1 didekode sebagai UTF-8.
 
 ## Menjalankan di Android
 
