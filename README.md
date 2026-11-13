@@ -205,7 +205,8 @@ dicatat; tanda dibaca manual tetap bisa. Bilah kecil di atas navigasi menandai m
 
 **Pengaturan** (menu ⋮ di tab Komik/Novel/Favorit): tema sistem/terang/gelap, hitam pekat (OLED),
 warna aksen; kunci aplikasi dengan sidik jari/PIN perangkat (`local_auth`, `MainActivity` kini
-`FlutterFragmentActivity`), kunci lagi setelah di latar 0/1/5/30 menit; ukuran & hapus cache gambar,
+`FlutterFragmentActivity`, tema `LaunchTheme`/`NormalTheme` turunan `Theme.AppCompat` agar dialog
+biometrik tidak crash di Android 8 ke bawah), kunci lagi setelah di latar 0/1/5/30 menit; ukuran & hapus cache gambar,
 cache data, kode plugin novel, dan tautan ke Unduhan & Cadangan.
 
 **Pindah sumber** (menu ⋮ di detail seri, atau tekan lama sampul favorit): judul dicari di sumber lain
