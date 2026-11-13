@@ -412,14 +412,17 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Padding(
-                              padding: EdgeInsets.only(bottom: settings.fontSize * 1.2),
-                              child: Text(
-                                chapter.name,
-                                style:
-                                    textStyle.copyWith(fontSize: settings.fontSize * 1.3, fontWeight: FontWeight.w700),
+                            // Banyak situs sudah menulis judul bab di isi bab;
+                            // judul dari daftar bab hanya ditampilkan bila beda.
+                            if (!startsWithTitle(blocks, chapter.name))
+                              Padding(
+                                padding: EdgeInsets.only(bottom: settings.fontSize * 1.2),
+                                child: Text(
+                                  chapter.name,
+                                  style: textStyle.copyWith(
+                                      fontSize: settings.fontSize * 1.3, fontWeight: FontWeight.w700),
+                                ),
                               ),
-                            ),
                             if (blocks.isEmpty)
                               Text('(Bab ini kosong)', style: textStyle)
                             else

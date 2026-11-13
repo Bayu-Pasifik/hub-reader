@@ -42,8 +42,35 @@ class InlineRun {
 }
 
 const _blockTags = {
-  'p', 'div', 'section', 'article', 'header', 'footer', 'main', 'li', 'ul', 'ol', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-  'blockquote', 'pre', 'table', 'tr', 'tbody', 'thead', 'figure', 'figcaption', 'center', 'dl', 'dt', 'dd', 'aside',
+  'p',
+  'div',
+  'section',
+  'article',
+  'header',
+  'footer',
+  'main',
+  'li',
+  'ul',
+  'ol',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'blockquote',
+  'pre',
+  'table',
+  'tr',
+  'tbody',
+  'thead',
+  'figure',
+  'figcaption',
+  'center',
+  'dl',
+  'dt',
+  'dd',
+  'aside',
 };
 const _skipTags = {'script', 'style', 'noscript', 'iframe', 'svg', 'button', 'form', 'input', 'select', 'template'};
 
@@ -84,7 +111,8 @@ List<NovelBlock> parseNovelHtml(String html, {Uri? baseUrl}) {
       if (out.isNotEmpty && out.first.text.startsWith('\n')) {
         final f = out.removeAt(0);
         final t = f.text.replaceFirst(RegExp(r'^\n+'), '');
-        if (t.isNotEmpty) out.insert(0, InlineRun(t, bold: f.bold, italic: f.italic, underline: f.underline, strike: f.strike));
+        if (t.isNotEmpty)
+          out.insert(0, InlineRun(t, bold: f.bold, italic: f.italic, underline: f.underline, strike: f.strike));
       }
       if (out.isNotEmpty) blocks.add(TextBlock(out, heading: heading, quote: quote, center: center));
     }
@@ -93,7 +121,8 @@ List<NovelBlock> parseNovelHtml(String html, {Uri? baseUrl}) {
 
   void walk(dom.Node node, {bool bold = false, bool italic = false, bool underline = false, bool strike = false}) {
     if (node is dom.Text) {
-      runs.add(InlineRun(node.text.replaceAll('\n', ' '), bold: bold, italic: italic, underline: underline, strike: strike));
+      runs.add(
+          InlineRun(node.text.replaceAll('\n', ' '), bold: bold, italic: italic, underline: underline, strike: strike));
       return;
     }
     if (node is! dom.Element) {
@@ -131,12 +160,18 @@ List<NovelBlock> parseNovelHtml(String html, {Uri? baseUrl}) {
       flush();
       if (tag.length == 2 && tag[0] == 'h' && int.tryParse(tag[1]) != null) heading = int.parse(tag[1]);
       if (tag == 'blockquote') quote = true;
-      if (tag == 'center' || (node.attributes['style'] ?? '').contains('text-align: center') || node.attributes['align'] == 'center') {
+      if (tag == 'center' ||
+          (node.attributes['style'] ?? '').contains('text-align: center') ||
+          node.attributes['align'] == 'center') {
         center = true;
       }
       if (tag == 'li') runs.add(const InlineRun('• '));
     }
-    final b = bold || tag == 'b' || tag == 'strong' || style.contains('font-weight:bold') || style.contains('font-weight:700');
+    final b = bold ||
+        tag == 'b' ||
+        tag == 'strong' ||
+        style.contains('font-weight:bold') ||
+        style.contains('font-weight:700');
     final it = italic || tag == 'i' || tag == 'em' || tag == 'cite' || style.contains('font-style:italic');
     final u = underline || tag == 'u' || tag == 'ins';
     final s = strike || tag == 's' || tag == 'del' || tag == 'strike';
@@ -234,4 +269,31 @@ class NovelBlockView extends StatelessWidget {
         return Padding(padding: EdgeInsets.only(bottom: size * 0.9), child: text);
     }
   }
+}
+
+/// Huruf & angka saja, huruf kecil (untuk membandingkan judul).
+String _titleKey(String s) => s.toLowerCase().replaceAll(RegExp(r'[^\p{L}\p{N}]+', unicode: true), '');
+
+/// Apakah isi bab sudah dibuka dengan judul bab [title] (blok teks pertama,
+/// atau salah satu dari dua blok pertama yang berupa judul). Dipakai agar
+/// judul tidak tampil dua kali di pembaca.
+bool startsWithTitle(List<NovelBlock> blocks, String title) {
+  final want = _titleKey(title);
+  if (want.isEmpty) return false;
+  var seen = 0;
+  for (final b in blocks) {
+    if (b is! TextBlock) continue;
+    final got = _titleKey(b.plain);
+    if (got.isEmpty) continue;
+    if (got == want) return true;
+    // "Chapter 12" vs "Chapter 12: Judul" (atau sebaliknya), bila blok itu pendek.
+    if (got.length <= want.length * 2 + 8 &&
+        (got.startsWith(want) || want.startsWith(got)) &&
+        got.length >= 6 &&
+        (got.length >= want.length * 0.6 || RegExp(r'\d').hasMatch(got))) {
+      return true;
+    }
+    if (++seen >= 2 || b.heading == 0) return false;
+  }
+  return false;
 }
