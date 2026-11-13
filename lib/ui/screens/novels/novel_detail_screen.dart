@@ -54,6 +54,71 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
   /// Bab yang sedang tampil (halaman daftar aktif), urutan plugin lama → baru.
   List<NovelChapter> _visible = const [];
 
+  /// Bab terpilih (mode pilih, dari tekan lama).
+  final Set<String> _selected = {};
+  bool get _selecting => _selected.isNotEmpty;
+
+  void _toggleSelect(String path) =>
+      setState(() => _selected.contains(path) ? _selected.remove(path) : _selected.add(path));
+
+  void _markSelected({required bool done}) {
+    final paths = {..._selected};
+    ref.read(sourceProgressProvider.notifier).setDoneMany(_libKey, paths, done: done);
+    setState(_selected.clear);
+    _snack(done ? '${paths.length} bab ditandai sudah dibaca' : '${paths.length} bab ditandai belum dibaca');
+  }
+
+  /// Semua bab sebelum bab terpilih paling akhir (urutan plugin) jadi sudah dibaca.
+  void _markPreviousRead() {
+    final last = _visible.lastIndexWhere((c) => _selected.contains(c.path));
+    if (last < 0) return;
+    final paths = [for (final c in _visible.take(last + 1)) c.path];
+    ref.read(sourceProgressProvider.notifier).setDoneMany(_libKey, paths, done: true);
+    setState(_selected.clear);
+    _snack('${paths.length} bab ditandai sudah dibaca');
+  }
+
+  void _snack(String text) => ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(SnackBar(content: Text(text), duration: const Duration(seconds: 2)));
+
+  PreferredSizeWidget _selectionBar(NovelDetails? novel) => AppBar(
+        leading: IconButton(icon: const Icon(Icons.close), onPressed: () => setState(_selected.clear)),
+        title: Text('${_selected.length} dipilih'),
+        actions: [
+          IconButton(
+            tooltip: 'Pilih semua',
+            icon: const Icon(Icons.select_all),
+            onPressed: () => setState(() => _selected.addAll(_visible.map((c) => c.path))),
+          ),
+          IconButton(
+            tooltip: 'Tandai sudah dibaca',
+            icon: const Icon(Icons.done_all),
+            onPressed: () => _markSelected(done: true),
+          ),
+          IconButton(
+            tooltip: 'Tandai belum dibaca',
+            icon: const Icon(Icons.remove_done),
+            onPressed: () => _markSelected(done: false),
+          ),
+          PopupMenuButton<String>(
+            onSelected: (v) {
+              if (v == 'previous') _markPreviousRead();
+              if (v == 'download' && novel != null) {
+                final chosen = _visible.where((c) => _selected.contains(c.path)).toList();
+                _enqueue(novel, chosen);
+                setState(_selected.clear);
+                _snack('${chosen.length} bab masuk antrean unduhan');
+              }
+            },
+            itemBuilder: (_) => [
+              const PopupMenuItem(value: 'previous', child: Text('Tandai sampai sini sudah dibaca')),
+              if (novel != null) const PopupMenuItem(value: 'download', child: Text('Unduh yang dipilih')),
+            ],
+          ),
+        ],
+      );
+
   void _syncFavorite(NovelDetails n) {
     final stamp = '${n.name}|${n.cover}';
     if (_syncedFor == stamp) return;
@@ -100,11 +165,11 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
 
   void _enqueue(NovelDetails novel, Iterable<NovelChapter> chapters) {
     ref.read(downloadQueueProvider.notifier).enqueue(
-          sourceId: novelLibraryId(widget.pluginId),
-          mangaUrl: widget.path,
-          manga: SourceMangaDetails(url: widget.path, title: novel.name, thumbnailUrl: novel.cover),
-          chapters: [for (final c in chapters) SourceChapter(url: c.path, name: c.name)],
-        );
+      sourceId: novelLibraryId(widget.pluginId),
+      mangaUrl: widget.path,
+      manga: SourceMangaDetails(url: widget.path, title: novel.name, thumbnailUrl: novel.cover),
+      chapters: [for (final c in chapters) SourceChapter(url: c.path, name: c.name)],
+    );
   }
 
   Future<void> _openWeb(NovelSource source) async {
@@ -123,65 +188,75 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
     final loaded = details.valueOrNull;
     if (loaded != null) _syncFavorite(loaded);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(loaded?.name ?? source?.name ?? ''),
-        actions: [
-          if (loaded != null)
-            IconButton(
-              tooltip: isFavorite ? 'Hapus dari favorit' : 'Tambah ke favorit',
-              icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border),
-              color: isFavorite ? Theme.of(context).colorScheme.primary : null,
-              onPressed: () => _toggleFavorite(loaded),
-            ),
-          if (loaded != null)
-            PopupMenuButton<int>(
-              tooltip: 'Unduh',
-              icon: const Icon(Icons.download_outlined),
-              onSelected: (limit) => _downloadMany(loaded, limit: limit == 0 ? null : limit),
-              itemBuilder: (_) => [
-                const PopupMenuItem(value: 5, child: Text('Unduh 5 bab berikutnya')),
-                const PopupMenuItem(value: 10, child: Text('Unduh 10 bab berikutnya')),
-                PopupMenuItem(
-                  value: 0,
-                  child: Text(loaded.totalPages > 1 ? 'Unduh yang belum dibaca (halaman ini)' : 'Unduh semua yang belum dibaca'),
-                ),
+    return PopScope(
+      canPop: !_selecting,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) setState(_selected.clear);
+      },
+      child: Scaffold(
+        appBar: _selecting
+            ? _selectionBar(loaded)
+            : AppBar(
+                title: Text(loaded?.name ?? source?.name ?? ''),
+                actions: [
+                  if (loaded != null)
+                    IconButton(
+                      tooltip: isFavorite ? 'Hapus dari favorit' : 'Tambah ke favorit',
+                      icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border),
+                      color: isFavorite ? Theme.of(context).colorScheme.primary : null,
+                      onPressed: () => _toggleFavorite(loaded),
+                    ),
+                  if (loaded != null)
+                    PopupMenuButton<int>(
+                      tooltip: 'Unduh',
+                      icon: const Icon(Icons.download_outlined),
+                      onSelected: (limit) => _downloadMany(loaded, limit: limit == 0 ? null : limit),
+                      itemBuilder: (_) => [
+                        const PopupMenuItem(value: 5, child: Text('Unduh 5 bab berikutnya')),
+                        const PopupMenuItem(value: 10, child: Text('Unduh 10 bab berikutnya')),
+                        PopupMenuItem(
+                          value: 0,
+                          child: Text(loaded.totalPages > 1
+                              ? 'Unduh yang belum dibaca (halaman ini)'
+                              : 'Unduh semua yang belum dibaca'),
+                        ),
+                      ],
+                    ),
+                  IconButton(
+                    tooltip: _newestFirst ? 'Urutkan bab pertama dulu' : 'Urutkan bab terbaru dulu',
+                    icon: Icon(_newestFirst ? Icons.arrow_upward : Icons.arrow_downward),
+                    onPressed: () => setState(() => _newestFirst = !_newestFirst),
+                  ),
+                  if (source != null)
+                    PopupMenuButton<String>(
+                      onSelected: (v) {
+                        if (v == 'web') _openWeb(source);
+                      },
+                      itemBuilder: (_) => const [PopupMenuItem(value: 'web', child: Text('Buka di WebView'))],
+                    ),
+                ],
+              ),
+        body: details.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, _) => SourceErrorView(
+            error: novelError(error, site: source?.site),
+            onRetry: () => ref.invalidate(novelDetailsProvider(_key)),
+            verifyUrl: source?.site,
+          ),
+          data: (novel) => RefreshIndicator(
+            onRefresh: () => ref.refresh(novelDetailsProvider(_key).future),
+            child: CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(child: _header(context, novel, source)),
+                if (novel.totalPages > 1) SliverToBoxAdapter(child: _pagePicker(novel.totalPages)),
+                _chapterList(novel, lastRead?.chapterUrl),
+                const SliverToBoxAdapter(child: SizedBox(height: 88)),
               ],
             ),
-          IconButton(
-            tooltip: _newestFirst ? 'Urutkan bab pertama dulu' : 'Urutkan bab terbaru dulu',
-            icon: Icon(_newestFirst ? Icons.arrow_upward : Icons.arrow_downward),
-            onPressed: () => setState(() => _newestFirst = !_newestFirst),
-          ),
-          if (source != null)
-            PopupMenuButton<String>(
-              onSelected: (v) {
-                if (v == 'web') _openWeb(source);
-              },
-              itemBuilder: (_) => const [PopupMenuItem(value: 'web', child: Text('Buka di WebView'))],
-            ),
-        ],
-      ),
-      body: details.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => SourceErrorView(
-          error: novelError(error, site: source?.site),
-          onRetry: () => ref.invalidate(novelDetailsProvider(_key)),
-          verifyUrl: source?.site,
-        ),
-        data: (novel) => RefreshIndicator(
-          onRefresh: () => ref.refresh(novelDetailsProvider(_key).future),
-          child: CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(child: _header(context, novel, source)),
-              if (novel.totalPages > 1) SliverToBoxAdapter(child: _pagePicker(novel.totalPages)),
-              _chapterList(novel, lastRead?.chapterUrl),
-              const SliverToBoxAdapter(child: SizedBox(height: 88)),
-            ],
           ),
         ),
+        floatingActionButton: _selecting ? null : _fab(loaded, lastRead),
       ),
-      floatingActionButton: _fab(loaded, lastRead),
     );
   }
 
@@ -202,7 +277,15 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
     }
     if (novel.chapters.isEmpty) return null;
     return FloatingActionButton.extended(
-      onPressed: () => _open(novel.chapters.first, page: 1),
+      onPressed: () {
+        // Mulai dari bab pertama yang belum ditandai dibaca.
+        final progress = ref.read(sourceSeriesProgressProvider(_libKey));
+        final next = novel.chapters.firstWhere(
+          (c) => !(progress[c.path]?.done ?? false),
+          orElse: () => novel.chapters.first,
+        );
+        _open(next, page: 1);
+      },
       icon: const Icon(Icons.play_arrow),
       label: const Text('Mulai baca'),
     );
@@ -221,7 +304,8 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
                 isExpanded: true,
                 value: _page.clamp(1, total),
                 items: [
-                  for (var p = 1; p <= total; p++) DropdownMenuItem(value: p, child: Text('Halaman bab $p dari $total')),
+                  for (var p = 1; p <= total; p++)
+                    DropdownMenuItem(value: p, child: Text('Halaman bab $p dari $total')),
                 ],
                 onChanged: (p) => setState(() => _page = p ?? 1),
               ),
@@ -273,8 +357,15 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
               if (c.releaseTime != null) _shortDate(c.releaseTime!),
               if (p != null && !done && p.page > 0) '${p.page}% dibaca',
             ].join(' · ');
+            final selected = _selected.contains(c.path);
             return ListTile(
-              leading: isLast ? const Icon(Icons.bookmark, size: 20) : null,
+              selected: selected,
+              selectedTileColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
+              leading: _selecting
+                  ? Icon(selected ? Icons.check_circle : Icons.radio_button_unchecked, size: 22)
+                  : isLast
+                      ? const Icon(Icons.bookmark, size: 20)
+                      : null,
               title: Text(
                 c.name,
                 style: TextStyle(
@@ -293,16 +384,8 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
                   ),
                 ],
               ),
-              onTap: () => _open(c, page: page),
-              onLongPress: () {
-                ref.read(sourceProgressProvider.notifier).setDone(_libKey, c.path, done: !done);
-                ScaffoldMessenger.of(context)
-                  ..hideCurrentSnackBar()
-                  ..showSnackBar(SnackBar(
-                    content: Text(done ? '${c.name} ditandai belum dibaca' : '${c.name} ditandai sudah dibaca'),
-                    duration: const Duration(seconds: 2),
-                  ));
-              },
+              onTap: () => _selecting ? _toggleSelect(c.path) : _open(c, page: page),
+              onLongPress: () => _toggleSelect(c.path),
             );
           },
         );
@@ -325,8 +408,9 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
       if (novel.rating != null) '★ ${novel.rating!.toStringAsFixed(1)}',
       if (novel.totalPages <= 1) '${novel.chapters.length} bab',
     ].join(' · ');
-    final summary =
-        novel.summary == null ? null : html_parser.parseFragment(novel.summary!).text?.trim().replaceAll(RegExp(r'\n{3,}'), '\n\n');
+    final summary = novel.summary == null
+        ? null
+        : html_parser.parseFragment(novel.summary!).text?.trim().replaceAll(RegExp(r'\n{3,}'), '\n\n');
 
     return Padding(
       padding: const EdgeInsets.all(16),

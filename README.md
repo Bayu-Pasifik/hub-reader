@@ -192,6 +192,10 @@ ukuran huruf, jarak baris, margin, serif, rata kiri-kanan), menyimpan posisi bac
 (persen), lalu pindah bab sebelumnya/berikutnya, termasuk lintas halaman untuk plugin
 berhalaman (`parsePage`). Favorit & riwayat novel berbagi tab dengan komik (id `lnr:<plugin>`).
 
+Tekan lama bab di detail novel untuk mode pilih: tandai sudah/belum dibaca, tandai semua bab sampai
+bab itu, pilih semua, atau unduh yang dipilih. Di pembaca, pindah ke bab berikutnya menandai bab ini
+selesai, dan menarik layar melewati akhir bab langsung membuka bab berikutnya (bisa dimatikan).
+
 Ikon globe di tab Novel membuka **cari global**: satu kata kunci dicari di semua plugin yang pernah
 dibuka, atau semua plugin satu bahasa (4 plugin bersamaan, batas 40 detik per plugin). Hasil
 ditampilkan per sumber; sumber dengan hasil naik ke atas.

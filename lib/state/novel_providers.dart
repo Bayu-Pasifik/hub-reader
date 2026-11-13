@@ -333,6 +333,7 @@ class NovelReaderSettings {
     this.ttsRate = 0.5,
     this.ttsPitch = 1.0,
     this.ttsAutoNext = true,
+    this.autoNext = true,
   });
 
   final double fontSize;
@@ -349,6 +350,9 @@ class NovelReaderSettings {
   /// Lanjut membacakan bab berikutnya setelah bab selesai.
   final bool ttsAutoNext;
 
+  /// Tarik di akhir bab untuk pindah ke bab berikutnya.
+  final bool autoNext;
+
   NovelReaderSettings copyWith({
     double? fontSize,
     double? lineHeight,
@@ -359,6 +363,7 @@ class NovelReaderSettings {
     double? ttsRate,
     double? ttsPitch,
     bool? ttsAutoNext,
+    bool? autoNext,
   }) =>
       NovelReaderSettings(
         fontSize: fontSize ?? this.fontSize,
@@ -370,6 +375,7 @@ class NovelReaderSettings {
         ttsRate: ttsRate ?? this.ttsRate,
         ttsPitch: ttsPitch ?? this.ttsPitch,
         ttsAutoNext: ttsAutoNext ?? this.ttsAutoNext,
+        autoNext: autoNext ?? this.autoNext,
       );
 
   Map<String, Object> toJson() => {
@@ -382,6 +388,7 @@ class NovelReaderSettings {
         'tts_rate': ttsRate,
         'tts_pitch': ttsPitch,
         'tts_auto_next': ttsAutoNext,
+        'auto_next': autoNext,
       };
 
   static NovelReaderSettings fromJson(Map<String, Object?> json) => NovelReaderSettings(
@@ -394,6 +401,7 @@ class NovelReaderSettings {
         ttsRate: (json['tts_rate'] as num?)?.toDouble() ?? 0.5,
         ttsPitch: (json['tts_pitch'] as num?)?.toDouble() ?? 1.0,
         ttsAutoNext: json['tts_auto_next'] != false,
+        autoNext: json['auto_next'] != false,
       );
 }
 

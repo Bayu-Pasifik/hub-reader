@@ -150,6 +150,24 @@ class SourceProgressNotifier extends Notifier<Map<String, Map<String, SourceChap
     await _store.writeProgress(state);
   }
 
+  /// Tandai banyak bab sekaligus (pilihan di daftar bab).
+  Future<void> setDoneMany(SourceItemKey series, Iterable<String> chapterUrls, {required bool done}) async {
+    final key = _key(series);
+    final now = DateTime.now();
+    final current = {...?state[key]};
+    for (final url in chapterUrls) {
+      final old = current[url];
+      current[url] = SourceChapterProgress(
+        page: done ? (old?.page ?? 0) : 0,
+        total: old?.total ?? 0,
+        done: done,
+        updatedAt: now,
+      );
+    }
+    state = {...state, key: current};
+    await _store.writeProgress(state);
+  }
+
   void _set(String seriesKey, String chapterUrl, SourceChapterProgress progress) {
     state = {
       ...state,

@@ -62,6 +62,10 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> {
   int _totalPages = 1;
   bool _hasNext = false;
 
+  /// Jarak tarik (overscroll) di akhir bab, untuk lanjut otomatis.
+  double _pull = 0;
+  static const _pullToNext = 140.0;
+
   SourceItemKey get _libKey => (sourceId: novelLibraryId(widget.pluginId), url: widget.novelPath);
 
   @override
@@ -198,8 +202,25 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> {
     if (_scroll.hasClients) _scroll.jumpTo(0);
   }
 
+  /// Tarik melewati akhir bab: pindah ke bab berikutnya.
+  bool _onScrollNotification(ScrollNotification n) {
+    if (!ref.read(novelReaderSettingsProvider).autoNext || !_hasNext) return false;
+    if (n is OverscrollNotification && n.overscroll > 0 && n.metrics.extentAfter == 0) {
+      setState(() => _pull += n.overscroll);
+      if (_pull >= _pullToNext) {
+        _pull = 0;
+        _step(1, _chapters, _totalPages);
+      }
+    } else if (n is ScrollEndNotification && _pull > 0) {
+      setState(() => _pull = 0);
+    }
+    return false;
+  }
+
   /// Bab sebelum/sesudah dalam urutan plugin (lama → baru), lintas halaman.
   Future<void> _step(int delta, List<NovelChapter> chapters, int totalPages) async {
+    // Maju ke bab berikutnya = bab ini selesai dibaca.
+    if (delta > 0) ref.read(sourceProgressProvider.notifier).setDone(_libKey, _chapterPath, done: true);
     final i = chapters.indexWhere((c) => c.path == _chapterPath);
     final j = i + delta;
     if (i >= 0 && j >= 0 && j < chapters.length) return _goTo(chapters[j], _page);
@@ -306,65 +327,81 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> {
                     final blocks = _blocks;
                     final ttsIndex = _tts.index;
                     _restorePosition(_chapterPath);
-                    return SingleChildScrollView(
-                      controller: _scroll,
-                      padding: EdgeInsets.fromLTRB(
-                        settings.padding,
-                        MediaQuery.paddingOf(context).top + 64,
-                        settings.padding,
-                        MediaQuery.paddingOf(context).bottom + 32,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.only(bottom: settings.fontSize * 1.2),
-                            child: Text(
-                              chapter.name,
-                              style: textStyle.copyWith(fontSize: settings.fontSize * 1.3, fontWeight: FontWeight.w700),
+                    return NotificationListener<ScrollNotification>(
+                      onNotification: _onScrollNotification,
+                      child: SingleChildScrollView(
+                        controller: _scroll,
+                        physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
+                        padding: EdgeInsets.fromLTRB(
+                          settings.padding,
+                          MediaQuery.paddingOf(context).top + 64,
+                          settings.padding,
+                          MediaQuery.paddingOf(context).bottom + 32,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.only(bottom: settings.fontSize * 1.2),
+                              child: Text(
+                                chapter.name,
+                                style:
+                                    textStyle.copyWith(fontSize: settings.fontSize * 1.3, fontWeight: FontWeight.w700),
+                              ),
                             ),
-                          ),
-                          if (blocks.isEmpty)
-                            Text('(Bab ini kosong)', style: textStyle)
-                          else
-                            for (var i = 0; i < blocks.length; i++)
-                              Container(
-                                key: _blockKeys[i],
-                                decoration: i == ttsIndex
-                                    ? BoxDecoration(
-                                        color: scheme.primary.withValues(alpha: 0.14),
-                                        borderRadius: BorderRadius.circular(6),
-                                      )
-                                    : null,
-                                child: NovelBlockView(
-                                  block: blocks[i],
-                                  style: textStyle,
-                                  justify: settings.justify,
-                                  imageHeaders: source?.imageHeaders ?? const {},
+                            if (blocks.isEmpty)
+                              Text('(Bab ini kosong)', style: textStyle)
+                            else
+                              for (var i = 0; i < blocks.length; i++)
+                                Container(
+                                  key: _blockKeys[i],
+                                  decoration: i == ttsIndex
+                                      ? BoxDecoration(
+                                          color: scheme.primary.withValues(alpha: 0.14),
+                                          borderRadius: BorderRadius.circular(6),
+                                        )
+                                      : null,
+                                  child: NovelBlockView(
+                                    block: blocks[i],
+                                    style: textStyle,
+                                    justify: settings.justify,
+                                    imageHeaders: source?.imageHeaders ?? const {},
+                                  ),
                                 ),
-                              ),
-                          const SizedBox(height: 24),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: OutlinedButton.icon(
-                                  onPressed: hasPrev ? () => _step(-1, chapters, totalPages) : null,
-                                  icon: const Icon(Icons.chevron_left),
-                                  label: const Text('Sebelumnya'),
-                                  style: OutlinedButton.styleFrom(foregroundColor: fg),
+                            const SizedBox(height: 24),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: OutlinedButton.icon(
+                                    onPressed: hasPrev ? () => _step(-1, chapters, totalPages) : null,
+                                    icon: const Icon(Icons.chevron_left),
+                                    label: const Text('Sebelumnya'),
+                                    style: OutlinedButton.styleFrom(foregroundColor: fg),
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: FilledButton.icon(
-                                  onPressed: hasNext ? () => _step(1, chapters, totalPages) : null,
-                                  icon: const Icon(Icons.chevron_right),
-                                  label: const Text('Berikutnya'),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: FilledButton.icon(
+                                    onPressed: hasNext ? () => _step(1, chapters, totalPages) : null,
+                                    icon: const Icon(Icons.chevron_right),
+                                    label: const Text('Berikutnya'),
+                                  ),
                                 ),
+                              ],
+                            ),
+                            if (settings.autoNext && hasNext) ...[
+                              const SizedBox(height: 16),
+                              LinearProgressIndicator(value: (_pull / _pullToNext).clamp(0.0, 1.0), color: fg),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Tarik terus ke atas untuk lanjut ke bab berikutnya',
+                                textAlign: TextAlign.center,
+                                style: textStyle.copyWith(fontSize: 13, color: fg.withValues(alpha: 0.6)),
                               ),
+                              const SizedBox(height: 24),
                             ],
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     );
                   },
@@ -541,6 +578,12 @@ class _ReaderSettingsSheet extends ConsumerWidget {
               title: const Text('Rata kiri-kanan'),
               value: s.justify,
               onChanged: (v) => n.update((x) => x.copyWith(justify: v)),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Tarik di akhir bab untuk lanjut'),
+              value: s.autoNext,
+              onChanged: (v) => n.update((x) => x.copyWith(autoNext: v)),
             ),
             const Divider(),
             Text('Suara (TTS)', style: Theme.of(context).textTheme.titleSmall),
