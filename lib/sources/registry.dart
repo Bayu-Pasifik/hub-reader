@@ -6,11 +6,13 @@ import 'id/komiku.dart';
 import 'id/koronaxscan.dart';
 import 'id/shinigami.dart';
 import 'id/themanga.dart';
+import 'local/local_source.dart';
 import 'source.dart';
 
 /// Sumber yang ditulis tangan (bukan template). Ditaruh di depan dan menang
 /// bila ID-nya sama dengan entri katalog.
 List<MangaSource> customSources() => [
+      LocalSource(),
       KomikuSource(),
       ShinigamiSource(),
       KomikNextGOnlineSource(),

@@ -204,6 +204,14 @@ mencapai jumlah bab. Token tracker termasuk data rahasia di cadangan.
 **Mode samaran** (ikon mata di Riwayat, atau Pengaturan): riwayat dan posisi baca otomatis tidak
 dicatat; tanda dibaca manual tetap bisa. Bilah kecil di atas navigasi menandai mode ini aktif.
 
+**Sumber Lokal** (grup paling atas di tab Komik, `lib/sources/local/`): komik dari penyimpanan perangkat.
+Menu ⋮ Sumber → **Impor komik (CBZ/ZIP)** memilih satu atau beberapa arsip, menebak judul seri dari nama
+file, lalu menyalinnya ke `Android/data/com.hubreader.hub_reader/files/local/<Judul>/` (folder itu juga
+bisa diisi langsung lewat USB/pengelola file). Satu arsip atau satu subfolder gambar = satu bab; arsip di
+akar folder = seri satu bab; `cover.*` dan `description.txt` opsional. Arsip diekstrak ke cache saat
+dibaca (nama file diganti nomor urut, jadi entri `../` tidak bisa keluar folder). Menu detail seri punya
+**Hapus dari perangkat**; unduh & cek kesehatan tidak berlaku untuk sumber ini.
+
 **Statistik** (ikon grafik di Riwayat, atau Pengaturan → Data): lama membaca hari ini / 7 hari / total,
 rentetan hari membaca, grafik 14 hari, bab selesai (komik & novel), favorit, dan 5 seri paling banyak
 dibaca. Lama membaca dihitung dari aktivitas di reader (gulir, ganti halaman, auto-scroll, TTS) dengan

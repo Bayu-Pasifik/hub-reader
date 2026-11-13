@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -32,7 +34,15 @@ class SourceCover extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
           child: url == null
               ? box(Icons.image_outlined)
-              : CachedNetworkImage(
+              // Sumber lokal: path file di perangkat.
+              : !url!.startsWith('http')
+                  ? Image.file(
+                      File(url!),
+                      fit: BoxFit.cover,
+                      cacheWidth: 360,
+                      errorBuilder: (_, __, ___) => box(Icons.broken_image_outlined),
+                    )
+                  : CachedNetworkImage(
                   imageUrl: url!,
                   httpHeaders: headers,
                   fit: BoxFit.cover,

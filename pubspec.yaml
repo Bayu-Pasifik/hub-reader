@@ -36,6 +36,7 @@ dependencies:
   local_auth: ^3.0.2
   flutter_cache_manager: ^3.5.0
   workmanager: ^0.10.10
+  archive: ^4.7.0
 
 dev_dependencies:
   flutter_test:

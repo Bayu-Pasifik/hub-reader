@@ -4,16 +4,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../sources/models.dart';
+import '../../../sources/local/local_source.dart';
 import '../../../sources/source.dart';
 import '../../../state/download_providers.dart';
 import '../../../state/source_health_provider.dart';
 import '../../../state/source_settings_provider.dart';
 import '../../../state/source_providers.dart';
 import '../../router.dart';
+import '../../widgets/local_import.dart';
 import '../../widgets/source_widgets.dart';
 
 /// Nama bahasa untuk judul kelompok (kode dari katalog keiyoushi).
 const _languageNames = {
+  'local': 'Lokal',
   'id': 'Indonesia',
   'en': 'English',
   'all': 'Multi-bahasa',
@@ -41,7 +44,7 @@ String languageName(String code) => _languageNames[code] ?? code.toUpperCase();
 /// Urutan bahasa: Indonesia, English, lalu sisanya menurut jumlah sumber.
 List<String> _orderedLanguages(Map<String, int> counts) => counts.keys.toList()
   ..sort((a, b) {
-    int rank(String l) => switch (l) { 'id' => 0, 'en' => 1, _ => 2 };
+    int rank(String l) => switch (l) { 'local' => -1, 'id' => 0, 'en' => 1, _ => 2 };
     final r = rank(a).compareTo(rank(b));
     return r != 0 ? r : counts[b]!.compareTo(counts[a]!);
   });
@@ -142,7 +145,7 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
               switch (v) {
                 case 'check':
                   // Cek sumber yang sedang tampil (ikut filter bahasa & pencarian).
-                  healthNotifier.checkAll(filtered);
+                  healthNotifier.checkAll([for (final s in filtered) if (s is! LocalSource) s]);
                 case 'stop':
                   healthNotifier.stop();
                 case 'nsfw':
@@ -151,12 +154,15 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
                   ref.read(hideDeadSourcesProvider.notifier).set(!hideDead);
                 case 'settings':
                   context.push('/app-settings');
+                case 'import':
+                  importLocalFiles(context);
               }
             },
             itemBuilder: (_) => [
               run.running
                   ? const PopupMenuItem(value: 'stop', child: Text('Hentikan pengecekan'))
-                  : PopupMenuItem(value: 'check', child: Text('Cek ${filtered.length} sumber')),
+                  : PopupMenuItem(value: 'check', child: Text('Cek ${filtered.where((s) => s is! LocalSource).length} sumber')),
+              const PopupMenuItem(value: 'import', child: Text('Impor komik (CBZ/ZIP)')),
               CheckedPopupMenuItem(value: 'dead', checked: hideDead, child: const Text('Sembunyikan sumber mati')),
               CheckedPopupMenuItem(value: 'nsfw', checked: showNsfw, child: const Text('Tampilkan sumber 18+')),
               const PopupMenuItem(value: 'settings', child: Text('Pengaturan')),
@@ -185,7 +191,7 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
                       Padding(
                         padding: const EdgeInsets.only(right: 6),
                         child: ChoiceChip(
-                          label: Text('${l.toUpperCase()} (${counts[l]})'),
+                          label: Text('${l == 'local' ? 'Lokal' : l.toUpperCase()} (${counts[l]})'),
                           selected: lang == l,
                           onSelected: (_) => ref.read(sourceLanguageProvider.notifier).set(l),
                         ),

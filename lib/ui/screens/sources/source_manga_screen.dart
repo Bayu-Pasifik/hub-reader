@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../data/models/download.dart';
 import '../../../data/models/source_library.dart';
+import '../../../sources/local/local_source.dart';
 import '../../../sources/models.dart';
 import '../../../state/download_providers.dart';
 import '../../../state/source_library_providers.dart';
@@ -44,6 +45,27 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) ref.read(sourceFavoritesProvider.notifier).refreshItem(item);
     });
+  }
+
+  Future<void> _deleteLocal(LocalSource source, SourceMangaDetails manga) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Hapus "${manga.title}"?'),
+        content: const Text('File komik di perangkat ikut dihapus dan tidak bisa dikembalikan.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Hapus')),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    await source.deleteSeries(widget.url);
+    if (ref.read(isSourceFavoriteProvider(_key))) {
+      ref.read(sourceFavoritesProvider.notifier).toggle(SourceLibraryItem.fromDetails(widget.sourceId, widget.url, manga));
+    }
+    ref.invalidate(sourceListProvider);
+    if (mounted) context.pop();
   }
 
   void _toggleFavorite(SourceMangaDetails manga) {
@@ -106,7 +128,7 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
               color: isFavorite ? Theme.of(context).colorScheme.primary : null,
               onPressed: () => _toggleFavorite(loaded),
             ),
-          if (loaded != null)
+          if (loaded != null && source is! LocalSource)
             PopupMenuButton<int?>(
               tooltip: 'Unduh',
               icon: const Icon(Icons.download_outlined),
@@ -125,6 +147,7 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
             PopupMenuButton<String>(
               onSelected: (v) {
                 if (v == 'migrate') context.push(migrateLocation(widget.sourceId, widget.url, loaded.title));
+                if (v == 'delete' && source is LocalSource) _deleteLocal(source, loaded);
                 if (v == 'track') {
                   final progress = ref.read(sourceSeriesProgressProvider(_key));
                   int? local;
@@ -148,9 +171,10 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
                   );
                 }
               },
-              itemBuilder: (_) => const [
-                PopupMenuItem(value: 'track', child: Text('Tracking')),
-                PopupMenuItem(value: 'migrate', child: Text('Pindah sumber')),
+              itemBuilder: (_) => [
+                const PopupMenuItem(value: 'track', child: Text('Tracking')),
+                const PopupMenuItem(value: 'migrate', child: Text('Pindah sumber')),
+                if (source is LocalSource) const PopupMenuItem(value: 'delete', child: Text('Hapus dari perangkat')),
               ],
             ),
         ],
@@ -208,6 +232,7 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             if (done) const Icon(Icons.done_all, size: 18),
+                            if (source is! LocalSource)
                             _ChapterDownloadButton(
                               sourceId: widget.sourceId,
                               mangaUrl: widget.url,

@@ -104,8 +104,8 @@ void main() {
       expect(ids.toSet().length, ids.length, reason: 'ID sumber harus unik');
       expect(sources.whereType<MadaraSource>(), isNotEmpty);
       expect(sources.whereType<MangaThemesiaSource>(), isNotEmpty);
-      // Sumber kustom tetap di depan.
-      expect(ids.take(2), ['id.komiku', 'id.shinigami']);
+      // Sumber lokal lalu sumber kustom tetap di depan.
+      expect(ids.take(3), ['local', 'id.komiku', 'id.shinigami']);
     });
 
     test('entry options map to template settings', () {

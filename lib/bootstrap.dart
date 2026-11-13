@@ -11,6 +11,7 @@ import 'data/local/download_store.dart';
 import 'novels/plugin_repository.dart';
 import 'sources/catalog.dart';
 import 'sources/cookie_store.dart';
+import 'sources/local/local_source.dart';
 import 'sources/source.dart';
 import 'state/core_providers.dart';
 import 'state/download_providers.dart';
@@ -48,6 +49,22 @@ class AppDependencies {
     final supportDir = await getApplicationSupportDirectory();
     final novelPlugins = NovelPluginRepository(Directory('${supportDir.path}/lnreader'));
     final catalog = SourceCatalog.fromJsonString(await rootBundle.loadString('assets/sources/catalog.json'));
+
+    // Komik lokal: folder di penyimpanan aplikasi eksternal supaya bisa diisi
+    // lewat USB / pengelola file (Android/data/<paket>/files/local).
+    Directory? external;
+    try {
+      external = await getExternalStorageDirectory();
+    } catch (_) {
+      external = null;
+    }
+    LocalSource.root = Directory('${(external ?? supportDir).path}/local');
+    LocalSource.cacheDir = Directory('${(await getTemporaryDirectory()).path}/local_pages');
+    try {
+      await LocalSource.root!.create(recursive: true);
+    } catch (_) {
+      // dibuat ulang saat impor
+    }
 
     // Sumber on-device: UA asli WebView + cookie tersimpan (cf_clearance).
     // Cookie cf_clearance terikat ke UA, jadi isolate latar harus memakai UA
