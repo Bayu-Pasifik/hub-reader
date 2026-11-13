@@ -10,6 +10,7 @@ import '../../state/app_settings_provider.dart';
 import '../../state/app_update_provider.dart';
 import '../../state/core_providers.dart';
 import '../../state/download_providers.dart';
+import '../../state/novel_providers.dart';
 import '../../state/tracker_providers.dart';
 import 'tracker_screens.dart';
 import '../widgets/app_update_ui.dart';
@@ -91,8 +92,27 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
   }
 
   Future<void> _clearPlugins() async {
+    final orphans = ref.read(novelManifestProvider).valueOrNull?.orphans.length ?? 0;
+    if (orphans > 0) {
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Hapus kode plugin?'),
+          content: Text(
+            '$orphans plugin sudah hilang dari repo dan tidak bisa diunduh lagi. '
+            'Buat cadangan (dengan plugin) dulu bila masih ingin memakainya.',
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
+            FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Hapus')),
+          ],
+        ),
+      );
+      if (ok != true || !mounted) return;
+    }
     final dir = await _pluginsDir();
     if (await dir.exists()) await dir.delete(recursive: true);
+    ref.invalidate(novelManifestProvider);
     _snack('Kode plugin novel dihapus; diunduh lagi saat dibuka');
     await _measure();
   }

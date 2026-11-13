@@ -177,38 +177,80 @@ class NovelPluginRepository {
   Future<List<NovelPluginInfo>> _orphans(List<NovelPluginInfo> known) async {
     final knownIds = {for (final p in known) safeId(p.id)};
     final result = <NovelPluginInfo>[];
-    Map<String, NovelPluginInfo>? cachedInfos;
+    final cache = <String, NovelPluginInfo>{};
     for (final id in await installedIds()) {
       if (knownIds.contains(id)) continue;
-      NovelPluginInfo? info;
-      final infoFile = File('${_pluginsDir.path}/$id.json');
-      try {
-        if (await infoFile.exists()) info = NovelPluginInfo.tryParse(asMap(jsonDecode(await infoFile.readAsString())));
-      } catch (_) {
-        info = null;
-      }
-      if (info == null) {
-        // Dipasang sebelum info disimpan: cari di manifest lama mana pun.
-        cachedInfos ??= await _allCachedInfos();
-        info = cachedInfos[id];
-        if (info != null) {
-          try {
-            await infoFile.writeAsString(jsonEncode(info.toJson()), flush: true);
-          } catch (_) {
-            // tidak fatal
-          }
-        }
-      }
-      if (info == null) {
-        // Terpasang sebelum info disimpan: rekonstruksi seadanya.
-        final versionFile = File('${_pluginsDir.path}/$id.version');
-        final version = await versionFile.exists() ? (await versionFile.readAsString()).trim() : '?';
-        info = NovelPluginInfo(id: id, name: id, site: '', lang: 'all', version: version, url: '');
-      }
-      result.add(info.asOrphan());
+      result.add((await _localInfo(id, cache)).asOrphan());
     }
     result.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
     return result;
+  }
+
+  /// Info plugin terpasang [id] (id aman): `<id>.json`, lalu manifest lama
+  /// mana pun, lalu rekonstruksi seadanya. [cache] diisi sekali bila perlu.
+  Future<NovelPluginInfo> _localInfo(String id, Map<String, NovelPluginInfo> cache) async {
+    final infoFile = File('${_pluginsDir.path}/$id.json');
+    try {
+      if (await infoFile.exists()) {
+        final info = NovelPluginInfo.tryParse(asMap(jsonDecode(await infoFile.readAsString())));
+        if (info != null) return info;
+      }
+    } catch (_) {
+      // rusak: cari di tempat lain
+    }
+    // Dipasang sebelum info disimpan: cari di manifest lama mana pun.
+    if (cache.isEmpty) cache.addAll(await _allCachedInfos());
+    final fromManifest = cache[id];
+    if (fromManifest != null) {
+      try {
+        await infoFile.writeAsString(jsonEncode(fromManifest.toJson()), flush: true);
+      } catch (_) {
+        // tidak fatal
+      }
+      return fromManifest;
+    }
+    // Rekonstruksi seadanya.
+    final versionFile = File('${_pluginsDir.path}/$id.version');
+    final version = await versionFile.exists() ? (await versionFile.readAsString()).trim() : '?';
+    return NovelPluginInfo(id: id, name: id, site: '', lang: 'all', version: version, url: '');
+  }
+
+  /// Semua plugin terpasang (info + kode) untuk file cadangan.
+  Future<List<Map<String, Object?>>> exportInstalled() async {
+    final cache = <String, NovelPluginInfo>{};
+    final result = <Map<String, Object?>>[];
+    final ids = (await installedIds()).toList()..sort();
+    for (final id in ids) {
+      try {
+        final code = await File('${_pluginsDir.path}/$id.js').readAsString();
+        if (code.trim().isEmpty) continue;
+        final info = await _localInfo(id, cache);
+        result.add({'info': info.toJson(), 'code': code});
+      } catch (_) {
+        // file hilang/rusak: lewati
+      }
+    }
+    return result;
+  }
+
+  /// Pasang plugin dari cadangan. Plugin yang sudah ada di perangkat tidak
+  /// ditimpa. Mengembalikan jumlah plugin yang dipasang.
+  Future<int> importPlugins(Object? entries) async {
+    var installed = 0;
+    for (final e in asList(entries)) {
+      final m = asMap(e);
+      final info = NovelPluginInfo.tryParse(asMap(m['info']));
+      final code = m['code'];
+      if (info == null || code is! String || code.trim().isEmpty) continue;
+      final file = _codeFile(info.id);
+      if (await file.exists()) continue;
+      await file.parent.create(recursive: true);
+      await file.writeAsString(code, flush: true);
+      await _versionFile(info.id).writeAsString(info.version, flush: true);
+      await _infoFile(info.id).writeAsString(jsonEncode(info.toJson()), flush: true);
+      installed++;
+    }
+    return installed;
   }
 
   /// Kode plugin versi [info.version]; pakai salinan lokal bila versinya sama.

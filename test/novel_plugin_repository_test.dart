@@ -117,6 +117,29 @@ void main() {
     expect(File('${dir.path}/plugins/legacy.json').existsSync(), isTrue);
   });
 
+  test('export → import ke perangkat lain: plugin jalan tanpa repo', () async {
+    routes[a] = _manifest([('one', 'https://a.example/one.js')]);
+    routes['https://a.example/one.js'] = 'var one = 1;';
+    final cat = await repo.fetchManifest([a]);
+    await repo.code(cat.plugins.single);
+    final exported = jsonDecode(jsonEncode(await repo.exportInstalled()));
+    expect((exported as List).length, 1);
+
+    final otherDir = await Directory.systemTemp.createTemp('lnr_repo_other');
+    addTearDown(() => otherDir.delete(recursive: true));
+    final other = NovelPluginRepository(
+      otherDir,
+      dio: Dio()..httpClientAdapter = _FakeAdapter({}), // repo sudah hilang
+    );
+    expect(await other.importPlugins(exported), 1);
+    expect(await other.importPlugins(exported), 0, reason: 'tidak menimpa yang sudah ada');
+
+    final restored = (await other.fetchManifest(const [])).plugins.single;
+    expect(restored.name, 'Plugin one');
+    expect(restored.orphaned, isTrue);
+    expect(await other.code(restored), 'var one = 1;');
+  });
+
   test('tanpa repo: hanya plugin tersimpan', () async {
     final cat = await repo.fetchManifest(const []);
     expect(cat.plugins, isEmpty);

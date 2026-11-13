@@ -9,6 +9,9 @@ import '../../core/utils/json.dart';
 /// Cadangan data aplikasi: semua SharedPreferences (favorit, riwayat,
 /// progres baca, kategori, pengaturan) + daftar pembaruan favorit.
 ///
+/// Kode plugin novel yang terpasang ikut (bila diminta), supaya sumber tetap
+/// ada walau repo plugin sudah hilang.
+///
 /// File unduhan tidak ikut (bisa besar). Cookie login dan penyimpanan plugin
 /// novel (bisa berisi sesi login) hanya ikut bila diminta.
 class AppBackup {
@@ -37,7 +40,14 @@ class AppBackup {
   static Future<File> _updatesFile() async =>
       File('${(await getApplicationSupportDirectory()).path}${Platform.pathSeparator}library_updates.json');
 
-  static Future<JsonMap> create(SharedPreferences prefs, {required bool includeSecrets}) async {
+  /// [plugins]: plugin novel terpasang (info + kode) dari
+  /// `NovelPluginRepository.exportInstalled`, supaya sumber tetap bisa
+  /// dipasang ulang walau repo-nya sudah hilang.
+  static Future<JsonMap> create(
+    SharedPreferences prefs, {
+    required bool includeSecrets,
+    List<Map<String, Object?>>? plugins,
+  }) async {
     final values = <String, Object?>{};
     for (final key in prefs.getKeys()) {
       if (_neverKeys.contains(key) || (!includeSecrets && isSecretKey(key))) continue;
@@ -66,8 +76,12 @@ class AppBackup {
       'secrets': includeSecrets,
       'prefs': values,
       if (updates != null) 'library_updates': updates,
+      if (plugins != null && plugins.isNotEmpty) 'novel_plugins': plugins,
     };
   }
+
+  /// Plugin novel di cadangan (diteruskan ke `importPlugins`).
+  static Object? novelPlugins(Object? decoded) => asMap(decoded)['novel_plugins'];
 
   /// Validasi + ringkasan untuk ditampilkan sebelum memulihkan.
   static BackupSummary? inspect(Object? decoded) {
@@ -90,6 +104,7 @@ class AppBackup {
       history: count('source_library.history.v1'),
       settings: prefs.length,
       secrets: json['secrets'] == true,
+      plugins: asList(json['novel_plugins']).length,
     );
   }
 
@@ -141,6 +156,7 @@ class BackupSummary {
     required this.history,
     required this.settings,
     required this.secrets,
+    this.plugins = 0,
   });
 
   final DateTime? createdAt;
@@ -148,4 +164,7 @@ class BackupSummary {
   final int history;
   final int settings;
   final bool secrets;
+
+  /// Plugin novel (beserta kodenya) di cadangan.
+  final int plugins;
 }

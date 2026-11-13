@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app_restart.dart';
 import '../../data/local/backup.dart';
 import '../../state/core_providers.dart';
+import '../../state/novel_providers.dart';
 
 /// Cadangkan & pulihkan favorit, riwayat, progres baca, dan pengaturan.
 class BackupScreen extends ConsumerStatefulWidget {
@@ -19,6 +20,7 @@ class BackupScreen extends ConsumerStatefulWidget {
 
 class _BackupScreenState extends ConsumerState<BackupScreen> {
   bool _secrets = false;
+  bool _plugins = true;
   bool _busy = false;
 
   void _snack(String text) => ScaffoldMessenger.of(context)
@@ -28,7 +30,11 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
   Future<void> _backup() async {
     setState(() => _busy = true);
     try {
-      final data = await AppBackup.create(ref.read(sharedPreferencesProvider), includeSecrets: _secrets);
+      final data = await AppBackup.create(
+        ref.read(sharedPreferencesProvider),
+        includeSecrets: _secrets,
+        plugins: _plugins ? await ref.read(novelRepositoryProvider).exportInstalled() : null,
+      );
       final now = DateTime.now();
       String two(int v) => v.toString().padLeft(2, '0');
       final name = 'hub_reader_${now.year}${two(now.month)}${two(now.day)}_${two(now.hour)}${two(now.minute)}.json';
@@ -72,6 +78,9 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
             'Dibuat ${created.day}-${created.month}-${created.year} '
                 '${created.hour.toString().padLeft(2, '0')}:${created.minute.toString().padLeft(2, '0')}.',
           '${summary.favorites} favorit, ${summary.history} riwayat, ${summary.settings} data/pengaturan.',
+          if (summary.plugins > 0)
+            '${summary.plugins} plugin novel (dipasang bila belum ada di HP ini). Pulihkan hanya file buatan sendiri: '
+                'kode plugin dijalankan aplikasi.',
           summary.secrets
               ? 'Termasuk cookie login & pengaturan plugin.'
               : 'Tanpa cookie login (yang di HP ini tetap dipakai).',
@@ -87,8 +96,9 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     setState(() => _busy = true);
     try {
       await AppBackup.restore(ref.read(sharedPreferencesProvider), decoded);
+      final plugins = await ref.read(novelRepositoryProvider).importPlugins(AppBackup.novelPlugins(decoded));
       if (!mounted) return;
-      _snack('Cadangan dipulihkan');
+      _snack(plugins > 0 ? 'Cadangan dipulihkan, $plugins plugin novel dipasang' : 'Cadangan dipulihkan');
       // Bangun ulang aplikasi supaya semua data dibaca ulang.
       AppRestart.restart(context);
     } catch (e) {
@@ -111,8 +121,8 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
         padding: const EdgeInsets.all(16),
         children: [
           Text(
-            'Cadangan berisi favorit (dengan kategori), riwayat, posisi baca, daftar pembaruan, dan '
-            'pengaturan. File unduhan tidak ikut.',
+            'Cadangan berisi favorit (dengan kategori), riwayat, posisi baca, daftar pembaruan, '
+            'pengaturan (termasuk daftar repo plugin), dan plugin novel terpasang. File unduhan tidak ikut.',
             style: theme.textTheme.bodyMedium,
           ),
           const SizedBox(height: 16),
@@ -124,6 +134,12 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                   subtitle: const Text('Berisi sesi login situs; jangan bagikan file ini ke orang lain.'),
                   value: _secrets,
                   onChanged: _busy ? null : (v) => setState(() => _secrets = v),
+                ),
+                SwitchListTile(
+                  title: const Text('Sertakan plugin novel terpasang'),
+                  subtitle: const Text('Kode plugin ikut disimpan, jadi sumber tetap bisa dipasang walau repo-nya hilang.'),
+                  value: _plugins,
+                  onChanged: _busy ? null : (v) => setState(() => _plugins = v),
                 ),
                 ListTile(
                   leading: const Icon(Icons.save_alt),
