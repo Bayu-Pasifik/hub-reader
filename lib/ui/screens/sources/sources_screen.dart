@@ -131,6 +131,11 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
             }),
           ),
           IconButton(
+            tooltip: 'Cari komik di semua sumber',
+            icon: const Icon(Icons.travel_explore),
+            onPressed: () => context.push(comicGlobalSearchLocation()),
+          ),
+          IconButton(
             tooltip: 'Unduhan',
             icon: Badge(
               isLabelVisible: queueCount > 0,

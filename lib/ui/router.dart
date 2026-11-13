@@ -8,6 +8,7 @@ import 'screens/novels/novel_global_search_screen.dart';
 import 'screens/novels/novel_reader_screen.dart';
 import 'screens/novels/novel_repos_screen.dart';
 import 'screens/novels/novel_sources_screen.dart';
+import 'screens/sources/comic_global_search_screen.dart';
 import 'screens/sources/downloads_screen.dart';
 import 'screens/app_settings_screen.dart';
 import 'screens/backup_screen.dart';
@@ -52,6 +53,9 @@ String novelReaderLocation(String pluginId, String novelPath, String chapterPath
 
 String novelGlobalSearchLocation([String query = '']) =>
     Uri(path: '/novel-search', queryParameters: query.isEmpty ? null : {'q': query}).toString();
+
+String comicGlobalSearchLocation([String query = '']) =>
+    Uri(path: '/source-search', queryParameters: query.isEmpty ? null : {'q': query}).toString();
 
 String migrateLocation(String sourceId, String url, String title) =>
     Uri(path: '/migrate', queryParameters: {'source': sourceId, 'url': url, 'title': title}).toString();
@@ -150,6 +154,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           url: state.uri.queryParameters['url'] ?? '',
           storagePluginId: state.uri.queryParameters['plugin'],
         ),
+      ),
+      GoRoute(
+        path: '/source-search',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, state) => ComicGlobalSearchScreen(initialQuery: state.uri.queryParameters['q'] ?? ''),
       ),
       GoRoute(
         path: '/novel-search',
