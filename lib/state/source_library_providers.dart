@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/local/source_library_store.dart';
 import '../data/models/source_library.dart';
 import '../sources/models.dart';
+import 'app_settings_provider.dart';
 import 'core_providers.dart';
 
 final sourceLibraryStoreProvider = Provider<SourceLibraryStore>(
@@ -195,6 +196,8 @@ class SourceHistoryNotifier extends Notifier<List<SourceHistoryEntry>> {
   List<SourceHistoryEntry> build() => ref.watch(sourceLibraryStoreProvider).readHistory();
 
   Future<void> record(SourceLibraryItem item, SourceChapter chapter) async {
+    // Mode samaran: riwayat tidak dicatat.
+    if (ref.read(appSettingsProvider).incognito) return;
     final first = state.firstOrNull;
     if (first != null && first.item.key == item.key && first.chapterUrl == chapter.url) return;
     final entry = SourceHistoryEntry(
@@ -244,6 +247,8 @@ class SourceProgressNotifier extends Notifier<Map<String, Map<String, SourceChap
   /// Simpan halaman yang sedang terlihat. Bab yang sudah selesai tetap
   /// berstatus selesai walau dibaca ulang.
   Future<void> update(SourceItemKey series, String chapterUrl, {required int page, required int total}) async {
+    // Mode samaran: posisi baca tidak dicatat (tanda manual tetap bisa).
+    if (ref.read(appSettingsProvider).incognito) return;
     final key = _key(series);
     final old = state[key]?[chapterUrl];
     final done = (old?.done ?? false) || (total > 0 && page >= total - 1);

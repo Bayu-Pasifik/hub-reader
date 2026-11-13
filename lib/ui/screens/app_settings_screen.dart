@@ -185,6 +185,13 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
                 onChanged: (v) => n.update((x) => x.copyWith(lockAfter: Duration(seconds: v ?? 60))),
               ),
             ),
+          SwitchListTile(
+            secondary: const Icon(Icons.visibility_off_outlined),
+            title: const Text('Mode samaran'),
+            subtitle: const Text('Riwayat & posisi baca tidak dicatat'),
+            value: s.incognito,
+            onChanged: (v) => n.update((x) => x.copyWith(incognito: v)),
+          ),
           header('Penyimpanan'),
           ListTile(
             leading: const Icon(Icons.image_outlined),

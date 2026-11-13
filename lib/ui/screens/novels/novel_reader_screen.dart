@@ -12,6 +12,7 @@ import '../../../data/models/source_library.dart';
 import '../../../novels/novel_models.dart';
 import '../../../novels/novel_source.dart';
 import '../../../novels/novel_tts.dart';
+import '../../../state/app_settings_provider.dart';
 import '../../../sources/models.dart';
 import '../../../state/novel_providers.dart';
 import '../../../state/source_library_providers.dart';
@@ -288,7 +289,9 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
   /// Bab sebelum/sesudah dalam urutan plugin (lama → baru), lintas halaman.
   Future<void> _step(int delta, List<NovelChapter> chapters, int totalPages) async {
     // Maju ke bab berikutnya = bab ini selesai dibaca.
-    if (delta > 0) ref.read(sourceProgressProvider.notifier).setDone(_libKey, _chapterPath, done: true);
+    if (delta > 0 && !ref.read(appSettingsProvider).incognito) {
+      ref.read(sourceProgressProvider.notifier).setDone(_libKey, _chapterPath, done: true);
+    }
     final i = chapters.indexWhere((c) => c.path == _chapterPath);
     final j = i + delta;
     if (i >= 0 && j >= 0 && j < chapters.length) return _goTo(chapters[j], _page);

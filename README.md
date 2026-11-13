@@ -192,6 +192,9 @@ ukuran huruf, jarak baris, margin, serif, rata kiri-kanan), menyimpan posisi bac
 (persen), lalu pindah bab sebelumnya/berikutnya, termasuk lintas halaman untuk plugin
 berhalaman (`parsePage`). Favorit & riwayat novel berbagi tab dengan komik (id `lnr:<plugin>`).
 
+**Mode samaran** (ikon mata di Riwayat, atau Pengaturan): riwayat dan posisi baca otomatis tidak
+dicatat; tanda dibaca manual tetap bisa. Bilah kecil di atas navigasi menandai mode ini aktif.
+
 **Pengaturan** (menu ⋮ di tab Komik/Novel/Favorit): tema sistem/terang/gelap, hitam pekat (OLED),
 warna aksen; kunci aplikasi dengan sidik jari/PIN perangkat (`local_auth`, `MainActivity` kini
 `FlutterFragmentActivity`), kunci lagi setelah di latar 0/1/5/30 menit; ukuran & hapus cache gambar,

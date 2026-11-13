@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/utils/formatters.dart';
+import '../../../state/app_settings_provider.dart';
 import '../../../state/source_library_providers.dart';
 import '../../widgets/library_routing.dart';
 import '../../widgets/source_widgets.dart';
@@ -30,11 +31,25 @@ class SourceHistoryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final history = ref.watch(sourceHistoryProvider);
+    final incognito = ref.watch(appSettingsProvider.select((s) => s.incognito));
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Riwayat'),
         actions: [
+          IconButton(
+            tooltip: incognito ? 'Matikan mode samaran' : 'Mode samaran',
+            icon: Icon(incognito ? Icons.visibility_off : Icons.visibility_off_outlined),
+            color: incognito ? Theme.of(context).colorScheme.primary : null,
+            onPressed: () {
+              ref.read(appSettingsProvider.notifier).update((s) => s.copyWith(incognito: !incognito));
+              ScaffoldMessenger.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(SnackBar(
+                  content: Text(incognito ? 'Mode samaran mati' : 'Mode samaran: riwayat & posisi baca tidak dicatat'),
+                ));
+            },
+          ),
           if (history.isNotEmpty)
             IconButton(
               tooltip: 'Hapus semua',

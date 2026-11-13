@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../state/app_settings_provider.dart';
 import '../../state/library_updates_provider.dart';
 
 /// Satu tab di bottom navigation.
@@ -40,25 +41,53 @@ class _MainShellState extends ConsumerState<MainShell> {
   Widget build(BuildContext context) {
     final shell = widget.navigationShell;
     final unseen = ref.watch(libraryUpdatesProvider.select((s) => s.unseen));
+    final incognito = ref.watch(appSettingsProvider.select((s) => s.incognito));
+    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       body: shell,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: shell.currentIndex,
-        onDestinationSelected: (index) => shell.goBranch(
-          index,
-          initialLocation: index == shell.currentIndex,
-        ),
-        destinations: [
-          for (final tab in widget.tabs)
-            NavigationDestination(
-              icon: Badge(
-                isLabelVisible: tab.path == '/favorites' && unseen > 0,
-                label: Text('$unseen'),
-                child: Icon(tab.icon),
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (incognito)
+            Material(
+              color: scheme.tertiaryContainer,
+              child: InkWell(
+                onTap: () => ref.read(appSettingsProvider.notifier).update((s) => s.copyWith(incognito: false)),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.visibility_off, size: 14, color: scheme.onTertiaryContainer),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Mode samaran · ketuk untuk mematikan',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(color: scheme.onTertiaryContainer),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              selectedIcon: Icon(tab.selectedIcon),
-              label: tab.label,
             ),
+          NavigationBar(
+            selectedIndex: shell.currentIndex,
+            onDestinationSelected: (index) => shell.goBranch(
+              index,
+              initialLocation: index == shell.currentIndex,
+            ),
+            destinations: [
+              for (final tab in widget.tabs)
+                NavigationDestination(
+                  icon: Badge(
+                    isLabelVisible: tab.path == '/favorites' && unseen > 0,
+                    label: Text('$unseen'),
+                    child: Icon(tab.icon),
+                  ),
+                  selectedIcon: Icon(tab.selectedIcon),
+                  label: tab.label,
+                ),
+            ],
+          ),
         ],
       ),
     );
