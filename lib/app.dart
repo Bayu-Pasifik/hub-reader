@@ -2,14 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'state/app_settings_provider.dart';
+import 'ui/deep_links.dart';
 import 'ui/router.dart';
 import 'ui/widgets/app_lock.dart';
 
-class HubReaderApp extends ConsumerWidget {
+class HubReaderApp extends ConsumerStatefulWidget {
   const HubReaderApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HubReaderApp> createState() => _HubReaderAppState();
+}
+
+class _HubReaderAppState extends ConsumerState<HubReaderApp> {
+  @override
+  void initState() {
+    super.initState();
+    // Tautan hubreader:// (lihat DeepLinks): buka di atas tab yang aktif.
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => DeepLinks.listen((location) => ref.read(routerProvider).push(location)),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final s = ref.watch(appSettingsProvider);
     final dark = ThemeData(
       useMaterial3: true,

@@ -10,6 +10,7 @@ import '../../../sources/models.dart';
 import '../../../state/download_providers.dart';
 import '../../../state/source_library_providers.dart';
 import '../../../state/source_providers.dart';
+import '../../deep_links.dart';
 import '../../router.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/state_views.dart';
@@ -148,6 +149,13 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
               onSelected: (v) {
                 if (v == 'migrate') context.push(migrateLocation(widget.sourceId, widget.url, loaded.title));
                 if (v == 'delete' && source is LocalSource) _deleteLocal(source, loaded);
+                if (v == 'share') {
+                  DeepLinks.share(
+                    title: loaded.title,
+                    webUrl: loaded.url,
+                    location: sourceMangaLocation(widget.sourceId, widget.url),
+                  );
+                }
                 if (v == 'track') {
                   final progress = ref.read(sourceSeriesProgressProvider(_key));
                   int? local;
@@ -172,6 +180,7 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
                 }
               },
               itemBuilder: (_) => [
+                if (source is! LocalSource) const PopupMenuItem(value: 'share', child: Text('Bagikan')),
                 const PopupMenuItem(value: 'track', child: Text('Tracking')),
                 const PopupMenuItem(value: 'migrate', child: Text('Pindah sumber')),
                 if (source is LocalSource) const PopupMenuItem(value: 'delete', child: Text('Hapus dari perangkat')),

@@ -16,6 +16,7 @@ import '../../../state/novel_providers.dart';
 import '../../../state/source_library_providers.dart';
 import '../tracker_screens.dart';
 import 'novel_export.dart';
+import '../../deep_links.dart';
 import '../../router.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/state_views.dart';
@@ -205,6 +206,20 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
     if (ok == true) ref.invalidate(novelDetailsProvider(_key));
   }
 
+  Future<void> _share(NovelSource source, NovelDetails novel) async {
+    String? web;
+    try {
+      web = await source.webUrl(widget.path, isNovel: true);
+    } catch (_) {
+      web = null;
+    }
+    await DeepLinks.share(
+      title: novel.name,
+      webUrl: web,
+      location: novelDetailLocation(widget.pluginId, widget.path),
+    );
+  }
+
   Future<void> _deleteLocal(NovelDetails novel) async {
     final ok = await showDialog<bool>(
       context: context,
@@ -277,6 +292,7 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
                       onSelected: (v) {
                         if (v == 'web') _openWeb(source);
                         if (v == 'delete' && loaded != null) _deleteLocal(loaded);
+                        if (v == 'share' && loaded != null) _share(source, loaded);
                         if (v == 'export' && loaded != null) {
                           exportNovelEpub(context, ref, pluginId: widget.pluginId, path: widget.path, details: loaded);
                         }
@@ -286,6 +302,7 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
                         }
                       },
                       itemBuilder: (_) => [
+                        if (source is! LocalNovelSource) const PopupMenuItem(value: 'share', child: Text('Bagikan')),
                         if (source is! LocalNovelSource) const PopupMenuItem(value: 'web', child: Text('Buka di WebView')),
                         const PopupMenuItem(value: 'track', child: Text('Tracking')),
                         const PopupMenuItem(value: 'migrate', child: Text('Pindah sumber')),

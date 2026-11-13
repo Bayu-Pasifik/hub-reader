@@ -1,5 +1,7 @@
 package com.hubreader.hub_reader
 
+import android.content.Intent
+import android.os.Bundle
 import android.view.KeyEvent
 import android.view.WindowManager
 import android.webkit.CookieManager
@@ -11,6 +13,24 @@ import io.flutter.plugin.common.MethodChannel
 // FlutterFragmentActivity: dibutuhkan local_auth (kunci aplikasi).
 class MainActivity : FlutterFragmentActivity() {
     private var readerChannel: MethodChannel? = null
+    private var linkChannel: MethodChannel? = null
+
+    /// Tautan hubreader:// yang membuka aplikasi; diambil Dart sekali.
+    private var initialLink: String? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        // Jangan proses ulang tautan saat activity dibuat ulang (rotasi dsb.).
+        if (savedInstanceState == null) initialLink = linkOf(intent)
+        super.onCreate(savedInstanceState)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        linkOf(intent)?.let { linkChannel?.invokeMethod("open", it) }
+    }
+
+    private fun linkOf(intent: Intent?): String? =
+        if (intent?.action == Intent.ACTION_VIEW && intent.data?.scheme == "hubreader") intent.dataString else null
 
     /// Tombol volume dipakai pembaca novel untuk menggulir.
     private var interceptVolume = false
@@ -28,6 +48,20 @@ class MainActivity : FlutterFragmentActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+
+        // Deep link ditangani di Dart (DeepLinks) dengan daftar rute yang
+        // diizinkan, bukan deep linking otomatis Flutter.
+        linkChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "hub_reader/links").also {
+            it.setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "initial" -> {
+                        result.success(initialLink)
+                        initialLink = null
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+        }
 
         readerChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "hub_reader/reader").also {
             it.setMethodCallHandler { call, result ->

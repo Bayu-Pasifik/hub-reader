@@ -225,6 +225,13 @@ penulis, sinopsis, dan genre, lalu disimpan lewat dialog sistem. Isi bab diambil
 kalau tidak dari situs; HTML dibersihkan menjadi XHTML valid (script/iframe/gambar jarak jauh dibuang). Bab
 yang gagal dimuat dilewati dan dilaporkan.
 
+**Bagikan & deep link** (`lib/ui/deep_links.dart`): menu ⋮ detail komik/novel → **Bagikan** mengirim judul,
+URL situs, dan tautan aplikasi `hubreader://open/<rute>` lewat share sheet. Tautan itu membuka seri/novel di
+aplikasi (saat dibuka dari nol maupun saat aplikasi sudah jalan). Deep linking otomatis Flutter dimatikan;
+`MainActivity` meneruskan tautan lewat channel `hub_reader/links` dan hanya rute detail & reader yang
+diterima (parameter lain dibuang), jadi tautan dari luar tidak bisa membuka WebView ke situs sembarang atau
+layar cadangan/pengaturan.
+
 **Statistik** (ikon grafik di Riwayat, atau Pengaturan → Data): lama membaca hari ini / 7 hari / total,
 rentetan hari membaca, grafik 14 hari, bab selesai (komik & novel), favorit, dan 5 seri paling banyak
 dibaca. Lama membaca dihitung dari aktivitas di reader (gulir, ganti halaman, auto-scroll, TTS) dengan
