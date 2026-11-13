@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hub_reader/data/local/download_store.dart';
 import 'package:hub_reader/data/models/download.dart';
+import 'package:hub_reader/sources/models.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -49,5 +50,39 @@ void main() {
 
     await store.deleteDir(rel);
     expect(store.localPages(c), isNull);
+  });
+
+  test('queue round-trips; running tasks come back queued', () async {
+    const ch = SourceChapter(url: 'https://komiku.org/ch-2/', name: 'Chapter 2', number: 2);
+    final tasks = [
+      const DownloadTask(
+        sourceId: 'id.komiku',
+        mangaUrl: 'https://komiku.org/manga/one-piece/',
+        mangaTitle: 'One Piece',
+        chapter: ch,
+        status: DownloadStatus.downloading,
+        done: 3,
+        total: 10,
+      ),
+      const DownloadTask(
+        sourceId: 'id.komiku',
+        mangaUrl: 'https://komiku.org/manga/one-piece/',
+        mangaTitle: 'One Piece',
+        chapter: SourceChapter(url: 'https://komiku.org/ch-3/', name: 'Chapter 3'),
+        status: DownloadStatus.failed,
+        error: 'Timeout',
+      ),
+    ];
+    await store.writeQueue(tasks);
+    final back = store.readQueue();
+    expect(back.map((t) => t.key), tasks.map((t) => t.key));
+    expect(back[0].status, DownloadStatus.queued);
+    expect(back[0].done, 0);
+    expect(back[0].chapter.number, 2);
+    expect(back[1].status, DownloadStatus.failed);
+    expect(back[1].error, 'Timeout');
+
+    await store.writeQueue(const []);
+    expect(store.readQueue(), isEmpty);
   });
 }

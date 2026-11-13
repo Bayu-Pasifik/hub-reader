@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'state/app_settings_provider.dart';
+import 'state/download_providers.dart';
 import 'ui/deep_links.dart';
 import 'ui/router.dart';
 import 'ui/widgets/app_lock.dart';
@@ -18,9 +19,11 @@ class _HubReaderAppState extends ConsumerState<HubReaderApp> {
   void initState() {
     super.initState();
     // Tautan hubreader:// (lihat DeepLinks): buka di atas tab yang aktif.
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => DeepLinks.listen((location) => ref.read(routerProvider).push(location)),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      DeepLinks.listen((location) => ref.read(routerProvider).push(location));
+      // Lanjutkan antrean unduhan yang tersimpan dari sesi sebelumnya.
+      ref.read(downloadQueueProvider);
+    });
   }
 
   @override

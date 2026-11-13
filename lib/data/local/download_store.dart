@@ -18,6 +18,7 @@ class DownloadStore {
   final SharedPreferences _prefs;
 
   static const _indexKey = 'downloads.index.v1';
+  static const queueKey = 'downloads.queue.v1';
 
   static Future<DownloadStore> open(SharedPreferences prefs) async {
     final docs = await getApplicationDocumentsDirectory();
@@ -41,6 +42,23 @@ class DownloadStore {
 
   Future<void> writeIndex(Map<String, DownloadedChapter> index) =>
       _prefs.setString(_indexKey, jsonEncode([for (final c in index.values) c.toJson()]));
+
+  List<DownloadTask> readQueue() {
+    final raw = _prefs.getString(queueKey);
+    if (raw == null) return const [];
+    try {
+      return [
+        for (final e in asList(jsonDecode(raw)))
+          if (DownloadTask.tryParse(asMap(e)) case final t?) t,
+      ];
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  Future<void> writeQueue(List<DownloadTask> queue) => queue.isEmpty
+      ? _prefs.remove(queueKey)
+      : _prefs.setString(queueKey, jsonEncode([for (final t in queue) t.toJson()]));
 
   /// Folder relatif untuk satu bab (dipakai saat mengunduh & di indeks).
   static String relativeDirFor(String sourceId, String mangaUrl, String chapterUrl) =>

@@ -110,8 +110,8 @@ Batasan saat ini:
   di situs). Komiku mendukung urutan, tipe, status, genre 1, dan genre 2.
 - Unduhan offline: gambar bab disimpan di `<documents>/downloads/<sumber>/<hash seri>/<hash bab>/`,
   dan indeksnya ada di SharedPreferences (`downloads.index.v1`). Reader otomatis memakai
-  file lokal bila babnya lengkap terunduh. Antrean hanya ada di memori, jadi bab yang
-  belum selesai hilang dari antrean saat aplikasi ditutup dan perlu diunduh ulang.
+  file lokal bila babnya lengkap terunduh. Antrean disimpan (`downloads.queue.v1`) dan
+  dilanjutkan otomatis saat aplikasi dibuka lagi; bab yang terputus diulang tanpa mengunduh ulang halaman yang sudah ada.
 - Domain situs sering pindah. Ketuk ikon gir di tab Sumber untuk mengganti domain tanpa
   build ulang (ada tombol Tes koneksi). Host lama diingat, jadi URL favorit, riwayat, dan
   unduhan dari domain lama otomatis dialihkan (`HttpSource.rewriteToCurrentHost`).

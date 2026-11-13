@@ -49,8 +49,8 @@ final localPagesProvider = Provider.family<List<String>?, String>((ref, key) {
 
 // ---------------------------------------------------------------- antrean
 
-/// Antrean unduhan (hanya di memori; antrean hilang bila aplikasi ditutup,
-/// tapi bab yang sudah selesai tetap tersimpan).
+/// Antrean unduhan. Disimpan di SharedPreferences setiap kali isi/statusnya
+/// berubah, lalu dilanjutkan otomatis saat aplikasi dibuka lagi.
 final downloadQueueProvider =
     NotifierProvider<DownloadQueueNotifier, List<DownloadTask>>(DownloadQueueNotifier.new);
 
@@ -66,8 +66,29 @@ class DownloadQueueNotifier extends Notifier<List<DownloadTask>> {
     responseType: ResponseType.bytes,
   ));
 
+  /// Tanda isi antrean terakhir yang disimpan (kunci + status), supaya
+  /// pembaruan progres per halaman tidak menulis ke disk.
+  String? _savedSignature;
+
   @override
-  List<DownloadTask> build() => const [];
+  List<DownloadTask> build() {
+    final store = ref.watch(downloadStoreProvider);
+    final restored = store.readQueue();
+    listenSelf((_, next) => _persist(next));
+    _savedSignature = _signature(restored);
+    if (restored.any((t) => t.status == DownloadStatus.queued)) Future.microtask(_run);
+    return restored;
+  }
+
+  static String _signature(List<DownloadTask> queue) =>
+      [for (final t in queue) '${t.key}#${t.status == DownloadStatus.failed ? 'f' : 'q'}'].join('\n');
+
+  void _persist(List<DownloadTask> queue) {
+    final sig = _signature(queue);
+    if (sig == _savedSignature) return;
+    _savedSignature = sig;
+    ref.read(downloadStoreProvider).writeQueue(queue);
+  }
 
   /// Masukkan bab ke antrean (yang sudah terunduh/sudah antre dilewati).
   void enqueue({

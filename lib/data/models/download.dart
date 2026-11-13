@@ -96,6 +96,43 @@ class DownloadTask {
 
   double? get progress => total == 0 ? null : done / total;
 
+  /// Disimpan agar antrean bertahan saat aplikasi ditutup. Tugas yang
+  /// sedang berjalan disimpan sebagai "antre" dan diulang dari awal bab
+  /// (halaman yang sudah ada di disk dilewati).
+  JsonMap toJson() => {
+        'source_id': sourceId,
+        'manga_url': mangaUrl,
+        'manga_title': mangaTitle,
+        'thumbnail_url': thumbnailUrl,
+        'chapter_url': chapter.url,
+        'chapter_name': chapter.name,
+        'chapter_number': chapter.number,
+        'uploaded_at': chapter.uploadedAt?.toIso8601String(),
+        'failed': status == DownloadStatus.failed,
+        'error': error,
+      };
+
+  static DownloadTask? tryParse(JsonMap json) {
+    final sourceId = asString(json['source_id']);
+    final chapterUrl = asString(json['chapter_url']);
+    if (sourceId == null || chapterUrl == null) return null;
+    final failed = json['failed'] == true;
+    return DownloadTask(
+      sourceId: sourceId,
+      mangaUrl: asString(json['manga_url']) ?? '',
+      mangaTitle: asString(json['manga_title']) ?? 'Tanpa judul',
+      thumbnailUrl: asString(json['thumbnail_url']),
+      chapter: SourceChapter(
+        url: chapterUrl,
+        name: asString(json['chapter_name']) ?? 'Bab',
+        number: asDouble(json['chapter_number']),
+        uploadedAt: asDate(json['uploaded_at']),
+      ),
+      status: failed ? DownloadStatus.failed : DownloadStatus.queued,
+      error: failed ? asString(json['error']) : null,
+    );
+  }
+
   DownloadTask copyWith({DownloadStatus? status, int? done, int? total, String? error}) => DownloadTask(
         sourceId: sourceId,
         mangaUrl: mangaUrl,
