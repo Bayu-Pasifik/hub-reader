@@ -44,3 +44,5 @@ flutter:
     - assets/sources/catalog.json
     # Runtime plugin novel LNReader (QuickJS), dibuat oleh tool/lnreader_runtime
     - assets/lnreader/runtime.js
+    # Status awal plugin novel dari cek di PC (tool/lnreader_runtime/health.mjs)
+    - assets/lnreader/health.json

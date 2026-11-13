@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../novels/novel_models.dart';
 import '../../../novels/novel_source.dart';
+import '../../../state/novel_health_provider.dart';
 import '../../../state/novel_providers.dart';
 import '../../router.dart';
 import '../../widgets/source_widgets.dart';
@@ -62,9 +63,13 @@ class _NovelGlobalSearchScreenState extends ConsumerState<NovelGlobalSearchScree
 
   Future<List<NovelPluginInfo>> _targets() async {
     final manifest = await ref.read(novelManifestProvider.future);
-    if (_scope != null) return manifest.plugins.where((p) => p.lang == _scope).toList();
+    // Plugin rusak/mati dilewati bila disembunyikan di tab Novel.
+    final health = ref.read(novelHealthProvider);
+    final skipBroken = ref.read(novelHideBrokenProvider);
+    bool usable(NovelPluginInfo p) => !skipBroken || novelUsable(health[p.id]);
+    if (_scope != null) return manifest.plugins.where((p) => p.lang == _scope && usable(p)).toList();
     final installed = await ref.read(novelInstalledProvider.future);
-    return manifest.plugins.where((p) => installed.contains(_safe(p.id))).toList();
+    return manifest.plugins.where((p) => installed.contains(_safe(p.id)) && usable(p)).toList();
   }
 
   static String _safe(String id) => id.replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '_');

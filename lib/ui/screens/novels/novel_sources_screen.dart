@@ -6,7 +6,9 @@ import 'package:go_router/go_router.dart';
 import '../../../novels/novel_models.dart';
 import '../../../novels/plugin_repository.dart';
 import '../../../state/download_providers.dart';
+import '../../../state/novel_health_provider.dart';
 import '../../../state/novel_providers.dart';
+import '../../../state/source_health_provider.dart';
 import '../../router.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/state_views.dart';
@@ -79,10 +81,38 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
           ),
           PopupMenuButton<String>(
             onSelected: (v) {
-              if (v == 'refresh') ref.read(novelManifestProvider.notifier).refresh();
+              final health = ref.read(novelHealthProvider.notifier);
+              switch (v) {
+                case 'refresh':
+                  ref.read(novelManifestProvider.notifier).refresh();
+                case 'check':
+                  final m = manifest.valueOrNull;
+                  if (m == null) return;
+                  final lang = selectedLang;
+                  health.checkAll([
+                    for (final p in m.plugins)
+                      if (lang == null || p.lang == lang) p
+                  ]);
+                case 'stop':
+                  health.stop();
+                case 'hide':
+                  ref.read(novelHideBrokenProvider.notifier).set(!ref.read(novelHideBrokenProvider));
+              }
             },
-            itemBuilder: (_) => const [
-              PopupMenuItem(value: 'refresh', child: Text('Perbarui daftar plugin')),
+            itemBuilder: (_) => [
+              const PopupMenuItem(value: 'refresh', child: Text('Perbarui daftar plugin')),
+              if (ref.read(novelHealthRunProvider).running)
+                const PopupMenuItem(value: 'stop', child: Text('Hentikan pengecekan'))
+              else
+                PopupMenuItem(
+                  value: 'check',
+                  child: Text(selectedLang == null ? 'Cek semua plugin' : 'Cek plugin ${languageName(selectedLang)}'),
+                ),
+              CheckedPopupMenuItem(
+                value: 'hide',
+                checked: ref.read(novelHideBrokenProvider),
+                child: const Text('Sembunyikan yang rusak'),
+              ),
             ],
           ),
         ],
@@ -112,6 +142,11 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
       return p.name.toLowerCase().contains(query) || p.site.toLowerCase().contains(query);
     }).toList();
 
+    final health = ref.watch(novelHealthProvider);
+    final hideBroken = ref.watch(novelHideBrokenProvider);
+    final run = ref.watch(novelHealthRunProvider);
+    final hiddenCount = hideBroken ? filtered.where((p) => !novelUsable(health[p.id])).length : 0;
+    if (hideBroken) filtered.removeWhere((p) => !novelUsable(health[p.id]));
     final rows = <Object>[];
     final used = filtered.where((p) => installed.contains(NovelPluginRepository.safeId(p.id))).toList()
       ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
@@ -155,6 +190,25 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
             ],
           ),
         ),
+        if (run.running)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: Row(
+              children: [
+                Expanded(child: LinearProgressIndicator(value: run.total == 0 ? null : run.done / run.total)),
+                const SizedBox(width: 12),
+                Text('Cek ${run.done}/${run.total}', style: Theme.of(context).textTheme.bodySmall),
+              ],
+            ),
+          ),
+        if (hiddenCount > 0)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+            child: Text(
+              '$hiddenCount plugin rusak/mati disembunyikan',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
         if (manifest.refreshError != null)
           MaterialBanner(
             content: const Text('Gagal memperbarui daftar plugin; memakai daftar tersimpan.'),
@@ -197,19 +251,64 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
                         );
                       }
                       final p = row as NovelPluginInfo;
-                      return ListTile(
-                        leading: _PluginIcon(url: p.iconUrl),
-                        title: Text(p.name),
-                        subtitle: Text('${p.host} · v${p.version}', maxLines: 1, overflow: TextOverflow.ellipsis),
-                        trailing: Text(p.lang.toUpperCase(), style: Theme.of(context).textTheme.labelSmall),
-                        onTap: () => context.push(novelBrowseLocation(p.id)),
-                      );
+                      return _PluginTile(plugin: p, health: health[p.id]);
                     },
                   ),
                 ),
         ),
       ],
     );
+  }
+}
+
+class _PluginTile extends ConsumerWidget {
+  const _PluginTile({required this.plugin, required this.health});
+
+  final NovelPluginInfo plugin;
+  final SourceHealth? health;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final p = plugin;
+    final scheme = Theme.of(context).colorScheme;
+    final status = health?.status;
+    final (Color? color, IconData? icon) = switch (status) {
+      HealthStatus.ok => (Colors.green.shade600, Icons.check_circle),
+      HealthStatus.cloudflare => (Colors.orange.shade700, Icons.shield),
+      HealthStatus.broken => (Colors.amber.shade800, Icons.warning_rounded),
+      HealthStatus.dead => (scheme.error, Icons.cancel),
+      null => (null, null),
+    };
+    final detail = health?.detail;
+    final info = [
+      if (status != null) status.label + (status != HealthStatus.ok && detail != null ? ' ($detail)' : ''),
+      p.host,
+      'v${p.version}',
+    ].join(' · ');
+    final tile = ListTile(
+      leading: Badge(
+        isLabelVisible: icon != null,
+        backgroundColor: Colors.transparent,
+        offset: const Offset(4, 26),
+        label: icon == null ? null : Icon(icon, size: 16, color: color),
+        child: _PluginIcon(url: p.iconUrl),
+      ),
+      title: Text(p.name),
+      subtitle: Text(info, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: color)),
+      trailing: Text(p.lang.toUpperCase(), style: Theme.of(context).textTheme.labelSmall),
+      onTap: () => context.push(novelBrowseLocation(p.id)),
+      // Tekan lama = cek ulang plugin ini saja.
+      onLongPress: () async {
+        final messenger = ScaffoldMessenger.of(context);
+        messenger.showSnackBar(SnackBar(content: Text('Mengecek ${p.name}…'), duration: const Duration(seconds: 1)));
+        final h = await ref.read(novelHealthProvider.notifier).check(p);
+        final d = h.detail;
+        messenger
+          ..hideCurrentSnackBar()
+          ..showSnackBar(SnackBar(content: Text('${p.name}: ${h.status.label}${d != null ? ' ($d)' : ''}')));
+      },
+    );
+    return status == HealthStatus.dead || status == HealthStatus.broken ? Opacity(opacity: 0.6, child: tile) : tile;
   }
 }
 

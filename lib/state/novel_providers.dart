@@ -16,6 +16,7 @@ import '../sources/source.dart';
 import '../sources/source_exception.dart';
 import 'core_providers.dart';
 import 'download_providers.dart';
+import 'novel_health_provider.dart';
 
 /// Prefix id sumber novel di favorit/riwayat (berbagi store dengan komik).
 const novelSourcePrefix = 'lnr:';
@@ -227,6 +228,9 @@ class NovelListNotifier extends AutoDisposeFamilyNotifier<NovelListState, NovelL
         NovelListing.latest => source.popular(next, latest: true, filters: filters),
         NovelListing.search => source.search(arg.query, next),
       };
+      if (next == 1 && arg.listing == NovelListing.popular && arg.filtersJson.isEmpty) {
+        ref.read(novelHealthProvider.notifier).recordResult(arg.pluginId, empty: items.isEmpty);
+      }
       if (_disposed || generation != _generation) return;
       final seen = current.items.toSet();
       final fresh = items.where(seen.add).toList();
@@ -237,6 +241,9 @@ class NovelListNotifier extends AutoDisposeFamilyNotifier<NovelListState, NovelL
         hasNextPage: fresh.isNotEmpty,
       );
     } catch (error) {
+      if (next == 1 && arg.listing == NovelListing.popular) {
+        ref.read(novelHealthProvider.notifier).recordResult(arg.pluginId, error: error);
+      }
       if (_disposed || generation != _generation) return;
       final e = novelError(error);
       state = current.page == 0

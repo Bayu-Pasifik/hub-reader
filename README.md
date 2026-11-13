@@ -192,6 +192,11 @@ ukuran huruf, jarak baris, margin, serif, rata kiri-kanan), menyimpan posisi bac
 (persen), lalu pindah bab sebelumnya/berikutnya, termasuk lintas halaman untuk plugin
 berhalaman (`parsePage`). Favorit & riwayat novel berbagi tab dengan komik (id `lnr:<plugin>`).
 
+Tiap plugin novel diberi status (Jalan / Perlu verifikasi / Rusak / Mati). Data awal berasal dari cek
+di PC (`node check.mjs && node health.mjs` menulis `assets/lnreader/health.json`), lalu diperbarui
+dari HP: saat daftar populer dibuka, lewat menu **Cek semua plugin**, atau tekan lama satu plugin.
+Menu **Sembunyikan yang rusak** menyembunyikan plugin rusak/mati dari tab Novel dan cari global.
+
 Pengaturan pembaca (ikon Tt): tema, ukuran huruf, jarak baris, margin, jenis huruf (Sans/Serif/Rapat/Mono),
 rata kiri-kanan, tombol volume untuk menggulir, layar tetap menyala, dan kecepatan gulir otomatis
 (ikon panah ganda; berhenti sejenak saat layar disentuh, lanjut ke bab berikutnya di akhir bab).
