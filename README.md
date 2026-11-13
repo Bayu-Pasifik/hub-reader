@@ -192,6 +192,11 @@ ukuran huruf, jarak baris, margin, serif, rata kiri-kanan), menyimpan posisi bac
 (persen), lalu pindah bab sebelumnya/berikutnya, termasuk lintas halaman untuk plugin
 berhalaman (`parsePage`). Favorit & riwayat novel berbagi tab dengan komik (id `lnr:<plugin>`).
 
+Pengaturan pembaca (ikon Tt): tema, ukuran huruf, jarak baris, margin, jenis huruf (Sans/Serif/Rapat/Mono),
+rata kiri-kanan, tombol volume untuk menggulir, layar tetap menyala, dan kecepatan gulir otomatis
+(ikon panah ganda; berhenti sejenak saat layar disentuh, lanjut ke bab berikutnya di akhir bab).
+Tombol volume dan layar menyala lewat channel `hub_reader/reader` di `MainActivity.kt`.
+
 Tekan lama bab di detail novel untuk mode pilih: tandai sudah/belum dibaca, tandai semua bab sampai
 bab itu, pilih semua, atau unduh yang dipilih. Di pembaca, pindah ke bab berikutnya menandai bab ini
 selesai, dan menarik layar melewati akhir bab langsung membuka bab berikutnya (bisa dimatikan).

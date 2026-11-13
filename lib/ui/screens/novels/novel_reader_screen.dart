@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show ScrollDirection;
+import 'package:flutter/scheduler.dart' show Ticker;
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/platform/reader_bridge.dart';
 import '../../../data/models/source_library.dart';
 import '../../../novels/novel_models.dart';
 import '../../../novels/novel_source.dart';
@@ -40,7 +42,7 @@ class NovelReaderScreen extends ConsumerStatefulWidget {
   ConsumerState<NovelReaderScreen> createState() => _NovelReaderScreenState();
 }
 
-class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> {
+class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with SingleTickerProviderStateMixin {
   late String _chapterPath = widget.chapterPath;
   late int _page = widget.page;
   final _scroll = ScrollController();
@@ -66,6 +68,15 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> {
   double _pull = 0;
   static const _pullToNext = 140.0;
 
+  // ---- gulir otomatis
+  late final Ticker _ticker = createTicker(_onTick);
+  Duration _lastTick = Duration.zero;
+  bool _autoScroll = false;
+  bool _dragging = false;
+
+  /// Bab yang sudah memicu pindah otomatis (cegah pemicu ganda saat memuat).
+  String? _advancedFrom;
+
   SourceItemKey get _libKey => (sourceId: novelLibraryId(widget.pluginId), url: widget.novelPath);
 
   @override
@@ -75,6 +86,57 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> {
     _tts.addListener(_onTts);
     _tts.onChapterEnd = _onTtsChapterEnd;
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    _applyPlatform(ref.read(novelReaderSettingsProvider));
+  }
+
+  /// Layar tetap menyala & tombol volume sesuai pengaturan.
+  void _applyPlatform(NovelReaderSettings s) {
+    ReaderBridge.setKeepScreenOn(s.keepScreenOn);
+    ReaderBridge.setVolumeKeys(s.volumeKeys ? _onVolumeKey : null);
+  }
+
+  /// Volume turun: satu layar ke bawah (di akhir bab: bab berikutnya).
+  /// Volume naik: satu layar ke atas.
+  void _onVolumeKey(bool down) {
+    if (!mounted || !_scroll.hasClients) return;
+    final pos = _scroll.position;
+    final step = pos.viewportDimension * 0.85;
+    if (down && pos.extentAfter <= 1) {
+      if (_hasNext) _step(1, _chapters, _totalPages);
+      return;
+    }
+    final target = (pos.pixels + (down ? step : -step)).clamp(pos.minScrollExtent, pos.maxScrollExtent);
+    _scroll.animateTo(target, duration: const Duration(milliseconds: 220), curve: Curves.easeOut);
+  }
+
+  void _toggleAutoScroll() {
+    setState(() => _autoScroll = !_autoScroll);
+    if (_autoScroll) {
+      _lastTick = Duration.zero;
+      _ticker.start();
+      setState(() => _chrome = false);
+    } else {
+      _ticker.stop();
+    }
+  }
+
+  void _onTick(Duration elapsed) {
+    final dt = (elapsed - _lastTick).inMicroseconds / 1e6;
+    _lastTick = elapsed;
+    if (!_scroll.hasClients || _dragging || dt <= 0 || dt > 0.5) return;
+    final pos = _scroll.position;
+    if (pos.extentAfter <= 0) {
+      if (_advancedFrom == _chapterPath) return;
+      if (ref.read(novelReaderSettingsProvider).autoNext && _hasNext) {
+        _advancedFrom = _chapterPath;
+        _step(1, _chapters, _totalPages);
+      } else {
+        _toggleAutoScroll();
+      }
+      return;
+    }
+    final speed = ref.read(novelReaderSettingsProvider).autoScrollSpeed;
+    _scroll.jumpTo((pos.pixels + speed * dt).clamp(pos.minScrollExtent, pos.maxScrollExtent));
   }
 
   @override
@@ -82,6 +144,9 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> {
     _saveTimer?.cancel();
     _saveProgress();
     _tts.dispose();
+    _ticker.dispose();
+    ReaderBridge.setVolumeKeys(null);
+    ReaderBridge.setKeepScreenOn(false);
     _scroll.dispose();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.dispose();
@@ -204,6 +269,9 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> {
 
   /// Tarik melewati akhir bab: pindah ke bab berikutnya.
   bool _onScrollNotification(ScrollNotification n) {
+    // Gulir otomatis berhenti sejenak selama layar disentuh.
+    if (n is ScrollStartNotification && n.dragDetails != null) _dragging = true;
+    if (n is ScrollEndNotification) _dragging = false;
     if (!ref.read(novelReaderSettingsProvider).autoNext || !_hasNext) return false;
     if (n is OverscrollNotification && n.overscroll > 0 && n.metrics.extentAfter == 0) {
       setState(() => _pull += n.overscroll);
@@ -256,6 +324,9 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> {
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(novelReaderSettingsProvider);
+    ref.listen(novelReaderSettingsProvider, (prev, next) {
+      if (prev?.volumeKeys != next.volumeKeys || prev?.keepScreenOn != next.keepScreenOn) _applyPlatform(next);
+    });
     final source = ref.watch(novelSourceProvider(widget.pluginId)).valueOrNull;
     final details = ref.watch(novelDetailsProvider((pluginId: widget.pluginId, path: widget.novelPath)));
     final chaptersAsync =
@@ -287,7 +358,7 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> {
       fontSize: settings.fontSize,
       height: settings.lineHeight,
       color: fg,
-      fontFamily: settings.serif ? 'serif' : null,
+      fontFamily: settings.font.family,
     );
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -451,6 +522,11 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> {
                           onPressed: content.hasValue ? () => _tts.active ? _tts.stop() : _startTts() : null,
                         ),
                         IconButton(
+                          tooltip: _autoScroll ? 'Hentikan gulir otomatis' : 'Gulir otomatis',
+                          icon: Icon(_autoScroll ? Icons.pause_circle_outline : Icons.keyboard_double_arrow_down),
+                          onPressed: content.hasValue ? _toggleAutoScroll : null,
+                        ),
+                        IconButton(
                           tooltip: 'Tampilan',
                           icon: const Icon(Icons.text_fields),
                           onPressed: () => showModalBottomSheet<void>(
@@ -567,11 +643,20 @@ class _ReaderSettingsSheet extends ConsumerWidget {
                 (v) => n.update((x) => x.copyWith(lineHeight: v)), s.lineHeight.toStringAsFixed(1)),
             _slider(context, 'Margin', s.padding, 6, 40, 17, (v) => n.update((x) => x.copyWith(padding: v)),
                 s.padding.toStringAsFixed(0)),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Huruf serif'),
-              value: s.serif,
-              onChanged: (v) => n.update((x) => x.copyWith(serif: v)),
+            Row(
+              children: [
+                const SizedBox(width: 110, child: Text('Huruf')),
+                Expanded(
+                  child: Wrap(spacing: 6, runSpacing: 6, children: [
+                    for (final f in NovelFont.values)
+                      ChoiceChip(
+                        label: Text(f.label, style: TextStyle(fontFamily: f.family)),
+                        selected: s.font == f,
+                        onSelected: (_) => n.update((x) => x.copyWith(font: f)),
+                      ),
+                  ]),
+                ),
+              ],
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
@@ -585,6 +670,21 @@ class _ReaderSettingsSheet extends ConsumerWidget {
               value: s.autoNext,
               onChanged: (v) => n.update((x) => x.copyWith(autoNext: v)),
             ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Tombol volume untuk menggulir'),
+              subtitle: const Text('Volume turun = halaman berikutnya'),
+              value: s.volumeKeys,
+              onChanged: (v) => n.update((x) => x.copyWith(volumeKeys: v)),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Layar tetap menyala'),
+              value: s.keepScreenOn,
+              onChanged: (v) => n.update((x) => x.copyWith(keepScreenOn: v)),
+            ),
+            _slider(context, 'Gulir otomatis', s.autoScrollSpeed, 10, 200, 19,
+                (v) => n.update((x) => x.copyWith(autoScrollSpeed: v)), s.autoScrollSpeed.toStringAsFixed(0)),
             const Divider(),
             Text('Suara (TTS)', style: Theme.of(context).textTheme.titleSmall),
             _slider(context, 'Kecepatan', s.ttsRate, 0.1, 1.0, 18, (v) => n.update((x) => x.copyWith(ttsRate: v)),

@@ -322,11 +322,24 @@ final novelChapterProvider = FutureProvider.autoDispose.family<String, ({String 
 
 enum NovelReaderTheme { system, light, sepia, dark, black }
 
+/// Jenis huruf pembaca (font sistem Android).
+enum NovelFont {
+  sans('Sans', null),
+  serif('Serif', 'serif'),
+  condensed('Rapat', 'sans-serif-condensed'),
+  mono('Mono', 'monospace');
+
+  const NovelFont(this.label, this.family);
+
+  final String label;
+  final String? family;
+}
+
 class NovelReaderSettings {
   const NovelReaderSettings({
     this.fontSize = 18,
     this.lineHeight = 1.6,
-    this.serif = false,
+    this.font = NovelFont.sans,
     this.justify = false,
     this.theme = NovelReaderTheme.system,
     this.padding = 18,
@@ -334,11 +347,14 @@ class NovelReaderSettings {
     this.ttsPitch = 1.0,
     this.ttsAutoNext = true,
     this.autoNext = true,
+    this.volumeKeys = false,
+    this.keepScreenOn = true,
+    this.autoScrollSpeed = 40,
   });
 
   final double fontSize;
   final double lineHeight;
-  final bool serif;
+  final NovelFont font;
   final bool justify;
   final NovelReaderTheme theme;
   final double padding;
@@ -353,10 +369,17 @@ class NovelReaderSettings {
   /// Tarik di akhir bab untuk pindah ke bab berikutnya.
   final bool autoNext;
 
+  /// Tombol volume untuk menggulir satu layar.
+  final bool volumeKeys;
+  final bool keepScreenOn;
+
+  /// Kecepatan gulir otomatis (piksel logis per detik).
+  final double autoScrollSpeed;
+
   NovelReaderSettings copyWith({
     double? fontSize,
     double? lineHeight,
-    bool? serif,
+    NovelFont? font,
     bool? justify,
     NovelReaderTheme? theme,
     double? padding,
@@ -364,11 +387,14 @@ class NovelReaderSettings {
     double? ttsPitch,
     bool? ttsAutoNext,
     bool? autoNext,
+    bool? volumeKeys,
+    bool? keepScreenOn,
+    double? autoScrollSpeed,
   }) =>
       NovelReaderSettings(
         fontSize: fontSize ?? this.fontSize,
         lineHeight: lineHeight ?? this.lineHeight,
-        serif: serif ?? this.serif,
+        font: font ?? this.font,
         justify: justify ?? this.justify,
         theme: theme ?? this.theme,
         padding: padding ?? this.padding,
@@ -376,12 +402,15 @@ class NovelReaderSettings {
         ttsPitch: ttsPitch ?? this.ttsPitch,
         ttsAutoNext: ttsAutoNext ?? this.ttsAutoNext,
         autoNext: autoNext ?? this.autoNext,
+        volumeKeys: volumeKeys ?? this.volumeKeys,
+        keepScreenOn: keepScreenOn ?? this.keepScreenOn,
+        autoScrollSpeed: autoScrollSpeed ?? this.autoScrollSpeed,
       );
 
   Map<String, Object> toJson() => {
         'font_size': fontSize,
         'line_height': lineHeight,
-        'serif': serif,
+        'font': font.name,
         'justify': justify,
         'theme': theme.name,
         'padding': padding,
@@ -389,12 +418,16 @@ class NovelReaderSettings {
         'tts_pitch': ttsPitch,
         'tts_auto_next': ttsAutoNext,
         'auto_next': autoNext,
+        'volume_keys': volumeKeys,
+        'keep_screen_on': keepScreenOn,
+        'auto_scroll_speed': autoScrollSpeed,
       };
 
   static NovelReaderSettings fromJson(Map<String, Object?> json) => NovelReaderSettings(
         fontSize: (json['font_size'] as num?)?.toDouble() ?? 18,
         lineHeight: (json['line_height'] as num?)?.toDouble() ?? 1.6,
-        serif: json['serif'] == true,
+        font: NovelFont.values.where((f) => f.name == json['font']).firstOrNull ??
+            (json['serif'] == true ? NovelFont.serif : NovelFont.sans),
         justify: json['justify'] == true,
         theme: NovelReaderTheme.values.where((t) => t.name == json['theme']).firstOrNull ?? NovelReaderTheme.system,
         padding: (json['padding'] as num?)?.toDouble() ?? 18,
@@ -402,6 +435,9 @@ class NovelReaderSettings {
         ttsPitch: (json['tts_pitch'] as num?)?.toDouble() ?? 1.0,
         ttsAutoNext: json['tts_auto_next'] != false,
         autoNext: json['auto_next'] != false,
+        volumeKeys: json['volume_keys'] == true,
+        keepScreenOn: json['keep_screen_on'] != false,
+        autoScrollSpeed: (json['auto_scroll_speed'] as num?)?.toDouble() ?? 40,
       );
 }
 
