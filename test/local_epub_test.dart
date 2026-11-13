@@ -68,14 +68,14 @@ void main() {
     expect(details.summary, 'Sinopsis tebal');
     expect(details.genres, ['Fantasi', 'Aksi']);
     expect(details.cover, endsWith('cover.jpg'));
-    // cover.xhtml punya gambar (tetap), blank.xhtml kosong (dilewati).
-    expect(details.chapters.map((c) => c.name), ['Bagian 1', 'Bab Satu', 'Bab Dua']);
+    // cover.xhtml hanya gambar (Sampul), blank.xhtml kosong (dilewati).
+    expect(details.chapters.map((c) => c.name), ['Sampul', 'Bab Satu', 'Bab Dua']);
     expect(File('${tmp.path}/evil.txt').existsSync(), isFalse);
   });
 
   test('falls back to the NCX and headings', () async {
     final details = await source.details(LocalNovelSource.novelPath('lama.epub'));
-    expect(details.chapters.map((c) => c.name), ['Bagian 1', 'NCX Satu', 'Heading Dua']);
+    expect(details.chapters.map((c) => c.name), ['Sampul', 'NCX Satu', 'Heading Dua']);
   });
 
   test('chapter HTML points images at extracted files', () async {

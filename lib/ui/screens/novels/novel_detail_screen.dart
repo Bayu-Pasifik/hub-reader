@@ -15,6 +15,7 @@ import '../../../state/download_providers.dart';
 import '../../../state/novel_providers.dart';
 import '../../../state/source_library_providers.dart';
 import '../tracker_screens.dart';
+import 'novel_export.dart';
 import '../../router.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/state_views.dart';
@@ -276,6 +277,9 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
                       onSelected: (v) {
                         if (v == 'web') _openWeb(source);
                         if (v == 'delete' && loaded != null) _deleteLocal(loaded);
+                        if (v == 'export' && loaded != null) {
+                          exportNovelEpub(context, ref, pluginId: widget.pluginId, path: widget.path, details: loaded);
+                        }
                         if (v == 'track' && loaded != null) _openTracking(loaded);
                         if (v == 'migrate' && loaded != null) {
                           context.push(migrateLocation(novelLibraryId(widget.pluginId), widget.path, loaded.name));
@@ -285,6 +289,8 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
                         if (source is! LocalNovelSource) const PopupMenuItem(value: 'web', child: Text('Buka di WebView')),
                         const PopupMenuItem(value: 'track', child: Text('Tracking')),
                         const PopupMenuItem(value: 'migrate', child: Text('Pindah sumber')),
+                        if (source is! LocalNovelSource)
+                          const PopupMenuItem(value: 'export', child: Text('Ekspor ke EPUB')),
                         if (source is LocalNovelSource)
                           const PopupMenuItem(value: 'delete', child: Text('Hapus dari perangkat')),
                       ],

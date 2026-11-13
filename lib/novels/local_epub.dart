@@ -104,6 +104,8 @@ class EpubBook {
         final text = doc.body?.text.trim() ?? '';
         if (text.isEmpty && doc.querySelector('img, image') == null) continue;
         name = doc.querySelector('h1, h2, h3')?.text.trim();
+        // Halaman gambar tanpa teks di awal buku = sampul.
+        if ((name == null || name.isEmpty) && text.isEmpty && chapters.isEmpty) name = 'Sampul';
         if (name == null || name.isEmpty) name = 'Bagian ${chapters.length + 1}';
       }
       chapters.add((href: href, name: name.replaceAll(RegExp(r'\s+'), ' ')));

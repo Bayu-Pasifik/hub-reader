@@ -219,6 +219,12 @@ impor di kanan) atau impor .epub dari menu Sumber. File disalin ke `files/local_
 heading pertama; halaman kosong dilewati. Gambar di bab diarahkan ke file hasil ekstrak (`file://`) dan
 dirender di reader. `NovelSource.custom` memungkinkan sumber novel tanpa mesin plugin JS.
 
+**Ekspor ke EPUB** (menu ⋮ detail novel, `lib/novels/epub_writer.dart`): semua bab (termasuk plugin
+berhalaman) atau hanya yang sudah diunduh dijadikan EPUB 3 (plus NCX untuk pembaca EPUB 2) dengan sampul,
+penulis, sinopsis, dan genre, lalu disimpan lewat dialog sistem. Isi bab diambil dari unduhan bila ada,
+kalau tidak dari situs; HTML dibersihkan menjadi XHTML valid (script/iframe/gambar jarak jauh dibuang). Bab
+yang gagal dimuat dilewati dan dilaporkan.
+
 **Statistik** (ikon grafik di Riwayat, atau Pengaturan → Data): lama membaca hari ini / 7 hari / total,
 rentetan hari membaca, grafik 14 hari, bab selesai (komik & novel), favorit, dan 5 seri paling banyak
 dibaca. Lama membaca dihitung dari aktivitas di reader (gulir, ganti halaman, auto-scroll, TTS) dengan
