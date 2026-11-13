@@ -4,8 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../data/models/download.dart';
 import '../../../state/download_providers.dart';
-import '../../../state/source_providers.dart';
-import '../../router.dart';
+import '../../widgets/library_routing.dart';
 import '../../widgets/state_views.dart';
 
 /// Antrean unduhan + daftar bab yang tersimpan offline, dikelompokkan per seri.
@@ -119,12 +118,12 @@ class _SeriesDownloads extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final first = chapters.first;
-    final source = ref.watch(sourceProvider(first.sourceId));
+    final info = librarySourceInfo(ref, first.sourceId);
     final sorted = [...chapters]..sort((a, b) => a.chapterName.compareTo(b.chapterName));
 
     return ExpansionTile(
       title: Text(first.mangaTitle, maxLines: 1, overflow: TextOverflow.ellipsis),
-      subtitle: Text('${chapters.length} bab · ${source?.name ?? first.sourceId}'),
+      subtitle: Text('${chapters.length} bab · ${info.name}${info.isNovel ? ' · novel' : ''}'),
       trailing: IconButton(
         tooltip: 'Hapus semua bab seri ini',
         icon: const Icon(Icons.delete_outline),
@@ -136,8 +135,8 @@ class _SeriesDownloads extends ConsumerWidget {
             dense: true,
             leading: const Icon(Icons.offline_pin, size: 20),
             title: Text(c.chapterName),
-            subtitle: Text('${c.files.length} halaman'),
-            onTap: () => context.push(sourceReaderLocation(c.sourceId, c.mangaUrl, c.chapterUrl)),
+            subtitle: info.isNovel ? null : Text('${c.files.length} halaman'),
+            onTap: () => context.push(info.readerLocation(c.mangaUrl, c.chapterUrl)),
             trailing: IconButton(
               tooltip: 'Hapus',
               icon: const Icon(Icons.close),

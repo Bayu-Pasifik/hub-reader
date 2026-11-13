@@ -58,6 +58,19 @@ class DownloadStore {
     return paths;
   }
 
+  /// Nama file isi bab novel di folder babnya.
+  static const novelChapterFile = 'chapter.html';
+
+  /// Isi bab novel yang diunduh, atau null bila file hilang.
+  Future<String?> readNovelChapter(DownloadedChapter chapter) async {
+    final file = File('${dirOf(chapter.relativeDir).path}${Platform.pathSeparator}$novelChapterFile');
+    try {
+      return await file.exists() ? await file.readAsString() : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> deleteDir(String relativeDir) async {
     final dir = dirOf(relativeDir);
     if (await dir.exists()) await dir.delete(recursive: true);

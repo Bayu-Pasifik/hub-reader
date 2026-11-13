@@ -192,6 +192,10 @@ ukuran huruf, jarak baris, margin, serif, rata kiri-kanan), menyimpan posisi bac
 (persen), lalu pindah bab sebelumnya/berikutnya, termasuk lintas halaman untuk plugin
 berhalaman (`parsePage`). Favorit & riwayat novel berbagi tab dengan komik (id `lnr:<plugin>`).
 
+Bab novel bisa diunduh (per bab, 5/10 berikutnya, atau semua yang belum dibaca) lewat antrean
+unduhan yang sama dengan komik; isinya disimpan sebagai `chapter.html`. Detail & daftar bab novel
+di-cache, jadi bab terunduh tetap bisa dibuka beserta navigasi babnya saat offline.
+
 Plugin yang punya `pluginSettings` (mis. **WTR-LAB**: link login email, mode terjemahan AI/Web+/Web)
 mendapat menu **Pengaturan plugin** di layar jelajah. Nilainya disimpan lewat `@libs/storage` dengan
 key yang sama seperti aplikasi LNReader, lalu plugin dimuat ulang. Uji live:

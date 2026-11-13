@@ -89,13 +89,20 @@ class NovelSource {
   Future<List<NovelItem>> search(String query, int page) async => _items(await _call('searchNovels', [query, page]));
 
   /// Detail + bab halaman pertama.
-  Future<NovelDetails> details(String path) async => NovelDetails.parse(path, await _call('parseNovel', [path]));
+  Future<NovelDetails> details(String path) async => NovelDetails.parse(path, await detailsRaw(path));
+
+  /// Hasil mentah `parseNovel` (untuk cache offline).
+  Future<Map<String, Object?>> detailsRaw(String path) async => asMap(await _call('parseNovel', [path]));
 
   /// Bab di halaman [page] (hanya plugin berhalaman).
-  Future<List<NovelChapter>> chapterPage(String path, int page) async {
-    final raw = asMap(await _call('parsePage', [path, '$page']));
-    return asList(raw['chapters']).map(NovelChapter.tryParse).whereType<NovelChapter>().toList();
-  }
+  Future<List<NovelChapter>> chapterPage(String path, int page) async => parseChapterList(await chapterPageRaw(path, page));
+
+  /// Hasil mentah `parsePage` (untuk cache offline).
+  Future<Map<String, Object?>> chapterPageRaw(String path, int page) async =>
+      asMap(await _call('parsePage', [path, '$page']));
+
+  static List<NovelChapter> parseChapterList(Map<String, Object?> raw) =>
+      asList(raw['chapters']).map(NovelChapter.tryParse).whereType<NovelChapter>().toList();
 
   /// Isi bab berupa HTML.
   Future<String> chapter(String path) async => asString(await _call('parseChapter', [path])) ?? '';

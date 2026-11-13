@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../data/models/download.dart';
 import '../novels/lnreader/engine_isolate.dart';
 import '../novels/lnreader/http_bridge.dart';
 import '../novels/lnreader/js_engine.dart';
@@ -14,6 +15,7 @@ import '../novels/plugin_repository.dart';
 import '../sources/source.dart';
 import '../sources/source_exception.dart';
 import 'core_providers.dart';
+import 'download_providers.dart';
 
 /// Prefix id sumber novel di favorit/riwayat (berbagi store dengan komik).
 const novelSourcePrefix = 'lnr:';
@@ -253,9 +255,21 @@ final novelListProvider =
 
 typedef NovelKey = ({String pluginId, String path});
 
+/// Detail novel: dari plugin, disimpan ke cache supaya bab yang sudah diunduh
+/// tetap bisa dibuka (beserta daftar babnya) saat offline.
 final novelDetailsProvider = FutureProvider.autoDispose.family<NovelDetails, NovelKey>((ref, key) async {
-  final source = await ref.watch(novelSourceProvider(key.pluginId).future);
-  return source.details(key.path);
+  final cache = ref.read(jsonCacheProvider);
+  final cacheKey = 'lnr.details|${key.pluginId}|${key.path}';
+  try {
+    final source = await ref.watch(novelSourceProvider(key.pluginId).future);
+    final raw = await source.detailsRaw(key.path);
+    unawaited(cache.write(cacheKey, raw));
+    return NovelDetails.parse(key.path, raw);
+  } catch (_) {
+    final cached = await cache.read(cacheKey);
+    if (cached != null) return NovelDetails.parse(key.path, cached.data);
+    rethrow;
+  }
 });
 
 /// Bab satu halaman daftar (plugin berhalaman). Halaman 1 diambil dari detail
@@ -263,12 +277,23 @@ final novelDetailsProvider = FutureProvider.autoDispose.family<NovelDetails, Nov
 final novelChapterPageProvider =
     FutureProvider.autoDispose.family<List<NovelChapter>, ({String pluginId, String path, int page})>(
   (ref, key) async {
-    final source = await ref.watch(novelSourceProvider(key.pluginId).future);
     if (key.page == 1) {
       final details = await ref.watch(novelDetailsProvider((pluginId: key.pluginId, path: key.path)).future);
-      if (details.chapters.isNotEmpty || !source.hasParsePage) return details.chapters;
+      final paged = ref.read(loadedNovelSourceProvider(key.pluginId))?.hasParsePage ?? details.totalPages > 1;
+      if (details.chapters.isNotEmpty || !paged) return details.chapters;
     }
-    return source.chapterPage(key.path, key.page);
+    final cache = ref.read(jsonCacheProvider);
+    final cacheKey = 'lnr.page|${key.pluginId}|${key.path}|${key.page}';
+    try {
+      final source = await ref.watch(novelSourceProvider(key.pluginId).future);
+      final raw = await source.chapterPageRaw(key.path, key.page);
+      unawaited(cache.write(cacheKey, raw));
+      return NovelSource.parseChapterList(raw);
+    } catch (_) {
+      final cached = await cache.read(cacheKey);
+      if (cached != null) return NovelSource.parseChapterList(cached.data);
+      rethrow;
+    }
   },
 );
 
@@ -279,6 +304,11 @@ final novelChapterProvider = FutureProvider.autoDispose.family<String, ({String 
     final link = ref.keepAlive();
     final timer = Timer(const Duration(minutes: 5), link.close);
     ref.onDispose(timer.cancel);
+    final offline = ref.read(downloadIndexProvider)[chapterKey(novelLibraryId(key.pluginId), key.path)];
+    if (offline != null) {
+      final html = await ref.read(downloadStoreProvider).readNovelChapter(offline);
+      if (html != null) return html;
+    }
     final source = await ref.watch(novelSourceProvider(key.pluginId).future);
     final html = await source.chapter(key.path);
     if (html.trim().isEmpty) {

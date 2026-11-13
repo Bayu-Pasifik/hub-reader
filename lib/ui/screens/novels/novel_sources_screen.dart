@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../novels/novel_models.dart';
 import '../../../novels/plugin_repository.dart';
+import '../../../state/download_providers.dart';
 import '../../../state/novel_providers.dart';
 import '../../router.dart';
 import '../../widgets/source_widgets.dart';
@@ -61,6 +62,15 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
               _searching = !_searching;
               if (!_searching) _search.clear();
             }),
+          ),
+          IconButton(
+            tooltip: 'Unduhan',
+            icon: Badge(
+              isLabelVisible: ref.watch(downloadQueueProvider).isNotEmpty,
+              label: Text('${ref.watch(downloadQueueProvider).length}'),
+              child: const Icon(Icons.download_outlined),
+            ),
+            onPressed: () => context.push('/downloads'),
           ),
           PopupMenuButton<String>(
             onSelected: (v) {

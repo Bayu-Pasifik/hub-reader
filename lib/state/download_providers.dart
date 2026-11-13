@@ -7,6 +7,7 @@ import '../data/local/download_store.dart';
 import '../data/models/download.dart';
 import '../sources/models.dart';
 import '../sources/source_exception.dart';
+import 'novel_providers.dart';
 import 'source_providers.dart';
 
 /// Di-override di main() setelah folder unduhan dibuka.
@@ -131,6 +132,11 @@ class DownloadQueueNotifier extends Notifier<List<DownloadTask>> {
     final relativeDir = DownloadStore.relativeDirFor(task.sourceId, task.mangaUrl, task.chapter.url);
     final store = ref.read(downloadStoreProvider);
     try {
+      if (isNovelSourceId(task.sourceId)) {
+        await _downloadNovel(task, relativeDir);
+        state = state.where((t) => t.key != task.key).toList();
+        return;
+      }
       final source = ref.read(sourceProvider(task.sourceId));
       if (source == null) throw SourceException(SourceErrorKind.unknown, detail: 'Sumber ${task.sourceId} tidak ada.');
       final urls = await source.pages(task.chapter);
@@ -180,6 +186,30 @@ class DownloadQueueNotifier extends Notifier<List<DownloadTask>> {
       final e = toSourceException(error);
       _update(current.copyWith(status: DownloadStatus.failed, error: e.title));
     }
+  }
+
+  /// Bab novel: satu file HTML hasil `parseChapter` plugin.
+  Future<void> _downloadNovel(DownloadTask task, String relativeDir) async {
+    final store = ref.read(downloadStoreProvider);
+    _update(task.copyWith(status: DownloadStatus.downloading, done: 0, total: 1));
+    final source = await ref.read(novelSourceProvider(pluginIdOf(task.sourceId)).future);
+    final html = await source.chapter(task.chapter.url);
+    if (html.trim().isEmpty) throw const SourceException(SourceErrorKind.parse, detail: 'Isi bab kosong.');
+    if (_cancelled.contains(task.key)) throw const _Cancelled();
+    final dir = store.dirOf(relativeDir);
+    await dir.create(recursive: true);
+    await File('${dir.path}${Platform.pathSeparator}${DownloadStore.novelChapterFile}').writeAsString(html, flush: true);
+    await ref.read(downloadIndexProvider.notifier).add(DownloadedChapter(
+          sourceId: task.sourceId,
+          mangaUrl: task.mangaUrl,
+          mangaTitle: task.mangaTitle,
+          thumbnailUrl: task.thumbnailUrl,
+          chapterUrl: task.chapter.url,
+          chapterName: task.chapter.name,
+          relativeDir: relativeDir,
+          files: const [DownloadStore.novelChapterFile],
+          downloadedAt: DateTime.now(),
+        ));
   }
 
   static String _ext(String url) {
