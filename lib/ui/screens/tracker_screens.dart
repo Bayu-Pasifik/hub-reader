@@ -86,7 +86,8 @@ class _TrackerSettingsTileState extends ConsumerState<TrackerSettingsTile> {
   Tracker get t => widget.tracker;
 
   Future<void> _editClientId() async {
-    final controller = TextEditingController(text: t.clientId ?? '');
+    // Client ID bawaan build tidak ditampilkan; kolom kosong = pakai bawaan.
+    final controller = TextEditingController(text: t.usesDefaultClientId ? '' : t.clientId ?? '');
     final value = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
@@ -96,7 +97,8 @@ class _TrackerSettingsTileState extends ConsumerState<TrackerSettingsTile> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Buat aplikasi di ${t.developerUrl} dengan redirect URL:\n${t.redirectHint}\n'
-                'lalu tempel Client ID-nya di sini.'),
+                'lalu tempel Client ID-nya di sini.'
+                '${t.defaultClientId.isNotEmpty ? '\nKosongkan untuk memakai Client ID bawaan aplikasi.' : ''}'),
             const SizedBox(height: 12),
             TextField(
               controller: controller,
@@ -144,7 +146,7 @@ class _TrackerSettingsTileState extends ConsumerState<TrackerSettingsTile> {
         t.loggedIn
             ? 'Masuk${t.username != null ? ' sebagai ${t.username}' : ''}'
             : hasId
-                ? 'Belum login'
+                ? 'Belum login${t.usesDefaultClientId ? ' · Client ID bawaan' : ''}'
                 : 'Belum ada Client ID',
       ),
       onTap: _editClientId,

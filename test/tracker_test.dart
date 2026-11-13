@@ -8,7 +8,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// Tracker palsu yang mencatat update.
 class _FakeTracker extends Tracker {
-  _FakeTracker(super.prefs);
+  _FakeTracker(super.prefs, {this.defaultClientId = ''});
+  @override
+  final String defaultClientId;
   final updates = <(int, int, TrackStatus)>[];
   @override
   String get id => 'anilist';
@@ -34,6 +36,20 @@ class _FakeTracker extends Tracker {
 }
 
 void main() {
+  test('build-time client ID is used until the user sets one', () async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    expect(_FakeTracker(prefs).clientId, isNull);
+    final t = _FakeTracker(prefs, defaultClientId: '123');
+    expect(t.clientId, '123');
+    expect(t.usesDefaultClientId, isTrue);
+    await t.setClientId(' 456 ');
+    expect(t.clientId, '456');
+    expect(t.usesDefaultClientId, isFalse);
+    await t.setClientId('');
+    expect(t.clientId, '123');
+  });
+
   test('chapterRead only raises progress and completes at the total', () async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();

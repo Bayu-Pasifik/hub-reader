@@ -75,8 +75,21 @@ abstract class Tracker {
   /// Petunjuk redirect URL yang harus didaftarkan.
   String get redirectHint;
 
+  /// Client ID bawaan dari `--dart-define` (mis. diisi secret CI), dipakai
+  /// bila pengguna belum mengisi sendiri. Client ID OAuth publik (implicit
+  /// grant / PKCE tanpa secret), jadi aman ikut di APK.
+  String get defaultClientId;
+
   String get _p => 'tracker.$id.';
-  String? get clientId => prefs.getString('${_p}client_id');
+  String? get clientId {
+    final own = prefs.getString('${_p}client_id');
+    if (own != null && own.isNotEmpty) return own;
+    return defaultClientId.isEmpty ? null : defaultClientId;
+  }
+
+  /// true bila Client ID berasal dari build, bukan isian pengguna.
+  bool get usesDefaultClientId => (prefs.getString('${_p}client_id') ?? '').isEmpty && defaultClientId.isNotEmpty;
+
   Future<void> setClientId(String value) => prefs.setString('${_p}client_id', value.trim());
   String? get token => prefs.getString('${_p}token');
   String? get username => prefs.getString('${_p}user');
@@ -113,6 +126,8 @@ class AniListTracker extends Tracker {
   String get developerUrl => 'https://anilist.co/settings/developer';
   @override
   String get redirectHint => 'https://anilist.co/api/v2/oauth/pin';
+  @override
+  String get defaultClientId => const String.fromEnvironment('ANILIST_CLIENT_ID');
 
   static const _api = 'https://graphql.anilist.co';
 
@@ -243,6 +258,8 @@ class MalTracker extends Tracker {
   String get developerUrl => 'https://myanimelist.net/apiconfig';
   @override
   String get redirectHint => 'https://localhost/hubreader (jenis aplikasi "other")';
+  @override
+  String get defaultClientId => const String.fromEnvironment('MAL_CLIENT_ID');
 
   static const _api = 'https://api.myanimelist.net/v2';
   static const _state = 'hubreader';

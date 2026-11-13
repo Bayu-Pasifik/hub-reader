@@ -72,7 +72,13 @@ jobs:
           fi
 
       - name: Build APK
-        run: flutter build apk --release
+        env:
+          ANILIST_CLIENT_ID: ${{ secrets.ANILIST_CLIENT_ID }}
+          MAL_CLIENT_ID: ${{ secrets.MAL_CLIENT_ID }}
+        run: >-
+          flutter build apk --release
+          --dart-define=ANILIST_CLIENT_ID="$ANILIST_CLIENT_ID"
+          --dart-define=MAL_CLIENT_ID="$MAL_CLIENT_ID"
 
       - name: Ganti nama APK
         run: |

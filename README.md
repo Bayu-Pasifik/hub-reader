@@ -194,7 +194,8 @@ berhalaman (`parsePage`). Favorit & riwayat novel berbagi tab dengan komik (id `
 
 **Tracker AniList & MyAnimeList** (`lib/trackers/`): buat aplikasi OAuth sendiri (AniList: redirect
 `https://anilist.co/api/v2/oauth/pin`; MAL: tipe "other", redirect bebas), isi Client ID di Pengaturan →
-Tracker lalu login di WebView (AniList implicit grant, MAL PKCE plain + refresh token). Di detail seri,
+Tracker (atau bawa Client ID bawaan saat build: `--dart-define=ANILIST_CLIENT_ID=…` /
+`--dart-define=MAL_CLIENT_ID=…`; isian pengguna tetap menang) lalu login di WebView (AniList implicit grant, MAL PKCE plain + refresh token). Di detail seri,
 menu **Tracking** menautkan seri ke entri tracker (cari judul; novel dicari sebagai NOVEL/light novel),
 mengubah progres & status, atau melepas tautan. Progres naik otomatis saat bab selesai dibaca (halaman
 terakhir komik / akhir bab novel / tombol bab berikutnya), tidak pernah turun, dan jadi "Selesai" saat
@@ -334,6 +335,8 @@ didekode sebagai UTF-8.
 - **Secrets CI** (Settings → Secrets and variables → Actions):
   - `KEYSTORE_BASE64`: isi file `.jks` dalam base64 (`base64 -w0 hub-reader-release.jks`)
   - `KEYSTORE_PASSWORD`: password keystore (store dan key memakai password yang sama)
+  - `ANILIST_CLIENT_ID`, `MAL_CLIENT_ID` (opsional): Client ID OAuth bawaan untuk tracker, agar
+    pengguna APK rilis bisa langsung login tanpa membuat aplikasi OAuth sendiri
 
 ## TODO / batasan yang diketahui
 
