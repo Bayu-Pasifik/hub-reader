@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
+import 'app_restart.dart';
 import 'core/platform/webview_bridge.dart';
 import 'core/storage/json_cache.dart';
 import 'data/local/download_store.dart';
@@ -38,21 +39,26 @@ Future<void> main() async {
 
   // Sumber on-device: UA asli WebView + cookie tersimpan (cf_clearance).
   HttpSource.userAgent = await WebViewBridge.defaultUserAgent() ?? HttpSource.fallbackUserAgent;
-  HttpSource.cookies = SourceCookieStore.fromJson(
-    prefs.getString(_cookiesKey),
-    onChanged: (json) => prefs.setString(_cookiesKey, json),
-  );
+  void loadCookies() => HttpSource.cookies = SourceCookieStore.fromJson(
+        prefs.getString(_cookiesKey),
+        onChanged: (json) => prefs.setString(_cookiesKey, json),
+      );
+  loadCookies();
 
   runApp(
-    ProviderScope(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(prefs),
-        jsonCacheProvider.overrideWithValue(cache),
-        downloadStoreProvider.overrideWithValue(downloads),
-        sourceCatalogProvider.overrideWithValue(catalog),
-        novelRepositoryProvider.overrideWithValue(novelPlugins),
-      ],
-      child: const HubReaderApp(),
+    AppRestart(
+      // Setelah memulihkan cadangan: cookie & semua provider dibaca ulang.
+      onRestart: loadCookies,
+      builder: (_) => ProviderScope(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          jsonCacheProvider.overrideWithValue(cache),
+          downloadStoreProvider.overrideWithValue(downloads),
+          sourceCatalogProvider.overrideWithValue(catalog),
+          novelRepositoryProvider.overrideWithValue(novelPlugins),
+        ],
+        child: const HubReaderApp(),
+      ),
     ),
   );
 }

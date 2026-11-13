@@ -192,6 +192,11 @@ ukuran huruf, jarak baris, margin, serif, rata kiri-kanan), menyimpan posisi bac
 (persen), lalu pindah bab sebelumnya/berikutnya, termasuk lintas halaman untuk plugin
 berhalaman (`parsePage`). Favorit & riwayat novel berbagi tab dengan komik (id `lnr:<plugin>`).
 
+**Cadangan** (Favorit → ⋮ → Cadangkan & pulihkan): semua SharedPreferences (favorit + kategori,
+riwayat, posisi baca, pengaturan) dan daftar pembaruan disimpan ke satu file `.json` lewat pemilih file
+Android (`file_picker`). Cookie login & penyimpanan plugin novel hanya ikut bila diaktifkan; unduhan
+tidak ikut. Memulihkan mengganti data di HP lalu membangun ulang aplikasi (`AppRestart`).
+
 **Favorit** bisa dikelompokkan ke kategori (tab; menu ⋮ → Kelola kategori untuk tambah, ganti nama,
 urutkan, hapus). Tekan lama sampul untuk memilih kategori atau menghapus dari favorit. Ikon filter:
 jenis (komik/novel), hanya yang ada bab baru belum dibaca, dan urutan (ditambahkan, judul, terakhir
