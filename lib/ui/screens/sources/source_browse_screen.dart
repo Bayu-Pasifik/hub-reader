@@ -205,7 +205,7 @@ class _MangaGrid extends ConsumerWidget {
                           onRetry: () => notifier.loadMore(retry: true),
                           verifyUrl: source.baseUrl,
                         )
-                      : const Center(child: CircularProgressIndicator()),
+                      : LoadMoreFooter(onShown: notifier.loadMore),
                 ),
               ),
           ],

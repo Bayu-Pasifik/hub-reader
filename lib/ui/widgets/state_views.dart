@@ -91,3 +91,19 @@ class ScrollableFill extends StatelessWidget {
         ),
       );
 }
+
+/// Spinner di ujung daftar berhalaman. Ikut memicu [onShown] setiap kali
+/// dibangun (artinya sudah dekat layar), supaya halaman berikutnya tetap
+/// dimuat walau isi belum cukup panjang untuk digulir (layar lebar/tablet).
+class LoadMoreFooter extends StatelessWidget {
+  const LoadMoreFooter({super.key, required this.onShown});
+
+  final VoidCallback onShown;
+
+  @override
+  Widget build(BuildContext context) {
+    // Ditunda: provider tidak boleh diubah saat build.
+    Future.microtask(onShown);
+    return const Center(child: CircularProgressIndicator());
+  }
+}

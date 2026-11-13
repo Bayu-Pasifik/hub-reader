@@ -19,6 +19,7 @@ import '../tracker_screens.dart';
 import 'novel_export.dart';
 import '../../deep_links.dart';
 import '../../router.dart';
+import '../../widgets/layout.dart';
 import '../../widgets/series_notes.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/state_views.dart';
@@ -349,17 +350,30 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
             onRetry: () => ref.invalidate(novelDetailsProvider(_key)),
             verifyUrl: source?.site,
           ),
-          data: (novel) => RefreshIndicator(
-            onRefresh: () => ref.refresh(novelDetailsProvider(_key).future),
-            child: CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(child: _header(context, novel, source)),
-                if (novel.totalPages > 1) SliverToBoxAdapter(child: _pagePicker(novel.totalPages)),
-                _chapterList(novel, lastRead?.chapterUrl),
-                const SliverToBoxAdapter(child: SizedBox(height: 88)),
+          data: (novel) {
+            // Tablet / landscape lebar: info novel di kiri, daftar bab di kanan.
+            final wide = MediaQuery.sizeOf(context).width >= twoPaneBreakpoint;
+            final list = RefreshIndicator(
+              onRefresh: () => ref.refresh(novelDetailsProvider(_key).future),
+              child: CustomScrollView(
+                slivers: [
+                  if (!wide) SliverToBoxAdapter(child: _header(context, novel, source)),
+                  if (novel.totalPages > 1) SliverToBoxAdapter(child: _pagePicker(novel.totalPages)),
+                  _chapterList(novel, lastRead?.chapterUrl),
+                  const SliverToBoxAdapter(child: SizedBox(height: 88)),
+                ],
+              ),
+            );
+            if (!wide) return list;
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(width: 380, child: SingleChildScrollView(child: _header(context, novel, source))),
+                const VerticalDivider(width: 1),
+                Expanded(child: list),
               ],
-            ),
-          ),
+            );
+          },
         ),
         floatingActionButton: _selecting ? null : _fab(loaded, lastRead),
       ),

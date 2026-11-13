@@ -49,55 +49,94 @@ class _MainShellState extends ConsumerState<MainShell> with WidgetsBindingObserv
     if (state == AppLifecycleState.resumed) ref.read(libraryUpdatesProvider.notifier).reload();
   }
 
+  /// Lebar minimum (dp) untuk rail navigasi di samping (tablet / lipat / landscape).
+  static const railBreakpoint = 600.0;
+
   @override
   Widget build(BuildContext context) {
     final shell = widget.navigationShell;
     final unseen = ref.watch(libraryUpdatesProvider.select((s) => s.unseen));
     final incognito = ref.watch(appSettingsProvider.select((s) => s.incognito));
     final scheme = Theme.of(context).colorScheme;
+    final wide = MediaQuery.sizeOf(context).width >= railBreakpoint;
+
+    void select(int index) => shell.goBranch(index, initialLocation: index == shell.currentIndex);
+    Widget icon(ShellTab tab) => Badge(
+          isLabelVisible: tab.path == '/favorites' && unseen > 0,
+          label: Text('$unseen'),
+          child: Icon(tab.icon),
+        );
+
+    final banner = !incognito
+        ? null
+        : Material(
+            color: scheme.tertiaryContainer,
+            child: InkWell(
+              onTap: () => ref.read(appSettingsProvider.notifier).update((s) => s.copyWith(incognito: false)),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.visibility_off, size: 14, color: scheme.onTertiaryContainer),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Mode samaran · ketuk untuk mematikan',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(color: scheme.onTertiaryContainer),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+
+    if (wide) {
+      return Scaffold(
+        body: Row(
+          children: [
+            SafeArea(
+              right: false,
+              child: NavigationRail(
+                selectedIndex: shell.currentIndex,
+                onDestinationSelected: select,
+                labelType: NavigationRailLabelType.all,
+                groupAlignment: -0.85,
+                destinations: [
+                  for (final tab in widget.tabs)
+                    NavigationRailDestination(
+                      icon: icon(tab),
+                      selectedIcon: Icon(tab.selectedIcon),
+                      label: Text(tab.label),
+                    ),
+                ],
+              ),
+            ),
+            const VerticalDivider(width: 1),
+            Expanded(
+              child: Column(
+                children: [
+                  if (banner != null) SafeArea(bottom: false, child: banner),
+                  Expanded(child: shell),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Scaffold(
       body: shell,
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (incognito)
-            Material(
-              color: scheme.tertiaryContainer,
-              child: InkWell(
-                onTap: () => ref.read(appSettingsProvider.notifier).update((s) => s.copyWith(incognito: false)),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.visibility_off, size: 14, color: scheme.onTertiaryContainer),
-                      const SizedBox(width: 6),
-                      Text(
-                        'Mode samaran · ketuk untuk mematikan',
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(color: scheme.onTertiaryContainer),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+          if (banner != null) banner,
           NavigationBar(
             selectedIndex: shell.currentIndex,
-            onDestinationSelected: (index) => shell.goBranch(
-              index,
-              initialLocation: index == shell.currentIndex,
-            ),
+            onDestinationSelected: select,
             destinations: [
               for (final tab in widget.tabs)
-                NavigationDestination(
-                  icon: Badge(
-                    isLabelVisible: tab.path == '/favorites' && unseen > 0,
-                    label: Text('$unseen'),
-                    child: Icon(tab.icon),
-                  ),
-                  selectedIcon: Icon(tab.selectedIcon),
-                  label: tab.label,
-                ),
+                NavigationDestination(icon: icon(tab), selectedIcon: Icon(tab.selectedIcon), label: tab.label),
             ],
           ),
         ],

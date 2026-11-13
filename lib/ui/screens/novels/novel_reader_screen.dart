@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show ScrollDirection;
@@ -21,6 +22,7 @@ import '../../../state/reading_stats_provider.dart';
 import '../../../state/source_library_providers.dart';
 import '../../../state/tracker_providers.dart';
 import '../../router.dart';
+import '../../widgets/layout.dart';
 import '../../widgets/novel_html.dart';
 import '../../widgets/source_widgets.dart';
 import 'novel_detail_screen.dart';
@@ -431,15 +433,20 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
                     final blocks = _blocks;
                     final ttsIndex = _tts.index;
                     _restorePosition(_chapterPath);
+                    // Layar lebar: batasi panjang baris; area kosong tetap bisa digulir.
+                    final side = math.max(
+                      settings.padding,
+                      (MediaQuery.sizeOf(context).width - readableTextWidth) / 2,
+                    );
                     return NotificationListener<ScrollNotification>(
                       onNotification: _onScrollNotification,
                       child: SingleChildScrollView(
                         controller: _scroll,
                         physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
                         padding: EdgeInsets.fromLTRB(
-                          settings.padding,
+                          side,
                           MediaQuery.paddingOf(context).top + 64,
-                          settings.padding,
+                          side,
                           MediaQuery.paddingOf(context).bottom + 32,
                         ),
                         child: Column(

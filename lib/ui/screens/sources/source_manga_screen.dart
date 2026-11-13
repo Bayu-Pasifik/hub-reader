@@ -13,6 +13,7 @@ import '../../../state/source_library_providers.dart';
 import '../../../state/source_providers.dart';
 import '../../deep_links.dart';
 import '../../router.dart';
+import '../../widgets/layout.dart';
 import '../../widgets/series_notes.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/state_views.dart';
@@ -253,11 +254,13 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
         data: (manga) {
           final ordered = _oldestFirst ? manga.chapters.reversed.toList() : manga.chapters;
           final chapters = _onlyBookmarked ? ordered.where((c) => bookmarks.contains(c.url)).toList() : ordered;
-          return RefreshIndicator(
+          // Tablet / landscape lebar: info seri di kiri, daftar bab di kanan.
+          final wide = MediaQuery.sizeOf(context).width >= twoPaneBreakpoint;
+          final list = RefreshIndicator(
             onRefresh: () => ref.refresh(sourceDetailsProvider(_key).future),
             child: CustomScrollView(
               slivers: [
-                SliverToBoxAdapter(child: _header(context, manga, headers)),
+                if (!wide) SliverToBoxAdapter(child: _header(context, manga, headers)),
                 if (chapters.isEmpty)
                   SliverToBoxAdapter(
                     child: EmptyView(
@@ -316,9 +319,21 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
                       );
                     },
                   ),
-                const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                const SliverToBoxAdapter(child: SizedBox(height: 88)),
               ],
             ),
+          );
+          if (!wide) return list;
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 380,
+                child: SingleChildScrollView(child: _header(context, manga, headers)),
+              ),
+              const VerticalDivider(width: 1),
+              Expanded(child: list),
+            ],
           );
         },
       ),

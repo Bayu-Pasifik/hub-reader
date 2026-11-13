@@ -181,6 +181,10 @@ Pengaturan → Tracker. Password tidak disimpan, hanya token sesi (Kitsu: passwo
 publik aplikasi Kitsu + refresh token; MangaUpdates: session token API v1). MangaUpdates tidak punya
 jumlah bab, jadi status "Selesai" diatur manual; daftar buatan pengguna di MangaUpdates tampil tanpa status.
 
+**Tablet & layar lebar**: mulai 600dp navigasi pindah ke rail di kiri; mulai 840dp detail seri komik/novel
+jadi dua panel (info di kiri, daftar bab di kanan). Teks reader novel dibatasi 720dp per baris. Grid
+jelajah memuat halaman berikutnya sendiri sampai layar penuh.
+
 **Bookmark & catatan**: tekan lama bab komik (atau pilih beberapa bab novel) untuk bookmark; ikon
 bookmark di reader menandai bab yang sedang dibaca. Menu ⋮ di detail seri punya **Catatan** (teks bebas,
 tampil di bawah sinopsis) dan filter **Hanya bab ber-bookmark**. Disimpan di `library.bookmarks.v1` /

@@ -248,7 +248,7 @@ class NovelGrid extends ConsumerWidget {
                           onRetry: () => notifier.loadMore(retry: true),
                           verifyUrl: source.site,
                         )
-                      : const Center(child: CircularProgressIndicator()),
+                      : LoadMoreFooter(onShown: notifier.loadMore),
                 ),
               ),
           ],
