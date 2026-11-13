@@ -2,6 +2,7 @@ import 'dart:async';
 
 import '../data/models/source_library.dart';
 import '../sources/models.dart';
+import 'bookmarks_provider.dart';
 import 'library_chapters.dart';
 import 'source_library_providers.dart';
 
@@ -21,7 +22,8 @@ double? highestReadNumber(List<LibraryChapter> chapters, Map<String, SourceChapt
 
 /// Pindahkan seri dari [from] ke [to] (Mihon "Migrate"): favorit beserta
 /// kategori & tanggal ditambahkan, tanda sudah dibaca (dicocokkan lewat nomor
-/// bab), dan riwayat bab terakhir. Bila [keepOld] false, favorit lama dihapus.
+/// bab), bookmark bab (juga lewat nomor bab), catatan seri, dan riwayat bab
+/// terakhir. Bila [keepOld] false, favorit lama dihapus.
 Future<MigrationResult> migrateSeries(
   ProviderReader read, {
   required SourceLibraryItem from,
@@ -36,8 +38,9 @@ Future<MigrationResult> migrateSeries(
   final oldProgress = read(sourceSeriesProgressProvider(fromKey));
   final lastRead = read(sourceLastReadProvider(fromKey));
   double? readUpTo;
+  var oldChapters = const <LibraryChapter>[];
   try {
-    final oldChapters = await fetchLibraryChapters(read, from, allPages: true).timeout(const Duration(seconds: 40));
+    oldChapters = await fetchLibraryChapters(read, from, allPages: true).timeout(const Duration(seconds: 40));
     readUpTo = highestReadNumber(oldChapters, oldProgress);
   } catch (_) {
     readUpTo = null;
@@ -52,6 +55,26 @@ Future<MigrationResult> migrateSeries(
   ];
   if (toMark.isNotEmpty) {
     await read(sourceProgressProvider.notifier).setDoneMany(toKey, toMark, done: true);
+  }
+
+  // Bookmark: nomor bab yang ditandai di sumber lama.
+  final oldBookmarks = read(seriesBookmarksProvider(fromKey));
+  final bookmarkedNumbers = {
+    for (final c in oldChapters)
+      if (c.number != null && oldBookmarks.contains(c.url)) c.number!,
+  };
+  final toBookmark = [
+    for (final c in newChapters)
+      if (c.number != null && bookmarkedNumbers.contains(c.number)) c.url,
+  ];
+  if (toBookmark.isNotEmpty) {
+    await read(chapterBookmarksProvider.notifier).setMany(toKey, toBookmark, bookmarked: true);
+  }
+
+  // Catatan: disalin bila seri tujuan belum punya.
+  final note = read(seriesNoteProvider(fromKey));
+  if (note != null && read(seriesNoteProvider(toKey)) == null) {
+    await read(seriesNotesProvider.notifier).set(toKey, note);
   }
 
   // Riwayat: bab dengan nomor sama dengan bab terakhir dibaca.

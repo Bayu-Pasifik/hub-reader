@@ -10,6 +10,7 @@ import '../../../novels/novel_models.dart';
 import '../../../novels/novel_source.dart';
 import '../../../sources/html_utils.dart';
 import '../../../sources/models.dart';
+import '../../../state/bookmarks_provider.dart';
 import '../../../state/core_providers.dart';
 import '../../../state/download_providers.dart';
 import '../../../state/novel_providers.dart';
@@ -18,6 +19,7 @@ import '../tracker_screens.dart';
 import 'novel_export.dart';
 import '../../deep_links.dart';
 import '../../router.dart';
+import '../../widgets/series_notes.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/state_views.dart';
 
@@ -42,6 +44,19 @@ class NovelDetailScreen extends ConsumerStatefulWidget {
 class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
   bool _descExpanded = false;
   bool _newestFirst = false;
+
+  /// Tampilkan hanya bab ber-bookmark.
+  bool _onlyBookmarked = false;
+
+  /// Bookmark bab terpilih; bila semuanya sudah ber-bookmark, bookmark dilepas.
+  void _bookmarkSelected() {
+    final paths = {..._selected};
+    final current = ref.read(seriesBookmarksProvider(_libKey));
+    final add = !paths.every(current.contains);
+    ref.read(chapterBookmarksProvider.notifier).setMany(_libKey, paths, bookmarked: add);
+    setState(_selected.clear);
+    _snack(add ? '${paths.length} bab di-bookmark' : 'Bookmark ${paths.length} bab dihapus');
+  }
   late int _page = novelLastPage(ref, widget.pluginId, widget.path);
 
   NovelKey get _key => (pluginId: widget.pluginId, path: widget.path);
@@ -105,6 +120,11 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
             tooltip: 'Tandai belum dibaca',
             icon: const Icon(Icons.remove_done),
             onPressed: () => _markSelected(done: false),
+          ),
+          IconButton(
+            tooltip: 'Bookmark',
+            icon: const Icon(Icons.bookmark_add_outlined),
+            onPressed: _bookmarkSelected,
           ),
           PopupMenuButton<String>(
             onSelected: (v) {
@@ -297,6 +317,8 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
                           exportNovelEpub(context, ref, pluginId: widget.pluginId, path: widget.path, details: loaded);
                         }
                         if (v == 'track' && loaded != null) _openTracking(loaded);
+                        if (v == 'note') editSeriesNote(context, ref, _libKey);
+                        if (v == 'bookmarked') setState(() => _onlyBookmarked = !_onlyBookmarked);
                         if (v == 'migrate' && loaded != null) {
                           context.push(migrateLocation(novelLibraryId(widget.pluginId), widget.path, loaded.name));
                         }
@@ -305,6 +327,12 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
                         if (source is! LocalNovelSource) const PopupMenuItem(value: 'share', child: Text('Bagikan')),
                         if (source is! LocalNovelSource) const PopupMenuItem(value: 'web', child: Text('Buka di WebView')),
                         const PopupMenuItem(value: 'track', child: Text('Tracking')),
+                        const PopupMenuItem(value: 'note', child: Text('Catatan')),
+                        CheckedPopupMenuItem(
+                          value: 'bookmarked',
+                          checked: _onlyBookmarked,
+                          child: const Text('Hanya bab ber-bookmark'),
+                        ),
                         const PopupMenuItem(value: 'migrate', child: Text('Pindah sumber')),
                         if (source is! LocalNovelSource)
                           const PopupMenuItem(value: 'export', child: Text('Ekspor ke EPUB')),
@@ -403,6 +431,7 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
         ? ref.watch(novelChapterPageProvider((pluginId: widget.pluginId, path: widget.path, page: page)))
         : AsyncData(novel.chapters);
     final progress = ref.watch(sourceSeriesProgressProvider(_libKey));
+    final bookmarks = ref.watch(seriesBookmarksProvider(_libKey));
 
     return chaptersAsync.when(
       loading: () => const SliverToBoxAdapter(
@@ -420,8 +449,12 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
         if (list.isEmpty) {
           return const SliverToBoxAdapter(child: EmptyView(compact: true, title: 'Belum ada bab'));
         }
-        _visible = list;
-        final chapters = _newestFirst ? list.reversed.toList() : list;
+        final shown = _onlyBookmarked ? list.where((c) => bookmarks.contains(c.path)).toList() : list;
+        if (shown.isEmpty) {
+          return const SliverToBoxAdapter(child: EmptyView(compact: true, title: 'Belum ada bab ber-bookmark'));
+        }
+        _visible = shown;
+        final chapters = _newestFirst ? shown.reversed.toList() : shown;
         return SliverList.separated(
           itemCount: chapters.length,
           separatorBuilder: (_, __) => const Divider(height: 1),
@@ -442,7 +475,7 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
               leading: _selecting
                   ? Icon(selected ? Icons.check_circle : Icons.radio_button_unchecked, size: 22)
                   : isLast
-                      ? const Icon(Icons.bookmark, size: 20)
+                      ? const Icon(Icons.play_circle_outline, size: 20)
                       : null,
               title: Text(
                 c.name,
@@ -455,6 +488,7 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  if (bookmarks.contains(c.path)) const ChapterBookmarkIcon(),
                   if (done) const Icon(Icons.done_all, size: 18),
                   if (widget.pluginId != LocalNovelSource.pluginId)
                   _NovelChapterDownloadButton(
@@ -536,6 +570,7 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
               ),
             ),
           ],
+          SeriesNoteCard(series: _libKey),
         ],
       ),
     );

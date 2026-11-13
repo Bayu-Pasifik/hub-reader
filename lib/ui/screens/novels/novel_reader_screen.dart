@@ -15,6 +15,7 @@ import '../../../novels/novel_source.dart';
 import '../../../novels/novel_tts.dart';
 import '../../../state/app_settings_provider.dart';
 import '../../../sources/models.dart';
+import '../../../state/bookmarks_provider.dart';
 import '../../../state/novel_providers.dart';
 import '../../../state/reading_stats_provider.dart';
 import '../../../state/source_library_providers.dart';
@@ -551,6 +552,15 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
                                         novelChapterProvider((pluginId: widget.pluginId, path: _chapterPath)));
                                   }
                                 },
+                        ),
+                        IconButton(
+                          tooltip: ref.watch(seriesBookmarksProvider(_libKey)).contains(_chapterPath)
+                              ? 'Hapus bookmark'
+                              : 'Bookmark bab ini',
+                          icon: Icon(ref.watch(seriesBookmarksProvider(_libKey)).contains(_chapterPath)
+                              ? Icons.bookmark
+                              : Icons.bookmark_border),
+                          onPressed: () => ref.read(chapterBookmarksProvider.notifier).toggle(_libKey, _chapterPath),
                         ),
                         IconButton(
                           tooltip: 'Bacakan (TTS)',

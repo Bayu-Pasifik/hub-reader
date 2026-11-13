@@ -7,11 +7,13 @@ import '../../../data/models/download.dart';
 import '../../../data/models/source_library.dart';
 import '../../../sources/local/local_source.dart';
 import '../../../sources/models.dart';
+import '../../../state/bookmarks_provider.dart';
 import '../../../state/download_providers.dart';
 import '../../../state/source_library_providers.dart';
 import '../../../state/source_providers.dart';
 import '../../deep_links.dart';
 import '../../router.dart';
+import '../../widgets/series_notes.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/state_views.dart';
 import '../tracker_screens.dart';
@@ -32,6 +34,50 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
 
   /// Situs mengurutkan terbaru dulu; pengguna bisa membalik.
   bool _oldestFirst = false;
+
+  /// Tampilkan hanya bab ber-bookmark.
+  bool _onlyBookmarked = false;
+
+  /// Tekan lama bab: tandai dibaca / bookmark.
+  Future<void> _chapterActions(SourceChapter chapter, {required bool done, required bool bookmarked}) async {
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              title: Text(chapter.name, style: Theme.of(context).textTheme.titleMedium),
+            ),
+            ListTile(
+              leading: Icon(done ? Icons.remove_done : Icons.done_all),
+              title: Text(done ? 'Tandai belum dibaca' : 'Tandai sudah dibaca'),
+              onTap: () => Navigator.pop(context, 'read'),
+            ),
+            ListTile(
+              leading: Icon(bookmarked ? Icons.bookmark_remove_outlined : Icons.bookmark_add_outlined),
+              title: Text(bookmarked ? 'Hapus bookmark' : 'Bookmark bab ini'),
+              onTap: () => Navigator.pop(context, 'bookmark'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (!mounted || action == null) return;
+    final String message;
+    if (action == 'read') {
+      await ref.read(sourceProgressProvider.notifier).setDone(_key, chapter.url, done: !done);
+      message = done ? '${chapter.name} ditandai belum dibaca' : '${chapter.name} ditandai sudah dibaca';
+    } else {
+      final now = await ref.read(chapterBookmarksProvider.notifier).toggle(_key, chapter.url);
+      message = now ? '${chapter.name} di-bookmark' : 'Bookmark ${chapter.name} dihapus';
+    }
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message), duration: const Duration(seconds: 2)));
+  }
 
   SourceMangaKey get _key => (sourceId: widget.sourceId, url: widget.url);
 
@@ -115,6 +161,7 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
     final isFavorite = ref.watch(isSourceFavoriteProvider(_key));
     final lastRead = ref.watch(sourceLastReadProvider(_key));
     final progress = ref.watch(sourceSeriesProgressProvider(_key));
+    final bookmarks = ref.watch(seriesBookmarksProvider(_key));
     final loaded = details.valueOrNull;
     if (loaded != null) _syncFavorite(loaded);
 
@@ -147,6 +194,8 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
           if (loaded != null)
             PopupMenuButton<String>(
               onSelected: (v) {
+                if (v == 'note') editSeriesNote(context, ref, _key);
+                if (v == 'bookmarked') setState(() => _onlyBookmarked = !_onlyBookmarked);
                 if (v == 'migrate') context.push(migrateLocation(widget.sourceId, widget.url, loaded.title));
                 if (v == 'delete' && source is LocalSource) _deleteLocal(source, loaded);
                 if (v == 'share') {
@@ -182,6 +231,12 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
               itemBuilder: (_) => [
                 if (source is! LocalSource) const PopupMenuItem(value: 'share', child: Text('Bagikan')),
                 const PopupMenuItem(value: 'track', child: Text('Tracking')),
+                const PopupMenuItem(value: 'note', child: Text('Catatan')),
+                CheckedPopupMenuItem(
+                  value: 'bookmarked',
+                  checked: _onlyBookmarked,
+                  child: const Text('Hanya bab ber-bookmark'),
+                ),
                 const PopupMenuItem(value: 'migrate', child: Text('Pindah sumber')),
                 if (source is LocalSource) const PopupMenuItem(value: 'delete', child: Text('Hapus dari perangkat')),
               ],
@@ -196,15 +251,19 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
           verifyUrl: widget.url,
         ),
         data: (manga) {
-          final chapters = _oldestFirst ? manga.chapters.reversed.toList() : manga.chapters;
+          final ordered = _oldestFirst ? manga.chapters.reversed.toList() : manga.chapters;
+          final chapters = _onlyBookmarked ? ordered.where((c) => bookmarks.contains(c.url)).toList() : ordered;
           return RefreshIndicator(
             onRefresh: () => ref.refresh(sourceDetailsProvider(_key).future),
             child: CustomScrollView(
               slivers: [
                 SliverToBoxAdapter(child: _header(context, manga, headers)),
                 if (chapters.isEmpty)
-                  const SliverToBoxAdapter(
-                    child: EmptyView(compact: true, title: 'Belum ada bab'),
+                  SliverToBoxAdapter(
+                    child: EmptyView(
+                      compact: true,
+                      title: _onlyBookmarked && ordered.isNotEmpty ? 'Belum ada bab ber-bookmark' : 'Belum ada bab',
+                    ),
                   )
                 else
                   SliverList.separated(
@@ -222,8 +281,9 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
                       ].join(' · ');
                       // Bab selesai diredupkan, seperti Mihon.
                       final fade = done && !isLastRead;
+                      final bookmarked = bookmarks.contains(chapter.url);
                       return ListTile(
-                        leading: isLastRead ? const Icon(Icons.bookmark, size: 20) : null,
+                        leading: isLastRead ? const Icon(Icons.play_circle_outline, size: 20) : null,
                         title: Text(
                           chapter.name,
                           style: TextStyle(
@@ -240,6 +300,7 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            if (bookmarked) const ChapterBookmarkIcon(),
                             if (done) const Icon(Icons.done_all, size: 18),
                             if (source is! LocalSource)
                             _ChapterDownloadButton(
@@ -251,17 +312,7 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
                           ],
                         ),
                         onTap: () => _openChapter(chapter.url),
-                        onLongPress: () {
-                          ref.read(sourceProgressProvider.notifier).setDone(_key, chapter.url, done: !done);
-                          ScaffoldMessenger.of(context)
-                            ..hideCurrentSnackBar()
-                            ..showSnackBar(SnackBar(
-                              content: Text(done
-                                  ? '${chapter.name} ditandai belum dibaca'
-                                  : '${chapter.name} ditandai sudah dibaca'),
-                              duration: const Duration(seconds: 2),
-                            ));
-                        },
+                        onLongPress: () => _chapterActions(chapter, done: done, bookmarked: bookmarked),
                       );
                     },
                   ),
@@ -341,6 +392,7 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
               ),
             ),
           ],
+          SeriesNoteCard(series: _key),
         ],
       ),
     );

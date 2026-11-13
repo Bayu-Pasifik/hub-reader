@@ -8,6 +8,7 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import '../../../data/models/source_library.dart';
 import '../../../sources/models.dart';
 import '../../../sources/source.dart';
+import '../../../state/bookmarks_provider.dart';
 import '../../../state/reader_settings_provider.dart';
 import '../../../state/reading_stats_provider.dart';
 import '../../../state/source_library_providers.dart';
@@ -86,6 +87,16 @@ class _SourceReaderScreenState extends ConsumerState<SourceReaderScreen> {
           ],
         ),
         actions: [
+          if (index >= 0)
+            Builder(builder: (context) {
+              final series = (sourceId: widget.sourceId, url: widget.mangaUrl);
+              final marked = ref.watch(seriesBookmarksProvider(series)).contains(chapter.url);
+              return IconButton(
+                tooltip: marked ? 'Hapus bookmark' : 'Bookmark bab ini',
+                icon: Icon(marked ? Icons.bookmark : Icons.bookmark_border),
+                onPressed: () => ref.read(chapterBookmarksProvider.notifier).toggle(series, chapter.url),
+              );
+            }),
           IconButton(
             tooltip: 'Pengaturan baca',
             icon: const Icon(Icons.tune),
