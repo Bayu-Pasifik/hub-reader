@@ -11,6 +11,7 @@ import '../../state/app_update_provider.dart';
 import '../../state/core_providers.dart';
 import '../../state/download_providers.dart';
 import '../../state/novel_providers.dart';
+import '../../state/source_providers.dart';
 import '../../state/source_settings_provider.dart';
 import '../../state/tracker_providers.dart';
 import 'tracker_screens.dart';
@@ -224,6 +225,19 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
             value: ref.watch(showNsfwSourcesProvider),
             onChanged: (v) => ref.read(showNsfwSourcesProvider.notifier).set(v),
           ),
+          Builder(builder: (context) {
+            final orphans = ref.watch(sourceCatalogStateProvider.select((s) => s.catalog.orphans.length));
+            return ListTile(
+              leading: const Icon(Icons.collections_bookmark_outlined),
+              title: const Text('Repo sumber komik'),
+              subtitle: Text(
+                '${ref.watch(sourceCatalogReposProvider).length} repo + katalog bawaan'
+                '${orphans > 0 ? ' · $orphans sumber tanpa repo' : ''}',
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push('/source-repos'),
+            );
+          }),
           ListTile(
             leading: const Icon(Icons.hub_outlined),
             title: const Text('Repo plugin novel'),

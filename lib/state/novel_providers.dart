@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/models/download.dart';
+import '../core/utils/repo_url.dart';
 import '../novels/lnreader/engine_isolate.dart';
 import '../novels/lnreader/http_bridge.dart';
 import '../novels/lnreader/js_engine.dart';
@@ -108,16 +109,7 @@ class NovelReposNotifier extends Notifier<List<String>> {
   }
 
   /// Normalisasi & validasi; null bila bukan URL http(s).
-  static String? normalize(String input) {
-    var url = input.trim();
-    if (url.isEmpty) return null;
-    // Tautan halaman GitHub `blob/` → file mentah.
-    final blob = RegExp(r'^https?://github\.com/([^/]+)/([^/]+)/blob/(.+)$').firstMatch(url);
-    if (blob != null) url = 'https://raw.githubusercontent.com/${blob[1]}/${blob[2]}/${blob[3]}';
-    final uri = Uri.tryParse(url);
-    if (uri == null || !(uri.isScheme('http') || uri.isScheme('https')) || uri.host.isEmpty) return null;
-    return url;
-  }
+  static String? normalize(String input) => normalizeRepoUrl(input);
 
   /// Error teks bila gagal, null bila berhasil.
   Future<String?> add(String input) async {
@@ -146,8 +138,7 @@ class NovelReposNotifier extends Notifier<List<String>> {
 /// Daftar plugin: salinan lokal dulu (cepat & offline), lalu diperbarui dari
 /// repo bila sudah lama atau belum ada. Termasuk plugin "yatim" (sudah
 /// dihapus dari repo tapi kodenya tersimpan di perangkat).
-final novelManifestProvider =
-    AsyncNotifierProvider<NovelManifestNotifier, NovelManifest>(NovelManifestNotifier.new);
+final novelManifestProvider = AsyncNotifierProvider<NovelManifestNotifier, NovelManifest>(NovelManifestNotifier.new);
 
 class NovelManifestNotifier extends AsyncNotifier<NovelManifest> {
   NovelPluginRepository get _repo => ref.read(novelRepositoryProvider);
@@ -289,7 +280,9 @@ class NovelListNotifier extends AutoDisposeFamilyNotifier<NovelListState, NovelL
     }
     try {
       final source = await ref.read(novelSourceProvider(arg.pluginId).future);
-      final filters = arg.filtersJson.isEmpty ? const <String, Object?>{} : (jsonDecode(arg.filtersJson) as Map).cast<String, Object?>();
+      final filters = arg.filtersJson.isEmpty
+          ? const <String, Object?>{}
+          : (jsonDecode(arg.filtersJson) as Map).cast<String, Object?>();
       final items = await switch (arg.listing) {
         NovelListing.popular => source.popular(next, filters: filters),
         NovelListing.latest => source.popular(next, latest: true, filters: filters),

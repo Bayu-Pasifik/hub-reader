@@ -25,6 +25,9 @@ class CatalogEntry {
     required this.theme,
     required this.contentWarning,
     this.options = const {},
+    this.raw = const {},
+    this.repo,
+    this.orphaned = false,
   });
 
   final String id;
@@ -35,8 +38,31 @@ class CatalogEntry {
   final ContentWarning contentWarning;
   final JsonMap options;
 
+  /// JSON asli entri (untuk disimpan ulang & membandingkan katalog).
+  final JsonMap raw;
+
+  /// URL repo asal; null = katalog bawaan aplikasi.
+  final String? repo;
+
+  /// Sudah hilang dari semua repo (dan katalog bawaan), tapi entrinya masih
+  /// tersimpan di perangkat sehingga sumbernya tetap bisa dipakai.
+  final bool orphaned;
+
   /// Kotlin meng-override logika inti; port template bisa kurang pas.
   bool get customized => options['customized'] == true;
+
+  CatalogEntry withOrigin({String? repo, bool orphaned = false}) => CatalogEntry(
+        id: id,
+        name: name,
+        lang: lang,
+        baseUrl: baseUrl,
+        theme: theme,
+        contentWarning: contentWarning,
+        options: options,
+        raw: raw,
+        repo: repo,
+        orphaned: orphaned,
+      );
 
   static CatalogEntry? tryParse(JsonMap json) {
     final id = asString(json['id']);
@@ -55,6 +81,7 @@ class CatalogEntry {
         _ => ContentWarning.safe,
       },
       options: asMap(json['options']),
+      raw: json,
     );
   }
 
@@ -149,17 +176,36 @@ class CatalogEntry {
 }
 
 class SourceCatalog {
-  const SourceCatalog(this.entries);
+  const SourceCatalog(this.entries, {this.hostHistory = const {}});
 
   static const empty = SourceCatalog([]);
 
   final List<CatalogEntry> entries;
 
+  /// id sumber → host yang pernah dipakai (katalog bawaan / versi repo
+  /// lama). URL tersimpan berhost lama dialihkan ke domain saat ini.
+  final Map<String, Set<String>> hostHistory;
+
+  Iterable<CatalogEntry> get orphans => entries.where((e) => e.orphaned);
+
+  /// Format `catalog.json` (`{"sources": [...]}`) atau daftar entri langsung.
   factory SourceCatalog.fromJsonString(String raw) {
-    final json = asMap(jsonDecode(raw));
+    final decoded = jsonDecode(raw);
+    final list = decoded is List ? decoded : asMap(decoded)['sources'];
     return SourceCatalog([
-      for (final e in asList(json['sources']))
+      for (final e in asList(list))
         if (CatalogEntry.tryParse(asMap(e)) case final entry?) entry,
     ]);
+  }
+
+  /// Sidik isi katalog; sama = registry tidak perlu dibangun ulang.
+  String get signature {
+    var h = 0x811c9dc5;
+    for (final e in entries) {
+      for (final b in utf8.encode('${e.orphaned}|${e.repo}|${jsonEncode(e.raw)}\n')) {
+        h = ((h ^ b) * 0x01000193) & 0xffffffff;
+      }
+    }
+    return '${entries.length}:${h.toRadixString(16)}';
   }
 }

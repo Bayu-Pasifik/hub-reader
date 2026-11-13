@@ -38,7 +38,8 @@ lib/sources/
 ├── templates/vinetheme.dart    # template VineTheme (API JSON + payload Next.js RSC)
 ├── templates/mangacatalog.dart # template MangaCatalog (situs fan satu franchise, daftar judul tetap)
 ├── templates/iken.dart         # template Iken (API JSON di api.<domain>)
-├── catalog.dart                # baca assets/sources/catalog.json → instance template
+├── catalog.dart                # entri katalog → instance template
+├── catalog_repository.dart     # katalog dari repo remote + cache + sumber yatim
 ├── id/komiku.dart              # sumber kustom, scraping HTML
 ├── id/shinigami.dart           # sumber kustom, API JSON (api.shngm.io)
 └── registry.dart               # sumber kustom + katalog
@@ -59,7 +60,16 @@ jalan penuh (Drake, Elf Toon, Kayn, Kero, Valir, Diva Scans). MangaCatalog: 17 d
 jalan dengan semua judulnya (Read Black Clover tidak bisa dihubungi). Iken: 5 dari 9 jalan (Hive,
 Ken, Magus, Vortex, dan Azora berbahasa Arab); Nyx & Hijala di balik Cloudflare, Orion & Sana 502. Tab Sumber mengelompokkannya per
 bahasa, lengkap dengan chip filter bahasa dan pencarian. Sumber 18+ disembunyikan secara
-default; aktifkan lewat menu ⋮ → "Tampilkan sumber 18+".
+default; aktifkan lewat Pengaturan › Sumber › "Tampilkan sumber NSFW (18+)".
+
+Setelah `catalog.json` diperbarui dan di-push ke `main`, aplikasi yang sudah terpasang ikut
+mendapatkannya tanpa update APK: katalog juga diambil dari repo
+(`raw.githubusercontent.com/Bayu-Pasifik/hub-reader/main/assets/sources/catalog.json`) tiap 12 jam.
+Atur lewat Pengaturan › Sumber › Repo sumber komik: tambah mirror/fork (format `catalog.json`
+yang sama), ubah prioritas, atau hapus. Katalog bawaan APK selalu jadi cadangan paling bawah.
+Salinan tiap repo disimpan di HP; sumber yang hilang dari semua repo tetap tersimpan sebagai
+sumber "yatim" dan tetap jalan, dan host lama tiap sumber diingat supaya favorit/riwayat lama
+dialihkan ke domain baru. Repo hanya berisi data: template baru tetap butuh update aplikasi.
 
 Perbarui katalog dari checkout extensions-source terbaru:
 

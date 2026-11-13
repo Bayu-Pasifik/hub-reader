@@ -19,6 +19,7 @@ import 'screens/sources/source_favorites_screen.dart';
 import 'screens/sources/source_history_screen.dart';
 import 'screens/sources/source_manga_screen.dart';
 import 'screens/sources/source_reader_screen.dart';
+import 'screens/sources/source_repos_screen.dart';
 import 'screens/sources/source_webview_screen.dart';
 import 'screens/sources/sources_screen.dart';
 import 'shell/main_shell.dart';
@@ -116,6 +117,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/novel-repos',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (_, __) => const NovelReposScreen(),
+      ),
+      GoRoute(
+        path: '/source-repos',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, __) => const SourceReposScreen(),
       ),
       GoRoute(
         path: '/backup',

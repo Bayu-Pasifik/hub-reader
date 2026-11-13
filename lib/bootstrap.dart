@@ -11,6 +11,7 @@ import 'data/local/download_store.dart';
 import 'novels/local_epub.dart';
 import 'novels/plugin_repository.dart';
 import 'sources/catalog.dart';
+import 'sources/catalog_repository.dart';
 import 'sources/cookie_store.dart';
 import 'sources/local/local_source.dart';
 import 'sources/source.dart';
@@ -33,6 +34,7 @@ class AppDependencies {
     required this.downloads,
     required this.novelPlugins,
     required this.catalog,
+    required this.catalogRepository,
   });
 
   final SharedPreferences prefs;
@@ -40,6 +42,7 @@ class AppDependencies {
   final DownloadStore downloads;
   final NovelPluginRepository novelPlugins;
   final SourceCatalog catalog;
+  final SourceCatalogRepository catalogRepository;
 
   /// [background]: tidak ada Activity, jadi WebView tidak bisa ditanya
   /// User-Agent-nya; pakai yang disimpan saat aplikasi terakhir dibuka.
@@ -49,7 +52,10 @@ class AppDependencies {
     final downloads = await DownloadStore.open(prefs);
     final supportDir = await getApplicationSupportDirectory();
     final novelPlugins = NovelPluginRepository(Directory('${supportDir.path}/lnreader'));
-    final catalog = SourceCatalog.fromJsonString(await rootBundle.loadString('assets/sources/catalog.json'));
+    final bundledCatalog = SourceCatalog.fromJsonString(await rootBundle.loadString('assets/sources/catalog.json'));
+    final catalogRepository = SourceCatalogRepository(Directory('${supportDir.path}/catalog'), bundled: bundledCatalog);
+    // Salinan repo terakhir (cepat, offline); diperbarui di latar oleh provider.
+    final catalog = (await catalogRepository.cached(SourceCatalogReposNotifier.read(prefs))).catalog;
 
     // Komik lokal: folder di penyimpanan aplikasi eksternal supaya bisa diisi
     // lewat USB / pengelola file (Android/data/<paket>/files/local).
@@ -88,6 +94,7 @@ class AppDependencies {
       downloads: downloads,
       novelPlugins: novelPlugins,
       catalog: catalog,
+      catalogRepository: catalogRepository,
     );
     deps.loadCookies();
     return deps;
@@ -103,7 +110,8 @@ class AppDependencies {
         sharedPreferencesProvider.overrideWithValue(prefs),
         jsonCacheProvider.overrideWithValue(cache),
         downloadStoreProvider.overrideWithValue(downloads),
-        sourceCatalogProvider.overrideWithValue(catalog),
+        initialSourceCatalogProvider.overrideWithValue(catalog),
+        sourceCatalogRepositoryProvider.overrideWithValue(catalogRepository),
         novelRepositoryProvider.overrideWithValue(novelPlugins),
       ];
 }
