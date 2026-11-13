@@ -228,7 +228,10 @@ bersamaan), otomatis saat aplikasi dibuka bila pengecekan terakhir lebih dari 6 
 atau tarik untuk cek manual. Bab yang sudah dikenal per seri disimpan di `<support>/library_updates.json`;
 pengecekan pertama hanya mencatat. Bab baru tampil per hari, lencana di tab Favorit menghitung yang
 belum dilihat, dan notifikasi (`flutter_local_notifications`) muncul setelah cek otomatis menemukan
-bab baru. Cek hanya berjalan selama aplikasi terbuka (belum ada pengecekan di latar).
+bab baru. **Cek di latar belakang** (menu ⋮ Pembaruan): `workmanager` menjadwalkan cek tiap 6/12/24/48
+jam (bawaan 12 jam) walau aplikasi ditutup, hanya saat ada jaringan (opsional Wi-Fi saja) dan baterai
+tidak lemah. Isolate latar memakai dependensi yang sama lewat `lib/bootstrap.dart` dan User-Agent
+WebView yang disimpan saat aplikasi terakhir dibuka (cookie `cf_clearance` terikat ke UA).
 
 Tiap plugin novel diberi status (Jalan / Perlu verifikasi / Rusak / Mati). Data awal berasal dari cek
 di PC (`node check.mjs && node health.mjs` menulis `assets/lnreader/health.json`), lalu diperbarui

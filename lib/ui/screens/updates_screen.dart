@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/utils/formatters.dart';
+import '../../state/background_updates.dart';
 import '../../state/library_updates_provider.dart';
 import '../../state/source_library_providers.dart';
 import '../widgets/library_routing.dart';
@@ -40,6 +41,48 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
     await notifier.markSeen();
   }
 
+  Future<void> _backgroundDialog() async {
+    var config = ref.read(backgroundUpdatesProvider);
+    final result = await showDialog<BackgroundUpdateConfig>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Cek di latar belakang'),
+          contentPadding: const EdgeInsets.only(top: 12),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                RadioGroup<int>(
+                  groupValue: config.hours,
+                  onChanged: (v) => setState(() => config = config.copyWith(hours: v)),
+                  child: Column(
+                    children: [
+                      for (final h in BackgroundUpdateConfig.choices)
+                        RadioListTile<int>(value: h, title: Text(BackgroundUpdateConfig.label(h))),
+                    ],
+                  ),
+                ),
+                const Divider(),
+                CheckboxListTile(
+                  value: config.wifiOnly,
+                  onChanged: config.enabled ? (v) => setState(() => config = config.copyWith(wifiOnly: v)) : null,
+                  title: const Text('Hanya lewat Wi-Fi'),
+                  subtitle: const Text('Juga dilewati saat baterai lemah'),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
+            FilledButton(onPressed: () => Navigator.pop(context, config), child: const Text('Simpan')),
+          ],
+        ),
+      ),
+    );
+    if (result != null) await ref.read(backgroundUpdatesProvider.notifier).set(result);
+  }
+
   static String _day(DateTime d) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -55,6 +98,7 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
     final s = ref.watch(libraryUpdatesProvider);
     final favorites = ref.watch(sourceFavoritesProvider);
     final auto = ref.watch(libraryAutoCheckProvider);
+    final background = ref.watch(backgroundUpdatesProvider);
     final progress = ref.watch(sourceProgressProvider);
 
     final rows = <Object>[];
@@ -81,12 +125,22 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
             onSelected: (v) {
               if (v == 'auto') ref.read(libraryAutoCheckProvider.notifier).set(!auto);
               if (v == 'clear') ref.read(libraryUpdatesProvider.notifier).clear();
+              if (v == 'background') _backgroundDialog();
             },
             itemBuilder: (_) => [
               CheckedPopupMenuItem(
                 value: 'auto',
                 checked: auto,
                 child: const Text('Cek otomatis saat aplikasi dibuka'),
+              ),
+              PopupMenuItem(
+                value: 'background',
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Cek di latar belakang'),
+                  subtitle: Text(BackgroundUpdateConfig.label(background.hours) +
+                      (background.enabled && background.wifiOnly ? ' · Wi-Fi' : '')),
+                ),
               ),
               const PopupMenuItem(value: 'clear', child: Text('Hapus daftar pembaruan')),
             ],

@@ -179,6 +179,13 @@ class LibraryUpdatesNotifier extends Notifier<LibraryUpdatesState> {
     }
   }
 
+  /// Baca ulang file: isolate latar (WorkManager) mungkin menulis bab baru
+  /// selagi aplikasi tertidur.
+  Future<void> reload() async {
+    if (state.checking) return;
+    await _load();
+  }
+
   Future<void> markSeen() async {
     state = state.copyWith(lastSeen: DateTime.now());
     await _save();
@@ -268,9 +275,13 @@ class LibraryUpdatesNotifier extends Notifier<LibraryUpdatesState> {
         await _notifications.initialize(
           settings: const InitializationSettings(android: AndroidInitializationSettings('@mipmap/ic_launcher')),
         );
-        await _notifications
-            .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
-            ?.requestNotificationsPermission();
+        try {
+          // Di isolate latar tidak ada Activity untuk dialog izin; izin yang
+          // sudah diberikan sebelumnya tetap berlaku.
+          await _notifications
+              .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+              ?.requestNotificationsPermission();
+        } catch (_) {}
         _notificationsReady = true;
       }
       final titles = {for (final u in found) u.item.title}.toList();

@@ -27,14 +27,26 @@ class MainShell extends ConsumerStatefulWidget {
   ConsumerState<MainShell> createState() => _MainShellState();
 }
 
-class _MainShellState extends ConsumerState<MainShell> {
+class _MainShellState extends ConsumerState<MainShell> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // Cek bab baru favorit sebentar setelah aplikasi dibuka (bila sudah waktunya).
     Future.delayed(const Duration(seconds: 5), () {
       if (mounted) ref.read(libraryUpdatesProvider.notifier).maybeAutoCheck();
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) ref.read(libraryUpdatesProvider.notifier).reload();
   }
 
   @override
