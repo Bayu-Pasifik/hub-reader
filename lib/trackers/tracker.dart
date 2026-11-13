@@ -53,8 +53,8 @@ class TrackerException implements Exception {
   String toString() => message;
 }
 
-/// Satu layanan tracker (AniList / MyAnimeList). Login lewat OAuth di
-/// WebView dengan Client ID milik pengguna sendiri.
+/// Satu layanan tracker. AniList & MyAnimeList: login OAuth di WebView dengan
+/// Client ID. Kitsu & MangaUpdates: login username/password ([passwordLogin]).
 abstract class Tracker {
   Tracker(this.prefs, {Dio? dio})
       : dio = dio ??
@@ -101,12 +101,22 @@ abstract class Tracker {
     }
   }
 
-  /// URL yang dibuka di WebView untuk login.
-  Uri authorizeUrl();
+  /// Login dengan username/password (tanpa Client ID & WebView). Password
+  /// tidak disimpan; hanya token sesi.
+  bool get passwordLogin => false;
+
+  /// Label kolom username (mis. email untuk Kitsu).
+  String get usernameLabel => 'Username';
+
+  Future<void> loginWithPassword(String username, String password) =>
+      throw UnsupportedError('$name tidak memakai login password');
+
+  /// URL yang dibuka di WebView untuk login (tracker OAuth).
+  Uri authorizeUrl() => throw UnsupportedError('$name tidak memakai OAuth');
 
   /// Dipanggil untuk setiap URL yang dibuka WebView; true bila login selesai
   /// (token tersimpan) dari URL ini.
-  Future<bool> handleRedirect(Uri url);
+  Future<bool> handleRedirect(Uri url) async => false;
 
   Future<List<TrackSearchResult>> search(String query, {required bool novel});
   Future<TrackEntry?> entry(int mediaId);

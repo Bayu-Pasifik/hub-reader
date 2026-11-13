@@ -30,7 +30,9 @@ class AppBackup {
       key.startsWith('lnr.kv.') ||
       // token login tracker (bukan tautan seri: tracker.links.v1)
       key.startsWith('tracker.anilist.') ||
-      key.startsWith('tracker.mal.');
+      key.startsWith('tracker.mal.') ||
+      key.startsWith('tracker.kitsu.') ||
+      key.startsWith('tracker.mangaupdates.');
 
   static Future<File> _updatesFile() async =>
       File('${(await getApplicationSupportDirectory()).path}${Platform.pathSeparator}library_updates.json');

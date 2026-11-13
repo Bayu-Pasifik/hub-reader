@@ -4,13 +4,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/utils/json.dart';
 import '../sources/html_utils.dart';
+import '../trackers/kitsu.dart';
+import '../trackers/mangaupdates.dart';
 import '../trackers/tracker.dart';
 import 'app_settings_provider.dart';
 import 'core_providers.dart';
 
 final trackersProvider = Provider<List<Tracker>>((ref) {
   final prefs = ref.watch(sharedPreferencesProvider);
-  return [AniListTracker(prefs), MalTracker(prefs)];
+  return [AniListTracker(prefs), MalTracker(prefs), KitsuTracker(prefs), MangaUpdatesTracker(prefs)];
 });
 
 Tracker? trackerById(List<Tracker> trackers, String id) => trackers.where((t) => t.id == id).firstOrNull;

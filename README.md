@@ -15,7 +15,7 @@ lib/
 ├── data/                          # penyimpanan lokal: favorit/riwayat, unduhan, cadangan
 ├── sources/                       # sumber komik on-device (template Madara, MangaThemesia, ...)
 ├── novels/                        # plugin LNReader (QuickJS), EPUB lokal & ekspor
-├── trackers/                      # AniList & MyAnimeList
+├── trackers/                      # AniList, MyAnimeList, Kitsu, MangaUpdates
 ├── state/                         # provider Riverpod
 └── ui/                            # router, shell tab, layar, widget
 test/                              # tes parser sumber, plugin, cadangan, dll.
@@ -175,6 +175,11 @@ menu **Tracking** menautkan seri ke entri tracker (cari judul; novel dicari seba
 mengubah progres & status, atau melepas tautan. Progres naik otomatis saat bab selesai dibaca (halaman
 terakhir komik / akhir bab novel / tombol bab berikutnya), tidak pernah turun, dan jadi "Selesai" saat
 mencapai jumlah bab. Token tracker termasuk data rahasia di cadangan.
+
+**Kitsu & MangaUpdates** tidak perlu Client ID: login dengan email/username dan password di
+Pengaturan → Tracker. Password tidak disimpan, hanya token sesi (Kitsu: password grant dengan client
+publik aplikasi Kitsu + refresh token; MangaUpdates: session token API v1). MangaUpdates tidak punya
+jumlah bab, jadi status "Selesai" diatur manual; daftar buatan pengguna di MangaUpdates tampil tanpa status.
 
 **Mode samaran** (ikon mata di Riwayat, atau Pengaturan): riwayat dan posisi baca otomatis tidak
 dicatat; tanda dibaca manual tetap bisa. Bilah kecil di atas navigasi menandai mode ini aktif.

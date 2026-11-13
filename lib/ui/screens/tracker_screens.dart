@@ -119,7 +119,91 @@ class _TrackerSettingsTileState extends ConsumerState<TrackerSettingsTile> {
     }
   }
 
+  /// Kitsu / MangaUpdates: username & password, hanya token yang disimpan.
+  Future<void> _passwordLogin() async {
+    final user = TextEditingController(text: t.username ?? '');
+    final pass = TextEditingController();
+    String? error;
+    var busy = false;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialog) {
+          Future<void> submit() async {
+            if (user.text.trim().isEmpty || pass.text.isEmpty) return;
+            setDialog(() {
+              busy = true;
+              error = null;
+            });
+            try {
+              await t.loginWithPassword(user.text.trim(), pass.text);
+              if (context.mounted) Navigator.pop(context, true);
+            } catch (e) {
+              setDialog(() {
+                busy = false;
+                error = '$e';
+              });
+            }
+          }
+
+          return AlertDialog(
+            title: Text('Login ${t.name}'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: user,
+                  autofocus: true,
+                  enabled: !busy,
+                  keyboardType: t.usernameLabel == 'Email' ? TextInputType.emailAddress : TextInputType.text,
+                  autofillHints: const [AutofillHints.username],
+                  decoration: InputDecoration(labelText: t.usernameLabel, border: const OutlineInputBorder()),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: pass,
+                  enabled: !busy,
+                  obscureText: true,
+                  autofillHints: const [AutofillHints.password],
+                  onSubmitted: (_) => submit(),
+                  decoration: const InputDecoration(labelText: 'Password', border: OutlineInputBorder()),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  error ?? 'Password tidak disimpan; hanya token sesi.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: error == null
+                        ? Theme.of(context).colorScheme.onSurfaceVariant
+                        : Theme.of(context).colorScheme.error,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(onPressed: busy ? null : () => Navigator.pop(context), child: const Text('Batal')),
+              FilledButton(
+                onPressed: busy ? null : submit,
+                child: busy
+                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Text('Login'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+    user.dispose();
+    pass.dispose();
+    if (!mounted || ok != true) return;
+    setState(() {});
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text('Login ${t.name} berhasil${t.username != null ? ' (${t.username})' : ''}'),
+    ));
+  }
+
   Future<void> _login() async {
+    if (t.passwordLogin) return _passwordLogin();
     if ((t.clientId ?? '').isEmpty) {
       await _editClientId();
       if ((t.clientId ?? '').isEmpty) return;
@@ -145,11 +229,13 @@ class _TrackerSettingsTileState extends ConsumerState<TrackerSettingsTile> {
       subtitle: Text(
         t.loggedIn
             ? 'Masuk${t.username != null ? ' sebagai ${t.username}' : ''}'
-            : hasId
+            : t.passwordLogin
+                ? 'Belum login'
+                : hasId
                 ? 'Belum login${t.usesDefaultClientId ? ' · Client ID bawaan' : ''}'
                 : 'Belum ada Client ID',
       ),
-      onTap: _editClientId,
+      onTap: t.passwordLogin ? null : _editClientId,
       trailing: t.loggedIn
           ? TextButton(
               onPressed: () async {
