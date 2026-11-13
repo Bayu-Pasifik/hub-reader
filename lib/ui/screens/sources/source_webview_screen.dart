@@ -8,7 +8,7 @@ import '../../../sources/source.dart';
 
 /// Membuka situs di WebView agar pengguna bisa melewati verifikasi
 /// Cloudflare. Begitu cookie `cf_clearance` muncul dan halaman bukan lagi
-/// "Just a moment...", cookie disalin ke penyimpanan scraper lalu layar
+/// "Just a moment...", cookie disalin ke penyimpanan sumber lalu layar
 /// ditutup dengan hasil `true`.
 class SourceWebViewScreen extends StatefulWidget {
   const SourceWebViewScreen({super.key, required this.url});

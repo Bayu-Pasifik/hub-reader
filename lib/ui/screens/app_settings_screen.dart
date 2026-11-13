@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
 
-import '../../core/config/app_config.dart';
 import '../../state/app_settings_provider.dart';
 import '../../state/core_providers.dart';
 import '../../state/download_providers.dart';
@@ -238,13 +237,6 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/backup'),
           ),
-          if (AppConfig.enableScraperHub)
-            ListTile(
-              leading: const Icon(Icons.dns_outlined),
-              title: const Text('Server scraper-hub'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => context.push('/settings'),
-            ),
           const SizedBox(height: 24),
         ],
       ),

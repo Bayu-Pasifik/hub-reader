@@ -1,12 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/utils/media_url.dart';
-import '../../state/core_providers.dart';
-
-/// Sampul rasio 3:4 (sama dengan thumbnail 300x400 dari CoverThumbnailer).
-class CoverImage extends ConsumerWidget {
+/// Sampul rasio 3:4.
+class CoverImage extends StatelessWidget {
   const CoverImage({super.key, required this.url, this.width, this.borderRadius = 8});
 
   final String? url;
@@ -14,8 +10,8 @@ class CoverImage extends ConsumerWidget {
   final double borderRadius;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final resolved = resolveMediaUrl(url, ref.watch(apiOriginProvider));
+  Widget build(BuildContext context) {
+    final resolved = (url == null || url!.isEmpty) ? null : url;
     final scheme = Theme.of(context).colorScheme;
     final placeholder = Container(
       color: scheme.surfaceContainerHighest,

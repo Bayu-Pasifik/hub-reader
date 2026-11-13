@@ -17,8 +17,7 @@ enum SourceErrorKind {
   unknown,
 }
 
-/// Error dari extension sumber. Terpisah dari ApiException karena pesannya
-/// tentang situs sumber, bukan server scraper-hub.
+/// Error dari extension sumber; pesannya tentang situs sumber.
 class SourceException implements Exception {
   const SourceException(this.kind, {this.statusCode, this.detail, this.url});
 

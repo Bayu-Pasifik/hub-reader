@@ -12,11 +12,9 @@ class CachedJson {
   final DateTime savedAt;
 }
 
-/// Cache respons API sederhana: satu file JSON per key di folder cache aplikasi.
-///
-/// Dipakai repository dengan strategi "network first, cache fallback":
-/// setiap respons sukses disimpan, dan saat server tidak bisa dihubungi
-/// aplikasi menampilkan versi terakhir yang tersimpan.
+/// Cache JSON sederhana: satu file per key di folder cache aplikasi.
+/// Dipakai untuk menyimpan daftar plugin & hasil terakhir agar tetap tampil
+/// saat offline.
 class JsonCache {
   JsonCache(this._dir);
 

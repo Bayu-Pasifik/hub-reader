@@ -2,19 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../core/config/app_config.dart';
-import '../core/utils/formatters.dart';
-import '../data/models/series.dart';
-import 'screens/browse_screen.dart';
-import 'screens/home_screen.dart';
 import 'screens/novels/novel_browse_screen.dart';
 import 'screens/novels/novel_detail_screen.dart';
 import 'screens/novels/novel_global_search_screen.dart';
 import 'screens/novels/novel_reader_screen.dart';
 import 'screens/novels/novel_sources_screen.dart';
-import 'screens/reader_screen.dart';
-import 'screens/series_detail_screen.dart';
-import 'screens/settings_screen.dart';
 import 'screens/sources/downloads_screen.dart';
 import 'screens/app_settings_screen.dart';
 import 'screens/backup_screen.dart';
@@ -31,11 +23,6 @@ import 'screens/sources/sources_screen.dart';
 import 'shell/main_shell.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
-
-String seriesLocation(SeriesType type, int id) => '/series/${type.name}/$id';
-
-String readerLocation(SeriesType type, int id, double chapterNumber) =>
-    '/read/${type.name}/$id/${formatChapterNumber(chapterNumber)}';
 
 String sourceBrowseLocation(String sourceId) => '/source/${Uri.encodeComponent(sourceId)}';
 
@@ -72,9 +59,6 @@ String sourceWebViewLocation(String url) =>
 
 /// Rute:
 ///   /sources, /favorites, /history         → tab (sumber on-device)
-///   /home, /browse                         → tab scraper-hub (hanya bila
-///                                            AppConfig.enableScraperHub)
-///   /series/:type/:id, /read/..., /settings → layar scraper-hub (idem)
 ///   /source/:sid                           → jelajah satu sumber on-device
 ///   /source/:sid/manga?url=                → detail seri dari sumber
 ///   /source/:sid/read?manga=&chapter=      → pembaca bab dari sumber
@@ -82,12 +66,7 @@ String sourceWebViewLocation(String url) =>
 ///   /novel/:pid, /novel/:pid/info?path=,   → jelajah, detail, pembaca novel
 ///   /novel/:pid/read?novel=&chapter=&page=
 final routerProvider = Provider<GoRouter>((ref) {
-  const hub = AppConfig.enableScraperHub;
   final tabs = <ShellTab>[
-    if (hub) ...const [
-      ShellTab('/home', Icons.home_outlined, Icons.home, 'Beranda'),
-      ShellTab('/browse', Icons.explore_outlined, Icons.explore, 'Jelajah'),
-    ],
     const ShellTab('/sources', Icons.extension_outlined, Icons.extension, 'Komik'),
     const ShellTab('/novels', Icons.menu_book_outlined, Icons.menu_book, 'Novel'),
     const ShellTab('/favorites', Icons.favorite_outline, Icons.favorite, 'Favorit'),
@@ -95,8 +74,6 @@ final routerProvider = Provider<GoRouter>((ref) {
   ];
 
   Widget tabScreen(String path) => switch (path) {
-        '/home' => const HomeScreen(),
-        '/browse' => const BrowseScreen(),
         '/favorites' => const SourceFavoritesScreen(),
         '/history' => const SourceHistoryScreen(),
         '/novels' => const NovelSourcesScreen(),
@@ -105,7 +82,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: hub ? '/home' : '/sources',
+    initialLocation: '/sources',
     routes: [
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) => MainShell(navigationShell: shell, tabs: tabs),
@@ -116,30 +93,6 @@ final routerProvider = Provider<GoRouter>((ref) {
             ]),
         ],
       ),
-      if (hub) ...[
-        GoRoute(
-          path: '/series/:type/:id',
-          parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, state) => SeriesDetailScreen(
-            type: SeriesType.fromApi(state.pathParameters['type']),
-            id: int.tryParse(state.pathParameters['id'] ?? '') ?? 0,
-          ),
-        ),
-        GoRoute(
-          path: '/read/:type/:id/:chapter',
-          parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, state) => ReaderScreen(
-            type: SeriesType.fromApi(state.pathParameters['type']),
-            id: int.tryParse(state.pathParameters['id'] ?? '') ?? 0,
-            initialChapter: double.tryParse(state.pathParameters['chapter'] ?? '') ?? 1,
-          ),
-        ),
-        GoRoute(
-          path: '/settings',
-          parentNavigatorKey: _rootNavigatorKey,
-          builder: (_, __) => const SettingsScreen(),
-        ),
-      ],
       GoRoute(
         path: '/migrate',
         parentNavigatorKey: _rootNavigatorKey,

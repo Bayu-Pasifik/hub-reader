@@ -86,7 +86,7 @@ class SourceMangaCard extends StatelessWidget {
   }
 }
 
-/// Error dari situs sumber (pesan berbeda dari error server scraper-hub).
+/// Error dari situs sumber.
 class SourceErrorView extends StatelessWidget {
   const SourceErrorView({
     super.key,

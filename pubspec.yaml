@@ -1,5 +1,5 @@
 name: hub_reader
-description: Aplikasi pembaca novel & komik yang mengambil data dari API scraper-hub.
+description: Aplikasi pembaca komik & novel yang membaca langsung dari situs sumber di perangkat.
 publish_to: 'none'
 version: 1.0.0+1
 
