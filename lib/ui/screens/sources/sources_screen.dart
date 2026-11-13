@@ -148,12 +148,8 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
                   healthNotifier.checkAll([for (final s in filtered) if (s is! LocalSource) s]);
                 case 'stop':
                   healthNotifier.stop();
-                case 'nsfw':
-                  ref.read(showNsfwSourcesProvider.notifier).set(!showNsfw);
                 case 'dead':
                   ref.read(hideDeadSourcesProvider.notifier).set(!hideDead);
-                case 'settings':
-                  context.push('/app-settings');
                 case 'import':
                   importLocalFiles(context);
               }
@@ -164,8 +160,6 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
                   : PopupMenuItem(value: 'check', child: Text('Cek ${filtered.where((s) => s is! LocalSource).length} sumber')),
               const PopupMenuItem(value: 'import', child: Text('Impor file (CBZ/ZIP/EPUB)')),
               CheckedPopupMenuItem(value: 'dead', checked: hideDead, child: const Text('Sembunyikan sumber mati')),
-              CheckedPopupMenuItem(value: 'nsfw', checked: showNsfw, child: const Text('Tampilkan sumber 18+')),
-              const PopupMenuItem(value: 'settings', child: Text('Pengaturan')),
             ],
           ),
         ],

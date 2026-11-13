@@ -99,15 +99,10 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
                   health.stop();
                 case 'hide':
                   ref.read(novelHideBrokenProvider.notifier).set(!ref.read(novelHideBrokenProvider));
-                case 'repos':
-                  context.push('/novel-repos');
-                case 'settings':
-                  context.push('/app-settings');
               }
             },
             itemBuilder: (_) => [
               const PopupMenuItem(value: 'refresh', child: Text('Perbarui daftar plugin')),
-              const PopupMenuItem(value: 'repos', child: Text('Repo plugin')),
               if (ref.read(novelHealthRunProvider).running)
                 const PopupMenuItem(value: 'stop', child: Text('Hentikan pengecekan'))
               else
@@ -120,7 +115,6 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
                 checked: ref.read(novelHideBrokenProvider),
                 child: const Text('Sembunyikan yang rusak'),
               ),
-              const PopupMenuItem(value: 'settings', child: Text('Pengaturan')),
             ],
           ),
         ],
@@ -244,7 +238,7 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
                         return Padding(
                           padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
                           child: Text(
-                            'Plugin dari ${ref.watch(novelReposProvider).length} repo (atur di menu › Repo plugin), '
+                            'Plugin dari ${ref.watch(novelReposProvider).length} repo (atur di Pengaturan › Repo plugin novel), '
                             'dijalankan langsung di HP. Kode plugin diunduh saat sumber pertama kali dibuka '
                             'dan tetap bisa dipakai walau repo hilang.',
                             style: Theme.of(context).textTheme.bodySmall,

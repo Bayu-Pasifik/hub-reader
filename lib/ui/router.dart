@@ -63,7 +63,8 @@ String sourceWebViewLocation(String url, {String? storagePluginId}) => Uri(
     ).toString();
 
 /// Rute:
-///   /sources, /favorites, /history         → tab (sumber on-device)
+///   /sources, /novels, /favorites,         → tab
+///   /history, /settings
 ///   /source/:sid                           → jelajah satu sumber on-device
 ///   /source/:sid/manga?url=                → detail seri dari sumber
 ///   /source/:sid/read?manga=&chapter=      → pembaca bab dari sumber
@@ -76,12 +77,14 @@ final routerProvider = Provider<GoRouter>((ref) {
     const ShellTab('/novels', Icons.menu_book_outlined, Icons.menu_book, 'Novel'),
     const ShellTab('/favorites', Icons.favorite_outline, Icons.favorite, 'Favorit'),
     const ShellTab('/history', Icons.history_outlined, Icons.history, 'Riwayat'),
+    const ShellTab('/settings', Icons.settings_outlined, Icons.settings, 'Pengaturan'),
   ];
 
   Widget tabScreen(String path) => switch (path) {
         '/favorites' => const SourceFavoritesScreen(),
         '/history' => const SourceHistoryScreen(),
         '/novels' => const NovelSourcesScreen(),
+        '/settings' => const AppSettingsScreen(),
         _ => const SourcesScreen(),
       };
 
@@ -107,11 +110,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           title: state.uri.queryParameters['title'] ?? '',
         ),
       ),
-      GoRoute(
-        path: '/app-settings',
-        parentNavigatorKey: _rootNavigatorKey,
-        builder: (_, __) => const AppSettingsScreen(),
-      ),
+      // Lokasi lama (sebelum Pengaturan jadi tab).
+      GoRoute(path: '/app-settings', redirect: (_, __) => '/settings'),
       GoRoute(
         path: '/novel-repos',
         parentNavigatorKey: _rootNavigatorKey,

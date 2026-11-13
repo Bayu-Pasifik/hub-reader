@@ -11,6 +11,7 @@ import '../../state/app_update_provider.dart';
 import '../../state/core_providers.dart';
 import '../../state/download_providers.dart';
 import '../../state/novel_providers.dart';
+import '../../state/source_settings_provider.dart';
 import '../../state/tracker_providers.dart';
 import 'tracker_screens.dart';
 import '../widgets/app_update_ui.dart';
@@ -214,6 +215,24 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
             subtitle: const Text('Riwayat & posisi baca tidak dicatat'),
             value: s.incognito,
             onChanged: (v) => n.update((x) => x.copyWith(incognito: v)),
+          ),
+          header('Sumber'),
+          SwitchListTile(
+            secondary: const Icon(Icons.eighteen_up_rating_outlined),
+            title: const Text('Tampilkan sumber NSFW (18+)'),
+            subtitle: const Text('Sumber komik khusus dewasa ikut tampil di daftar'),
+            value: ref.watch(showNsfwSourcesProvider),
+            onChanged: (v) => ref.read(showNsfwSourcesProvider.notifier).set(v),
+          ),
+          ListTile(
+            leading: const Icon(Icons.hub_outlined),
+            title: const Text('Repo plugin novel'),
+            subtitle: Text(
+              '${ref.watch(novelReposProvider).length} repo'
+              '${(ref.watch(novelManifestProvider).valueOrNull?.orphans.length ?? 0) > 0 ? ' · ${ref.watch(novelManifestProvider).valueOrNull!.orphans.length} plugin tanpa repo' : ''}',
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/novel-repos'),
           ),
           header('Tracker'),
           for (final t in ref.watch(trackersProvider)) TrackerSettingsTile(tracker: t),
