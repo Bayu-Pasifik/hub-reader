@@ -64,6 +64,11 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
             }),
           ),
           IconButton(
+            tooltip: 'Cari novel di semua sumber',
+            icon: const Icon(Icons.travel_explore),
+            onPressed: () => context.push(novelGlobalSearchLocation()),
+          ),
+          IconButton(
             tooltip: 'Unduhan',
             icon: Badge(
               isLabelVisible: ref.watch(downloadQueueProvider).isNotEmpty,

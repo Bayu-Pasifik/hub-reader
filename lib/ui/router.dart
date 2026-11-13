@@ -9,6 +9,7 @@ import 'screens/browse_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/novels/novel_browse_screen.dart';
 import 'screens/novels/novel_detail_screen.dart';
+import 'screens/novels/novel_global_search_screen.dart';
 import 'screens/novels/novel_reader_screen.dart';
 import 'screens/novels/novel_sources_screen.dart';
 import 'screens/reader_screen.dart';
@@ -54,6 +55,9 @@ String novelReaderLocation(String pluginId, String novelPath, String chapterPath
       path: '/novel/${Uri.encodeComponent(pluginId)}/read',
       queryParameters: {'novel': novelPath, 'chapter': chapterPath, if (page > 1) 'page': '$page'},
     ).toString();
+
+String novelGlobalSearchLocation([String query = '']) =>
+    Uri(path: '/novel-search', queryParameters: query.isEmpty ? null : {'q': query}).toString();
 
 String sourceWebViewLocation(String url) =>
     Uri(path: '/webview', queryParameters: {'url': url}).toString();
@@ -137,6 +141,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/webview',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (_, state) => SourceWebViewScreen(url: state.uri.queryParameters['url'] ?? ''),
+      ),
+      GoRoute(
+        path: '/novel-search',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, state) => NovelGlobalSearchScreen(initialQuery: state.uri.queryParameters['q'] ?? ''),
       ),
       GoRoute(
         path: '/novel/:pid',

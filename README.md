@@ -192,6 +192,10 @@ ukuran huruf, jarak baris, margin, serif, rata kiri-kanan), menyimpan posisi bac
 (persen), lalu pindah bab sebelumnya/berikutnya, termasuk lintas halaman untuk plugin
 berhalaman (`parsePage`). Favorit & riwayat novel berbagi tab dengan komik (id `lnr:<plugin>`).
 
+Ikon globe di tab Novel membuka **cari global**: satu kata kunci dicari di semua plugin yang pernah
+dibuka, atau semua plugin satu bahasa (4 plugin bersamaan, batas 40 detik per plugin). Hasil
+ditampilkan per sumber; sumber dengan hasil naik ke atas.
+
 Tombol headphone di pembaca membacakan bab (TTS, `flutter_tts`) mulai dari paragraf yang terlihat:
 paragraf aktif disorot dan diikuti layar, ada jeda/lompat paragraf, kecepatan & nada, dan lanjut
 otomatis ke bab berikutnya. Bahasa suara mengikuti bahasa plugin.
