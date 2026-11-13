@@ -81,6 +81,11 @@ class SourceListNotifier extends AutoDisposeFamilyNotifier<SourceListState, Sour
 
   @override
   SourceListState build(SourceListKey arg) {
+    // `ref.invalidate` membangun ulang notifier yang SAMA; reset status lama
+    // supaya muatan baru tidak dibuang.
+    _disposed = false;
+    _busy = false;
+    _generation++;
     ref.onDispose(() => _disposed = true);
     Future.microtask(loadMore);
     return const SourceListState(isLoading: true);

@@ -200,6 +200,12 @@ class NovelListNotifier extends AutoDisposeFamilyNotifier<NovelListState, NovelL
 
   @override
   NovelListState build(NovelListKey arg) {
+    // `ref.invalidate` membangun ulang notifier yang SAMA (onDispose ikut
+    // terpanggil), jadi status lama harus di-reset. Tanpa ini, daftar macet
+    // memuat setelah kembali dari WebView.
+    _disposed = false;
+    _busy = false;
+    _generation++;
     ref.onDispose(() => _disposed = true);
     Future.microtask(loadMore);
     return const NovelListState(isLoading: true);
