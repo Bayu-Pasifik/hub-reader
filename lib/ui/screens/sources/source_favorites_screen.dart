@@ -6,6 +6,7 @@ import '../../../data/models/source_library.dart';
 import '../../../state/library_updates_provider.dart';
 import '../../../state/novel_providers.dart';
 import '../../../state/source_library_providers.dart';
+import '../../router.dart';
 import '../../widgets/library_routing.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/state_views.dart';
@@ -355,6 +356,14 @@ class _FavoriteActionsSheet extends ConsumerWidget {
               },
             ),
             const Divider(),
+            ListTile(
+              leading: const Icon(Icons.swap_horiz),
+              title: const Text('Pindah sumber'),
+              onTap: () {
+                Navigator.pop(context);
+                context.push(migrateLocation(entry.item.sourceId, entry.item.url, entry.item.title));
+              },
+            ),
             ListTile(
               leading: const Icon(Icons.heart_broken_outlined),
               title: const Text('Hapus dari favorit'),

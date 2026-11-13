@@ -81,8 +81,7 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
       ..showSnackBar(SnackBar(content: Text('${chapters.length} bab masuk antrean unduhan')));
   }
 
-  void _openChapter(String chapterUrl) =>
-      context.push(sourceReaderLocation(widget.sourceId, widget.url, chapterUrl));
+  void _openChapter(String chapterUrl) => context.push(sourceReaderLocation(widget.sourceId, widget.url, chapterUrl));
 
   @override
   Widget build(BuildContext context) {
@@ -121,6 +120,13 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
             icon: Icon(_oldestFirst ? Icons.arrow_upward : Icons.arrow_downward),
             onPressed: () => setState(() => _oldestFirst = !_oldestFirst),
           ),
+          if (loaded != null)
+            PopupMenuButton<String>(
+              onSelected: (v) {
+                if (v == 'migrate') context.push(migrateLocation(widget.sourceId, widget.url, loaded.title));
+              },
+              itemBuilder: (_) => const [PopupMenuItem(value: 'migrate', child: Text('Pindah sumber'))],
+            ),
         ],
       ),
       body: details.when(
@@ -260,8 +266,7 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
               spacing: 6,
               runSpacing: 6,
               children: [
-                for (final g in manga.genres)
-                  Chip(label: Text(g), visualDensity: VisualDensity.compact),
+                for (final g in manga.genres) Chip(label: Text(g), visualDensity: VisualDensity.compact),
               ],
             ),
           ],

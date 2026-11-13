@@ -17,6 +17,7 @@ import 'screens/series_detail_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/sources/downloads_screen.dart';
 import 'screens/backup_screen.dart';
+import 'screens/migrate_screen.dart';
 import 'screens/updates_screen.dart';
 import 'screens/sources/source_browse_screen.dart';
 import 'screens/sources/source_favorites_screen.dart';
@@ -60,6 +61,9 @@ String novelReaderLocation(String pluginId, String novelPath, String chapterPath
 
 String novelGlobalSearchLocation([String query = '']) =>
     Uri(path: '/novel-search', queryParameters: query.isEmpty ? null : {'q': query}).toString();
+
+String migrateLocation(String sourceId, String url, String title) =>
+    Uri(path: '/migrate', queryParameters: {'source': sourceId, 'url': url, 'title': title}).toString();
 
 String sourceWebViewLocation(String url) =>
     Uri(path: '/webview', queryParameters: {'url': url}).toString();
@@ -134,6 +138,15 @@ final routerProvider = Provider<GoRouter>((ref) {
           builder: (_, __) => const SettingsScreen(),
         ),
       ],
+      GoRoute(
+        path: '/migrate',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, state) => MigrateScreen(
+          sourceId: state.uri.queryParameters['source'] ?? '',
+          url: state.uri.queryParameters['url'] ?? '',
+          title: state.uri.queryParameters['title'] ?? '',
+        ),
+      ),
       GoRoute(
         path: '/backup',
         parentNavigatorKey: _rootNavigatorKey,

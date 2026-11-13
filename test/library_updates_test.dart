@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hub_reader/state/library_updates_provider.dart';
 
 void main() {
-  List<({String url, String name})> ch(List<String> urls) => [for (final u in urls) (url: u, name: 'Bab $u')];
+  List<({String url, String name, double? number})> ch(List<String> urls) => [for (final u in urls) (url: u, name: 'Bab $u', number: null)];
 
   test('first check records chapters without reporting them as new', () {
     expect(LibraryUpdatesNotifier.newChapters(null, ch(['a', 'b'])), isEmpty);

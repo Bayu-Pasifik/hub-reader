@@ -231,8 +231,14 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
                     PopupMenuButton<String>(
                       onSelected: (v) {
                         if (v == 'web') _openWeb(source);
+                        if (v == 'migrate' && loaded != null) {
+                          context.push(migrateLocation(novelLibraryId(widget.pluginId), widget.path, loaded.name));
+                        }
                       },
-                      itemBuilder: (_) => const [PopupMenuItem(value: 'web', child: Text('Buka di WebView'))],
+                      itemBuilder: (_) => const [
+                        PopupMenuItem(value: 'web', child: Text('Buka di WebView')),
+                        PopupMenuItem(value: 'migrate', child: Text('Pindah sumber')),
+                      ],
                     ),
                 ],
               ),

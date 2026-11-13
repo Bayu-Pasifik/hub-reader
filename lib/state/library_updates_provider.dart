@@ -8,11 +8,9 @@ import 'package:path_provider/path_provider.dart';
 
 import '../core/utils/json.dart';
 import '../data/models/source_library.dart';
-import '../sources/source_exception.dart';
 import 'core_providers.dart';
-import 'novel_providers.dart';
+import 'library_chapters.dart';
 import 'source_library_providers.dart';
-import 'source_providers.dart';
 
 /// Satu bab baru yang ditemukan saat mengecek favorit.
 class LibraryUpdate {
@@ -203,30 +201,10 @@ class LibraryUpdatesNotifier extends Notifier<LibraryUpdatesState> {
     await checkAll(notify: true);
   }
 
-  /// Bab (url, nama) seri saat ini, dari situs.
-  Future<List<({String url, String name})>> _fetchChapters(SourceLibraryItem item) async {
-    if (isNovelSourceId(item.sourceId)) {
-      final source = await ref.read(novelSourceProvider(pluginIdOf(item.sourceId)).future);
-      final details = await source.details(item.url);
-      var chapters = details.chapters;
-      // Plugin berhalaman: bab terbaru ada di halaman terakhir.
-      if (details.totalPages > 1) {
-        chapters = await source.chapterPage(item.url, details.totalPages);
-      } else if (chapters.isEmpty && source.hasParsePage) {
-        chapters = await source.chapterPage(item.url, 1);
-      }
-      return [for (final c in chapters) (url: c.path, name: c.name)];
-    }
-    final source = ref.read(sourceProvider(item.sourceId));
-    if (source == null) throw SourceException(SourceErrorKind.unknown, detail: 'Sumber ${item.sourceId} tidak ada.');
-    final details = await source.details(item.url);
-    return [for (final c in details.chapters) (url: c.url, name: c.name)];
-  }
-
   /// Bandingkan bab terbaru dengan yang sudah diketahui.
-  static List<({String url, String name})> newChapters(
+  static List<({String url, String name, double? number})> newChapters(
     Set<String>? known,
-    List<({String url, String name})> fetched,
+    List<({String url, String name, double? number})> fetched,
   ) {
     if (known == null || fetched.isEmpty) return const [];
     final fresh = fetched.where((c) => !known.contains(c.url)).toList();
@@ -250,7 +228,7 @@ class LibraryUpdatesNotifier extends Notifier<LibraryUpdatesState> {
       while (queue.isNotEmpty && !_cancel) {
         final item = queue.removeAt(0);
         try {
-          final fetched = await _fetchChapters(item).timeout(_timeout);
+          final fetched = await fetchLibraryChapters(ref.read, item).timeout(_timeout);
           final now = DateTime.now();
           for (final c in newChapters(_known[item.key], fetched)) {
             found.add(LibraryUpdate(item: item, chapterUrl: c.url, chapterName: c.name, foundAt: now));
