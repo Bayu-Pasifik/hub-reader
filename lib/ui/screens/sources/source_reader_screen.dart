@@ -10,6 +10,7 @@ import '../../../sources/models.dart';
 import '../../../sources/source.dart';
 import '../../../state/reader_settings_provider.dart';
 import '../../../state/source_library_providers.dart';
+import '../../../state/tracker_providers.dart';
 import '../../../state/source_providers.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/state_views.dart';
@@ -86,7 +87,8 @@ class _SourceReaderScreenState extends ConsumerState<SourceReaderScreen> {
             initialValue: mode,
             onSelected: (m) => ref.read(readerModeProvider.notifier).set(m),
             itemBuilder: (_) => [
-              for (final m in ReaderMode.values) CheckedPopupMenuItem(value: m, checked: m == mode, child: Text(m.label)),
+              for (final m in ReaderMode.values)
+                CheckedPopupMenuItem(value: m, checked: m == mode, child: Text(m.label)),
             ],
           ),
         ],
@@ -191,6 +193,14 @@ class _PagesState extends ConsumerState<_Pages> {
     if (page == _saved || _total == 0) return;
     _saved = page;
     ref.read(sourceProgressProvider.notifier).update(widget.series, widget.chapter.url, page: page, total: _total);
+    // Halaman terakhir: bab selesai, kirim progres ke tracker yang tertaut.
+    if (page >= _total - 1) {
+      ref.read(trackLinksProvider.notifier).chapterRead(
+            '${widget.series.sourceId}|${widget.series.url}',
+            widget.chapter.name,
+            number: widget.chapter.number,
+          );
+    }
   }
 
   void _onScroll() {
@@ -256,18 +266,18 @@ class _PagesState extends ConsumerState<_Pages> {
       );
     }
     return CachedNetworkImage(
-        imageUrl: url,
-        httpHeaders: headers,
-        fit: fit,
-        placeholder: (_, __) => const SizedBox(
-          height: 400,
-          child: Center(child: CircularProgressIndicator()),
-        ),
-        errorWidget: (_, __, ___) => SizedBox(
-          height: 200,
-          child: Center(child: Text('Halaman ${i + 1} gagal dimuat')),
-        ),
-      );
+      imageUrl: url,
+      httpHeaders: headers,
+      fit: fit,
+      placeholder: (_, __) => const SizedBox(
+        height: 400,
+        child: Center(child: CircularProgressIndicator()),
+      ),
+      errorWidget: (_, __, ___) => SizedBox(
+        height: 200,
+        child: Center(child: Text('Halaman ${i + 1} gagal dimuat')),
+      ),
+    );
   }
 
   @override

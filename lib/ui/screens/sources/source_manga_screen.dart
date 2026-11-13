@@ -12,6 +12,7 @@ import '../../../state/source_providers.dart';
 import '../../router.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/state_views.dart';
+import '../tracker_screens.dart';
 
 /// Detail seri dari sumber on-device + daftar bab.
 class SourceMangaScreen extends ConsumerStatefulWidget {
@@ -124,8 +125,33 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
             PopupMenuButton<String>(
               onSelected: (v) {
                 if (v == 'migrate') context.push(migrateLocation(widget.sourceId, widget.url, loaded.title));
+                if (v == 'track') {
+                  final progress = ref.read(sourceSeriesProgressProvider(_key));
+                  int? local;
+                  for (final c in loaded.chapters) {
+                    final n = c.number;
+                    if (n != null && (progress[c.url]?.done ?? false) && (local == null || n > local)) {
+                      local = n.floor();
+                    }
+                  }
+                  showModalBottomSheet<void>(
+                    context: context,
+                    useRootNavigator: true,
+                    showDragHandle: true,
+                    isScrollControlled: true,
+                    builder: (_) => TrackingSheet(
+                      seriesKey: '${widget.sourceId}|${widget.url}',
+                      title: loaded.title,
+                      novel: false,
+                      localProgress: local,
+                    ),
+                  );
+                }
               },
-              itemBuilder: (_) => const [PopupMenuItem(value: 'migrate', child: Text('Pindah sumber'))],
+              itemBuilder: (_) => const [
+                PopupMenuItem(value: 'track', child: Text('Tracking')),
+                PopupMenuItem(value: 'migrate', child: Text('Pindah sumber')),
+              ],
             ),
         ],
       ),

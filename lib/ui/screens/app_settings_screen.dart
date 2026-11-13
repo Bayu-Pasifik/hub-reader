@@ -10,6 +10,8 @@ import '../../core/config/app_config.dart';
 import '../../state/app_settings_provider.dart';
 import '../../state/core_providers.dart';
 import '../../state/download_providers.dart';
+import '../../state/tracker_providers.dart';
+import 'tracker_screens.dart';
 import '../widgets/app_lock.dart';
 
 /// Ukuran folder (byte), 0 bila tidak ada.
@@ -192,6 +194,8 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
             value: s.incognito,
             onChanged: (v) => n.update((x) => x.copyWith(incognito: v)),
           ),
+          header('Tracker'),
+          for (final t in ref.watch(trackersProvider)) TrackerSettingsTile(tracker: t),
           header('Penyimpanan'),
           ListTile(
             leading: const Icon(Icons.image_outlined),

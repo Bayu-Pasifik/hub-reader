@@ -192,6 +192,14 @@ ukuran huruf, jarak baris, margin, serif, rata kiri-kanan), menyimpan posisi bac
 (persen), lalu pindah bab sebelumnya/berikutnya, termasuk lintas halaman untuk plugin
 berhalaman (`parsePage`). Favorit & riwayat novel berbagi tab dengan komik (id `lnr:<plugin>`).
 
+**Tracker AniList & MyAnimeList** (`lib/trackers/`): buat aplikasi OAuth sendiri (AniList: redirect
+`https://anilist.co/api/v2/oauth/pin`; MAL: tipe "other", redirect bebas), isi Client ID di Pengaturan →
+Tracker lalu login di WebView (AniList implicit grant, MAL PKCE plain + refresh token). Di detail seri,
+menu **Tracking** menautkan seri ke entri tracker (cari judul; novel dicari sebagai NOVEL/light novel),
+mengubah progres & status, atau melepas tautan. Progres naik otomatis saat bab selesai dibaca (halaman
+terakhir komik / akhir bab novel / tombol bab berikutnya), tidak pernah turun, dan jadi "Selesai" saat
+mencapai jumlah bab. Token tracker termasuk data rahasia di cadangan.
+
 **Mode samaran** (ikon mata di Riwayat, atau Pengaturan): riwayat dan posisi baca otomatis tidak
 dicatat; tanda dibaca manual tetap bisa. Bilah kecil di atas navigasi menandai mode ini aktif.
 

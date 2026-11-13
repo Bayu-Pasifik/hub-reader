@@ -16,6 +16,7 @@ import '../../../state/app_settings_provider.dart';
 import '../../../sources/models.dart';
 import '../../../state/novel_providers.dart';
 import '../../../state/source_library_providers.dart';
+import '../../../state/tracker_providers.dart';
 import '../../router.dart';
 import '../../widgets/novel_html.dart';
 import '../../widgets/source_widgets.dart';
@@ -169,9 +170,21 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
   }
 
   /// Progres disimpan sebagai persen (0–99), total 100; 99 = selesai.
+  /// Bab ini selesai: kirim progres ke tracker yang tertaut (sekali per bab).
+  String? _trackedFor;
+  void _trackRead() {
+    if (_trackedFor == _chapterPath) return;
+    _trackedFor = _chapterPath;
+    final c = _chapters.where((c) => c.path == _chapterPath).firstOrNull;
+    final name = c?.name ?? ref.read(sourceLastReadProvider(_libKey))?.chapterName;
+    if (name == null) return;
+    ref.read(trackLinksProvider.notifier).chapterRead('${_libKey.sourceId}|${_libKey.url}', name, number: c?.number);
+  }
+
   void _saveProgress() {
     if (!_scroll.hasClients || _restoredFor != _chapterPath) return;
     final percent = (_fraction * 100).floor().clamp(0, 99);
+    if (percent >= 99) _trackRead();
     ref.read(sourceProgressProvider.notifier).update(_libKey, _chapterPath, page: percent, total: 100);
   }
 
@@ -291,6 +304,7 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
     // Maju ke bab berikutnya = bab ini selesai dibaca.
     if (delta > 0 && !ref.read(appSettingsProvider).incognito) {
       ref.read(sourceProgressProvider.notifier).setDone(_libKey, _chapterPath, done: true);
+      _trackRead();
     }
     final i = chapters.indexWhere((c) => c.path == _chapterPath);
     final j = i + delta;

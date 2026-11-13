@@ -7,11 +7,13 @@ import '../../../data/models/download.dart';
 import '../../../data/models/source_library.dart';
 import '../../../novels/novel_models.dart';
 import '../../../novels/novel_source.dart';
+import '../../../sources/html_utils.dart';
 import '../../../sources/models.dart';
 import '../../../state/core_providers.dart';
 import '../../../state/download_providers.dart';
 import '../../../state/novel_providers.dart';
 import '../../../state/source_library_providers.dart';
+import '../tracker_screens.dart';
 import '../../router.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/state_views.dart';
@@ -172,6 +174,28 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
     );
   }
 
+  void _openTracking(NovelDetails novel) {
+    final progress = ref.read(sourceSeriesProgressProvider(_libKey));
+    int? local;
+    for (final c in _visible) {
+      if (!(progress[c.path]?.done ?? false)) continue;
+      final n = c.number ?? parseChapterNumber(c.name);
+      if (n != null && (local == null || n > local)) local = n.floor();
+    }
+    showModalBottomSheet<void>(
+      context: context,
+      useRootNavigator: true,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (_) => TrackingSheet(
+        seriesKey: '${novelLibraryId(widget.pluginId)}|${widget.path}',
+        title: novel.name,
+        novel: true,
+        localProgress: local,
+      ),
+    );
+  }
+
   Future<void> _openWeb(NovelSource source) async {
     final url = await source.webUrl(widget.path, isNovel: true);
     if (!mounted) return;
@@ -231,12 +255,14 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
                     PopupMenuButton<String>(
                       onSelected: (v) {
                         if (v == 'web') _openWeb(source);
+                        if (v == 'track' && loaded != null) _openTracking(loaded);
                         if (v == 'migrate' && loaded != null) {
                           context.push(migrateLocation(novelLibraryId(widget.pluginId), widget.path, loaded.name));
                         }
                       },
                       itemBuilder: (_) => const [
                         PopupMenuItem(value: 'web', child: Text('Buka di WebView')),
+                        PopupMenuItem(value: 'track', child: Text('Tracking')),
                         PopupMenuItem(value: 'migrate', child: Text('Pindah sumber')),
                       ],
                     ),

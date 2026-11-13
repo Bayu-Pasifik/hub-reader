@@ -19,7 +19,12 @@ class AppBackup {
   static const _neverKeys = {'downloads.index.v1'};
 
   /// Berisi sesi login / cookie situs.
-  static bool isSecretKey(String key) => key == 'sources.cookies.v1' || key.startsWith('lnr.kv.');
+  static bool isSecretKey(String key) =>
+      key == 'sources.cookies.v1' ||
+      key.startsWith('lnr.kv.') ||
+      // token login tracker (bukan tautan seri: tracker.links.v1)
+      key.startsWith('tracker.anilist.') ||
+      key.startsWith('tracker.mal.');
 
   static Future<File> _updatesFile() async =>
       File('${(await getApplicationSupportDirectory()).path}${Platform.pathSeparator}library_updates.json');
