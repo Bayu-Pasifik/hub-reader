@@ -112,6 +112,10 @@ Batasan saat ini:
   dan indeksnya ada di SharedPreferences (`downloads.index.v1`). Reader otomatis memakai
   file lokal bila babnya lengkap terunduh. Antrean disimpan (`downloads.queue.v1`) dan
   dilanjutkan otomatis saat aplikasi dibuka lagi; bab yang terputus diulang tanpa mengunduh ulang halaman yang sudah ada.
+- Reader komik: ikon pengaturan di reader berisi mode baca, **Potong tepi kosong**, dan filter warna
+  (hitam putih, balik warna, redupkan). Mode dan potong tepi bisa disimpan khusus per seri
+  (`reader.series.v1`); filter warna berlaku umum (`reader.display.v1`). Deteksi tepi memakai salinan
+  gambar selebar 256 px di isolate. Di mode webtoon hanya kiri-kanan yang dipotong.
 - Domain situs sering pindah. Ketuk ikon gir di tab Sumber untuk mengganti domain tanpa
   build ulang (ada tombol Tes koneksi). Host lama diingat, jadi URL favorit, riwayat, dan
   unduhan dari domain lama otomatis dialihkan (`HttpSource.rewriteToCurrentHost`).

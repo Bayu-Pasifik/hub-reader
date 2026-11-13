@@ -13,6 +13,8 @@ import '../../../state/reading_stats_provider.dart';
 import '../../../state/source_library_providers.dart';
 import '../../../state/tracker_providers.dart';
 import '../../../state/source_providers.dart';
+import '../../widgets/cropped_page_image.dart';
+import '../../widgets/reader_settings_sheet.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/state_views.dart';
 
@@ -55,7 +57,9 @@ class _SourceReaderScreenState extends ConsumerState<SourceReaderScreen> {
   Widget build(BuildContext context) {
     final source = ref.watch(sourceProvider(widget.sourceId));
     final details = ref.watch(sourceDetailsProvider((sourceId: widget.sourceId, url: widget.mangaUrl)));
-    final mode = ref.watch(readerModeProvider);
+    final seriesKey = seriesReaderKey(widget.sourceId, widget.mangaUrl);
+    final reader = ref.watch(effectiveReaderProvider(seriesKey));
+    final mode = reader.mode;
 
     // Daftar situs: terbaru → terlama. "Berikutnya" = indeks lebih kecil.
     final chapters = details.valueOrNull?.chapters ?? const <SourceChapter>[];
@@ -82,15 +86,10 @@ class _SourceReaderScreenState extends ConsumerState<SourceReaderScreen> {
           ],
         ),
         actions: [
-          PopupMenuButton<ReaderMode>(
-            tooltip: 'Mode baca',
-            icon: const Icon(Icons.chrome_reader_mode_outlined),
-            initialValue: mode,
-            onSelected: (m) => ref.read(readerModeProvider.notifier).set(m),
-            itemBuilder: (_) => [
-              for (final m in ReaderMode.values)
-                CheckedPopupMenuItem(value: m, checked: m == mode, child: Text(m.label)),
-            ],
+          IconButton(
+            tooltip: 'Pengaturan baca',
+            icon: const Icon(Icons.tune),
+            onPressed: () => showReaderSettingsSheet(context, seriesKey),
           ),
         ],
       ),
@@ -104,6 +103,7 @@ class _SourceReaderScreenState extends ConsumerState<SourceReaderScreen> {
               chapter: chapter,
               next: next,
               mode: mode,
+              display: reader.display,
               onNext: next == null ? null : () => _goTo(next),
             ),
       bottomNavigationBar: index < 0
@@ -142,6 +142,7 @@ class _Pages extends ConsumerStatefulWidget {
     required this.chapter,
     required this.next,
     required this.mode,
+    required this.display,
     required this.onNext,
   });
 
@@ -150,6 +151,7 @@ class _Pages extends ConsumerStatefulWidget {
   final SourceChapter chapter;
   final SourceChapter? next;
   final ReaderMode mode;
+  final ReaderDisplay display;
   final VoidCallback? onNext;
 
   @override
@@ -158,6 +160,10 @@ class _Pages extends ConsumerStatefulWidget {
 
 class _PagesState extends ConsumerState<_Pages> {
   final _positions = ItemPositionsListener.create();
+
+  /// Menjaga state PageView/list saat filter warna dinyalakan/dimatikan
+  /// (pembungkus filter mengubah bentuk tree).
+  final _bodyKey = GlobalKey();
   PageController? _pageController;
   int _current = 0;
   int? _saved;
@@ -267,6 +273,20 @@ class _PagesState extends ConsumerState<_Pages> {
   }
 
   Widget _image(String url, int i, Map<String, String> headers, BoxFit fit) {
+    if (widget.display.cropBorders) {
+      final local = !url.startsWith('http');
+      return CroppedPageImage(
+        cacheKey: url,
+        image: local ? FileImage(File(url)) : CachedNetworkImageProvider(url, headers: headers),
+        vertical: widget.mode.isPaged,
+        placeholder: (_) => const SizedBox(height: 400, child: Center(child: CircularProgressIndicator())),
+        error: (_) => SizedBox(
+          height: 200,
+          child: Center(
+              child: Text(local ? 'Halaman ${i + 1} gagal dibaca dari unduhan' : 'Halaman ${i + 1} gagal dimuat')),
+        ),
+      );
+    }
     // Bab yang diunduh: path absolut di penyimpanan aplikasi.
     if (!url.startsWith('http')) {
       return Image.file(
@@ -358,7 +378,7 @@ class _PagesState extends ConsumerState<_Pages> {
 
         return Stack(
           children: [
-            Positioned.fill(child: body),
+            Positioned.fill(child: applyReaderFilters(widget.display, KeyedSubtree(key: _bodyKey, child: body))),
             Positioned(
               right: 12,
               bottom: 12,
