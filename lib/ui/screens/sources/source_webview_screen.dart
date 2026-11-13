@@ -1,25 +1,34 @@
 import 'dart:async';
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../../core/platform/webview_bridge.dart';
 import '../../../sources/source.dart';
+import '../../../state/novel_providers.dart';
 
 /// Membuka situs di WebView agar pengguna bisa melewati verifikasi
 /// Cloudflare. Begitu cookie `cf_clearance` muncul dan halaman bukan lagi
 /// "Just a moment...", cookie disalin ke penyimpanan sumber lalu layar
 /// ditutup dengan hasil `true`.
-class SourceWebViewScreen extends StatefulWidget {
-  const SourceWebViewScreen({super.key, required this.url});
+///
+/// Dengan [storagePluginId] (plugin novel `webStorageUtilized`, mis. login
+/// RanobeLib) layar tidak menutup sendiri: pengguna login dulu, lalu saat
+/// keluar isi `localStorage`/`sessionStorage` disalin ke plugin.
+class SourceWebViewScreen extends ConsumerStatefulWidget {
+  const SourceWebViewScreen({super.key, required this.url, this.storagePluginId});
 
   final String url;
+  final String? storagePluginId;
 
   @override
-  State<SourceWebViewScreen> createState() => _SourceWebViewScreenState();
+  ConsumerState<SourceWebViewScreen> createState() => _SourceWebViewScreenState();
 }
 
-class _SourceWebViewScreenState extends State<SourceWebViewScreen> {
+class _SourceWebViewScreenState extends ConsumerState<SourceWebViewScreen> {
   late final WebViewController _controller;
   Timer? _poll;
   int _progress = 0;
@@ -60,8 +69,10 @@ class _SourceWebViewScreenState extends State<SourceWebViewScreen> {
     }
   }
 
+  bool get _keepsStorage => widget.storagePluginId != null;
+
   Future<void> _check() async {
-    if (_finished) return;
+    if (_finished || _keepsStorage) return;
     final cookies = await WebViewBridge.cookiesFor(_uri);
     if (cookies == null || !cookies.contains('cf_clearance')) return;
     if (await _stillChallenged()) return;
@@ -76,46 +87,94 @@ class _SourceWebViewScreenState extends State<SourceWebViewScreen> {
     _poll?.cancel();
     final value = cookies ?? await WebViewBridge.cookiesFor(_uri);
     HttpSource.cookies.save(_uri, value);
+    final copied = await _copyWebStorage();
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(auto ? 'Verifikasi berhasil, memuat ulang…' : 'Cookie disimpan, memuat ulang…'),
+      content: Text(
+        auto
+            ? 'Verifikasi berhasil, memuat ulang…'
+            : copied
+                ? 'Sesi situs disimpan, memuat ulang…'
+                : 'Cookie disimpan, memuat ulang…',
+      ),
       duration: const Duration(seconds: 2),
     ));
     Navigator.of(context).pop(true);
   }
 
+  /// Hasil `runJavaScriptReturningResult` di Android berupa JSON dari nilai
+  /// JS; string ikut dikutip, jadi di-decode sekali lagi.
+  static String? _jsString(Object? result) {
+    if (result is! String) return null;
+    try {
+      final decoded = jsonDecode(result);
+      return decoded is String ? decoded : result;
+    } on FormatException {
+      return result;
+    }
+  }
+
+  /// Salin storage halaman ke plugin. true bila tersalin.
+  Future<bool> _copyWebStorage() async {
+    final pluginId = widget.storagePluginId;
+    if (pluginId == null) return false;
+    final source = ref.read(loadedNovelSourceProvider(pluginId));
+    if (source == null) return false;
+    try {
+      final local = _jsString(await _controller.runJavaScriptReturningResult(
+        'JSON.stringify(Object.assign({}, window.localStorage))',
+      ));
+      final session = _jsString(await _controller.runJavaScriptReturningResult(
+        'JSON.stringify(Object.assign({}, window.sessionStorage))',
+      ));
+      source.saveWebStorage(local: local, session: session);
+      return local != null || session != null;
+    } catch (_) {
+      return false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Verifikasi situs'),
-            Text(_uri.host, style: Theme.of(context).textTheme.bodySmall),
+    return PopScope(
+      canPop: !_keepsStorage || _finished,
+      onPopInvokedWithResult: (didPop, _) {
+        // Tombol kembali pada mode login: simpan sesi dulu.
+        if (!didPop) _complete(null, auto: false);
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(_keepsStorage ? 'Login / verifikasi situs' : 'Verifikasi situs'),
+              Text(_uri.host, style: Theme.of(context).textTheme.bodySmall),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => _complete(null, auto: false),
+              child: const Text('Selesai'),
+            ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => _complete(null, auto: false),
-            child: const Text('Selesai'),
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          if (_progress < 100) LinearProgressIndicator(value: _progress / 100),
-          Container(
-            width: double.infinity,
-            color: Theme.of(context).colorScheme.surfaceContainerHigh,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            child: Text(
-              'Selesaikan verifikasi bila diminta. Layar ini menutup otomatis setelah berhasil.',
-              style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant),
+        body: Column(
+          children: [
+            if (_progress < 100) LinearProgressIndicator(value: _progress / 100),
+            Container(
+              width: double.infinity,
+              color: Theme.of(context).colorScheme.surfaceContainerHigh,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              child: Text(
+                _keepsStorage
+                    ? 'Login di situs bila perlu, lalu ketuk Selesai. Sesi login disalin ke plugin.'
+                    : 'Selesaikan verifikasi bila diminta. Layar ini menutup otomatis setelah berhasil.',
+                style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant),
+              ),
             ),
-          ),
-          Expanded(child: WebViewWidget(controller: _controller)),
-        ],
+            Expanded(child: WebViewWidget(controller: _controller)),
+          ],
+        ),
       ),
     );
   }

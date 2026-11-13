@@ -213,6 +213,33 @@ const bytesToB64 = bytes => {
 if (typeof g.TextEncoder === 'undefined') g.TextEncoder = TextEncoderPolyfill;
 if (typeof g.TextDecoder === 'undefined') g.TextDecoder = TextDecoderPolyfill;
 
+// QuickJS is built without Intl. RanobeLib only reads
+// `Intl.DateTimeFormat().resolvedOptions().timeZone` and falls back to its
+// own default when it is missing, so a minimal shape is enough.
+if (typeof g.Intl === 'undefined') {
+  const pad = n => String(n).padStart(2, '0');
+  function DateTimeFormat(locale) {
+    if (!(this instanceof DateTimeFormat)) return new DateTimeFormat(locale);
+    this._locale = locale || 'en-US';
+  }
+  DateTimeFormat.prototype.resolvedOptions = function () {
+    return { locale: this._locale, calendar: 'gregory', numberingSystem: 'latn', timeZone: undefined };
+  };
+  DateTimeFormat.prototype.format = function (date) {
+    const d = date === undefined ? new Date() : new Date(date);
+    return `${pad(d.getMonth() + 1)}/${pad(d.getDate())}/${d.getFullYear()}`;
+  };
+  function NumberFormat(locale) {
+    if (!(this instanceof NumberFormat)) return new NumberFormat(locale);
+    this._locale = locale || 'en-US';
+  }
+  NumberFormat.prototype.resolvedOptions = function () {
+    return { locale: this._locale, numberingSystem: 'latn' };
+  };
+  NumberFormat.prototype.format = n => String(n);
+  g.Intl = { DateTimeFormat, NumberFormat };
+}
+
 // Minimal Buffer, enough for `Buffer.from(x).toString('base64')` style code.
 if (typeof g.Buffer === 'undefined') {
   class MiniBuffer extends Uint8Array {

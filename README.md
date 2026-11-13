@@ -292,8 +292,17 @@ Hasil uji langsung dari PC (13 Nov 2026, `node check.mjs`): **190 dari 371 plugi
 (umumnya bisa diatasi di HP lewat "Buka di WebView"), domain mati atau sertifikat TLS rusak,
 dan daftar kosong (situs berubah atau memblokir; hasilnya sama bila plugin dijalankan di Node biasa).
 
-Batasan: `fetchProto` (1 plugin) belum didukung; plugin yang butuh login/WebView storage
-(`webStorageUtilized`) belum didukung; charset non-UTF-8 selain Latin-1 didekode sebagai UTF-8.
+Kompatibilitas runtime:
+- `fetchProto` dari `@libs/fetch` tidak dipakai plugin mana pun (Wuxia World membuat frame protobuf
+  sendiri lewat `fetchApi`), jadi tetap ditolak.
+- Plugin `webStorageUtilized` (RanobeLib, Linovelib, Novel Fire, Novel Phoenix): **Buka situs di WebView**
+  tidak menutup sendiri. Login bila perlu, lalu ketuk Selesai atau kembali. Isi `localStorage`/`sessionStorage`
+  disalin ke `<id>_LocalStorage`/`_SessionStorage`, sama seperti LNReader. Dari keempatnya, hanya
+  RanobeLib yang benar-benar membacanya (token login).
+- Charset: GBK/GB2312/GB18030, Shift_JIS, EUC-JP, windows-125x, dan ISO-8859 didekode lewat paket
+  `charset`. EUC-KR tetap UTF-8 karena decoder paket itu salah (tidak ada plugin yang memakainya).
+- QuickJS tidak punya `Intl`; runtime menyediakan `Intl.DateTimeFormat`/`NumberFormat` minimal
+  (dipakai RanobeLib untuk zona waktu).
 
 ## Menjalankan di Android
 

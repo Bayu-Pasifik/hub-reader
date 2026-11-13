@@ -18,6 +18,7 @@ class NovelSource {
         settings = NovelPluginSetting.parseAll(meta['pluginSettings']),
         hasParsePage = meta['hasParsePage'] == true,
         hasResolveUrl = meta['hasResolveUrl'] == true,
+        webStorageUtilized = meta['webStorageUtilized'] == true,
         imageHeaders = {
           for (final e in asMap(asMap(meta['imageRequestInit'])['headers']).entries) e.key: '${e.value}',
         };
@@ -33,6 +34,7 @@ class NovelSource {
         settings = const [],
         hasParsePage = false,
         hasResolveUrl = false,
+        webStorageUtilized = false,
         imageHeaders = const {};
 
   final NovelPluginInfo info;
@@ -47,6 +49,10 @@ class NovelSource {
   final List<NovelPluginSetting> settings;
   final bool hasParsePage;
   final bool hasResolveUrl;
+
+  /// Plugin membaca `localStorage`/`sessionStorage` situs (mis. token login
+  /// RanobeLib). Diisi dari WebView, lihat [saveWebStorage].
+  final bool webStorageUtilized;
 
   /// Header untuk memuat sampul (`imageRequestInit.headers`).
   final Map<String, String> imageHeaders;
@@ -71,6 +77,13 @@ class NovelSource {
       }
     }
     return setting.normalize(value);
+  }
+
+  /// Simpan isi `localStorage`/`sessionStorage` situs (JSON objek) ke key
+  /// yang dibaca `@libs/storage` plugin, sama seperti aplikasi LNReader.
+  void saveWebStorage({String? local, String? session}) {
+    if (local != null) engine.writeStorage('${id}_LocalStorage', local);
+    if (session != null) engine.writeStorage('${id}_SessionStorage', session);
   }
 
   /// Simpan pengaturan dengan format `storage.set(key, value)` milik plugin.
@@ -110,7 +123,8 @@ class NovelSource {
   Future<Map<String, Object?>> detailsRaw(String path) async => asMap(await _call('parseNovel', [path]));
 
   /// Bab di halaman [page] (hanya plugin berhalaman).
-  Future<List<NovelChapter>> chapterPage(String path, int page) async => parseChapterList(await chapterPageRaw(path, page));
+  Future<List<NovelChapter>> chapterPage(String path, int page) async =>
+      parseChapterList(await chapterPageRaw(path, page));
 
   /// Hasil mentah `parsePage` (untuk cache offline).
   Future<Map<String, Object?>> chapterPageRaw(String path, int page) async =>

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:charset/charset.dart';
 import 'package:dio/dio.dart';
 
 /// Request `fetch()` dari plugin. Data polos supaya bisa dikirim antar isolate.
@@ -182,11 +183,19 @@ class LnFetcher {
   }
 }
 
+const _brokenCharsets = {'euc-kr', 'euckr', 'ks_c_5601-1987', 'cp949', 'windows-949'};
+
 /// Decode body sesuai charset; tidak dikenal → UTF-8 toleran.
+///
+/// Selain bawaan `dart:convert` (Latin-1, ASCII), paket `charset` menangani
+/// GBK/GB2312/GB18030, Shift_JIS, EUC-JP, dan windows-125x. EUC-KR sengaja
+/// tidak: decoder paket itu salah (한국 → ꁐ蝡), jadi tetap UTF-8 toleran.
 String decodeBody(List<int> bytes, String? charset) {
-  final c = charset?.toLowerCase();
-  if (c == null || c == 'utf-8' || c == 'utf8') return utf8.decode(bytes, allowMalformed: true);
-  final encoding = Encoding.getByName(c);
+  final c = charset?.trim().replaceAll(RegExp('["\']'), '').toLowerCase();
+  if (c == null || c.isEmpty || c == 'utf-8' || c == 'utf8' || _brokenCharsets.contains(c)) {
+    return utf8.decode(bytes, allowMalformed: true);
+  }
+  final encoding = Charset.getByName(c) is GbkCodec ? const GbkCodec(allowMalformed: true) : Charset.getByName(c);
   if (encoding == null || encoding == utf8) return utf8.decode(bytes, allowMalformed: true);
   try {
     return encoding.decode(bytes);

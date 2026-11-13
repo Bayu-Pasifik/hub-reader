@@ -545,7 +545,7 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
                               : () async {
                                   final url = await source.webUrl(_chapterPath, isNovel: false);
                                   if (!context.mounted) return;
-                                  final ok = await context.push<bool>(sourceWebViewLocation(url));
+                                  final ok = await context.push<bool>(sourceWebViewLocation(url, storagePluginId: source.webStorageUtilized ? source.id : null));
                                   if (ok == true) {
                                     ref.invalidate(
                                         novelChapterProvider((pluginId: widget.pluginId, path: _chapterPath)));

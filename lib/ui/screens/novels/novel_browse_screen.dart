@@ -127,7 +127,7 @@ class _NovelBrowseScreenState extends ConsumerState<NovelBrowseScreen> {
               onSelected: (v) async {
                 if (v == 'settings') return _openSettings(source);
                 if (v == 'web') {
-                  final ok = await context.push<bool>(sourceWebViewLocation(source.site));
+                  final ok = await context.push<bool>(sourceWebViewLocation(source.site, storagePluginId: source.webStorageUtilized ? source.id : null));
                   if (ok == true) ref.invalidate(novelListProvider);
                 }
               },

@@ -54,8 +54,12 @@ String novelGlobalSearchLocation([String query = '']) =>
 String migrateLocation(String sourceId, String url, String title) =>
     Uri(path: '/migrate', queryParameters: {'source': sourceId, 'url': url, 'title': title}).toString();
 
-String sourceWebViewLocation(String url) =>
-    Uri(path: '/webview', queryParameters: {'url': url}).toString();
+/// [storagePluginId]: plugin novel yang membaca `localStorage` situs; isi
+/// storage WebView disalin ke plugin saat layar ditutup.
+String sourceWebViewLocation(String url, {String? storagePluginId}) => Uri(
+      path: '/webview',
+      queryParameters: {'url': url, if (storagePluginId != null) 'plugin': storagePluginId},
+    ).toString();
 
 /// Rute:
 ///   /sources, /favorites, /history         → tab (sumber on-device)
@@ -130,7 +134,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/webview',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (_, state) => SourceWebViewScreen(url: state.uri.queryParameters['url'] ?? ''),
+        builder: (_, state) => SourceWebViewScreen(
+          url: state.uri.queryParameters['url'] ?? '',
+          storagePluginId: state.uri.queryParameters['plugin'],
+        ),
       ),
       GoRoute(
         path: '/novel-search',

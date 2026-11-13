@@ -202,7 +202,7 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
   Future<void> _openWeb(NovelSource source) async {
     final url = await source.webUrl(widget.path, isNovel: true);
     if (!mounted) return;
-    final ok = await context.push<bool>(sourceWebViewLocation(url));
+    final ok = await context.push<bool>(sourceWebViewLocation(url, storagePluginId: source.webStorageUtilized ? source.id : null));
     if (ok == true) ref.invalidate(novelDetailsProvider(_key));
   }
 
