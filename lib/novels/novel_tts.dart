@@ -141,23 +141,23 @@ List<String> splitForTts(String text, {int max = 3000}) {
   return out;
 }
 
-/// Kode bahasa TTS dari nama bahasa manifest LNReader.
-String? ttsLanguageFor(String lang) {
-  final l = lang.toLowerCase();
-  if (l.contains('indonesia')) return 'id-ID';
-  if (l.contains('english')) return 'en-US';
-  if (l.contains('español')) return 'es-ES';
-  if (l.contains('português')) return 'pt-BR';
-  if (l.contains('français')) return 'fr-FR';
-  if (l.contains('русский')) return 'ru-RU';
-  if (l.contains('türkçe')) return 'tr-TR';
-  if (l.contains('tiếng việt')) return 'vi-VN';
-  if (l.contains('日本語')) return 'ja-JP';
-  if (l.contains('한국어')) return 'ko-KR';
-  if (l.contains('中文')) return 'zh-CN';
-  if (l.contains('العربية')) return 'ar';
-  if (l.contains('ไทย')) return 'th-TH';
-  if (l.contains('polski')) return 'pl-PL';
-  if (l.contains('українська')) return 'uk-UA';
-  return null;
-}
+/// Locale TTS dari kode bahasa plugin (`NovelPluginInfo.lang`, mis. `id`).
+String? ttsLanguageFor(String lang) => switch (lang) {
+      'id' => 'id-ID',
+      'en' => 'en-US',
+      'es' => 'es-ES',
+      'pt' => 'pt-BR',
+      'fr' => 'fr-FR',
+      'ru' => 'ru-RU',
+      'tr' => 'tr-TR',
+      'vi' => 'vi-VN',
+      'ja' => 'ja-JP',
+      'ko' => 'ko-KR',
+      'zh' => 'zh-CN',
+      'ar' => 'ar',
+      'th' => 'th-TH',
+      'pl' => 'pl-PL',
+      'uk' => 'uk-UA',
+      'bn' => 'bn-IN',
+      _ => null,
+    };

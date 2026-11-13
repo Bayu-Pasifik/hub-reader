@@ -11,9 +11,9 @@ void main() {
     expect(parts.join(), long);
   });
 
-  test('ttsLanguageFor maps LNReader language names', () {
-    expect(ttsLanguageFor('Bahasa Indonesia'), 'id-ID');
-    expect(ttsLanguageFor('English'), 'en-US');
-    expect(ttsLanguageFor('Klingon'), isNull);
+  test('ttsLanguageFor maps plugin language codes', () {
+    expect(ttsLanguageFor('id'), 'id-ID');
+    expect(ttsLanguageFor('en'), 'en-US');
+    expect(ttsLanguageFor('all'), isNull);
   });
 }
