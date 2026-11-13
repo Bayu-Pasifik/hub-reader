@@ -99,12 +99,15 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
                   health.stop();
                 case 'hide':
                   ref.read(novelHideBrokenProvider.notifier).set(!ref.read(novelHideBrokenProvider));
+                case 'repos':
+                  context.push('/novel-repos');
                 case 'settings':
                   context.push('/app-settings');
               }
             },
             itemBuilder: (_) => [
               const PopupMenuItem(value: 'refresh', child: Text('Perbarui daftar plugin')),
+              const PopupMenuItem(value: 'repos', child: Text('Repo plugin')),
               if (ref.read(novelHealthRunProvider).running)
                 const PopupMenuItem(value: 'stop', child: Text('Hentikan pengecekan'))
               else
@@ -154,7 +157,7 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
     if (hideBroken) filtered.removeWhere((p) => !novelUsable(health[p.id]));
     final rows = <Object>[];
     if (query.isEmpty && lang == null) rows.add(LocalNovelSource.pluginInfo);
-    final used = filtered.where((p) => installed.contains(NovelPluginRepository.safeId(p.id))).toList()
+    final used = filtered.where((p) => p.orphaned || installed.contains(NovelPluginRepository.safeId(p.id))).toList()
       ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
     if (used.isNotEmpty && query.isEmpty) {
       rows.add((title: 'Pernah dibuka', count: used.length));
@@ -217,8 +220,12 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
           ),
         if (manifest.refreshError != null)
           MaterialBanner(
-            content: const Text('Gagal memperbarui daftar plugin; memakai daftar tersimpan.'),
+            content: const Text('Sebagian/semua repo plugin gagal dihubungi; memakai daftar tersimpan.'),
             actions: [
+              TextButton(
+                onPressed: () => context.push('/novel-repos'),
+                child: const Text('Repo'),
+              ),
               TextButton(
                 onPressed: () => ref.read(novelManifestProvider.notifier).refresh(),
                 child: const Text('Coba lagi'),
@@ -237,8 +244,9 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
                         return Padding(
                           padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
                           child: Text(
-                            'Plugin dari github.com/lnreader/lnreader-plugins, dijalankan langsung di HP. '
-                            'Kode plugin diunduh saat sumber pertama kali dibuka.',
+                            'Plugin dari ${ref.watch(novelReposProvider).length} repo (atur di menu › Repo plugin), '
+                            'dijalankan langsung di HP. Kode plugin diunduh saat sumber pertama kali dibuka '
+                            'dan tetap bisa dipakai walau repo hilang.',
                             style: Theme.of(context).textTheme.bodySmall,
                             textAlign: TextAlign.center,
                           ),
@@ -300,10 +308,12 @@ class _PluginTile extends ConsumerWidget {
     };
     final detail = health?.detail;
     final info = [
+      if (p.orphaned) 'Hilang dari repo, tersimpan di HP',
       if (status != null) status.label + (status != HealthStatus.ok && detail != null ? ' ($detail)' : ''),
-      p.host,
+      if (p.host.isNotEmpty) p.host,
       'v${p.version}',
     ].join(' · ');
+    final subtitleColor = color ?? (p.orphaned ? Colors.orange.shade700 : null);
     final tile = ListTile(
       leading: Badge(
         isLabelVisible: icon != null,
@@ -313,7 +323,7 @@ class _PluginTile extends ConsumerWidget {
         child: _PluginIcon(url: p.iconUrl),
       ),
       title: Text(p.name),
-      subtitle: Text(info, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: color)),
+      subtitle: Text(info, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: subtitleColor)),
       trailing: Text(p.lang.toUpperCase(), style: Theme.of(context).textTheme.labelSmall),
       onTap: () => context.push(novelBrowseLocation(p.id)),
       // Tekan lama = cek ulang plugin ini saja.

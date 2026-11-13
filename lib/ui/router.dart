@@ -6,6 +6,7 @@ import 'screens/novels/novel_browse_screen.dart';
 import 'screens/novels/novel_detail_screen.dart';
 import 'screens/novels/novel_global_search_screen.dart';
 import 'screens/novels/novel_reader_screen.dart';
+import 'screens/novels/novel_repos_screen.dart';
 import 'screens/novels/novel_sources_screen.dart';
 import 'screens/sources/downloads_screen.dart';
 import 'screens/app_settings_screen.dart';
@@ -110,6 +111,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/app-settings',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (_, __) => const AppSettingsScreen(),
+      ),
+      GoRoute(
+        path: '/novel-repos',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, __) => const NovelReposScreen(),
       ),
       GoRoute(
         path: '/backup',

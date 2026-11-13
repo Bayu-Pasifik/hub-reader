@@ -18,6 +18,8 @@ class NovelPluginInfo {
     required this.version,
     required this.url,
     this.iconUrl,
+    this.repo,
+    this.orphaned = false,
   });
 
   final String id;
@@ -32,20 +34,65 @@ class NovelPluginInfo {
   final String url;
   final String? iconUrl;
 
-  static NovelPluginInfo? tryParse(JsonMap json) {
+  /// URL manifest asal plugin ini.
+  final String? repo;
+
+  /// Plugin sudah tidak ada di repo mana pun, tapi kodenya masih tersimpan
+  /// di perangkat (mis. dihapus pemilik repo). Tetap bisa dipakai.
+  final bool orphaned;
+
+  /// [base]: URL manifest, untuk menyelesaikan `url`/`iconUrl` relatif
+  /// (repo mirror buatan sendiri).
+  static NovelPluginInfo? tryParse(JsonMap json, {String? base}) {
     final id = asString(json['id']);
     final url = asString(json['url']);
     if (id == null || url == null) return null;
+    String resolve(String u) {
+      if (base == null) return u;
+      try {
+        return Uri.parse(base).resolve(u).toString();
+      } catch (_) {
+        return u;
+      }
+    }
+
+    final icon = asString(json['iconUrl']);
     return NovelPluginInfo(
       id: id,
       name: asString(json['name']) ?? id,
       site: asString(json['site']) ?? '',
-      lang: langCodeOf(asString(json['lang']) ?? ''),
+      // `lang` di manifest berupa nama bahasa; info tersimpan sudah berupa kode.
+      lang: json['langCode'] is String ? json['langCode'] as String : langCodeOf(asString(json['lang']) ?? ''),
       version: asString(json['version']) ?? '0.0.0',
-      url: url,
-      iconUrl: asString(json['iconUrl']),
+      url: url.isEmpty ? url : resolve(url),
+      iconUrl: icon == null ? null : resolve(icon),
+      repo: asString(json['repo']) ?? base,
     );
   }
+
+  /// Bentuk tersimpan di perangkat (dibaca lagi lewat [tryParse]).
+  Map<String, Object?> toJson() => {
+        'id': id,
+        'name': name,
+        'site': site,
+        'langCode': lang,
+        'version': version,
+        'url': url,
+        if (iconUrl != null) 'iconUrl': iconUrl,
+        if (repo != null) 'repo': repo,
+      };
+
+  NovelPluginInfo asOrphan() => NovelPluginInfo(
+        id: id,
+        name: name,
+        site: site,
+        lang: lang,
+        version: version,
+        url: url,
+        iconUrl: iconUrl,
+        repo: repo,
+        orphaned: true,
+      );
 
   /// Host situs untuk ditampilkan.
   String get host => Uri.tryParse(site)?.host ?? site;

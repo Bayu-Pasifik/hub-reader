@@ -77,8 +77,11 @@ class NovelManifest {
   final List<NovelPluginInfo> plugins;
   final DateTime savedAt;
 
-  /// Gagal memperbarui (manifest lama tetap dipakai).
+  /// Gagal memperbarui (sebagian/semua repo; salinan lama tetap dipakai).
   final Object? refreshError;
+
+  /// Plugin yang sudah hilang dari repo tapi masih tersimpan di perangkat.
+  Iterable<NovelPluginInfo> get orphans => plugins.where((p) => p.orphaned);
 
   NovelPluginInfo? byId(String id) {
     for (final p in plugins) {
@@ -88,32 +91,88 @@ class NovelManifest {
   }
 }
 
+/// Daftar URL manifest repo plugin (`plugins.min.json`), urut prioritas.
+/// Bisa diganti ke mirror/fork bila repo utama hilang.
+final novelReposProvider = NotifierProvider<NovelReposNotifier, List<String>>(NovelReposNotifier.new);
+
+class NovelReposNotifier extends Notifier<List<String>> {
+  static const _key = 'novels.repos.v1';
+
+  @override
+  List<String> build() =>
+      ref.watch(sharedPreferencesProvider).getStringList(_key) ?? const [NovelPluginRepository.defaultManifestUrl];
+
+  Future<void> _save(List<String> repos) async {
+    state = List.unmodifiable(repos);
+    await ref.read(sharedPreferencesProvider).setStringList(_key, repos);
+  }
+
+  /// Normalisasi & validasi; null bila bukan URL http(s).
+  static String? normalize(String input) {
+    var url = input.trim();
+    if (url.isEmpty) return null;
+    // Tautan halaman GitHub `blob/` → file mentah.
+    final blob = RegExp(r'^https?://github\.com/([^/]+)/([^/]+)/blob/(.+)$').firstMatch(url);
+    if (blob != null) url = 'https://raw.githubusercontent.com/${blob[1]}/${blob[2]}/${blob[3]}';
+    final uri = Uri.tryParse(url);
+    if (uri == null || !(uri.isScheme('http') || uri.isScheme('https')) || uri.host.isEmpty) return null;
+    return url;
+  }
+
+  /// Error teks bila gagal, null bila berhasil.
+  Future<String?> add(String input) async {
+    final url = normalize(input);
+    if (url == null) return 'Bukan URL http(s) yang valid';
+    if (state.contains(url)) return 'Repo sudah ada';
+    await _save([...state, url]);
+    return null;
+  }
+
+  Future<void> remove(String url) => _save([...state]..remove(url));
+
+  Future<void> moveUp(String url) async {
+    final list = [...state];
+    final i = list.indexOf(url);
+    if (i <= 0) return;
+    list
+      ..removeAt(i)
+      ..insert(i - 1, url);
+    await _save(list);
+  }
+
+  Future<void> resetDefault() => _save(const [NovelPluginRepository.defaultManifestUrl]);
+}
+
 /// Daftar plugin: salinan lokal dulu (cepat & offline), lalu diperbarui dari
-/// GitHub bila sudah lama atau belum ada.
+/// repo bila sudah lama atau belum ada. Termasuk plugin "yatim" (sudah
+/// dihapus dari repo tapi kodenya tersimpan di perangkat).
 final novelManifestProvider =
     AsyncNotifierProvider<NovelManifestNotifier, NovelManifest>(NovelManifestNotifier.new);
 
 class NovelManifestNotifier extends AsyncNotifier<NovelManifest> {
   NovelPluginRepository get _repo => ref.read(novelRepositoryProvider);
+  List<String> get _repos => ref.read(novelReposProvider);
 
   @override
   Future<NovelManifest> build() async {
-    final cached = await _repo.cachedManifest();
+    ref.watch(novelReposProvider);
+    final cached = await _repo.cachedManifest(_repos);
     if (cached == null) {
-      return NovelManifest(await _repo.fetchManifest(), savedAt: DateTime.now());
+      final fresh = await _repo.fetchManifest(_repos);
+      return NovelManifest(fresh.plugins, savedAt: fresh.savedAt, refreshError: fresh.error);
     }
-    final (plugins, savedAt) = cached;
-    if (DateTime.now().difference(savedAt) > NovelPluginRepository.manifestMaxAge) {
+    if (DateTime.now().difference(cached.savedAt) > NovelPluginRepository.manifestMaxAge) {
       Future.microtask(() => refresh(silent: true));
     }
-    return NovelManifest(plugins, savedAt: savedAt);
+    return NovelManifest(cached.plugins, savedAt: cached.savedAt);
   }
 
   Future<void> refresh({bool silent = false}) async {
     final old = state.valueOrNull;
     if (!silent && old == null) state = const AsyncLoading();
     try {
-      state = AsyncData(NovelManifest(await _repo.fetchManifest(), savedAt: DateTime.now()));
+      final fresh = await _repo.fetchManifest(_repos);
+      state = AsyncData(NovelManifest(fresh.plugins, savedAt: fresh.savedAt, refreshError: fresh.error));
     } catch (e, st) {
       state = old == null
           ? AsyncError(e, st)
