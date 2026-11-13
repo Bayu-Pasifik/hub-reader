@@ -120,4 +120,42 @@ void main() {
       expect((blocks.single as TextBlock).plain, 'Satu. Dua.');
     });
   });
+
+  group('NovelPluginSetting', () {
+    final settings = NovelPluginSetting.parseAll({
+      'signInUrl': {'value': '', 'label': 'Sign-in link', 'type': 'Text'},
+      'preferredMode': {
+        'value': 'ai',
+        'label': 'Preferred translation',
+        'type': 'Select',
+        'options': [
+          {'label': 'AI', 'value': 'ai'},
+          {'label': 'Web', 'value': 'web'},
+        ],
+      },
+      'fallbackToWeb': {'value': true, 'label': 'Fallback', 'type': 'Switch'},
+      'langs': {'value': ['en'], 'label': 'Bahasa', 'type': 'CheckboxGroup', 'options': [{'label': 'EN', 'value': 'en'}]},
+      'rusak': 'bukan map',
+    });
+
+    test('parse tipe, label, opsi, default', () {
+      expect(settings.map((s) => s.key), ['signInUrl', 'preferredMode', 'fallbackToWeb', 'langs']);
+      expect(settings.map((s) => s.type), [
+        NovelSettingType.text,
+        NovelSettingType.select,
+        NovelSettingType.toggle,
+        NovelSettingType.checkboxGroup,
+      ]);
+      expect(settings[1].options.map((o) => o.value), ['ai', 'web']);
+    });
+
+    test('normalize memakai default bila kosong dan menyesuaikan tipe', () {
+      expect(settings[0].normalize(null), '');
+      expect(settings[1].normalize(null), 'ai');
+      expect(settings[1].normalize('web'), 'web');
+      expect(settings[2].normalize(null), true);
+      expect(settings[2].normalize(false), false);
+      expect(settings[3].normalize(null), ['en']);
+    });
+  });
 }

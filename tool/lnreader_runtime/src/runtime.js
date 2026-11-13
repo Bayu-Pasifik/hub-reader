@@ -11,6 +11,7 @@
 //   Dart calls back into: __lnr.resolveFetch(id, metaJson), __lnr.rejectFetch(id, msg),
 //   __lnr.fireTimer(id), __lnr.load(pluginId, code), __lnr.invoke(callId, pluginId, method, argsJson)
 
+import './bigint-shim.js';
 import 'core-js/actual/url';
 import 'core-js/actual/url-search-params';
 import 'core-js/actual/structured-clone';

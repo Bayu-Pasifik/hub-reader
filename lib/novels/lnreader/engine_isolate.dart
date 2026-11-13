@@ -52,6 +52,16 @@ class LnEngine {
   Future<Map<String, Object?>> load(String key, String code) async =>
       ((await _request(['load', key, code])) as Map).cast<String, Object?>();
 
+  /// Baca `@libs/storage` (salinan isolate utama).
+  String? readStorage(String key) => _store.get(key);
+
+  /// Tulis/hapus `@libs/storage` dari UI (pengaturan plugin): disimpan
+  /// permanen dan diteruskan ke salinan di isolate engine.
+  void writeStorage(String key, String? value) {
+    value == null ? _store.delete(key) : _store.set(key, value);
+    if (!_closed) _send.send(['storage.put', 0, key, value]);
+  }
+
   Future<Object?> invoke(String key, String method, List<Object?> args) =>
       _request(['invoke', key, method, args]);
 
@@ -132,6 +142,9 @@ class _MirrorStore extends MemoryKeyValueStore {
     super.delete(key);
     _main.send(['storage.delete', key]);
   }
+
+  /// Perubahan dari isolate utama: hanya salinan lokal, tanpa dikirim balik.
+  void apply(String key, String? value) => value == null ? super.delete(key) : super.set(key, value);
 }
 
 Future<void> _isolateMain(List args) async {
@@ -139,9 +152,10 @@ Future<void> _isolateMain(List args) async {
   final inbox = ReceivePort();
   final fetches = <int, Completer<LnHttpResponse>>{};
 
+  final store = _MirrorStore((args[2] as Map).cast<String, String>(), main);
   final engine = LnJsEngine(
     runtimeCode: args[1] as String,
-    store: _MirrorStore((args[2] as Map).cast<String, String>(), main),
+    store: store,
     log: (m) => main.send(['log', m]),
     abort: (id) {
       fetches.remove(id)?.completeError(const LnNetworkException('Aborted'));
@@ -189,6 +203,8 @@ Future<void> _isolateMain(List args) async {
               headers: (meta['headers'] as Map).cast<String, String>(),
               bytes: (msg[3] as TransferableTypedData).materialize().asUint8List(),
             ));
+      case 'storage.put':
+        store.apply(msg[2] as String, msg[3] as String?);
       case 'fetchError':
         fetches.remove(msg[1])?.completeError(LnNetworkException(msg[2] as String));
       case 'dispose':

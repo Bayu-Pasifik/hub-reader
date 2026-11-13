@@ -10,6 +10,7 @@ import '../../../state/novel_providers.dart';
 import '../../router.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/state_views.dart';
+import 'novel_settings_sheet.dart';
 
 /// Jelajah satu plugin novel: Populer (dengan filter) / Terbaru + pencarian.
 class NovelBrowseScreen extends ConsumerStatefulWidget {
@@ -47,6 +48,17 @@ class _NovelBrowseScreenState extends ConsumerState<NovelBrowseScreen> {
       builder: (_) => NovelFilterSheet(defs: source.filters, initial: _filters),
     );
     if (result != null && mounted) setState(() => _filters = result);
+  }
+
+  Future<void> _openSettings(NovelSource source) async {
+    final saved = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => NovelSettingsSheet(source: source),
+    );
+    // Muat ulang plugin agar nilai baru dipakai sejak awal (mis. login sekali jalan).
+    if (saved == true && mounted) ref.invalidate(novelSourceProvider(source.id));
   }
 
   @override
@@ -113,13 +125,16 @@ class _NovelBrowseScreenState extends ConsumerState<NovelBrowseScreen> {
             ),
             PopupMenuButton<String>(
               onSelected: (v) async {
+                if (v == 'settings') return _openSettings(source);
                 if (v == 'web') {
                   final ok = await context.push<bool>(sourceWebViewLocation(source.site));
                   if (ok == true) ref.invalidate(novelListProvider);
                 }
               },
-              itemBuilder: (_) => const [
-                PopupMenuItem(value: 'web', child: Text('Buka situs di WebView')),
+              itemBuilder: (_) => [
+                if (source.settings.isNotEmpty)
+                  const PopupMenuItem(value: 'settings', child: Text('Pengaturan plugin')),
+                const PopupMenuItem(value: 'web', child: Text('Buka situs di WebView')),
               ],
             ),
           ],

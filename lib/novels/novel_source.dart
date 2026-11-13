@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import '../core/utils/json.dart';
 import '../sources/source_exception.dart';
 import 'lnreader/engine_isolate.dart';
@@ -12,6 +14,7 @@ class NovelSource {
         site = asString(meta['site']) ?? info.site,
         version = asString(meta['version']) ?? info.version,
         filters = NovelFilterDef.parseAll(meta['filters']),
+        settings = NovelPluginSetting.parseAll(meta['pluginSettings']),
         hasParsePage = meta['hasParsePage'] == true,
         hasResolveUrl = meta['hasResolveUrl'] == true,
         imageHeaders = {
@@ -24,6 +27,9 @@ class NovelSource {
   final String site;
   final String version;
   final List<NovelFilterDef> filters;
+
+  /// `pluginSettings` (mis. login & mode terjemahan WTR-LAB).
+  final List<NovelPluginSetting> settings;
   final bool hasParsePage;
   final bool hasResolveUrl;
 
@@ -32,6 +38,33 @@ class NovelSource {
 
   String get id => info.id;
   String get lang => info.lang;
+
+  /// Key `@libs/storage` milik plugin ini (lihat `storageKey` di runtime.js).
+  String _storageKey(String key) => '${id}_DB_$key';
+
+  /// Nilai pengaturan saat ini (default plugin bila belum diubah).
+  Object? settingValue(NovelPluginSetting setting) {
+    final stored = engine.readStorage(_storageKey(setting.key));
+    Object? value;
+    if (stored != null) {
+      try {
+        final item = asMap(jsonDecode(stored));
+        final expires = asInt(item['expires']);
+        if (expires == null || DateTime.now().millisecondsSinceEpoch <= expires) value = item['value'];
+      } catch (_) {
+        // nilai rusak: pakai default
+      }
+    }
+    return setting.normalize(value);
+  }
+
+  /// Simpan pengaturan dengan format `storage.set(key, value)` milik plugin.
+  void setSetting(NovelPluginSetting setting, Object? value) {
+    engine.writeStorage(
+      _storageKey(setting.key),
+      jsonEncode({'created': DateTime.now().toUtc().toIso8601String(), 'value': setting.normalize(value)}),
+    );
+  }
 
   Future<Object?> _call(String method, List<Object?> args) async {
     try {

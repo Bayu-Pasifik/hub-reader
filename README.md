@@ -182,7 +182,8 @@ assets/lnreader/runtime.js       # dibuat oleh tool/lnreader_runtime (jangan die
 (`cheerio` 1.0.0-rc.12, `htmlparser2`, `dayjs`, `@libs/fetch`, `@libs/storage`,
 `@libs/filterInputs`, `@libs/novelStatus`, `@libs/defaultCover`, `@libs/aes`, ...) plus API web
 yang tidak ada di QuickJS: `fetch`/`Response`/`Headers`/`FormData`, `URL`/`URLSearchParams`
-(core-js), `setTimeout`, `AbortController`, `TextEncoder`/`TextDecoder`, `atob`/`btoa`, `Buffer`.
+(core-js), `setTimeout`, `AbortController`, `TextEncoder`/`TextDecoder`, `atob`/`btoa`, `Buffer`,
+serta shim `BigInt`/`DataView#setBigUint64` (QuickJS flutter_js tanpa BigInt; dipakai AES-GCM `@libs/aes`).
 Request dari plugin dijalankan Dio di Dart, jadi cookie `cf_clearance` hasil "Buka di WebView"
 ikut terkirim. `@libs/storage` disimpan di SharedPreferences (`lnr.kv.*`).
 
@@ -190,6 +191,11 @@ Pembaca novel mengubah HTML bab menjadi teks dengan gaya sendiri (tema terang/se
 ukuran huruf, jarak baris, margin, serif, rata kiri-kanan), menyimpan posisi baca per bab
 (persen), lalu pindah bab sebelumnya/berikutnya, termasuk lintas halaman untuk plugin
 berhalaman (`parsePage`). Favorit & riwayat novel berbagi tab dengan komik (id `lnr:<plugin>`).
+
+Plugin yang punya `pluginSettings` (mis. **WTR-LAB**: link login email, mode terjemahan AI/Web+/Web)
+mendapat menu **Pengaturan plugin** di layar jelajah. Nilainya disimpan lewat `@libs/storage` dengan
+key yang sama seperti aplikasi LNReader, lalu plugin dimuat ulang. Uji live:
+`LNR_LIVE=1 flutter test test/lnreader_settings_live_test.dart`.
 
 Bangun ulang runtime / uji semua plugin dari PC (Node 20+):
 

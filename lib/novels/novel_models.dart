@@ -272,3 +272,68 @@ Map<String, Object?> filterPayload(List<NovelFilterDef> defs, NovelFilterValues 
       for (final d in defs)
         d.key: {'type': d.type.wire, 'value': values.containsKey(d.key) ? values[d.key] : d.defaultValue},
     };
+
+/// Tipe pengaturan plugin LNReader (`pluginSettings`, lihat
+/// src/types/plugin.ts `PluginSetting`).
+enum NovelSettingType {
+  text('Text'),
+  toggle('Switch'),
+  select('Select'),
+  checkboxGroup('CheckboxGroup');
+
+  const NovelSettingType(this.wire);
+
+  final String wire;
+
+  static NovelSettingType of(String? wire) {
+    for (final t in values) {
+      if (t.wire == wire) return t;
+    }
+    return NovelSettingType.text;
+  }
+}
+
+/// Satu pengaturan plugin. Nilainya disimpan plugin lewat `@libs/storage`
+/// dengan key yang sama ([key]), persis seperti aplikasi LNReader.
+class NovelPluginSetting {
+  const NovelPluginSetting({
+    required this.key,
+    required this.label,
+    required this.type,
+    this.defaultValue,
+    this.options = const [],
+  });
+
+  final String key;
+  final String label;
+  final NovelSettingType type;
+
+  /// String (text/select), bool (switch), `List<String>` (checkbox group).
+  final Object? defaultValue;
+  final List<NovelFilterOption> options;
+
+  static List<NovelPluginSetting> parseAll(Object? raw) => [
+        for (final e in asMap(raw).entries)
+          if (e.value is Map)
+            NovelPluginSetting(
+              key: e.key,
+              label: asString(asMap(e.value)['label']) ?? e.key,
+              type: NovelSettingType.of(asString(asMap(e.value)['type'])),
+              defaultValue: asMap(e.value)['value'],
+              options: [
+                for (final o in asList(asMap(e.value)['options']))
+                  NovelFilterOption(asString(asMap(o)['label']) ?? '', '${asMap(o)['value'] ?? ''}'),
+              ],
+            ),
+      ];
+
+  /// Nilai sesuai tipe; [raw] null = default plugin.
+  Object? normalize(Object? raw) {
+    final v = raw ?? defaultValue;
+    return switch (type) {
+      NovelSettingType.toggle => asBool(v),
+      NovelSettingType.checkboxGroup => asList(v).map((e) => '$e').toList(),
+      _ => v == null ? '' : '$v',
+    };
+  }
+}
