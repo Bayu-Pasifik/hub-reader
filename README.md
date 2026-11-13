@@ -192,6 +192,13 @@ ukuran huruf, jarak baris, margin, serif, rata kiri-kanan), menyimpan posisi bac
 (persen), lalu pindah bab sebelumnya/berikutnya, termasuk lintas halaman untuk plugin
 berhalaman (`parsePage`). Favorit & riwayat novel berbagi tab dengan komik (id `lnr:<plugin>`).
 
+**Pembaruan** (ikon di tab Favorit): semua favorit komik & novel dicek bab barunya (3 seri
+bersamaan), otomatis saat aplikasi dibuka bila pengecekan terakhir lebih dari 6 jam (bisa dimatikan),
+atau tarik untuk cek manual. Bab yang sudah dikenal per seri disimpan di `<support>/library_updates.json`;
+pengecekan pertama hanya mencatat. Bab baru tampil per hari, lencana di tab Favorit menghitung yang
+belum dilihat, dan notifikasi (`flutter_local_notifications`) muncul setelah cek otomatis menemukan
+bab baru. Cek hanya berjalan selama aplikasi terbuka (belum ada pengecekan di latar).
+
 Tiap plugin novel diberi status (Jalan / Perlu verifikasi / Rusak / Mati). Data awal berasal dari cek
 di PC (`node check.mjs && node health.mjs` menulis `assets/lnreader/health.json`), lalu diperbarui
 dari HP: saat daftar populer dibuka, lewat menu **Cek semua plugin**, atau tekan lama satu plugin.

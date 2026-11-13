@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../state/library_updates_provider.dart';
 import '../../../state/source_library_providers.dart';
 import '../../widgets/library_routing.dart';
 import '../../widgets/source_widgets.dart';
@@ -16,7 +17,22 @@ class SourceFavoritesScreen extends ConsumerWidget {
     final favorites = ref.watch(sourceFavoritesProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Favorit')),
+      appBar: AppBar(
+        title: const Text('Favorit'),
+        actions: [
+          IconButton(
+            tooltip: 'Pembaruan',
+            icon: Badge(
+              isLabelVisible: ref.watch(libraryUpdatesProvider.select((s) => s.unseen)) > 0,
+              label: Text('${ref.watch(libraryUpdatesProvider.select((s) => s.unseen))}'),
+              child: ref.watch(libraryUpdatesProvider.select((s) => s.checking))
+                  ? const SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Icon(Icons.new_releases_outlined),
+            ),
+            onPressed: () => context.push('/updates'),
+          ),
+        ],
+      ),
       body: favorites.isEmpty
           ? const EmptyView(
               icon: Icons.favorite_outline,
@@ -64,10 +80,7 @@ class SourceFavoritesScreen extends ConsumerWidget {
                         item.title,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(fontWeight: FontWeight.w600),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
                       ),
                       Text(
                         source.isNovel ? 'Novel · ${source.name}' : source.name,

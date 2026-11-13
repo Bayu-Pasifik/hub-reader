@@ -111,8 +111,9 @@ List<NovelBlock> parseNovelHtml(String html, {Uri? baseUrl}) {
       if (out.isNotEmpty && out.first.text.startsWith('\n')) {
         final f = out.removeAt(0);
         final t = f.text.replaceFirst(RegExp(r'^\n+'), '');
-        if (t.isNotEmpty)
+        if (t.isNotEmpty) {
           out.insert(0, InlineRun(t, bold: f.bold, italic: f.italic, underline: f.underline, strike: f.strike));
+        }
       }
       if (out.isNotEmpty) blocks.add(TextBlock(out, heading: heading, quote: quote, center: center));
     }

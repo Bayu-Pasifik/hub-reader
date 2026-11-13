@@ -16,12 +16,15 @@ val hasReleaseKey = keystoreProperties.getProperty("storeFile")?.let { file(it).
 
 android {
     namespace = "com.hubreader.hub_reader"
-    compileSdk = flutter.compileSdkVersion
+    // flutter_local_notifications 23 butuh compileSdk 37.
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        // flutter_local_notifications butuh desugaring java.time.
+        isCoreLibraryDesugaringEnabled = true
     }
 
     defaultConfig {
@@ -69,4 +72,8 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }
