@@ -74,6 +74,7 @@ class _ReaderSettingsSheet extends ConsumerWidget {
     final override = ref.watch(seriesReaderOverridesProvider)[seriesKey];
     final perSeries = override != null;
     final tapZones = ref.watch(tapZonesProvider);
+    final autoSpeed = ref.watch(webtoonAutoScrollSpeedProvider);
     final theme = Theme.of(context);
 
     void setMode(ReaderMode mode) {
@@ -152,6 +153,23 @@ class _ReaderSettingsSheet extends ConsumerWidget {
               subtitle: const Text('Per halaman: tampilkan dua halaman berdampingan di layar lebar'),
               value: global.spread,
               onChanged: (v) => setDisplay(global.copyWith(spread: v)),
+            ),
+            const Divider(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: Text('Gulir otomatis (webtoon)', style: theme.textTheme.titleSmall),
+            ),
+            ListTile(
+              title: const Text('Kecepatan'),
+              trailing: Text('${autoSpeed.round()} dp/dtk'),
+            ),
+            Slider(
+              value: autoSpeed,
+              min: autoScrollMin,
+              max: autoScrollMax,
+              divisions: 19,
+              label: '${autoSpeed.round()}',
+              onChanged: (v) => ref.read(webtoonAutoScrollSpeedProvider.notifier).set(v),
             ),
             const Divider(),
             Padding(

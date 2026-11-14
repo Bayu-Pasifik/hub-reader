@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart' show Ticker;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
@@ -170,8 +171,15 @@ class _Pages extends ConsumerStatefulWidget {
   ConsumerState<_Pages> createState() => _PagesState();
 }
 
-class _PagesState extends ConsumerState<_Pages> {
+class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMixin {
   final _positions = ItemPositionsListener.create();
+  final _offsetController = ScrollOffsetController();
+
+  // ---- gulir otomatis (webtoon)
+  late final Ticker _ticker = createTicker(_onTick);
+  Duration _lastTick = Duration.zero;
+  bool _autoScroll = false;
+  bool _touching = false;
 
   /// Menjaga state PageView/list saat filter warna dinyalakan/dimatikan
   /// (pembungkus filter mengubah bentuk tree).
@@ -207,8 +215,37 @@ class _PagesState extends ConsumerState<_Pages> {
     _lifecycle = AppLifecycleListener(onPause: _session.pause, onResume: _session.activity);
   }
 
+  void _toggleAutoScroll() {
+    setState(() => _autoScroll = !_autoScroll);
+    if (_autoScroll) {
+      _lastTick = Duration.zero;
+      _ticker.start();
+    } else {
+      _ticker.stop();
+    }
+  }
+
+  void _onTick(Duration elapsed) {
+    final dt = (elapsed - _lastTick).inMicroseconds / 1e6;
+    _lastTick = elapsed;
+    if (_touching || dt <= 0 || dt > 0.5 || _total == 0) return;
+    // Kartu transisi (indeks == _total) sudah terlihat penuh: berhenti.
+    final atEnd = _positions.itemPositions.value.any((p) => p.index == _total && p.itemTrailingEdge <= 1.001);
+    if (atEnd) {
+      _toggleAutoScroll();
+      return;
+    }
+    final speed = ref.read(webtoonAutoScrollSpeedProvider);
+    try {
+      _offsetController.animateScroll(offset: speed * dt, duration: const Duration(milliseconds: 16));
+    } on Object {
+      // list belum terpasang
+    }
+  }
+
   @override
   void dispose() {
+    _ticker.dispose();
     _lifecycle.dispose();
     _session.pause();
     _positions.itemPositions.removeListener(_onScroll);
@@ -440,18 +477,25 @@ class _PagesState extends ConsumerState<_Pages> {
             },
           );
         } else {
-          body = InteractiveViewer(
-            minScale: 1,
-            maxScale: 3,
-            child: ScrollablePositionedList.builder(
-              itemCount: urls.length + 1,
-              initialScrollIndex: initial,
-              itemPositionsListener: _positions,
-              // Pra-muat beberapa layar ke bawah.
-              minCacheExtent: 2500,
-              itemBuilder: (_, i) => i >= urls.length
-                  ? SizedBox(height: 320, child: transition)
-                  : _image(urls[i], i, headers, BoxFit.fitWidth),
+          body = Listener(
+            // Gulir otomatis jeda selama layar disentuh.
+            onPointerDown: (_) => _touching = true,
+            onPointerUp: (_) => _touching = false,
+            onPointerCancel: (_) => _touching = false,
+            child: InteractiveViewer(
+              minScale: 1,
+              maxScale: 3,
+              child: ScrollablePositionedList.builder(
+                scrollOffsetController: _offsetController,
+                itemCount: urls.length + 1,
+                initialScrollIndex: initial,
+                itemPositionsListener: _positions,
+                // Pra-muat beberapa layar ke bawah.
+                minCacheExtent: 2500,
+                itemBuilder: (_, i) => i >= urls.length
+                    ? SizedBox(height: 320, child: transition)
+                    : _image(urls[i], i, headers, BoxFit.fitWidth),
+              ),
             ),
           );
         }
@@ -459,6 +503,16 @@ class _PagesState extends ConsumerState<_Pages> {
         return Stack(
           children: [
             Positioned.fill(child: applyReaderFilters(widget.display, KeyedSubtree(key: _bodyKey, child: body))),
+            if (!widget.mode.isPaged)
+              Positioned(
+                left: 12,
+                bottom: 12,
+                child: IconButton.filledTonal(
+                  tooltip: _autoScroll ? 'Hentikan gulir otomatis' : 'Gulir otomatis',
+                  icon: Icon(_autoScroll ? Icons.pause : Icons.keyboard_double_arrow_down),
+                  onPressed: _toggleAutoScroll,
+                ),
+              ),
             Positioned(
               right: 12,
               bottom: 12,

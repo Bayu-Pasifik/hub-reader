@@ -117,6 +117,26 @@ class TapZonesNotifier extends Notifier<TapZones> {
   }
 }
 
+/// Batas kecepatan gulir otomatis webtoon (dp per detik).
+const autoScrollMin = 20.0;
+const autoScrollMax = 400.0;
+
+final webtoonAutoScrollSpeedProvider =
+    NotifierProvider<WebtoonAutoScrollSpeedNotifier, double>(WebtoonAutoScrollSpeedNotifier.new);
+
+class WebtoonAutoScrollSpeedNotifier extends Notifier<double> {
+  static const _key = 'reader.autoscroll.v1';
+
+  @override
+  double build() =>
+      (ref.watch(sharedPreferencesProvider).getDouble(_key) ?? 80).clamp(autoScrollMin, autoScrollMax);
+
+  Future<void> set(double value) async {
+    state = value.clamp(autoScrollMin, autoScrollMax);
+    await ref.read(sharedPreferencesProvider).setDouble(_key, state);
+  }
+}
+
 /// Tampilan halaman komik: potong tepi kosong dan filter warna.
 class ReaderDisplay {
   const ReaderDisplay({
