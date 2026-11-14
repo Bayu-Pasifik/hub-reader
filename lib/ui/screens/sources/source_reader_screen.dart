@@ -249,14 +249,67 @@ class _PagesState extends ConsumerState<_Pages> {
   }
 
   void _onPageChanged(int index) {
-    if (index >= _total) {
+    final spread = _spreadActive;
+    // Indeks PageView: halaman biasa, atau spread (dua halaman) di tablet landscape.
+    final count = spread ? spreadCount(_total) : _total;
+    if (index >= count) {
       // Menggeser melewati halaman terakhir = niat lanjut; bab tetap
       // ditandai selesai lalu pindah ke bab berikutnya.
       _setPage(_total - 1);
       widget.onNext?.call();
       return;
     }
-    _setPage(index);
+    // Spread dicatat sebagai halaman terakhirnya (supaya bab selesai terdeteksi).
+    _setPage(spread ? pagesOfSpread(index, _total).last : index);
+  }
+
+  String _counter(int total) {
+    if (!widget.mode.isPaged || !_spreadActive) return '${_current + 1} / $total';
+    final pages = pagesOfSpread(spreadOfPage(_current), total);
+    if (pages.length < 2) return '${_current + 1} / $total';
+    return '${pages.first + 1}-${pages.last + 1} / $total';
+  }
+
+  /// True bila layar sedang menampilkan dua halaman berdampingan.
+  bool _spreadActive = false;
+
+  /// Controller diganti saat masuk/keluar mode spread (rotasi layar), dengan
+  /// posisi dikonversi dari halaman yang sedang dibaca.
+  PageController _controllerFor(bool spread, int total) {
+    if (_pageController != null && _spreadActive == spread) return _pageController!;
+    final old = _pageController;
+    if (old != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => old.dispose());
+    }
+    final page = _current.clamp(0, total == 0 ? 0 : total - 1);
+    _spreadActive = spread;
+    return _pageController = PageController(initialPage: spread ? spreadOfPage(page) : page);
+  }
+
+  /// Satu spread: dua halaman berdampingan, merapat di tengah (punggung buku).
+  /// Mode kanan → kiri: halaman awal di kanan.
+  Widget _spreadItem(int spread, List<String> urls, Map<String, String> headers) {
+    final pages = pagesOfSpread(spread, urls.length);
+    final rtl = widget.mode == ReaderMode.pagedRtl;
+    Widget cell(int p, Alignment align, {int flex = 1}) => Expanded(
+          flex: flex,
+          child: Align(alignment: align, child: _image(urls[p], p, headers, BoxFit.contain)),
+        );
+    final Widget row;
+    if (pages.length == 1) {
+      // Sampul / halaman ganjil terakhir: setengah lebar di tengah.
+      row = Row(children: [
+        const Spacer(),
+        cell(pages.first, Alignment.center, flex: 2),
+        const Spacer(),
+      ]);
+    } else {
+      // Urutan kiri→kanan di layar: LTR = (a, b); RTL = (b, a).
+      final left = rtl ? pages[1] : pages[0];
+      final right = rtl ? pages[0] : pages[1];
+      row = Row(children: [cell(left, Alignment.centerRight), cell(right, Alignment.centerLeft)]);
+    }
+    return InteractiveViewer(minScale: 1, maxScale: 4, child: Center(child: row));
   }
 
   /// Ketuk sepertiga kiri/kanan layar untuk pindah halaman (mode per halaman).
@@ -355,25 +408,36 @@ class _PagesState extends ConsumerState<_Pages> {
 
         final Widget body;
         if (widget.mode.isPaged) {
-          _pageController ??= PageController(initialPage: initial);
+          if (_pageController == null) _current = initial;
+          // Dua halaman hanya di layar lebar yang landscape (tablet). Dihitung
+          // di sini (bukan di LayoutBuilder) agar penghitung halaman ikut berubah.
+          final size = MediaQuery.sizeOf(context);
+          final spread = widget.display.spread && size.width >= spreadMinWidth && size.width > size.height;
+          final controller = _controllerFor(spread, urls.length);
+          final units = spread ? spreadCount(urls.length) : urls.length;
           body = LayoutBuilder(
-            builder: (context, constraints) => GestureDetector(
-              onTapUp: (d) => _onTapPaged(d, constraints.maxWidth),
-              child: PageView.builder(
-                controller: _pageController,
-                reverse: widget.mode == ReaderMode.pagedRtl,
-                // Halaman transisi hanya bila ada bab berikutnya.
-                itemCount: urls.length + (widget.next != null ? 1 : 0),
-                onPageChanged: _onPageChanged,
-                itemBuilder: (_, i) => i >= urls.length
-                    ? transition
-                    : InteractiveViewer(
-                        minScale: 1,
-                        maxScale: 4,
-                        child: Center(child: _image(urls[i], i, headers, BoxFit.contain)),
-                      ),
-              ),
-            ),
+            builder: (context, constraints) {
+              return GestureDetector(
+                onTapUp: (d) => _onTapPaged(d, constraints.maxWidth),
+                child: PageView.builder(
+                  key: ValueKey(spread),
+                  controller: controller,
+                  reverse: widget.mode == ReaderMode.pagedRtl,
+                  // Halaman transisi hanya bila ada bab berikutnya.
+                  itemCount: units + (widget.next != null ? 1 : 0),
+                  onPageChanged: _onPageChanged,
+                  itemBuilder: (_, i) => i >= units
+                      ? transition
+                      : spread
+                          ? _spreadItem(i, urls, headers)
+                          : InteractiveViewer(
+                              minScale: 1,
+                              maxScale: 4,
+                              child: Center(child: _image(urls[i], i, headers, BoxFit.contain)),
+                            ),
+                ),
+              );
+            },
           );
         } else {
           body = InteractiveViewer(
@@ -407,7 +471,7 @@ class _PagesState extends ConsumerState<_Pages> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     child: Text(
-                      '${_current + 1} / ${urls.length}',
+                      _counter(urls.length),
                       style: const TextStyle(color: Colors.white, fontSize: 12.5),
                     ),
                   ),

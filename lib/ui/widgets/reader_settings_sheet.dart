@@ -147,6 +147,12 @@ class _ReaderSettingsSheet extends ConsumerWidget {
               value: effective.display.cropBorders,
               onChanged: setCrop,
             ),
+            SwitchListTile(
+              title: const Text('Dua halaman (tablet landscape)'),
+              subtitle: const Text('Per halaman: tampilkan dua halaman berdampingan di layar lebar'),
+              value: global.spread,
+              onChanged: (v) => setDisplay(global.copyWith(spread: v)),
+            ),
             const Divider(),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),

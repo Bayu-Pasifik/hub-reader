@@ -119,7 +119,16 @@ class TapZonesNotifier extends Notifier<TapZones> {
 
 /// Tampilan halaman komik: potong tepi kosong dan filter warna.
 class ReaderDisplay {
-  const ReaderDisplay({this.cropBorders = false, this.grayscale = false, this.invert = false, this.dim = 0});
+  const ReaderDisplay({
+    this.cropBorders = false,
+    this.grayscale = false,
+    this.invert = false,
+    this.dim = 0,
+    this.spread = true,
+  });
+
+  /// Dua halaman berdampingan (mode per halaman, tablet landscape).
+  final bool spread;
 
   /// Buang tepi polos (putih/hitam) di sekeliling gambar. Di mode webtoon
   /// hanya kiri-kanan, supaya potongan strip tetap menyambung.
@@ -132,20 +141,24 @@ class ReaderDisplay {
 
   bool get hasColorFilter => grayscale || invert || dim > 0;
 
-  ReaderDisplay copyWith({bool? cropBorders, bool? grayscale, bool? invert, double? dim}) => ReaderDisplay(
+  ReaderDisplay copyWith({bool? cropBorders, bool? grayscale, bool? invert, double? dim, bool? spread}) =>
+      ReaderDisplay(
         cropBorders: cropBorders ?? this.cropBorders,
         grayscale: grayscale ?? this.grayscale,
         invert: invert ?? this.invert,
         dim: dim ?? this.dim,
+        spread: spread ?? this.spread,
       );
 
-  Map<String, Object> toJson() => {'crop': cropBorders, 'gray': grayscale, 'invert': invert, 'dim': dim};
+  Map<String, Object> toJson() =>
+      {'crop': cropBorders, 'gray': grayscale, 'invert': invert, 'dim': dim, 'spread': spread};
 
   factory ReaderDisplay.fromJson(Map<String, Object?> json) => ReaderDisplay(
         cropBorders: json['crop'] == true,
         grayscale: json['gray'] == true,
         invert: json['invert'] == true,
         dim: ((json['dim'] as num?)?.toDouble() ?? 0).clamp(0, 0.8),
+        spread: json['spread'] != false,
       );
 
   @override
@@ -154,11 +167,29 @@ class ReaderDisplay {
       other.cropBorders == cropBorders &&
       other.grayscale == grayscale &&
       other.invert == invert &&
-      other.dim == dim;
+      other.dim == dim &&
+      other.spread == spread;
 
   @override
-  int get hashCode => Object.hash(cropBorders, grayscale, invert, dim);
+  int get hashCode => Object.hash(cropBorders, grayscale, invert, dim, spread);
 }
+
+/// Lebar minimum (dp) layar landscape agar dua halaman ditampilkan.
+const spreadMinWidth = 700.0;
+
+/// Pemetaan halaman ↔ spread. Halaman 0 (sampul) berdiri sendiri, sisanya
+/// berpasangan: (1,2), (3,4), …
+int spreadOfPage(int page) => page <= 0 ? 0 : (page + 1) ~/ 2;
+
+/// Halaman-halaman dalam [spread] dari [total] halaman.
+List<int> pagesOfSpread(int spread, int total) {
+  if (spread == 0) return total > 0 ? [0] : const [];
+  final first = 2 * spread - 1;
+  return [for (var p = first; p <= first + 1 && p < total; p++) p];
+}
+
+/// Jumlah spread untuk [total] halaman.
+int spreadCount(int total) => total <= 0 ? 0 : 1 + (total / 2).floor();
 
 final readerDisplayProvider = NotifierProvider<ReaderDisplayNotifier, ReaderDisplay>(ReaderDisplayNotifier.new);
 
