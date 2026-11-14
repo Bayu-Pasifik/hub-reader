@@ -13,6 +13,7 @@ import '../../../state/source_library_providers.dart';
 import '../../../state/source_providers.dart';
 import '../../deep_links.dart';
 import '../../router.dart';
+import '../../widgets/category_sheet.dart';
 import '../../widgets/layout.dart';
 import '../../widgets/series_notes.dart';
 import '../../widgets/source_widgets.dart';
@@ -124,7 +125,8 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(
         content: Text(wasFavorite ? 'Dihapus dari favorit' : 'Ditambahkan ke favorit'),
-        duration: const Duration(seconds: 2),
+        duration: const Duration(seconds: 4),
+        action: wasFavorite ? null : SnackBarAction(label: 'Kategori', onPressed: () => showCategorySheet(context, item.key)),
       ));
   }
 

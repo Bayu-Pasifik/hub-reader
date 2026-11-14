@@ -19,6 +19,7 @@ import '../tracker_screens.dart';
 import 'novel_export.dart';
 import '../../deep_links.dart';
 import '../../router.dart';
+import '../../widgets/category_sheet.dart';
 import '../../widgets/layout.dart';
 import '../../widgets/series_notes.dart';
 import '../../widgets/source_widgets.dart';
@@ -156,12 +157,14 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
 
   void _toggleFavorite(NovelDetails n) {
     final was = ref.read(isSourceFavoriteProvider(_libKey));
-    ref.read(sourceFavoritesProvider.notifier).toggle(_item(n));
+    final item = _item(n);
+    ref.read(sourceFavoritesProvider.notifier).toggle(item);
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(
         content: Text(was ? 'Dihapus dari favorit' : 'Ditambahkan ke favorit'),
-        duration: const Duration(seconds: 2),
+        duration: const Duration(seconds: 4),
+        action: was ? null : SnackBarAction(label: 'Kategori', onPressed: () => showCategorySheet(context, item.key)),
       ));
   }
 

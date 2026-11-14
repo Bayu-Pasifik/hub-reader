@@ -7,6 +7,7 @@ import '../../../state/library_updates_provider.dart';
 import '../../../state/novel_providers.dart';
 import '../../../state/source_library_providers.dart';
 import '../../router.dart';
+import '../../widgets/category_sheet.dart' show askCategoryName;
 import '../../widgets/library_routing.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/state_views.dart';
@@ -348,7 +349,7 @@ class _FavoriteActionsSheet extends ConsumerWidget {
               leading: const Icon(Icons.add),
               title: const Text('Kategori baru'),
               onTap: () async {
-                final name = await _askName(context, title: 'Kategori baru');
+                final name = await askCategoryName(context, title: 'Kategori baru');
                 if (name == null) return;
                 if (await ref.read(libraryCategoriesProvider.notifier).add(name)) {
                   await favorites.setCategories(entry.item.key, [...current, name.trim()]);
@@ -422,7 +423,7 @@ class _CategoriesDialog extends ConsumerWidget {
                             tooltip: 'Ganti nama',
                             icon: const Icon(Icons.edit_outlined, size: 20),
                             onPressed: () async {
-                              final name = await _askName(context, title: 'Ganti nama', initial: categories[i]);
+                              final name = await askCategoryName(context, title: 'Ganti nama', initial: categories[i]);
                               if (name != null) await n.rename(categories[i], name);
                             },
                           ),
@@ -440,7 +441,7 @@ class _CategoriesDialog extends ConsumerWidget {
       actions: [
         TextButton(
           onPressed: () async {
-            final name = await _askName(context, title: 'Kategori baru');
+            final name = await askCategoryName(context, title: 'Kategori baru');
             if (name != null) await n.add(name);
           },
           child: const Text('Tambah'),
@@ -451,22 +452,3 @@ class _CategoriesDialog extends ConsumerWidget {
   }
 }
 
-Future<String?> _askName(BuildContext context, {required String title, String initial = ''}) {
-  final controller = TextEditingController(text: initial);
-  return showDialog<String>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text(title),
-      content: TextField(
-        controller: controller,
-        autofocus: true,
-        decoration: const InputDecoration(hintText: 'Nama kategori'),
-        onSubmitted: (v) => Navigator.pop(context, v),
-      ),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
-        FilledButton(onPressed: () => Navigator.pop(context, controller.text), child: const Text('Simpan')),
-      ],
-    ),
-  );
-}
