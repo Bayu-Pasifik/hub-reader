@@ -166,6 +166,13 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
             value: s.pureBlack,
             onChanged: (v) => n.update((x) => x.copyWith(pureBlack: v)),
           ),
+          SwitchListTile(
+            title: const Text('Warna dari wallpaper'),
+            subtitle: const Text('Material You, perlu Android 12 ke atas'),
+            value: s.dynamicColor,
+            onChanged: (v) => n.update((x) => x.copyWith(dynamicColor: v)),
+          ),
+          if (!s.dynamicColor)
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
             child: Wrap(

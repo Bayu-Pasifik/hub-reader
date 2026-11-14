@@ -25,6 +25,7 @@ class AppSettings {
     this.themeMode = ThemeMode.system,
     this.pureBlack = false,
     this.accent = AppAccent.indigo,
+    this.dynamicColor = false,
     this.appLock = false,
     this.lockAfter = const Duration(minutes: 1),
     this.incognito = false,
@@ -36,6 +37,9 @@ class AppSettings {
   /// Latar hitam pekat pada tema gelap (hemat baterai di layar OLED).
   final bool pureBlack;
   final AppAccent accent;
+
+  /// Warna dari wallpaper (Material You, Android 12+); mengalahkan [accent].
+  final bool dynamicColor;
 
   /// Minta sidik jari / PIN perangkat saat aplikasi dibuka.
   final bool appLock;
@@ -53,6 +57,7 @@ class AppSettings {
     ThemeMode? themeMode,
     bool? pureBlack,
     AppAccent? accent,
+    bool? dynamicColor,
     bool? appLock,
     Duration? lockAfter,
     bool? incognito,
@@ -62,6 +67,7 @@ class AppSettings {
         themeMode: themeMode ?? this.themeMode,
         pureBlack: pureBlack ?? this.pureBlack,
         accent: accent ?? this.accent,
+        dynamicColor: dynamicColor ?? this.dynamicColor,
         appLock: appLock ?? this.appLock,
         lockAfter: lockAfter ?? this.lockAfter,
         incognito: incognito ?? this.incognito,
@@ -75,6 +81,7 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
   static const _theme = 'app.theme.v1';
   static const _black = 'app.pure_black.v1';
   static const _accent = 'app.accent.v1';
+  static const _dynamic = 'app.dynamic_color.v1';
   static const _lock = 'app.lock.v1';
   static const _lockAfter = 'app.lock_after_seconds.v1';
   static const _incognito = 'app.incognito.v1';
@@ -87,6 +94,7 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
       themeMode: ThemeMode.values.where((m) => m.name == p.getString(_theme)).firstOrNull ?? ThemeMode.system,
       pureBlack: p.getBool(_black) ?? false,
       accent: AppAccent.values.where((a) => a.name == p.getString(_accent)).firstOrNull ?? AppAccent.indigo,
+      dynamicColor: p.getBool(_dynamic) ?? false,
       appLock: p.getBool(_lock) ?? false,
       lockAfter: Duration(seconds: p.getInt(_lockAfter) ?? 60),
       incognito: p.getBool(_incognito) ?? false,
@@ -100,6 +108,7 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
     await p.setString(_theme, state.themeMode.name);
     await p.setBool(_black, state.pureBlack);
     await p.setString(_accent, state.accent.name);
+    await p.setBool(_dynamic, state.dynamicColor);
     await p.setBool(_lock, state.appLock);
     await p.setInt(_lockAfter, state.lockAfter.inSeconds);
     await p.setBool(_incognito, state.incognito);

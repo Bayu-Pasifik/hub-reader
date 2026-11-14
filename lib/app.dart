@@ -1,3 +1,4 @@
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -34,24 +35,34 @@ class _HubReaderAppState extends ConsumerState<HubReaderApp> {
   @override
   Widget build(BuildContext context) {
     final s = ref.watch(appSettingsProvider);
-    final dark = ThemeData(
-      useMaterial3: true,
-      colorSchemeSeed: s.accent.color,
-      brightness: Brightness.dark,
-    );
-    return MaterialApp.router(
-      title: 'Hub Reader',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(useMaterial3: true, colorSchemeSeed: s.accent.color),
-      darkTheme: s.pureBlack
-          ? dark.copyWith(
-              scaffoldBackgroundColor: Colors.black,
-              colorScheme: dark.colorScheme.copyWith(surface: Colors.black),
-            )
-          : dark,
-      themeMode: s.themeMode,
-      routerConfig: ref.watch(routerProvider),
-      builder: (context, child) => AppLockGate(child: child ?? const SizedBox.shrink()),
+    return DynamicColorBuilder(
+      builder: (lightDynamic, darkDynamic) {
+        // Material You: pakai warna utama wallpaper sebagai seed tema.
+        final useDynamic = s.dynamicColor && lightDynamic != null && darkDynamic != null;
+        final light = ThemeData(
+          useMaterial3: true,
+          colorSchemeSeed: useDynamic ? lightDynamic.primary : s.accent.color,
+        );
+        final dark = ThemeData(
+          useMaterial3: true,
+          colorSchemeSeed: useDynamic ? darkDynamic.primary : s.accent.color,
+          brightness: Brightness.dark,
+        );
+        return MaterialApp.router(
+          title: 'Hub Reader',
+          debugShowCheckedModeBanner: false,
+          theme: light,
+          darkTheme: s.pureBlack
+              ? dark.copyWith(
+                  scaffoldBackgroundColor: Colors.black,
+                  colorScheme: dark.colorScheme.copyWith(surface: Colors.black),
+                )
+              : dark,
+          themeMode: s.themeMode,
+          routerConfig: ref.watch(routerProvider),
+          builder: (context, child) => AppLockGate(child: child ?? const SizedBox.shrink()),
+        );
+      },
     );
   }
 }
