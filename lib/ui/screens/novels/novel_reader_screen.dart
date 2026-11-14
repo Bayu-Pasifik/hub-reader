@@ -736,7 +736,7 @@ extension on _NovelReaderScreenState {
               }
             },
             itemBuilder: (_) => [
-              for (final m in const [15, 30, 45, 60]) PopupMenuItem(value: m, child: Text('$m menit')),
+              for (final m in const [15, 30, 45, 60]) PopupMenuItem(value: m, child: Text('$m ${tr('menit')}')),
               PopupMenuItem(value: -1, child: Text(tr('Akhir bab ini'))),
               if (_tts.sleepActive) PopupMenuItem(value: 0, child: Text(tr('Matikan timer'))),
             ],

@@ -244,6 +244,29 @@ warna aksen; kunci aplikasi dengan sidik jari/PIN perangkat (`local_auth`, `Main
 biometrik tidak crash di Android 8 ke bawah), kunci lagi setelah di latar 0/1/5/30 menit; ukuran & hapus cache gambar,
 cache data, kode plugin novel, dan tautan ke Unduhan & Cadangan.
 
+**Bahasa antarmuka** (Pengaturan → Tampilan): Indonesia atau English. Teks sumber ditulis dalam bahasa
+Indonesia dan dibungkus `tr()` (`lib/core/i18n/strings.dart`); terjemahan Inggris ada di tabel
+`strings_en.dart` (kunci = teks Indonesia, yang belum diterjemahkan tampil apa adanya). Label dinamis
+(status sumber, filter dari sumber) belum diterjemahkan.
+
+**Tema & jaringan**: **Warna dari wallpaper** (Material You, Android 12+) di Pengaturan → Tampilan.
+**DNS over HTTPS** (`lib/core/net/doh.dart`) bersifat opsional dan mati secara default; nyalakan di
+Pengaturan → Jaringan bila situs diblokir ISP, lalu pilih penyedia (mis. AliDNS) tanpa perlu VPN.
+
+**Server OPDS** (Pengaturan → Server OPDS, `lib/opds/`): jelajahi katalog OPDS 1.x milik sendiri (Komga,
+Kavita, Calibre-Web), cari, lalu unduh EPUB ke Novel Lokal atau CBZ ke Sumber Lokal. Mendukung Basic auth;
+kata sandi disimpan di Android Keystore dan tidak ikut cadangan. HTTP polos hanya diterima untuk jaringan
+lokal. Penulis dan metadata hasil unduhan mengikuti isi file, bukan entri OPDS.
+
+**Widget "Lanjut baca"** (`ContinueWidgetProvider.kt`, `lib/state/home_widget_sync.dart`): widget layar
+utama menampilkan seri terakhir dibaca dari riwayat dan membukanya langsung. **App shortcuts**
+(`lib/ui/app_shortcuts.dart`) membuka tab langsung dari ikon aplikasi. Detail seri punya **Mirip ini**
+(karya penulis sama dan seri sejudul), dan menambah favorit yang judulnya sudah ada memunculkan peringatan.
+
+**Pembaca novel (tambahan)**: pilih teks untuk **Sorot** (highlight) atau **Kamus**/terjemah (Indonesia ↔
+Inggris; teks dikirim ke layanan web MyMemory dan dictionaryapi.dev) dan **timer tidur**
+untuk TTS (15/30/45/60 menit atau akhir bab).
+
 **Pindah sumber** (menu ⋮ di detail seri, atau tekan lama sampul favorit): judul dicari di sumber lain
 sebahasa (atau plugin yang pernah dibuka), lalu favorit, kategori, tanda sudah dibaca (dicocokkan lewat
 nomor bab) dan bab terakhir dibaca dipindah ke sumber pilihan. Favorit lama bisa disimpan atau dihapus.

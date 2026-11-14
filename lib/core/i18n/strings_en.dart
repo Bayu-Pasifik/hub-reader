@@ -309,4 +309,5 @@ const Map<String, String> stringsEn = {
   'Ketuk pinggir layar untuk pindah halaman (mode per halaman).': 'Tap the screen edge to turn pages (paged mode).',
   'Mis. berhenti di arc turnamen, lanjut baca versi novel…': 'E.g. stopped at the tournament arc, continue with the novel version…',
   'Ditandai': 'Marked',
+  'menit': 'min',
 };
