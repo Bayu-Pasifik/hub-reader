@@ -21,6 +21,7 @@ import 'screens/sources/source_history_screen.dart';
 import 'screens/sources/source_manga_screen.dart';
 import 'screens/sources/source_reader_screen.dart';
 import 'screens/sources/source_repos_screen.dart';
+import 'screens/opds_screens.dart';
 import 'screens/sources/source_webview_screen.dart';
 import 'screens/sources/sources_screen.dart';
 import 'shell/main_shell.dart';
@@ -126,6 +127,19 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/source-repos',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (_, __) => const SourceReposScreen(),
+      ),
+      GoRoute(
+        path: '/opds',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, __) => const OpdsServersScreen(),
+      ),
+      GoRoute(
+        path: '/opds/browse',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, state) => OpdsBrowseScreen(
+          serverId: state.uri.queryParameters['server'] ?? '',
+          url: state.uri.queryParameters['url'],
+        ),
       ),
       GoRoute(
         path: '/backup',

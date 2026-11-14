@@ -8,6 +8,8 @@ const Map<String, String> stringsEn = {
   'Tampilan': 'Appearance',
   'Tentang': 'About',
   'Tracker': 'Trackers',
+  'Server OPDS': 'OPDS servers',
+  'Komga, Kavita, Calibre-Web: unduh buku & komik': 'Komga, Kavita, Calibre-Web: download books & comics',
   // Navigasi
   'Komik': 'Comics',
   'Novel': 'Novels',

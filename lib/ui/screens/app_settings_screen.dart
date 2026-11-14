@@ -328,6 +328,13 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
             onTap: () => context.push('/stats'),
           ),
           ListTile(
+            leading: const Icon(Icons.dns_outlined),
+            title: Text(tr('Server OPDS')),
+            subtitle: Text(tr('Komga, Kavita, Calibre-Web: unduh buku & komik')),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/opds'),
+          ),
+          ListTile(
             leading: const Icon(Icons.backup_outlined),
             title: Text(tr('Cadangkan & pulihkan')),
             trailing: const Icon(Icons.chevron_right),
