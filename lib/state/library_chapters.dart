@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/models/source_library.dart';
 import '../sources/html_utils.dart';
+import '../sources/models.dart';
 import '../sources/source_exception.dart';
 import 'novel_providers.dart';
 import 'source_providers.dart';
@@ -24,6 +25,22 @@ Future<List<LibraryChapter>> fetchLibraryChapters(
   ProviderReader read,
   SourceLibraryItem item, {
   bool allPages = false,
+}) async =>
+    (await fetchLibrarySeries(read, item, allPages: allPages)).chapters;
+
+/// Status "tamat" dari teks bebas situs novel.
+bool isCompletedStatusText(String? text) {
+  final t = text?.toLowerCase().trim();
+  if (t == null || t.isEmpty) return false;
+  if (RegExp(r'\b(not|un|in|belum)\s*-?\s*(completed?|finished|tamat|selesai)').hasMatch(t)) return false;
+  return RegExp(r'\b(completed?|complete|finished|ended|tamat|selesai)\b').hasMatch(t);
+}
+
+/// Bab terbaru + apakah seri sudah tamat (dari satu kali ambil detail).
+Future<({List<LibraryChapter> chapters, bool completed})> fetchLibrarySeries(
+  ProviderReader read,
+  SourceLibraryItem item, {
+  bool allPages = false,
 }) async {
   if (isNovelSourceId(item.sourceId)) {
     final source = await read(novelSourceProvider(pluginIdOf(item.sourceId)).future);
@@ -36,12 +53,18 @@ Future<List<LibraryChapter>> fetchLibraryChapters(
     } else if (chapters.isEmpty && source.hasParsePage) {
       chapters = await source.chapterPage(item.url, 1);
     }
-    return [for (final c in chapters) (url: c.path, name: c.name, number: libraryChapterNumber(c.name, c.number))];
+    return (
+      chapters: [for (final c in chapters) (url: c.path, name: c.name, number: libraryChapterNumber(c.name, c.number))],
+      completed: isCompletedStatusText(details.status),
+    );
   }
   final source = read(sourceProvider(item.sourceId));
   if (source == null) throw SourceException(SourceErrorKind.unknown, detail: 'Sumber ${item.sourceId} tidak ada.');
   final details = await source.details(item.url);
-  return [
-    for (final c in details.chapters) (url: c.url, name: c.name, number: libraryChapterNumber(c.name, c.number)),
-  ];
+  return (
+    chapters: [
+      for (final c in details.chapters) (url: c.url, name: c.name, number: libraryChapterNumber(c.name, c.number)),
+    ],
+    completed: details.status == SourceMangaStatus.completed,
+  );
 }

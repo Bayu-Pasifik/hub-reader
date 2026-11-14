@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
@@ -133,6 +134,9 @@ class LibraryUpdatesNotifier extends Notifier<LibraryUpdatesState> {
   static const autoInterval = Duration(hours: 6);
 
   Map<String, Set<String>> _known = {};
+
+  /// Kunci seri yang terakhir terdeteksi tamat; tidak dicek lagi.
+  Set<String> _completed = {};
   File? _file;
   bool _cancel = false;
 
@@ -153,6 +157,7 @@ class LibraryUpdatesNotifier extends Notifier<LibraryUpdatesState> {
         _known = {
           for (final e in asMap(json['known']).entries) e.key: asStringList(e.value).toSet(),
         };
+        _completed = asStringList(json['completed']).toSet();
         state = state.copyWith(
           updates: asList(json['updates']).map(LibraryUpdate.tryParse).whereType<LibraryUpdate>().toList(),
           lastCheck: asDate(json['last_check']),
@@ -170,6 +175,7 @@ class LibraryUpdatesNotifier extends Notifier<LibraryUpdatesState> {
       final file = await _storeFile();
       await file.writeAsString(jsonEncode({
         'known': {for (final e in _known.entries) e.key: e.value.toList()},
+        'completed': _completed.toList(),
         'updates': [for (final u in state.updates) u.toJson()],
         'last_check': state.lastCheck?.toIso8601String(),
         'last_seen': state.lastSeen?.toIso8601String(),
@@ -208,6 +214,11 @@ class LibraryUpdatesNotifier extends Notifier<LibraryUpdatesState> {
     await checkAll(notify: true);
   }
 
+  /// Hemat cek latar: lewati seri tamat dan seri yang belum pernah dibaca.
+  /// Seri tamat dicek lagi hanya bila statusnya berubah (tidak dicek, jadi
+  /// tetap dilewati); seri yang belum dibaca otomatis ikut lagi setelah dibuka.
+  static bool shouldCheck({required bool completed, required bool started}) => started && !completed;
+
   /// Bandingkan bab terbaru dengan yang sudah diketahui.
   static List<({String url, String name, double? number})> newChapters(
     Set<String>? known,
@@ -224,9 +235,20 @@ class LibraryUpdatesNotifier extends Notifier<LibraryUpdatesState> {
     if (state.checking) return 0;
     if (!state.loaded) await _load();
     final favorites = ref.read(sourceFavoritesProvider).map((f) => f.item).toList();
+    final progress = ref.read(sourceProgressProvider);
+    final started = {for (final h in ref.read(sourceHistoryProvider)) h.item.key};
+    final toCheck = [
+      for (final f in favorites)
+        if (shouldCheck(
+          completed: _completed.contains(f.key),
+          started: started.contains(f.key) || (progress[f.key]?.isNotEmpty ?? false),
+        ))
+          f,
+    ];
+    debugPrint('Library update check: ${toCheck.length}/${favorites.length} series (rest completed/unread)');
     _cancel = false;
-    state = state.copyWith(checking: true, done: 0, total: favorites.length, failed: const []);
-    final queue = [...favorites];
+    state = state.copyWith(checking: true, done: 0, total: toCheck.length, failed: const []);
+    final queue = [...toCheck];
     final found = <LibraryUpdate>[];
     final failed = <String>[];
     var done = 0;
@@ -235,8 +257,14 @@ class LibraryUpdatesNotifier extends Notifier<LibraryUpdatesState> {
       while (queue.isNotEmpty && !_cancel) {
         final item = queue.removeAt(0);
         try {
-          final fetched = await fetchLibraryChapters(ref.read, item).timeout(_timeout);
+          final series = await fetchLibrarySeries(ref.read, item).timeout(_timeout);
+          final fetched = series.chapters;
           final now = DateTime.now();
+          if (series.completed) {
+            _completed.add(item.key);
+          } else {
+            _completed.remove(item.key);
+          }
           for (final c in newChapters(_known[item.key], fetched)) {
             found.add(LibraryUpdate(item: item, chapterUrl: c.url, chapterName: c.name, foundAt: now));
           }
@@ -253,6 +281,7 @@ class LibraryUpdatesNotifier extends Notifier<LibraryUpdatesState> {
     // Bersihkan seri yang sudah tidak difavoritkan.
     final keys = favorites.map((f) => f.key).toSet();
     _known.removeWhere((k, _) => !keys.contains(k));
+    _completed.removeWhere((k) => !keys.contains(k));
     state = state.copyWith(
       updates: [...found, ...state.updates].take(_maxUpdates).toList(),
       lastCheck: DateTime.now(),

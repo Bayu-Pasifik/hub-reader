@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hub_reader/state/library_chapters.dart';
 import 'package:hub_reader/state/library_updates_provider.dart';
 
 void main() {
@@ -15,5 +16,20 @@ void main() {
 
   test('ignores a site that changed every chapter URL', () {
     expect(LibraryUpdatesNotifier.newChapters({'a', 'b'}, ch(['x', 'y'])), isEmpty);
+  });
+
+  test('skips completed and never-read series', () {
+    expect(LibraryUpdatesNotifier.shouldCheck(completed: false, started: true), isTrue);
+    expect(LibraryUpdatesNotifier.shouldCheck(completed: true, started: true), isFalse);
+    expect(LibraryUpdatesNotifier.shouldCheck(completed: false, started: false), isFalse);
+  });
+
+  test('detects completed status text from novel sources', () {
+    expect(isCompletedStatusText('Completed'), isTrue);
+    expect(isCompletedStatusText('Tamat'), isTrue);
+    expect(isCompletedStatusText('Ongoing'), isFalse);
+    expect(isCompletedStatusText('Not Completed'), isFalse);
+    expect(isCompletedStatusText('Incomplete'), isFalse);
+    expect(isCompletedStatusText(null), isFalse);
   });
 }
