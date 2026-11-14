@@ -17,6 +17,7 @@ import '../../../novels/novel_tts.dart';
 import '../../../state/app_settings_provider.dart';
 import '../../../sources/models.dart';
 import '../../../state/bookmarks_provider.dart';
+import '../../../state/download_providers.dart' show downloadIndexProvider;
 import '../../../state/novel_providers.dart';
 import '../../../state/reading_stats_provider.dart';
 import '../../../state/source_library_providers.dart';
@@ -167,6 +168,8 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
     ReaderBridge.setKeepScreenOn(false);
     _scroll.dispose();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    final index = ref.read(downloadIndexProvider.notifier);
+    Future<void>.delayed(const Duration(seconds: 1), index.purgeRead);
     super.dispose();
   }
 

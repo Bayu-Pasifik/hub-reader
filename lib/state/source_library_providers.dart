@@ -5,6 +5,7 @@ import '../data/models/source_library.dart';
 import '../sources/models.dart';
 import 'app_settings_provider.dart';
 import 'core_providers.dart';
+import 'download_providers.dart' show downloadIndexProvider;
 import 'novel_providers.dart' show isNovelSourceId;
 import 'reading_stats_provider.dart';
 
@@ -284,6 +285,7 @@ class SourceProgressNotifier extends Notifier<Map<String, Map<String, SourceChap
           updatedAt: DateTime.now(),
         ));
     await _store.writeProgress(state);
+    if (done) await ref.read(downloadIndexProvider.notifier).purgeRead();
   }
 
   /// Tandai banyak bab sekaligus (pilihan di daftar bab).
@@ -302,6 +304,7 @@ class SourceProgressNotifier extends Notifier<Map<String, Map<String, SourceChap
     }
     state = {...state, key: current};
     await _store.writeProgress(state);
+    if (done) await ref.read(downloadIndexProvider.notifier).purgeRead();
   }
 
   void _set(String seriesKey, String chapterUrl, SourceChapterProgress progress) {

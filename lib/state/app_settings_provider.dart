@@ -27,6 +27,7 @@ class AppSettings {
     this.appLock = false,
     this.lockAfter = const Duration(minutes: 1),
     this.incognito = false,
+    this.autoDeleteRead = false,
   });
 
   final ThemeMode themeMode;
@@ -44,6 +45,9 @@ class AppSettings {
   /// Mode samaran: riwayat & posisi baca tidak dicatat.
   final bool incognito;
 
+  /// Hapus unduhan bab yang sudah selesai dibaca agar penyimpanan tidak penuh.
+  final bool autoDeleteRead;
+
   AppSettings copyWith({
     ThemeMode? themeMode,
     bool? pureBlack,
@@ -51,6 +55,7 @@ class AppSettings {
     bool? appLock,
     Duration? lockAfter,
     bool? incognito,
+    bool? autoDeleteRead,
   }) =>
       AppSettings(
         themeMode: themeMode ?? this.themeMode,
@@ -59,6 +64,7 @@ class AppSettings {
         appLock: appLock ?? this.appLock,
         lockAfter: lockAfter ?? this.lockAfter,
         incognito: incognito ?? this.incognito,
+        autoDeleteRead: autoDeleteRead ?? this.autoDeleteRead,
       );
 }
 
@@ -71,6 +77,7 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
   static const _lock = 'app.lock.v1';
   static const _lockAfter = 'app.lock_after_seconds.v1';
   static const _incognito = 'app.incognito.v1';
+  static const _autoDeleteRead = 'app.auto_delete_read.v1';
 
   @override
   AppSettings build() {
@@ -82,6 +89,7 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
       appLock: p.getBool(_lock) ?? false,
       lockAfter: Duration(seconds: p.getInt(_lockAfter) ?? 60),
       incognito: p.getBool(_incognito) ?? false,
+      autoDeleteRead: p.getBool(_autoDeleteRead) ?? false,
     );
   }
 
@@ -94,5 +102,6 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
     await p.setBool(_lock, state.appLock);
     await p.setInt(_lockAfter, state.lockAfter.inSeconds);
     await p.setBool(_incognito, state.incognito);
+    await p.setBool(_autoDeleteRead, state.autoDeleteRead);
   }
 }

@@ -24,6 +24,8 @@ class _HubReaderAppState extends ConsumerState<HubReaderApp> {
       DeepLinks.listen((location) => ref.read(routerProvider).push(location));
       // Lanjutkan antrean unduhan yang tersimpan dari sesi sebelumnya.
       ref.read(downloadQueueProvider);
+      // Bersihkan unduhan bab yang sudah dibaca (bila pengaturan aktif).
+      ref.read(downloadIndexProvider.notifier).purgeRead().ignore();
       // Rilis baru di GitHub (paling sering sekali sehari).
       autoCheckForUpdates(() => ref.read(routerProvider).routerDelegate.navigatorKey.currentContext, ref).ignore();
     });

@@ -217,6 +217,16 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
             value: s.incognito,
             onChanged: (v) => n.update((x) => x.copyWith(incognito: v)),
           ),
+          SwitchListTile(
+            secondary: const Icon(Icons.auto_delete_outlined),
+            title: const Text('Hapus unduhan yang sudah dibaca'),
+            subtitle: const Text('Bab yang selesai dibaca dihapus otomatis agar penyimpanan tidak penuh'),
+            value: s.autoDeleteRead,
+            onChanged: (v) async {
+              await n.update((x) => x.copyWith(autoDeleteRead: v));
+              if (v) await ref.read(downloadIndexProvider.notifier).purgeRead();
+            },
+          ),
           header('Sumber'),
           SwitchListTile(
             secondary: const Icon(Icons.eighteen_up_rating_outlined),

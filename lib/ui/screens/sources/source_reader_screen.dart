@@ -9,6 +9,7 @@ import '../../../data/models/source_library.dart';
 import '../../../sources/models.dart';
 import '../../../sources/source.dart';
 import '../../../state/bookmarks_provider.dart';
+import '../../../state/download_providers.dart' show downloadIndexProvider;
 import '../../../state/reader_settings_provider.dart';
 import '../../../state/reading_stats_provider.dart';
 import '../../../state/source_library_providers.dart';
@@ -212,6 +213,10 @@ class _PagesState extends ConsumerState<_Pages> {
     _session.pause();
     _positions.itemPositions.removeListener(_onScroll);
     _pageController?.dispose();
+    // Hapus unduhan bab yang baru selesai dibaca (setelah reader tertutup
+    // agar gambar yang sedang tampil tidak hilang).
+    final index = ref.read(downloadIndexProvider.notifier);
+    Future<void>.delayed(const Duration(seconds: 1), index.purgeRead);
     super.dispose();
   }
 

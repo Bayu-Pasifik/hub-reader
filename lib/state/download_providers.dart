@@ -7,7 +7,9 @@ import '../data/local/download_store.dart';
 import '../data/models/download.dart';
 import '../sources/models.dart';
 import '../sources/source_exception.dart';
+import 'app_settings_provider.dart';
 import 'novel_providers.dart';
+import 'source_library_providers.dart' show sourceProgressProvider;
 import 'source_providers.dart';
 
 /// Di-override di main() setelah folder unduhan dibuka.
@@ -38,6 +40,28 @@ class DownloadIndexNotifier extends Notifier<Map<String, DownloadedChapter>> {
     state = {...state}..remove(key);
     await _store.writeIndex(state);
     await _store.deleteDir(entry.relativeDir);
+  }
+
+  /// Hapus unduhan bab yang sudah ditandai selesai dibaca (bila pengaturan
+  /// aktif). Mengembalikan jumlah bab yang dihapus.
+  Future<int> purgeRead() async {
+    if (!ref.read(appSettingsProvider).autoDeleteRead) return 0;
+    final progress = ref.read(sourceProgressProvider);
+    final doomed = {
+      for (final e in state.entries)
+        if (progress[e.value.mangaKey]?[e.value.chapterUrl]?.done ?? false) e.key: e.value,
+    };
+    if (doomed.isEmpty) return 0;
+    state = {...state}..removeWhere((k, _) => doomed.containsKey(k));
+    await _store.writeIndex(state);
+    for (final e in doomed.values) {
+      try {
+        await _store.deleteDir(e.relativeDir);
+      } catch (_) {
+        // Gagal menghapus satu folder tidak boleh menghentikan sisanya.
+      }
+    }
+    return doomed.length;
   }
 }
 
