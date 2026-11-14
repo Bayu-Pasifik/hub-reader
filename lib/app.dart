@@ -2,7 +2,11 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'data/models/source_library.dart';
 import 'state/app_settings_provider.dart';
+import 'state/home_widget_sync.dart';
+import 'state/source_library_providers.dart';
+import 'ui/widgets/library_routing.dart';
 import 'state/download_providers.dart';
 import 'ui/app_shortcuts.dart';
 import 'ui/deep_links.dart';
@@ -28,6 +32,7 @@ class _HubReaderAppState extends ConsumerState<HubReaderApp> {
         final router = ref.read(routerProvider);
         isTab ? router.go(location) : router.push(location);
       });
+      _syncHomeWidget(ref.read(sourceHistoryProvider));
       // Lanjutkan antrean unduhan yang tersimpan dari sesi sebelumnya.
       ref.read(downloadQueueProvider);
       // Bersihkan unduhan bab yang sudah dibaca (bila pengaturan aktif).
@@ -37,8 +42,24 @@ class _HubReaderAppState extends ConsumerState<HubReaderApp> {
     });
   }
 
+  /// Widget layar utama: bacaan terakhir dari riwayat.
+  void _syncHomeWidget(List<SourceHistoryEntry> history) {
+    final e = history.firstOrNull;
+    if (e == null) {
+      HomeWidgetSync.update();
+      return;
+    }
+    final info = librarySourceInfo(ref, e.item.sourceId);
+    HomeWidgetSync.update(
+      title: e.item.title,
+      subtitle: e.chapterName,
+      link: DeepLinks.linkFor(info.readerLocation(e.item.url, e.chapterUrl)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    ref.listen(sourceHistoryProvider, (_, next) => _syncHomeWidget(next));
     final s = ref.watch(appSettingsProvider);
     return DynamicColorBuilder(
       builder: (lightDynamic, darkDynamic) {

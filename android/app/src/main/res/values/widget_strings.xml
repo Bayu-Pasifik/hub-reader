@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_label">LANJUT BACA</string>
+    <string name="widget_description">Lanjutkan bab terakhir yang dibaca</string>
+    <string name="widget_empty_title">Belum ada bacaan</string>
+    <string name="widget_empty_subtitle">Buka Hub Reader untuk mulai</string>
+</resources>
