@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/i18n/strings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -106,7 +107,7 @@ class _MainShellState extends ConsumerState<MainShell> with WidgetsBindingObserv
                     NavigationRailDestination(
                       icon: icon(tab),
                       selectedIcon: Icon(tab.selectedIcon),
-                      label: Text(tab.label),
+                      label: Text(tr(tab.label)),
                     ),
                 ],
               ),
@@ -136,7 +137,7 @@ class _MainShellState extends ConsumerState<MainShell> with WidgetsBindingObserv
             onDestinationSelected: select,
             destinations: [
               for (final tab in widget.tabs)
-                NavigationDestination(icon: icon(tab), selectedIcon: Icon(tab.selectedIcon), label: tab.label),
+                NavigationDestination(icon: icon(tab), selectedIcon: Icon(tab.selectedIcon), label: tr(tab.label)),
             ],
           ),
         ],

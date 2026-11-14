@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../state/reader_settings_provider.dart';
+import '../../core/i18n/strings.dart';
 
 /// Lembar pengaturan reader komik: mode, potong tepi, filter warna.
 ///
@@ -115,7 +116,7 @@ class _ReaderSettingsSheet extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             SwitchListTile(
-              title: const Text('Khusus seri ini'),
+              title: Text(tr('Khusus seri ini')),
               subtitle: Text(
                 perSeries ? 'Mode & potong tepi disimpan untuk seri ini' : 'Mengikuti pengaturan umum',
               ),
@@ -125,7 +126,7 @@ class _ReaderSettingsSheet extends ConsumerWidget {
             const Divider(),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-              child: Text('Mode baca', style: theme.textTheme.titleSmall),
+              child: Text(tr('Mode baca'), style: theme.textTheme.titleSmall),
             ),
             RadioGroup<ReaderMode>(
               groupValue: effective.mode,
@@ -134,12 +135,12 @@ class _ReaderSettingsSheet extends ConsumerWidget {
               },
               child: Column(
                 children: [
-                  for (final m in ReaderMode.values) RadioListTile<ReaderMode>(value: m, title: Text(m.label)),
+                  for (final m in ReaderMode.values) RadioListTile<ReaderMode>(value: m, title: Text(tr(m.label))),
                 ],
               ),
             ),
             SwitchListTile(
-              title: const Text('Potong tepi kosong'),
+              title: Text(tr('Potong tepi kosong')),
               subtitle: Text(
                 effective.mode.isPaged
                     ? 'Buang margin putih/hitam di sekeliling halaman'
@@ -149,37 +150,37 @@ class _ReaderSettingsSheet extends ConsumerWidget {
               onChanged: setCrop,
             ),
             SwitchListTile(
-              title: const Text('Dua halaman (tablet landscape)'),
-              subtitle: const Text('Per halaman: tampilkan dua halaman berdampingan di layar lebar'),
+              title: Text(tr('Dua halaman (tablet landscape)')),
+              subtitle: Text(tr('Per halaman: tampilkan dua halaman berdampingan di layar lebar')),
               value: global.spread,
               onChanged: (v) => setDisplay(global.copyWith(spread: v)),
             ),
             ListTile(
-              title: const Text('Efek pindah halaman'),
-              subtitle: const Text('Mode per halaman'),
+              title: Text(tr('Efek pindah halaman')),
+              subtitle: Text(tr('Mode per halaman')),
               trailing: DropdownButton<PageTransitionStyle>(
                 value: global.transition,
                 onChanged: (v) {
                   if (v != null) setDisplay(global.copyWith(transition: v));
                 },
                 items: [
-                  for (final t in PageTransitionStyle.values) DropdownMenuItem(value: t, child: Text(t.label)),
+                  for (final t in PageTransitionStyle.values) DropdownMenuItem(value: t, child: Text(tr(t.label))),
                 ],
               ),
             ),
             SwitchListTile(
-              title: const Text('Layar tetap menyala'),
-              subtitle: const Text('Cegah layar mati saat membaca'),
+              title: Text(tr('Layar tetap menyala')),
+              subtitle: Text(tr('Cegah layar mati saat membaca')),
               value: global.keepScreenOn,
               onChanged: (v) => setDisplay(global.copyWith(keepScreenOn: v)),
             ),
             const Divider(),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-              child: Text('Gulir otomatis (webtoon)', style: theme.textTheme.titleSmall),
+              child: Text(tr('Gulir otomatis (webtoon)'), style: theme.textTheme.titleSmall),
             ),
             ListTile(
-              title: const Text('Kecepatan'),
+              title: Text(tr('Kecepatan')),
               trailing: Text('${autoSpeed.round()} dp/dtk'),
             ),
             Slider(
@@ -193,7 +194,7 @@ class _ReaderSettingsSheet extends ConsumerWidget {
             const Divider(),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-              child: Text('Zona ketuk', style: theme.textTheme.titleSmall),
+              child: Text(tr('Zona ketuk'), style: theme.textTheme.titleSmall),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -209,7 +210,7 @@ class _ReaderSettingsSheet extends ConsumerWidget {
               },
               child: Column(
                 children: [
-                  for (final l in TapZoneLayout.values) RadioListTile<TapZoneLayout>(value: l, title: Text(l.label)),
+                  for (final l in TapZoneLayout.values) RadioListTile<TapZoneLayout>(value: l, title: Text(tr(l.label))),
                 ],
               ),
             ),
@@ -222,8 +223,8 @@ class _ReaderSettingsSheet extends ConsumerWidget {
                 ),
               ),
               SwitchListTile(
-                title: const Text('Tukar kiri / kanan'),
-                subtitle: const Text('Ketuk kiri maju, ketuk kanan mundur'),
+                title: Text(tr('Tukar kiri / kanan')),
+                subtitle: Text(tr('Ketuk kiri maju, ketuk kanan mundur')),
                 value: tapZones.swap,
                 onChanged: (v) => ref.read(tapZonesProvider.notifier).set(tapZones.copyWith(swap: v)),
               ),
@@ -231,21 +232,21 @@ class _ReaderSettingsSheet extends ConsumerWidget {
             const Divider(),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-              child: Text('Filter warna', style: theme.textTheme.titleSmall),
+              child: Text(tr('Filter warna'), style: theme.textTheme.titleSmall),
             ),
             SwitchListTile(
-              title: const Text('Hitam putih'),
+              title: Text(tr('Hitam putih')),
               value: global.grayscale,
               onChanged: (v) => setDisplay(global.copyWith(grayscale: v)),
             ),
             SwitchListTile(
-              title: const Text('Balik warna'),
-              subtitle: const Text('Halaman putih jadi gelap untuk baca malam'),
+              title: Text(tr('Balik warna')),
+              subtitle: Text(tr('Halaman putih jadi gelap untuk baca malam')),
               value: global.invert,
               onChanged: (v) => setDisplay(global.copyWith(invert: v)),
             ),
             ListTile(
-              title: const Text('Redupkan'),
+              title: Text(tr('Redupkan')),
               trailing: Text('${(global.dim * 100).round()}%'),
             ),
             Slider(

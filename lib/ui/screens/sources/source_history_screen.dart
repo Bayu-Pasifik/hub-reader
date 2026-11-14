@@ -8,6 +8,7 @@ import '../../../state/source_library_providers.dart';
 import '../../widgets/library_routing.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/state_views.dart';
+import '../../../core/i18n/strings.dart';
 
 /// Riwayat baca: bab terakhir yang dibuka per seri.
 class SourceHistoryScreen extends ConsumerWidget {
@@ -17,11 +18,11 @@ class SourceHistoryScreen extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Hapus semua riwayat?'),
-        content: const Text('Riwayat baca di perangkat ini akan dihapus permanen.'),
+        title: Text(tr('Hapus semua riwayat?')),
+        content: Text(tr('Riwayat baca di perangkat ini akan dihapus permanen.')),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Hapus')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr('Batal'))),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(tr('Hapus'))),
         ],
       ),
     );
@@ -35,10 +36,10 @@ class SourceHistoryScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Riwayat'),
+        title: Text(tr('Riwayat')),
         actions: [
           IconButton(
-            tooltip: 'Statistik',
+            tooltip: tr('Statistik'),
             icon: const Icon(Icons.insights_outlined),
             onPressed: () => context.push('/stats'),
           ),
@@ -57,7 +58,7 @@ class SourceHistoryScreen extends ConsumerWidget {
           ),
           if (history.isNotEmpty)
             IconButton(
-              tooltip: 'Hapus semua',
+              tooltip: tr('Hapus semua'),
               icon: const Icon(Icons.delete_sweep_outlined),
               onPressed: () => _confirmClear(context, ref),
             ),
@@ -93,7 +94,7 @@ class SourceHistoryScreen extends ConsumerWidget {
                   onTap: () => context.push(source.readerLocation(item.url, entry.chapterUrl)),
                   onLongPress: () => context.push(source.detailLocation(item.url)),
                   trailing: IconButton(
-                    tooltip: 'Hapus dari riwayat',
+                    tooltip: tr('Hapus dari riwayat'),
                     icon: const Icon(Icons.close),
                     onPressed: () => ref.read(sourceHistoryProvider.notifier).remove(item.key),
                   ),

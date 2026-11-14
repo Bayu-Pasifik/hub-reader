@@ -13,6 +13,7 @@ import '../../../state/source_providers.dart';
 import '../../router.dart';
 import '../../widgets/local_import.dart';
 import '../../widgets/source_widgets.dart';
+import '../../../core/i18n/strings.dart';
 
 /// Nama bahasa untuk judul kelompok (kode dari katalog keiyoushi).
 const _languageNames = {
@@ -117,10 +118,10 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
             ? TextField(
                 controller: _search,
                 autofocus: true,
-                decoration: const InputDecoration(hintText: 'Cari sumber…', border: InputBorder.none),
+                decoration: InputDecoration(hintText: tr('Cari sumber…'), border: InputBorder.none),
                 onChanged: (_) => setState(() {}),
               )
-            : const Text('Sumber'),
+            : Text(tr('Sumber')),
         actions: [
           IconButton(
             tooltip: _searching ? 'Tutup pencarian' : 'Cari sumber',
@@ -131,12 +132,12 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
             }),
           ),
           IconButton(
-            tooltip: 'Cari komik di semua sumber',
+            tooltip: tr('Cari komik di semua sumber'),
             icon: const Icon(Icons.travel_explore),
             onPressed: () => context.push(comicGlobalSearchLocation()),
           ),
           IconButton(
-            tooltip: 'Unduhan',
+            tooltip: tr('Unduhan'),
             icon: Badge(
               isLabelVisible: queueCount > 0,
               label: Text('$queueCount'),
@@ -161,10 +162,10 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
             },
             itemBuilder: (_) => [
               run.running
-                  ? const PopupMenuItem(value: 'stop', child: Text('Hentikan pengecekan'))
+                  ? PopupMenuItem(value: 'stop', child: Text(tr('Hentikan pengecekan')))
                   : PopupMenuItem(value: 'check', child: Text('Cek ${filtered.where((s) => s is! LocalSource).length} sumber')),
-              const PopupMenuItem(value: 'import', child: Text('Impor file (CBZ/ZIP/EPUB)')),
-              CheckedPopupMenuItem(value: 'dead', checked: hideDead, child: const Text('Sembunyikan sumber mati')),
+              PopupMenuItem(value: 'import', child: Text(tr('Impor file (CBZ/ZIP/EPUB)'))),
+              CheckedPopupMenuItem(value: 'dead', checked: hideDead, child: Text(tr('Sembunyikan sumber mati'))),
             ],
           ),
         ],
@@ -208,7 +209,7 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
         ),
       ),
       body: rows.isEmpty
-          ? const Center(child: Text('Tidak ada sumber yang cocok.'))
+          ? Center(child: Text(tr('Tidak ada sumber yang cocok.')))
           : ListView.builder(
               itemCount: rows.length,
               itemBuilder: (context, i) {
@@ -294,7 +295,7 @@ class _SourceTile extends ConsumerWidget {
           ContentWarningChip(warning: s.contentWarning),
           if (s is HttpSource)
             IconButton(
-              tooltip: 'Ganti domain',
+              tooltip: tr('Ganti domain'),
               icon: const Icon(Icons.settings_outlined),
               onPressed: () => showDialog<void>(
                 context: context,
@@ -399,7 +400,7 @@ class _BaseUrlDialogState extends ConsumerState<_BaseUrlDialog> {
             controller: _controller,
             keyboardType: TextInputType.url,
             autocorrect: false,
-            decoration: InputDecoration(labelText: 'Base URL', errorText: _error),
+            decoration: InputDecoration(labelText: tr('Base URL'), errorText: _error),
             onChanged: (_) => setState(() => _testResult = null),
           ),
           const SizedBox(height: 8),
@@ -418,9 +419,9 @@ class _BaseUrlDialogState extends ConsumerState<_BaseUrlDialog> {
         ],
       ),
       actions: [
-        TextButton(onPressed: _testing ? null : _test, child: const Text('Tes')),
-        TextButton(onPressed: _reset, child: const Text('Bawaan')),
-        FilledButton(onPressed: _error == null ? _save : null, child: const Text('Simpan')),
+        TextButton(onPressed: _testing ? null : _test, child: Text(tr('Tes'))),
+        TextButton(onPressed: _reset, child: Text(tr('Bawaan'))),
+        FilledButton(onPressed: _error == null ? _save : null, child: Text(tr('Simpan'))),
       ],
     );
   }

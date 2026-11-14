@@ -12,6 +12,7 @@ import '../../widgets/category_sheet.dart' show askCategoryName;
 import '../../widgets/library_routing.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/state_views.dart';
+import '../../../core/i18n/strings.dart';
 
 /// Favorit komik & novel, per kategori (tab), dengan filter dan urutan.
 class SourceFavoritesScreen extends ConsumerStatefulWidget {
@@ -115,10 +116,10 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
               ? TextField(
                   controller: _search,
                   autofocus: true,
-                  decoration: const InputDecoration(hintText: 'Cari di favorit…', border: InputBorder.none),
+                  decoration: InputDecoration(hintText: tr('Cari di favorit…'), border: InputBorder.none),
                   onChanged: (_) => setState(() {}),
                 )
-              : const Text('Favorit'),
+              : Text(tr('Favorit')),
           actions: [
             IconButton(
               tooltip: _searching ? 'Tutup pencarian' : 'Cari',
@@ -129,12 +130,12 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
               }),
             ),
             IconButton(
-              tooltip: 'Filter & urutan',
+              tooltip: tr('Filter & urutan'),
               icon: Badge(isLabelVisible: filtered, smallSize: 8, child: const Icon(Icons.filter_list)),
               onPressed: _openFilter,
             ),
             IconButton(
-              tooltip: 'Pembaruan',
+              tooltip: tr('Pembaruan'),
               icon: Badge(
                 isLabelVisible: unseen > 0,
                 label: Text('$unseen'),
@@ -151,9 +152,9 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
                   showDialog<void>(context: context, useRootNavigator: true, builder: (_) => const _CategoriesDialog());
                 }
               },
-              itemBuilder: (_) => const [
-                PopupMenuItem(value: 'categories', child: Text('Kelola kategori')),
-                PopupMenuItem(value: 'backup', child: Text('Cadangkan & pulihkan')),
+              itemBuilder: (_) => [
+                PopupMenuItem(value: 'categories', child: Text(tr('Kelola kategori'))),
+                PopupMenuItem(value: 'backup', child: Text(tr('Cadangkan & pulihkan'))),
               ],
             ),
           ],
@@ -284,7 +285,7 @@ class _ViewSheet extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Jenis', style: theme.textTheme.titleSmall),
+            Text(tr('Jenis'), style: theme.textTheme.titleSmall),
             const SizedBox(height: 6),
             Wrap(spacing: 6, children: [
               for (final k in LibraryKind.values)
@@ -292,17 +293,17 @@ class _ViewSheet extends ConsumerWidget {
             ]),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Hanya yang ada bab baru belum dibaca'),
+              title: Text(tr('Hanya yang ada bab baru belum dibaca')),
               value: view.unreadOnly,
               onChanged: (v) => n.set(unreadOnly: v),
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Hanya yang sudah diunduh'),
+              title: Text(tr('Hanya yang sudah diunduh')),
               value: view.downloadedOnly,
               onChanged: (v) => n.set(downloadedOnly: v),
             ),
-            Text('Urutkan', style: theme.textTheme.titleSmall),
+            Text(tr('Urutkan'), style: theme.textTheme.titleSmall),
             RadioGroup<LibrarySort>(
               groupValue: view.sort,
               onChanged: (v) => n.set(sort: v),
@@ -344,10 +345,10 @@ class _FavoriteActionsSheet extends ConsumerWidget {
               child: Text(entry.item.title, style: Theme.of(context).textTheme.titleMedium),
             ),
             if (categories.isEmpty)
-              const ListTile(
+              ListTile(
                 leading: Icon(Icons.info_outline),
-                title: Text('Belum ada kategori'),
-                subtitle: Text('Buat kategori di bawah untuk mengelompokkan favorit.'),
+                title: Text(tr('Belum ada kategori')),
+                subtitle: Text(tr('Buat kategori di bawah untuk mengelompokkan favorit.')),
               ),
             for (final c in categories)
               CheckboxListTile(
@@ -360,7 +361,7 @@ class _FavoriteActionsSheet extends ConsumerWidget {
               ),
             ListTile(
               leading: const Icon(Icons.add),
-              title: const Text('Kategori baru'),
+              title: Text(tr('Kategori baru')),
               onTap: () async {
                 final name = await askCategoryName(context, title: 'Kategori baru');
                 if (name == null) return;
@@ -372,7 +373,7 @@ class _FavoriteActionsSheet extends ConsumerWidget {
             const Divider(),
             ListTile(
               leading: const Icon(Icons.swap_horiz),
-              title: const Text('Pindah sumber'),
+              title: Text(tr('Pindah sumber')),
               onTap: () {
                 Navigator.pop(context);
                 context.push(migrateLocation(entry.item.sourceId, entry.item.url, entry.item.title));
@@ -380,7 +381,7 @@ class _FavoriteActionsSheet extends ConsumerWidget {
             ),
             ListTile(
               leading: const Icon(Icons.heart_broken_outlined),
-              title: const Text('Hapus dari favorit'),
+              title: Text(tr('Hapus dari favorit')),
               onTap: () {
                 final messenger = ScaffoldMessenger.of(context);
                 favorites.remove(entry.item.key);
@@ -408,14 +409,14 @@ class _CategoriesDialog extends ConsumerWidget {
     final categories = ref.watch(libraryCategoriesProvider);
     final n = ref.read(libraryCategoriesProvider.notifier);
     return AlertDialog(
-      title: const Text('Kategori'),
+      title: Text(tr('Kategori')),
       contentPadding: const EdgeInsets.fromLTRB(8, 16, 8, 0),
       content: SizedBox(
         width: double.maxFinite,
         child: categories.isEmpty
-            ? const Padding(
+            ? Padding(
                 padding: EdgeInsets.all(16),
-                child: Text('Belum ada kategori. Kategori jadi tab di halaman Favorit.'),
+                child: Text(tr('Belum ada kategori. Kategori jadi tab di halaman Favorit.')),
               )
             : ListView(
                 shrinkWrap: true,
@@ -428,12 +429,12 @@ class _CategoriesDialog extends ConsumerWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
-                            tooltip: 'Naik',
+                            tooltip: tr('Naik'),
                             icon: const Icon(Icons.arrow_upward, size: 20),
                             onPressed: i == 0 ? null : () => n.move(categories[i], -1),
                           ),
                           IconButton(
-                            tooltip: 'Ganti nama',
+                            tooltip: tr('Ganti nama'),
                             icon: const Icon(Icons.edit_outlined, size: 20),
                             onPressed: () async {
                               final name = await askCategoryName(context, title: 'Ganti nama', initial: categories[i]);
@@ -441,7 +442,7 @@ class _CategoriesDialog extends ConsumerWidget {
                             },
                           ),
                           IconButton(
-                            tooltip: 'Hapus',
+                            tooltip: tr('Hapus'),
                             icon: const Icon(Icons.delete_outline, size: 20),
                             onPressed: () => n.remove(categories[i]),
                           ),
@@ -457,9 +458,9 @@ class _CategoriesDialog extends ConsumerWidget {
             final name = await askCategoryName(context, title: 'Kategori baru');
             if (name != null) await n.add(name);
           },
-          child: const Text('Tambah'),
+          child: Text(tr('Tambah')),
         ),
-        FilledButton(onPressed: () => Navigator.pop(context), child: const Text('Selesai')),
+        FilledButton(onPressed: () => Navigator.pop(context), child: Text(tr('Selesai'))),
       ],
     );
   }

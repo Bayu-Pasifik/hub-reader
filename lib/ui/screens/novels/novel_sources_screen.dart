@@ -15,6 +15,7 @@ import '../../widgets/local_import.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/state_views.dart';
 import '../sources/sources_screen.dart' show languageName;
+import '../../../core/i18n/strings.dart';
 
 /// Urutan bahasa: Indonesia, English, lalu sisanya menurut jumlah plugin.
 List<String> _orderedLanguages(Map<String, int> counts) => counts.keys.toList()
@@ -54,10 +55,10 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
             ? TextField(
                 controller: _search,
                 autofocus: true,
-                decoration: const InputDecoration(hintText: 'Cari sumber novel…', border: InputBorder.none),
+                decoration: InputDecoration(hintText: tr('Cari sumber novel…'), border: InputBorder.none),
                 onChanged: (_) => setState(() {}),
               )
-            : const Text('Novel'),
+            : Text(tr('Novel')),
         actions: [
           IconButton(
             tooltip: _searching ? 'Tutup pencarian' : 'Cari sumber',
@@ -68,12 +69,12 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
             }),
           ),
           IconButton(
-            tooltip: 'Cari novel di semua sumber',
+            tooltip: tr('Cari novel di semua sumber'),
             icon: const Icon(Icons.travel_explore),
             onPressed: () => context.push(novelGlobalSearchLocation()),
           ),
           IconButton(
-            tooltip: 'Unduhan',
+            tooltip: tr('Unduhan'),
             icon: Badge(
               isLabelVisible: ref.watch(downloadQueueProvider).isNotEmpty,
               label: Text('${ref.watch(downloadQueueProvider).length}'),
@@ -102,9 +103,9 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
               }
             },
             itemBuilder: (_) => [
-              const PopupMenuItem(value: 'refresh', child: Text('Perbarui daftar plugin')),
+              PopupMenuItem(value: 'refresh', child: Text(tr('Perbarui daftar plugin'))),
               if (ref.read(novelHealthRunProvider).running)
-                const PopupMenuItem(value: 'stop', child: Text('Hentikan pengecekan'))
+                PopupMenuItem(value: 'stop', child: Text(tr('Hentikan pengecekan')))
               else
                 PopupMenuItem(
                   value: 'check',
@@ -113,7 +114,7 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
               CheckedPopupMenuItem(
                 value: 'hide',
                 checked: ref.read(novelHideBrokenProvider),
-                child: const Text('Sembunyikan yang rusak'),
+                child: Text(tr('Sembunyikan yang rusak')),
               ),
             ],
           ),
@@ -214,15 +215,15 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
           ),
         if (manifest.refreshError != null)
           MaterialBanner(
-            content: const Text('Sebagian/semua repo plugin gagal dihubungi; memakai daftar tersimpan.'),
+            content: Text(tr('Sebagian/semua repo plugin gagal dihubungi; memakai daftar tersimpan.')),
             actions: [
               TextButton(
                 onPressed: () => context.push('/novel-repos'),
-                child: const Text('Repo'),
+                child: Text(tr('Repo')),
               ),
               TextButton(
                 onPressed: () => ref.read(novelManifestProvider.notifier).refresh(),
-                child: const Text('Coba lagi'),
+                child: Text(tr('Coba lagi')),
               ),
             ],
           ),
@@ -263,9 +264,9 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
                         return ListTile(
                           leading: const CircleAvatar(child: Icon(Icons.folder_outlined)),
                           title: Text(p.name),
-                          subtitle: const Text('File EPUB di perangkat'),
+                          subtitle: Text(tr('File EPUB di perangkat')),
                           trailing: IconButton(
-                            tooltip: 'Impor EPUB',
+                            tooltip: tr('Impor EPUB'),
                             icon: const Icon(Icons.upload_file_outlined),
                             onPressed: () => importLocalFiles(context, epubOnly: true),
                           ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/i18n/strings.dart';
 import '../core/net/doh.dart';
 import 'core_providers.dart';
 
@@ -30,6 +31,7 @@ class AppSettings {
     this.lockAfter = const Duration(minutes: 1),
     this.incognito = false,
     this.autoDeleteRead = false,
+    this.language = AppLanguage.id,
   });
 
   final ThemeMode themeMode;
@@ -53,6 +55,9 @@ class AppSettings {
   /// Hapus unduhan bab yang sudah selesai dibaca agar penyimpanan tidak penuh.
   final bool autoDeleteRead;
 
+  /// Bahasa antarmuka.
+  final AppLanguage language;
+
   AppSettings copyWith({
     ThemeMode? themeMode,
     bool? pureBlack,
@@ -62,6 +67,7 @@ class AppSettings {
     Duration? lockAfter,
     bool? incognito,
     bool? autoDeleteRead,
+    AppLanguage? language,
   }) =>
       AppSettings(
         themeMode: themeMode ?? this.themeMode,
@@ -72,6 +78,7 @@ class AppSettings {
         lockAfter: lockAfter ?? this.lockAfter,
         incognito: incognito ?? this.incognito,
         autoDeleteRead: autoDeleteRead ?? this.autoDeleteRead,
+        language: language ?? this.language,
       );
 }
 
@@ -86,10 +93,12 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
   static const _lockAfter = 'app.lock_after_seconds.v1';
   static const _incognito = 'app.incognito.v1';
   static const _autoDeleteRead = 'app.auto_delete_read.v1';
+  static const _language = 'app.language.v1';
 
   @override
   AppSettings build() {
     final p = ref.watch(sharedPreferencesProvider);
+    currentLanguage = AppLanguage.byName(p.getString(_language)) ?? AppLanguage.id;
     return AppSettings(
       themeMode: ThemeMode.values.where((m) => m.name == p.getString(_theme)).firstOrNull ?? ThemeMode.system,
       pureBlack: p.getBool(_black) ?? false,
@@ -99,11 +108,15 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
       lockAfter: Duration(seconds: p.getInt(_lockAfter) ?? 60),
       incognito: p.getBool(_incognito) ?? false,
       autoDeleteRead: p.getBool(_autoDeleteRead) ?? false,
+      language: currentLanguage,
     );
   }
 
   Future<void> update(AppSettings Function(AppSettings) change) async {
+    final before = state.language;
     state = change(state);
+    currentLanguage = state.language;
+    if (state.language != before) rebuildAllWidgets();
     final p = ref.read(sharedPreferencesProvider);
     await p.setString(_theme, state.themeMode.name);
     await p.setBool(_black, state.pureBlack);
@@ -113,6 +126,7 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
     await p.setInt(_lockAfter, state.lockAfter.inSeconds);
     await p.setBool(_incognito, state.incognito);
     await p.setBool(_autoDeleteRead, state.autoDeleteRead);
+    await p.setString(_language, state.language.name);
   }
 }
 
