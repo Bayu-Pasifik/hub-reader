@@ -173,10 +173,10 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
                 ),
         ),
         body: favorites.isEmpty
-            ? const EmptyView(
+            ? EmptyView(
                 icon: Icons.favorite_outline,
-                title: 'Belum ada favorit',
-                message: 'Ketuk ikon hati di halaman detail seri untuk menyimpannya ke sini.',
+                title: tr('Belum ada favorit'),
+                message: tr('Ketuk ikon hati di halaman detail seri untuk menyimpannya ke sini.'),
               )
             : TabBarView(
                 children: [
@@ -203,7 +203,7 @@ class _FavoritesGrid extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (entries.isEmpty) {
-      return const EmptyView(animation: AppAnimation.search, title: 'Tidak ada favorit yang cocok');
+      return EmptyView(animation: AppAnimation.search, title: tr('Tidak ada favorit yang cocok'));
     }
     final theme = Theme.of(context);
     return GridView.builder(
@@ -363,7 +363,7 @@ class _FavoriteActionsSheet extends ConsumerWidget {
               leading: const Icon(Icons.add),
               title: Text(tr('Kategori baru')),
               onTap: () async {
-                final name = await askCategoryName(context, title: 'Kategori baru');
+                final name = await askCategoryName(context, title: tr('Kategori baru'));
                 if (name == null) return;
                 if (await ref.read(libraryCategoriesProvider.notifier).add(name)) {
                   await favorites.setCategories(entry.item.key, [...current, name.trim()]);
@@ -390,7 +390,7 @@ class _FavoriteActionsSheet extends ConsumerWidget {
                   ..hideCurrentSnackBar()
                   ..showSnackBar(SnackBar(
                     content: Text('"${entry.item.title}" dihapus dari favorit'),
-                    action: SnackBarAction(label: 'Urungkan', onPressed: () => favorites.restore(entry)),
+                    action: SnackBarAction(label: tr('Urungkan'), onPressed: () => favorites.restore(entry)),
                   ));
               },
             ),
@@ -437,7 +437,7 @@ class _CategoriesDialog extends ConsumerWidget {
                             tooltip: tr('Ganti nama'),
                             icon: const Icon(Icons.edit_outlined, size: 20),
                             onPressed: () async {
-                              final name = await askCategoryName(context, title: 'Ganti nama', initial: categories[i]);
+                              final name = await askCategoryName(context, title: tr('Ganti nama'), initial: categories[i]);
                               if (name != null) await n.rename(categories[i], name);
                             },
                           ),
@@ -455,7 +455,7 @@ class _CategoriesDialog extends ConsumerWidget {
       actions: [
         TextButton(
           onPressed: () async {
-            final name = await askCategoryName(context, title: 'Kategori baru');
+            final name = await askCategoryName(context, title: tr('Kategori baru'));
             if (name != null) await n.add(name);
           },
           child: Text(tr('Tambah')),

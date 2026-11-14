@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/i18n/strings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -47,7 +48,7 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: const Text('Cek di latar belakang'),
+          title: Text(tr('Cek di latar belakang')),
           contentPadding: const EdgeInsets.only(top: 12),
           content: SingleChildScrollView(
             child: Column(
@@ -67,15 +68,15 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
                 CheckboxListTile(
                   value: config.wifiOnly,
                   onChanged: config.enabled ? (v) => setState(() => config = config.copyWith(wifiOnly: v)) : null,
-                  title: const Text('Hanya lewat Wi-Fi'),
-                  subtitle: const Text('Juga dilewati saat baterai lemah'),
+                  title: Text(tr('Hanya lewat Wi-Fi')),
+                  subtitle: Text(tr('Juga dilewati saat baterai lemah')),
                 ),
               ],
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
-            FilledButton(onPressed: () => Navigator.pop(context, config), child: const Text('Simpan')),
+            TextButton(onPressed: () => Navigator.pop(context), child: Text(tr('Batal'))),
+            FilledButton(onPressed: () => Navigator.pop(context, config), child: Text(tr('Simpan'))),
           ],
         ),
       ),
@@ -114,7 +115,7 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pembaruan'),
+        title: Text(tr('Pembaruan')),
         actions: [
           IconButton(
             tooltip: s.checking ? 'Hentikan' : 'Cek sekarang',
@@ -131,18 +132,18 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
               CheckedPopupMenuItem(
                 value: 'auto',
                 checked: auto,
-                child: const Text('Cek otomatis saat aplikasi dibuka'),
+                child: Text(tr('Cek otomatis saat aplikasi dibuka')),
               ),
               PopupMenuItem(
                 value: 'background',
                 child: ListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Cek di latar belakang'),
+                  title: Text(tr('Cek di latar belakang')),
                   subtitle: Text(BackgroundUpdateConfig.label(background.hours) +
                       (background.enabled && background.wifiOnly ? ' · Wi-Fi' : '')),
                 ),
               ),
-              const PopupMenuItem(value: 'clear', child: Text('Hapus daftar pembaruan')),
+              PopupMenuItem(value: 'clear', child: Text(tr('Hapus daftar pembaruan'))),
             ],
           ),
         ],

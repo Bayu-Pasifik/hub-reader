@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../core/i18n/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -103,13 +104,13 @@ class _TrackerSettingsTileState extends ConsumerState<TrackerSettingsTile> {
             TextField(
               controller: controller,
               autofocus: true,
-              decoration: const InputDecoration(labelText: 'Client ID', border: OutlineInputBorder()),
+              decoration: InputDecoration(labelText: tr('Client ID'), border: OutlineInputBorder()),
             ),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
-          FilledButton(onPressed: () => Navigator.pop(context, controller.text), child: const Text('Simpan')),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(tr('Batal'))),
+          FilledButton(onPressed: () => Navigator.pop(context, controller.text), child: Text(tr('Simpan'))),
         ],
       ),
     );
@@ -166,7 +167,7 @@ class _TrackerSettingsTileState extends ConsumerState<TrackerSettingsTile> {
                   obscureText: true,
                   autofillHints: const [AutofillHints.password],
                   onSubmitted: (_) => submit(),
-                  decoration: const InputDecoration(labelText: 'Password', border: OutlineInputBorder()),
+                  decoration: InputDecoration(labelText: tr('Password'), border: OutlineInputBorder()),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -181,12 +182,12 @@ class _TrackerSettingsTileState extends ConsumerState<TrackerSettingsTile> {
               ],
             ),
             actions: [
-              TextButton(onPressed: busy ? null : () => Navigator.pop(context), child: const Text('Batal')),
+              TextButton(onPressed: busy ? null : () => Navigator.pop(context), child: Text(tr('Batal'))),
               FilledButton(
                 onPressed: busy ? null : submit,
                 child: busy
                     ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                    : const Text('Login'),
+                    : Text(tr('Login')),
               ),
             ],
           );
@@ -242,9 +243,9 @@ class _TrackerSettingsTileState extends ConsumerState<TrackerSettingsTile> {
                 await t.logout();
                 setState(() {});
               },
-              child: const Text('Keluar'),
+              child: Text(tr('Keluar')),
             )
-          : FilledButton.tonal(onPressed: _login, child: const Text('Login')),
+          : FilledButton.tonal(onPressed: _login, child: Text(tr('Login'))),
     );
   }
 }
@@ -279,7 +280,7 @@ class TrackingSheet extends ConsumerWidget {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-              child: Text('Tracking', style: Theme.of(context).textTheme.titleMedium),
+              child: Text(tr('Tracking'), style: Theme.of(context).textTheme.titleMedium),
             ),
             for (final t in trackers)
               _TrackerRow(
@@ -293,7 +294,7 @@ class TrackingSheet extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
               child: Text(
-                'Progres dikirim otomatis saat bab selesai dibaca (tidak saat mode samaran).',
+                tr('Progres dikirim otomatis saat bab selesai dibaca (tidak saat mode samaran).'),
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ),
@@ -368,15 +369,15 @@ class _TrackerRowState extends ConsumerState<_TrackerRow> {
     final link = widget.link;
     final theme = Theme.of(context);
     if (!t.loggedIn) {
-      return ListTile(title: Text(t.name), subtitle: const Text('Belum login (Pengaturan → Tracker)'));
+      return ListTile(title: Text(t.name), subtitle: Text(tr('Belum login (Pengaturan → Tracker)')));
     }
     if (link == null) {
       return ListTile(
         title: Text(t.name),
-        subtitle: const Text('Belum ditautkan'),
+        subtitle: Text(tr('Belum ditautkan')),
         trailing: _busy
             ? const SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2))
-            : FilledButton.tonal(onPressed: _link, child: const Text('Tautkan')),
+            : FilledButton.tonal(onPressed: _link, child: Text(tr('Tautkan'))),
       );
     }
     final notifier = ref.read(trackLinksProvider.notifier);
@@ -392,7 +393,7 @@ class _TrackerRowState extends ConsumerState<_TrackerRow> {
               ),
               if (_busy) const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2)),
               IconButton(
-                tooltip: 'Lepas tautan',
+                tooltip: tr('Lepas tautan'),
                 icon: const Icon(Icons.link_off),
                 onPressed: () => notifier.remove(widget.seriesKey, t.id),
               ),
@@ -480,7 +481,7 @@ class _TrackSearchDialogState extends State<_TrackSearchDialog> {
                     }
                     if (snap.hasError) return Center(child: Text('${snap.error}'));
                     final list = snap.data ?? const [];
-                    if (list.isEmpty) return const Center(child: Text('Tidak ada hasil'));
+                    if (list.isEmpty) return Center(child: Text(tr('Tidak ada hasil')));
                     return ListView.builder(
                       itemCount: list.length,
                       itemBuilder: (context, i) {
@@ -507,6 +508,6 @@ class _TrackSearchDialogState extends State<_TrackSearchDialog> {
             ],
           ),
         ),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal'))],
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text(tr('Batal')))],
       );
 }

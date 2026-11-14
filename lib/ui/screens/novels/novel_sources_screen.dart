@@ -155,7 +155,7 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
     final used = filtered.where((p) => p.orphaned || installed.contains(NovelPluginRepository.safeId(p.id))).toList()
       ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
     if (used.isNotEmpty && query.isEmpty) {
-      rows.add((title: 'Pernah dibuka', count: used.length));
+      rows.add((title: tr('Pernah dibuka'), count: used.length));
       rows.addAll(used);
     }
     for (final l in languages) {
@@ -229,7 +229,7 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
           ),
         Expanded(
           child: rows.isEmpty
-              ? const EmptyView(animation: AppAnimation.search, title: 'Tidak ada sumber yang cocok')
+              ? EmptyView(animation: AppAnimation.search, title: tr('Tidak ada sumber yang cocok'))
               : RefreshIndicator(
                   onRefresh: () => ref.read(novelManifestProvider.notifier).refresh(),
                   child: ListView.builder(

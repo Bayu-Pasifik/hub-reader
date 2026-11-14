@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/i18n/strings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../state/bookmarks_provider.dart';
@@ -10,23 +11,23 @@ Future<void> editSeriesNote(BuildContext context, WidgetRef ref, SourceItemKey s
   final value = await showDialog<String>(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('Catatan'),
+      title: Text(tr('Catatan')),
       content: TextField(
         controller: controller,
         autofocus: true,
         minLines: 3,
         maxLines: 8,
         textCapitalization: TextCapitalization.sentences,
-        decoration: const InputDecoration(
-          hintText: 'Mis. berhenti di arc turnamen, lanjut baca versi novel…',
+        decoration: InputDecoration(
+          hintText: tr('Mis. berhenti di arc turnamen, lanjut baca versi novel…'),
           border: OutlineInputBorder(),
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(tr('Batal'))),
         if (controller.text.isNotEmpty)
-          TextButton(onPressed: () => Navigator.pop(context, ''), child: const Text('Hapus')),
-        FilledButton(onPressed: () => Navigator.pop(context, controller.text), child: const Text('Simpan')),
+          TextButton(onPressed: () => Navigator.pop(context, ''), child: Text(tr('Hapus'))),
+        FilledButton(onPressed: () => Navigator.pop(context, controller.text), child: Text(tr('Simpan'))),
       ],
     ),
   );
@@ -78,5 +79,5 @@ class ChapterBookmarkIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      Icon(Icons.bookmark, size: 18, color: Theme.of(context).colorScheme.primary, semanticLabel: 'Ditandai');
+      Icon(Icons.bookmark, size: 18, color: Theme.of(context).colorScheme.primary, semanticLabel: tr('Ditandai'));
 }

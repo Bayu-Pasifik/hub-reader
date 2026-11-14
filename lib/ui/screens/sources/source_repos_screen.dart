@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/i18n/strings.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -19,20 +20,20 @@ class SourceReposScreen extends ConsumerWidget {
     final url = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Tambah repo'),
+        title: Text(tr('Tambah repo')),
         content: TextField(
           controller: controller,
           autofocus: true,
           keyboardType: TextInputType.url,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             hintText: 'https://…/catalog.json',
-            helperText: 'URL katalog sumber (format catalog.json hub_reader)',
+            helperText: tr('URL katalog sumber (format catalog.json hub_reader)'),
           ),
           onSubmitted: (v) => Navigator.pop(context, v),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
-          FilledButton(onPressed: () => Navigator.pop(context, controller.text), child: const Text('Tambah')),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(tr('Batal'))),
+          FilledButton(onPressed: () => Navigator.pop(context, controller.text), child: Text(tr('Tambah'))),
         ],
       ),
     );
@@ -65,19 +66,19 @@ class SourceReposScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Repo sumber komik'),
+        title: Text(tr('Repo sumber komik')),
         actions: [
           if (!isDefault)
             TextButton(
               onPressed: () => ref.read(sourceCatalogReposProvider.notifier).resetDefault(),
-              child: const Text('Default'),
+              child: Text(tr('Default')),
             ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _add(context, ref),
         icon: const Icon(Icons.add),
-        label: const Text('Tambah'),
+        label: Text(tr('Tambah')),
       ),
       body: RefreshIndicator(
         onRefresh: () => ref.read(sourceCatalogStateProvider.notifier).refresh(),
@@ -98,7 +99,7 @@ class SourceReposScreen extends ConsumerWidget {
             if (state.refreshError != null)
               ListTile(
                 leading: Icon(Icons.cloud_off_outlined, color: theme.colorScheme.error),
-                title: const Text('Gagal memperbarui sebagian repo'),
+                title: Text(tr('Gagal memperbarui sebagian repo')),
                 subtitle: Text('Memakai salinan terakhir. ${state.refreshError}',
                     maxLines: 3, overflow: TextOverflow.ellipsis),
               ),
@@ -116,12 +117,12 @@ class SourceReposScreen extends ConsumerWidget {
                   children: [
                     if (i > 0)
                       IconButton(
-                        tooltip: 'Naikkan prioritas',
+                        tooltip: tr('Naikkan prioritas'),
                         icon: const Icon(Icons.arrow_upward),
                         onPressed: () => ref.read(sourceCatalogReposProvider.notifier).moveUp(url),
                       ),
                     IconButton(
-                      tooltip: 'Hapus',
+                      tooltip: tr('Hapus'),
                       icon: const Icon(Icons.delete_outline),
                       onPressed: () => ref.read(sourceCatalogReposProvider.notifier).remove(url),
                     ),
@@ -129,12 +130,12 @@ class SourceReposScreen extends ConsumerWidget {
                 ),
                 onLongPress: () {
                   Clipboard.setData(ClipboardData(text: url));
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('URL disalin')));
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr('URL disalin'))));
                 },
               ),
             ListTile(
               leading: const CircleAvatar(child: Icon(Icons.inventory_2_outlined, size: 20)),
-              title: const Text('Katalog bawaan aplikasi'),
+              title: Text(tr('Katalog bawaan aplikasi')),
               subtitle: Text(
                 bundled == 0
                     ? 'Semua sudah ada di repo · jadi cadangan bila repo hilang'
@@ -145,26 +146,26 @@ class SourceReposScreen extends ConsumerWidget {
               ListTile(
                 leading: Icon(Icons.history_toggle_off, color: Colors.orange.shade700),
                 title: Text('$orphans sumber tersimpan tanpa repo'),
-                subtitle: const Text('Sudah hilang dari repo, tapi datanya masih di HP dan tetap bisa dipakai.'),
+                subtitle: Text(tr('Sudah hilang dari repo, tapi datanya masih di HP dan tetap bisa dipakai.')),
                 trailing: TextButton(
                   onPressed: () async {
                     final ok = await showDialog<bool>(
                       context: context,
                       builder: (context) => AlertDialog(
-                        title: const Text('Lupakan sumber tanpa repo?'),
+                        title: Text(tr('Lupakan sumber tanpa repo?')),
                         content: const Text(
                           'Sumber ini hilang dari daftar. Favorit dan riwayatnya tidak dihapus, '
                           'tapi tidak bisa dibuka sampai sumbernya muncul lagi di repo.',
                         ),
                         actions: [
-                          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
-                          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Lupakan')),
+                          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr('Batal'))),
+                          FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(tr('Lupakan'))),
                         ],
                       ),
                     );
                     if (ok == true) await ref.read(sourceCatalogStateProvider.notifier).forgetOrphans();
                   },
-                  child: const Text('Lupakan'),
+                  child: Text(tr('Lupakan')),
                 ),
               ),
           ],

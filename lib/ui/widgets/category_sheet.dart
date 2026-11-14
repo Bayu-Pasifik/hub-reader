@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/i18n/strings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models/source_library.dart';
@@ -34,13 +35,13 @@ class CategorySheet extends ConsumerWidget {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-              child: Text('Kategori', style: Theme.of(context).textTheme.titleMedium),
+              child: Text(tr('Kategori'), style: Theme.of(context).textTheme.titleMedium),
             ),
             if (categories.isEmpty)
-              const ListTile(
+              ListTile(
                 leading: Icon(Icons.info_outline),
-                title: Text('Belum ada kategori'),
-                subtitle: Text('Buat kategori di bawah untuk mengelompokkan favorit.'),
+                title: Text(tr('Belum ada kategori')),
+                subtitle: Text(tr('Buat kategori di bawah untuk mengelompokkan favorit.')),
               ),
             for (final c in categories)
               CheckboxListTile(
@@ -53,9 +54,9 @@ class CategorySheet extends ConsumerWidget {
               ),
             ListTile(
               leading: const Icon(Icons.add),
-              title: const Text('Kategori baru'),
+              title: Text(tr('Kategori baru')),
               onTap: () async {
-                final name = await askCategoryName(context, title: 'Kategori baru');
+                final name = await askCategoryName(context, title: tr('Kategori baru'));
                 if (name == null) return;
                 if (await ref.read(libraryCategoriesProvider.notifier).add(name)) {
                   await favorites.setCategories(itemKey, [...current, name.trim()]);
@@ -78,12 +79,12 @@ Future<String?> askCategoryName(BuildContext context, {required String title, St
       content: TextField(
         controller: controller,
         autofocus: true,
-        decoration: const InputDecoration(hintText: 'Nama kategori'),
+        decoration: InputDecoration(hintText: tr('Nama kategori')),
         onSubmitted: (v) => Navigator.pop(context, v),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
-        FilledButton(onPressed: () => Navigator.pop(context, controller.text), child: const Text('Simpan')),
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(tr('Batal'))),
+        FilledButton(onPressed: () => Navigator.pop(context, controller.text), child: Text(tr('Simpan'))),
       ],
     ),
   );
@@ -98,11 +99,11 @@ Future<bool> confirmAddDuplicateFavorite(BuildContext context, WidgetRef ref, So
   final ok = await showDialog<bool>(
     context: context,
     builder: (ctx) => AlertDialog(
-      title: const Text('Judul sudah ada di favorit'),
+      title: Text(tr('Judul sudah ada di favorit')),
       content: Text('"${dup.item.title}" sudah ada di favorit dari sumber $source. Tetap tambahkan dari sumber ini?'),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
-        FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Tambahkan')),
+        TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(tr('Batal'))),
+        FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(tr('Tambahkan'))),
       ],
     ),
   );

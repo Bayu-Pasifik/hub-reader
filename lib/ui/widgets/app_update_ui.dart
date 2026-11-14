@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/i18n/strings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/update/app_update.dart';
@@ -20,7 +21,7 @@ Future<void> showUpdateDialog(
           final ok = await AppUpdate.open(url);
           if (!ok && context.mounted) {
             ScaffoldMessenger.of(context)
-                .showSnackBar(const SnackBar(content: Text('Tidak ada browser untuk membuka tautan')));
+                .showSnackBar(SnackBar(content: Text(tr('Tidak ada browser untuk membuka tautan'))));
           }
         }
 
@@ -39,10 +40,10 @@ Future<void> showUpdateDialog(
                 Navigator.pop(dialogContext);
                 onLater?.call();
               },
-              child: const Text('Nanti'),
+              child: Text(tr('Nanti')),
             ),
-            TextButton(onPressed: () => open(release.page), child: const Text('Catatan rilis')),
-            FilledButton(onPressed: () => open(release.apk), child: const Text('Unduh APK')),
+            TextButton(onPressed: () => open(release.page), child: Text(tr('Catatan rilis'))),
+            FilledButton(onPressed: () => open(release.apk), child: Text(tr('Unduh APK'))),
           ],
         );
       },

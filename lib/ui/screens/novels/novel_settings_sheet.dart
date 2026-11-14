@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/i18n/strings.dart';
 
 import '../../../novels/novel_models.dart';
 import '../../../novels/novel_source.dart';
@@ -54,7 +55,7 @@ class _NovelSettingsSheetState extends State<NovelSettingsSheet> {
               helperMaxLines: 6,
               border: const OutlineInputBorder(),
               suffixIcon: IconButton(
-                tooltip: 'Kosongkan',
+                tooltip: tr('Kosongkan'),
                 icon: const Icon(Icons.clear),
                 onPressed: () => _text[s.key]!.clear(),
               ),
@@ -120,7 +121,7 @@ class _NovelSettingsSheetState extends State<NovelSettingsSheet> {
                 Expanded(
                   child: Text('Pengaturan ${widget.source.name}', style: Theme.of(context).textTheme.titleMedium),
                 ),
-                FilledButton(onPressed: _save, child: const Text('Simpan')),
+                FilledButton(onPressed: _save, child: Text(tr('Simpan'))),
               ],
             ),
           ),

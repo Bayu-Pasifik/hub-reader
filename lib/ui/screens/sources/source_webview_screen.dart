@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../../../core/i18n/strings.dart';
 
 import 'dart:convert';
 
@@ -154,7 +155,7 @@ class _SourceWebViewScreenState extends ConsumerState<SourceWebViewScreen> {
           actions: [
             TextButton(
               onPressed: () => _complete(null, auto: false),
-              child: const Text('Selesai'),
+              child: Text(tr('Selesai')),
             ),
           ],
         ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/i18n/strings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:html/parser.dart' as html_parser;
@@ -109,22 +110,22 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
         title: Text('${_selected.length} dipilih'),
         actions: [
           IconButton(
-            tooltip: 'Pilih semua',
+            tooltip: tr('Pilih semua'),
             icon: const Icon(Icons.select_all),
             onPressed: () => setState(() => _selected.addAll(_visible.map((c) => c.path))),
           ),
           IconButton(
-            tooltip: 'Tandai sudah dibaca',
+            tooltip: tr('Tandai sudah dibaca'),
             icon: const Icon(Icons.done_all),
             onPressed: () => _markSelected(done: true),
           ),
           IconButton(
-            tooltip: 'Tandai belum dibaca',
+            tooltip: tr('Tandai belum dibaca'),
             icon: const Icon(Icons.remove_done),
             onPressed: () => _markSelected(done: false),
           ),
           IconButton(
-            tooltip: 'Bookmark',
+            tooltip: tr('Bookmark'),
             icon: const Icon(Icons.bookmark_add_outlined),
             onPressed: _bookmarkSelected,
           ),
@@ -139,8 +140,8 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
               }
             },
             itemBuilder: (_) => [
-              const PopupMenuItem(value: 'previous', child: Text('Tandai sampai sini sudah dibaca')),
-              if (novel != null) const PopupMenuItem(value: 'download', child: Text('Unduh yang dipilih')),
+              PopupMenuItem(value: 'previous', child: Text(tr('Tandai sampai sini sudah dibaca'))),
+              if (novel != null) PopupMenuItem(value: 'download', child: Text(tr('Unduh yang dipilih'))),
             ],
           ),
         ],
@@ -166,7 +167,7 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
       ..showSnackBar(SnackBar(
         content: Text(was ? 'Dihapus dari favorit' : 'Ditambahkan ke favorit'),
         duration: const Duration(seconds: 4),
-        action: was ? null : SnackBarAction(label: 'Kategori', onPressed: () => showCategorySheet(context, item.key)),
+        action: was ? null : SnackBarAction(label: tr('Kategori'), onPressed: () => showCategorySheet(context, item.key)),
       ));
   }
 
@@ -251,10 +252,10 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Hapus "${novel.name}"?'),
-        content: const Text('File EPUB di perangkat ikut dihapus dan tidak bisa dikembalikan.'),
+        content: Text(tr('File EPUB di perangkat ikut dihapus dan tidak bisa dikembalikan.')),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Hapus')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr('Batal'))),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(tr('Hapus'))),
         ],
       ),
     );
@@ -293,12 +294,12 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
                     ),
                   if (loaded != null && source is! LocalNovelSource)
                     PopupMenuButton<int>(
-                      tooltip: 'Unduh',
+                      tooltip: tr('Unduh'),
                       icon: const Icon(Icons.download_outlined),
                       onSelected: (limit) => _downloadMany(loaded, limit: limit == 0 ? null : limit),
                       itemBuilder: (_) => [
-                        const PopupMenuItem(value: 5, child: Text('Unduh 5 bab berikutnya')),
-                        const PopupMenuItem(value: 10, child: Text('Unduh 10 bab berikutnya')),
+                        PopupMenuItem(value: 5, child: Text(tr('Unduh 5 bab berikutnya'))),
+                        PopupMenuItem(value: 10, child: Text(tr('Unduh 10 bab berikutnya'))),
                         PopupMenuItem(
                           value: 0,
                           child: Text(loaded.totalPages > 1
@@ -329,20 +330,20 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
                         }
                       },
                       itemBuilder: (_) => [
-                        if (source is! LocalNovelSource) const PopupMenuItem(value: 'share', child: Text('Bagikan')),
-                        if (source is! LocalNovelSource) const PopupMenuItem(value: 'web', child: Text('Buka di WebView')),
-                        const PopupMenuItem(value: 'track', child: Text('Tracking')),
-                        const PopupMenuItem(value: 'note', child: Text('Catatan')),
+                        if (source is! LocalNovelSource) PopupMenuItem(value: 'share', child: Text(tr('Bagikan'))),
+                        if (source is! LocalNovelSource) PopupMenuItem(value: 'web', child: Text(tr('Buka di WebView'))),
+                        PopupMenuItem(value: 'track', child: Text(tr('Tracking'))),
+                        PopupMenuItem(value: 'note', child: Text(tr('Catatan'))),
                         CheckedPopupMenuItem(
                           value: 'bookmarked',
                           checked: _onlyBookmarked,
-                          child: const Text('Hanya bab ber-bookmark'),
+                          child: Text(tr('Hanya bab ber-bookmark')),
                         ),
-                        const PopupMenuItem(value: 'migrate', child: Text('Pindah sumber')),
+                        PopupMenuItem(value: 'migrate', child: Text(tr('Pindah sumber'))),
                         if (source is! LocalNovelSource)
-                          const PopupMenuItem(value: 'export', child: Text('Ekspor ke EPUB')),
+                          PopupMenuItem(value: 'export', child: Text(tr('Ekspor ke EPUB'))),
                         if (source is LocalNovelSource)
-                          const PopupMenuItem(value: 'delete', child: Text('Hapus dari perangkat')),
+                          PopupMenuItem(value: 'delete', child: Text(tr('Hapus dari perangkat'))),
                       ],
                     ),
                 ],
@@ -411,7 +412,7 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
         _open(next, page: 1);
       },
       icon: const Icon(Icons.play_arrow),
-      label: const Text('Mulai baca'),
+      label: Text(tr('Mulai baca')),
     );
   }
 
@@ -465,11 +466,11 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
       ),
       data: (list) {
         if (list.isEmpty) {
-          return const SliverToBoxAdapter(child: EmptyView(compact: true, title: 'Belum ada bab'));
+          return SliverToBoxAdapter(child: EmptyView(compact: true, title: tr('Belum ada bab')));
         }
         final shown = _onlyBookmarked ? list.where((c) => bookmarks.contains(c.path)).toList() : list;
         if (shown.isEmpty) {
-          return const SliverToBoxAdapter(child: EmptyView(compact: true, title: 'Belum ada bab ber-bookmark'));
+          return SliverToBoxAdapter(child: EmptyView(compact: true, title: tr('Belum ada bab ber-bookmark')));
         }
         _visible = shown;
         final chapters = _newestFirst ? shown.reversed.toList() : shown;
@@ -609,14 +610,14 @@ class _NovelChapterDownloadButton extends ConsumerWidget {
     final queue = ref.read(downloadQueueProvider.notifier);
     if (downloaded) {
       return IconButton(
-        tooltip: 'Hapus unduhan',
+        tooltip: tr('Hapus unduhan'),
         icon: Icon(Icons.offline_pin, color: Theme.of(context).colorScheme.primary),
         onPressed: () => ref.read(downloadIndexProvider.notifier).remove(chapterKey),
       );
     }
     return switch (task?.status) {
       DownloadStatus.queued || DownloadStatus.downloading => IconButton(
-          tooltip: 'Batalkan unduhan',
+          tooltip: tr('Batalkan unduhan'),
           onPressed: () => queue.cancel(chapterKey),
           icon: const SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2.5)),
         ),
@@ -626,7 +627,7 @@ class _NovelChapterDownloadButton extends ConsumerWidget {
           onPressed: () => queue.retry(chapterKey),
         ),
       null => IconButton(
-          tooltip: 'Unduh',
+          tooltip: tr('Unduh'),
           icon: const Icon(Icons.download_for_offline_outlined),
           onPressed: onDownload,
         ),

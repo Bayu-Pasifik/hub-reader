@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../core/i18n/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -20,11 +21,11 @@ class OpdsServersScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final servers = ref.watch(opdsServersProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Server OPDS')),
+      appBar: AppBar(title: Text(tr('Server OPDS'))),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _edit(context, ref, null),
         icon: const Icon(Icons.add),
-        label: const Text('Tambah server'),
+        label: Text(tr('Tambah server')),
       ),
       body: servers.isEmpty
           ? const Center(
@@ -50,9 +51,9 @@ class OpdsServersScreen extends ConsumerWidget {
                         if (v == 'edit') _edit(context, ref, s);
                         if (v == 'delete') ref.read(opdsServersProvider.notifier).remove(s.id);
                       },
-                      itemBuilder: (_) => const [
-                        PopupMenuItem(value: 'edit', child: Text('Ubah')),
-                        PopupMenuItem(value: 'delete', child: Text('Hapus')),
+                      itemBuilder: (_) => [
+                        PopupMenuItem(value: 'edit', child: Text(tr('Ubah'))),
+                        PopupMenuItem(value: 'delete', child: Text(tr('Hapus'))),
                       ],
                     ),
                   ),
@@ -74,24 +75,24 @@ class OpdsServersScreen extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(controller: name, decoration: const InputDecoration(labelText: 'Nama')),
+              TextField(controller: name, decoration: InputDecoration(labelText: tr('Nama'))),
               TextField(
                 controller: url,
                 keyboardType: TextInputType.url,
-                decoration: const InputDecoration(labelText: 'URL katalog', hintText: 'http://192.168.1.5:25600/opds/v1.2/catalog'),
+                decoration: InputDecoration(labelText: tr('URL katalog'), hintText: 'http://192.168.1.5:25600/opds/v1.2/catalog'),
               ),
-              TextField(controller: user, decoration: const InputDecoration(labelText: 'Pengguna (opsional)')),
+              TextField(controller: user, decoration: InputDecoration(labelText: tr('Pengguna (opsional)'))),
               TextField(
                 controller: pass,
                 obscureText: true,
-                decoration: const InputDecoration(labelText: 'Kata sandi (opsional)'),
+                decoration: InputDecoration(labelText: tr('Kata sandi (opsional)')),
               ),
             ],
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Simpan')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr('Batal'))),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(tr('Simpan'))),
         ],
       ),
     );
@@ -181,11 +182,11 @@ class _OpdsBrowseScreenState extends ConsumerState<OpdsBrowseScreen> {
     final q = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Cari di server'),
+        title: Text(tr('Cari di server')),
         content: TextField(controller: controller, autofocus: true, onSubmitted: (v) => Navigator.pop(context, v)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
-          FilledButton(onPressed: () => Navigator.pop(context, controller.text), child: const Text('Cari')),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(tr('Batal'))),
+          FilledButton(onPressed: () => Navigator.pop(context, controller.text), child: Text(tr('Cari'))),
         ],
       ),
     );
@@ -200,7 +201,7 @@ class _OpdsBrowseScreenState extends ConsumerState<OpdsBrowseScreen> {
       appBar: AppBar(
         title: Text(_title, maxLines: 1, overflow: TextOverflow.ellipsis),
         actions: [
-          if (_searchTemplate != null) IconButton(tooltip: 'Cari', icon: const Icon(Icons.search), onPressed: _search),
+          if (_searchTemplate != null) IconButton(tooltip: tr('Cari'), icon: const Icon(Icons.search), onPressed: _search),
         ],
       ),
       body: _loading
@@ -214,13 +215,13 @@ class _OpdsBrowseScreenState extends ConsumerState<OpdsBrowseScreen> {
                       children: [
                         Text('Gagal memuat katalog\n${_describe(_error!)}', textAlign: TextAlign.center),
                         const SizedBox(height: 12),
-                        FilledButton(onPressed: () => _load(widget.url ?? server?.url), child: const Text('Coba lagi')),
+                        FilledButton(onPressed: () => _load(widget.url ?? server?.url), child: Text(tr('Coba lagi'))),
                       ],
                     ),
                   ),
                 )
               : _entries.isEmpty
-                  ? const Center(child: Text('Katalog kosong'))
+                  ? Center(child: Text(tr('Katalog kosong')))
                   : ListView.builder(
                       itemCount: _entries.length + (_next != null ? 1 : 0),
                       itemBuilder: (context, i) {
@@ -230,7 +231,7 @@ class _OpdsBrowseScreenState extends ConsumerState<OpdsBrowseScreen> {
                             child: Center(
                               child: _loadingMore
                                   ? const CircularProgressIndicator()
-                                  : OutlinedButton(onPressed: () => _load(_next, more: true), child: const Text('Muat lagi')),
+                                  : OutlinedButton(onPressed: () => _load(_next, more: true), child: Text(tr('Muat lagi'))),
                             ),
                           );
                         }

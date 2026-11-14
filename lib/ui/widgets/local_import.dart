@@ -1,4 +1,5 @@
 import 'package:file_picker/file_picker.dart';
+import '../../core/i18n/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -93,20 +94,20 @@ Future<void> importLocalFiles(BuildContext context, {bool epubOnly = false}) asy
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Satu file = satu bab. File disalin ke folder seri di bawah ini.'),
+          Text(tr('Satu file = satu bab. File disalin ke folder seri di bawah ini.')),
           const SizedBox(height: 12),
           TextField(
             controller: controller,
             autofocus: true,
-            decoration: const InputDecoration(labelText: 'Judul seri', border: OutlineInputBorder()),
+            decoration: InputDecoration(labelText: tr('Judul seri'), border: OutlineInputBorder()),
           ),
         ],
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(tr('Batal'))),
         FilledButton(
           onPressed: () => Navigator.pop(context, controller.text.trim()),
-          child: const Text('Impor'),
+          child: Text(tr('Impor')),
         ),
       ],
     ),
@@ -138,10 +139,10 @@ Future<void> _withProgress(BuildContext context, Future<void> Function() work) a
     context: context,
     barrierDismissible: false,
     useRootNavigator: true,
-    builder: (_) => const PopScope(
+    builder: (_) => PopScope(
       canPop: false,
       child: AlertDialog(
-        content: Row(children: [CircularProgressIndicator(), SizedBox(width: 20), Text('Menyalin…')]),
+        content: Row(children: [CircularProgressIndicator(), SizedBox(width: 20), Text(tr('Menyalin…'))]),
       ),
     ),
   );

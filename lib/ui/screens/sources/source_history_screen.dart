@@ -65,10 +65,10 @@ class SourceHistoryScreen extends ConsumerWidget {
         ],
       ),
       body: history.isEmpty
-          ? const EmptyView(
+          ? EmptyView(
               icon: Icons.history,
-              title: 'Belum ada riwayat',
-              message: 'Bab yang kamu buka akan muncul di sini.',
+              title: tr('Belum ada riwayat'),
+              message: tr('Bab yang kamu buka akan muncul di sini.'),
             )
           : ListView.separated(
               itemCount: history.length,

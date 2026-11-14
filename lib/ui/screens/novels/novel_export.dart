@@ -1,4 +1,5 @@
 import 'dart:io';
+import '../../../core/i18n/strings.dart';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
@@ -52,7 +53,7 @@ Future<void> exportNovelEpub(
   final scope = await showDialog<List<NovelChapter>>(
     context: context,
     builder: (context) => SimpleDialog(
-      title: const Text('Ekspor ke EPUB'),
+      title: Text(tr('Ekspor ke EPUB')),
       children: [
         SimpleDialogOption(
           onPressed: () => Navigator.pop(context, chapters),
@@ -68,7 +69,7 @@ Future<void> exportNovelEpub(
             onPressed: () => Navigator.pop(context, downloaded),
             child: ListTile(
               title: Text('Hanya yang sudah diunduh (${downloaded.length})'),
-              subtitle: const Text('Tanpa internet'),
+              subtitle: Text(tr('Tanpa internet')),
             ),
           ),
       ],
@@ -92,7 +93,7 @@ Future<void> exportNovelEpub(
     builder: (dialogContext) => PopScope(
       canPop: false,
       child: AlertDialog(
-        title: const Text('Mengekspor…'),
+        title: Text(tr('Mengekspor…')),
         content: ValueListenableBuilder<int>(
           valueListenable: progress,
           builder: (_, done, __) => Column(
@@ -110,7 +111,7 @@ Future<void> exportNovelEpub(
               cancelled = true;
               Navigator.of(dialogContext).pop();
             },
-            child: const Text('Batal'),
+            child: Text(tr('Batal')),
           ),
         ],
       ),

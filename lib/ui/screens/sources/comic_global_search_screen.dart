@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../../../core/i18n/strings.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -157,11 +158,11 @@ class _ComicGlobalSearchScreenState extends ConsumerState<ComicGlobalSearchScree
           controller: _controller,
           autofocus: widget.initialQuery.isEmpty,
           textInputAction: TextInputAction.search,
-          decoration: const InputDecoration(hintText: 'Cari komik di semua sumber…', border: InputBorder.none),
+          decoration: InputDecoration(hintText: tr('Cari komik di semua sumber…'), border: InputBorder.none),
           onSubmitted: (_) => _search(),
         ),
         actions: [
-          IconButton(tooltip: 'Cari', icon: const Icon(Icons.search), onPressed: _search),
+          IconButton(tooltip: tr('Cari'), icon: const Icon(Icons.search), onPressed: _search),
           IconButton(
             tooltip: _onlyWithResults ? 'Tampilkan semua sumber' : 'Hanya sumber dengan hasil',
             icon: Icon(_onlyWithResults ? Icons.filter_alt : Icons.filter_alt_outlined),

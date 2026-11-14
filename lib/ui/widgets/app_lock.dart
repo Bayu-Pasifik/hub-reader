@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/i18n/strings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:local_auth/local_auth.dart';
 
@@ -89,12 +90,12 @@ class _AppLockGateState extends ConsumerState<AppLockGate> with WidgetsBindingOb
                   children: [
                     Icon(Icons.lock_outline, size: 56, color: theme.colorScheme.primary),
                     const SizedBox(height: 16),
-                    Text('Hub Reader terkunci', style: theme.textTheme.titleMedium),
+                    Text(tr('Hub Reader terkunci'), style: theme.textTheme.titleMedium),
                     const SizedBox(height: 16),
                     FilledButton.icon(
                       onPressed: _unlock,
                       icon: const Icon(Icons.fingerprint),
-                      label: const Text('Buka'),
+                      label: Text(tr('Buka')),
                     ),
                   ],
                 ),

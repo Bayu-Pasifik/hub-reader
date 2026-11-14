@@ -199,7 +199,7 @@ class _ReaderSettingsSheet extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
-                'Ketuk pinggir layar untuk pindah halaman (mode per halaman).',
+                tr('Ketuk pinggir layar untuk pindah halaman (mode per halaman).'),
                 style: theme.textTheme.bodySmall,
               ),
             ),

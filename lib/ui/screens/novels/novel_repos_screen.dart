@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/i18n/strings.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -19,20 +20,20 @@ class NovelReposScreen extends ConsumerWidget {
     final url = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Tambah repo'),
+        title: Text(tr('Tambah repo')),
         content: TextField(
           controller: controller,
           autofocus: true,
           keyboardType: TextInputType.url,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             hintText: 'https://…/plugins.min.json',
-            helperText: 'URL manifest bergaya lnreader-plugins',
+            helperText: tr('URL manifest bergaya lnreader-plugins'),
           ),
           onSubmitted: (v) => Navigator.pop(context, v),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
-          FilledButton(onPressed: () => Navigator.pop(context, controller.text), child: const Text('Tambah')),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(tr('Batal'))),
+          FilledButton(onPressed: () => Navigator.pop(context, controller.text), child: Text(tr('Tambah'))),
         ],
       ),
     );
@@ -61,7 +62,7 @@ class NovelReposScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Repo plugin'),
+        title: Text(tr('Repo plugin')),
         actions: [
           if (!isDefault)
             TextButton(
@@ -69,14 +70,14 @@ class NovelReposScreen extends ConsumerWidget {
                 await ref.read(novelReposProvider.notifier).resetDefault();
                 await ref.read(novelManifestProvider.notifier).refresh();
               },
-              child: const Text('Default'),
+              child: Text(tr('Default')),
             ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _add(context, ref),
         icon: const Icon(Icons.add),
-        label: const Text('Tambah'),
+        label: Text(tr('Tambah')),
       ),
       body: RefreshIndicator(
         onRefresh: () => ref.read(novelManifestProvider.notifier).refresh(),
@@ -93,10 +94,10 @@ class NovelReposScreen extends ConsumerWidget {
               ),
             ),
             if (repos.isEmpty)
-              const ListTile(
+              ListTile(
                 leading: Icon(Icons.info_outline),
-                title: Text('Belum ada repo'),
-                subtitle: Text('Hanya plugin yang tersimpan di HP yang tersedia.'),
+                title: Text(tr('Belum ada repo')),
+                subtitle: Text(tr('Hanya plugin yang tersimpan di HP yang tersedia.')),
               ),
             for (final (i, url) in repos.indexed)
               ListTile(
@@ -114,7 +115,7 @@ class NovelReposScreen extends ConsumerWidget {
                   children: [
                     if (i > 0)
                       IconButton(
-                        tooltip: 'Naikkan prioritas',
+                        tooltip: tr('Naikkan prioritas'),
                         icon: const Icon(Icons.arrow_upward),
                         onPressed: () async {
                           await ref.read(novelReposProvider.notifier).moveUp(url);
@@ -122,7 +123,7 @@ class NovelReposScreen extends ConsumerWidget {
                         },
                       ),
                     IconButton(
-                      tooltip: 'Hapus',
+                      tooltip: tr('Hapus'),
                       icon: const Icon(Icons.delete_outline),
                       onPressed: () async {
                         await ref.read(novelReposProvider.notifier).remove(url);
@@ -133,14 +134,14 @@ class NovelReposScreen extends ConsumerWidget {
                 ),
                 onLongPress: () {
                   Clipboard.setData(ClipboardData(text: url));
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('URL disalin')));
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr('URL disalin'))));
                 },
               ),
             if (orphans > 0)
               ListTile(
                 leading: Icon(Icons.inventory_2_outlined, color: Colors.orange.shade700),
                 title: Text('$orphans plugin tersimpan tanpa repo'),
-                subtitle: const Text('Sudah hilang dari repo, tapi kodenya masih di HP dan tetap bisa dipakai.'),
+                subtitle: Text(tr('Sudah hilang dari repo, tapi kodenya masih di HP dan tetap bisa dipakai.')),
               ),
           ],
         ),

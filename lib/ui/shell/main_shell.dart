@@ -82,7 +82,7 @@ class _MainShellState extends ConsumerState<MainShell> with WidgetsBindingObserv
                     Icon(Icons.visibility_off, size: 14, color: scheme.onTertiaryContainer),
                     const SizedBox(width: 6),
                     Text(
-                      'Mode samaran · ketuk untuk mematikan',
+                      tr('Mode samaran · ketuk untuk mematikan'),
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(color: scheme.onTertiaryContainer),
                     ),
                   ],

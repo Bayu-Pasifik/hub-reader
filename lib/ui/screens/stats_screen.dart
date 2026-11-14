@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/i18n/strings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../state/novel_providers.dart' show isNovelSourceId;
@@ -21,11 +22,11 @@ class StatsScreen extends ConsumerWidget {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Hapus statistik?'),
-        content: const Text('Lama membaca dan hitungan bab per hari dihapus. Riwayat & tanda dibaca tidak berubah.'),
+        title: Text(tr('Hapus statistik?')),
+        content: Text(tr('Lama membaca dan hitungan bab per hari dihapus. Riwayat & tanda dibaca tidak berubah.')),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Hapus')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr('Batal'))),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(tr('Hapus'))),
         ],
       ),
     );
@@ -104,13 +105,13 @@ class StatsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Statistik'),
+        title: Text(tr('Statistik')),
         actions: [
           PopupMenuButton<String>(
             onSelected: (v) {
               if (v == 'reset') _confirmReset(context, ref);
             },
-            itemBuilder: (_) => const [PopupMenuItem(value: 'reset', child: Text('Hapus statistik waktu baca'))],
+            itemBuilder: (_) => [PopupMenuItem(value: 'reset', child: Text(tr('Hapus statistik waktu baca')))],
           ),
         ],
       ),
@@ -137,7 +138,7 @@ class StatsScreen extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
             child: Text(
-              '"Selesai dibaca" dihitung sejak statistik ada; "ditandai" termasuk tanda manual di daftar bab.',
+              tr('"Selesai dibaca" dihitung sejak statistik ada; "ditandai" termasuk tanda manual di daftar bab.'),
               style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
             ),
           ),
@@ -198,7 +199,7 @@ class _DailyChart extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('14 hari terakhir', style: text.labelMedium?.copyWith(color: scheme.onSurfaceVariant)),
+            Text(tr('14 hari terakhir'), style: text.labelMedium?.copyWith(color: scheme.onSurfaceVariant)),
             if (max > 0)
               Text('Terbanyak ${StatsScreen.duration(max)}', style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant)),
             const SizedBox(height: 12),

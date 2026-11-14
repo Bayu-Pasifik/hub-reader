@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/i18n/strings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -54,13 +55,13 @@ class _SourceBrowseScreenState extends ConsumerState<SourceBrowseScreen> {
     if (source == null) {
       return Scaffold(
         appBar: AppBar(),
-        body: const EmptyView(title: 'Sumber tidak ditemukan'),
+        body: EmptyView(title: tr('Sumber tidak ditemukan')),
       );
     }
 
     final tabs = [
-      (label: 'Populer', listing: SourceListing.popular),
-      if (source.supportsLatest) (label: 'Terbaru', listing: SourceListing.latest),
+      (label: tr('Populer'), listing: SourceListing.popular),
+      if (source.supportsLatest) (label: tr('Terbaru'), listing: SourceListing.latest),
     ];
     final showResults = _submitted.isNotEmpty || !_filters.isEmpty;
 
@@ -82,7 +83,7 @@ class _SourceBrowseScreenState extends ConsumerState<SourceBrowseScreen> {
               : Text(source.name),
           actions: [
             IconButton(
-              tooltip: 'Filter',
+              tooltip: tr('Filter'),
               icon: Badge(
                 isLabelVisible: !_filters.isEmpty,
                 label: Text('${_filters.activeCount}'),
@@ -245,7 +246,7 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
             onRetry: () => ref.invalidate(sourceFiltersProvider(widget.sourceId)),
           ),
           data: (list) => list.isEmpty
-              ? const EmptyView(compact: true, title: 'Sumber ini tidak punya filter')
+              ? EmptyView(compact: true, title: tr('Sumber ini tidak punya filter'))
               : Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -292,12 +293,12 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
                         children: [
                           TextButton(
                             onPressed: () => setState(() => _values = FilterValues.empty),
-                            child: const Text('Reset'),
+                            child: Text(tr('Reset')),
                           ),
                           const Spacer(),
                           FilledButton(
                             onPressed: () => Navigator.pop(context, _values),
-                            child: const Text('Terapkan'),
+                            child: Text(tr('Terapkan')),
                           ),
                         ],
                       ),

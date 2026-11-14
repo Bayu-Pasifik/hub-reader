@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../../core/i18n/strings.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -165,7 +166,7 @@ class _MigrateScreenState extends ConsumerState<MigrateScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialog) => AlertDialog(
-          title: const Text('Pindah sumber?'),
+          title: Text(tr('Pindah sumber?')),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -174,15 +175,15 @@ class _MigrateScreenState extends ConsumerState<MigrateScreen> {
                   'Favorit, kategori, tanda sudah dibaca (dicocokkan lewat nomor bab), dan bab terakhir dibaca ikut dipindah.'),
               CheckboxListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Simpan juga favorit lama'),
+                title: Text(tr('Simpan juga favorit lama')),
                 value: keepOld,
                 onChanged: (v) => setDialog(() => keepOld = v ?? false),
               ),
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
-            FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Pindahkan')),
+            TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr('Batal'))),
+            FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(tr('Pindahkan'))),
           ],
         ),
       ),
@@ -192,9 +193,9 @@ class _MigrateScreenState extends ConsumerState<MigrateScreen> {
     showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (_) => const AlertDialog(
+      builder: (_) => AlertDialog(
         content:
-            Row(children: [CircularProgressIndicator(), SizedBox(width: 16), Expanded(child: Text('Memindahkan…'))]),
+            Row(children: [CircularProgressIndicator(), SizedBox(width: 16), Expanded(child: Text(tr('Memindahkan…')))]),
       ),
     );
     final messenger = ScaffoldMessenger.of(context);
@@ -241,10 +242,10 @@ class _MigrateScreenState extends ConsumerState<MigrateScreen> {
         title: TextField(
           controller: _query,
           textInputAction: TextInputAction.search,
-          decoration: const InputDecoration(hintText: 'Judul di sumber lain…', border: InputBorder.none),
+          decoration: InputDecoration(hintText: tr('Judul di sumber lain…'), border: InputBorder.none),
           onSubmitted: (_) => _search(),
         ),
-        actions: [IconButton(tooltip: 'Cari', icon: const Icon(Icons.search), onPressed: _search)],
+        actions: [IconButton(tooltip: tr('Cari'), icon: const Icon(Icons.search), onPressed: _search)],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(52),
           child: Column(
@@ -259,7 +260,7 @@ class _MigrateScreenState extends ConsumerState<MigrateScreen> {
                       Padding(
                         padding: const EdgeInsets.only(right: 6),
                         child: ChoiceChip(
-                          label: const Text('Pernah dibuka'),
+                          label: Text(tr('Pernah dibuka')),
                           selected: _lang == null,
                           onSelected: (_) {
                             setState(() => _lang = null);

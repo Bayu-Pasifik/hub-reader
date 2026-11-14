@@ -407,7 +407,7 @@ class _BaseUrlDialogState extends ConsumerState<_BaseUrlDialog> {
           Text('Bawaan: ${widget.source.defaultBaseUrl}', style: theme.textTheme.bodySmall),
           const SizedBox(height: 4),
           Text(
-            'Favorit & riwayat dari domain lama tetap bisa dibuka (dialihkan otomatis).',
+            tr('Favorit & riwayat dari domain lama tetap bisa dibuka (dialihkan otomatis).'),
             style: theme.textTheme.bodySmall,
           ),
           if (_testing) const Padding(padding: EdgeInsets.only(top: 12), child: LinearProgressIndicator()),

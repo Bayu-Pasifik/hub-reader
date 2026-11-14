@@ -1,4 +1,5 @@
 import 'dart:convert';
+import '../../../core/i18n/strings.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -70,10 +71,10 @@ class _NovelBrowseScreenState extends ConsumerState<NovelBrowseScreen> {
     return sourceAsync.when(
       loading: () => Scaffold(
         appBar: AppBar(title: Text(title)),
-        body: const Center(
+        body: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            children: [CircularProgressIndicator(), SizedBox(height: 12), Text('Memuat plugin…')],
+            children: [CircularProgressIndicator(), SizedBox(height: 12), Text(tr('Memuat plugin…'))],
           ),
         ),
       ),
@@ -110,7 +111,7 @@ class _NovelBrowseScreenState extends ConsumerState<NovelBrowseScreen> {
           actions: [
             if (source.filters.isNotEmpty && !showSearch)
               IconButton(
-                tooltip: 'Filter',
+                tooltip: tr('Filter'),
                 icon: Badge(
                   isLabelVisible: activeFilters > 0,
                   label: Text('$activeFilters'),
@@ -133,8 +134,8 @@ class _NovelBrowseScreenState extends ConsumerState<NovelBrowseScreen> {
               },
               itemBuilder: (_) => [
                 if (source.settings.isNotEmpty)
-                  const PopupMenuItem(value: 'settings', child: Text('Pengaturan plugin')),
-                const PopupMenuItem(value: 'web', child: Text('Buka situs di WebView')),
+                  PopupMenuItem(value: 'settings', child: Text(tr('Pengaturan plugin'))),
+                PopupMenuItem(value: 'web', child: Text(tr('Buka situs di WebView'))),
               ],
             ),
           ],
@@ -361,7 +362,7 @@ class _NovelFilterSheetState extends State<NovelFilterSheet> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             header,
-            Text('Ketuk: sertakan → kecualikan → netral', style: theme.textTheme.bodySmall),
+            Text(tr('Ketuk: sertakan → kecualikan → netral'), style: theme.textTheme.bodySmall),
             const SizedBox(height: 6),
             Wrap(spacing: 6, runSpacing: 6, children: [
               for (final o in def.options)
@@ -416,12 +417,12 @@ class _NovelFilterSheetState extends State<NovelFilterSheet> {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.pop(context, const <String, Object?>{}),
-                    child: const Text('Reset'),
+                    child: Text(tr('Reset')),
                   ),
                   const Spacer(),
                   FilledButton(
                     onPressed: () => Navigator.pop(context, _changed()),
-                    child: const Text('Terapkan'),
+                    child: Text(tr('Terapkan')),
                   ),
                 ],
               ),

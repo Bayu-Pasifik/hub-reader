@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../../../core/i18n/strings.dart';
 import 'dart:io' show Directory;
 import 'dart:math' as math;
 
@@ -390,7 +391,7 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
           ),
         if (text.isNotEmpty)
           ContextMenuButtonItem(
-            label: 'Kamus',
+            label: tr('Kamus'),
             onPressed: () {
               state.hideToolbar();
               _showLookup(text);
@@ -522,7 +523,7 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
                                 ),
                               ),
                             if (blocks.isEmpty)
-                              Text('(Bab ini kosong)', style: textStyle)
+                              Text(tr('(Bab ini kosong)'), style: textStyle)
                             else
                               for (var i = 0; i < blocks.length; i++)
                                 Container(
@@ -555,7 +556,7 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
                                   child: OutlinedButton.icon(
                                     onPressed: hasPrev ? () => _step(-1, chapters, totalPages) : null,
                                     icon: const Icon(Icons.chevron_left),
-                                    label: const Text('Sebelumnya'),
+                                    label: Text(tr('Sebelumnya')),
                                     style: OutlinedButton.styleFrom(foregroundColor: fg),
                                   ),
                                 ),
@@ -564,7 +565,7 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
                                   child: FilledButton.icon(
                                     onPressed: hasNext ? () => _step(1, chapters, totalPages) : null,
                                     icon: const Icon(Icons.chevron_right),
-                                    label: const Text('Berikutnya'),
+                                    label: Text(tr('Berikutnya')),
                                   ),
                                 ),
                               ],
@@ -574,7 +575,7 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
                               LinearProgressIndicator(value: (_pull / _pullToNext).clamp(0.0, 1.0), color: fg),
                               const SizedBox(height: 8),
                               Text(
-                                'Tarik terus ke atas untuk lanjut ke bab berikutnya',
+                                tr('Tarik terus ke atas untuk lanjut ke bab berikutnya'),
                                 textAlign: TextAlign.center,
                                 style: textStyle.copyWith(fontSize: 13, color: fg.withValues(alpha: 0.6)),
                               ),
@@ -613,7 +614,7 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
                       children: [
                         if (widget.pluginId != LocalNovelSource.pluginId)
                         IconButton(
-                          tooltip: 'Buka di WebView',
+                          tooltip: tr('Buka di WebView'),
                           icon: const Icon(Icons.public),
                           onPressed: source == null
                               ? null
@@ -637,7 +638,7 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
                           onPressed: () => ref.read(chapterBookmarksProvider.notifier).toggle(_libKey, _chapterPath),
                         ),
                         IconButton(
-                          tooltip: 'Bacakan (TTS)',
+                          tooltip: tr('Bacakan (TTS)'),
                           icon: Icon(_tts.active ? Icons.stop_circle_outlined : Icons.headphones),
                           onPressed: content.hasValue ? () => _tts.active ? _tts.stop() : _startTts() : null,
                         ),
@@ -647,7 +648,7 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
                           onPressed: content.hasValue ? _toggleAutoScroll : null,
                         ),
                         IconButton(
-                          tooltip: 'Tampilan',
+                          tooltip: tr('Tampilan'),
                           icon: const Icon(Icons.text_fields),
                           onPressed: () => showModalBottomSheet<void>(
                             context: context,
@@ -678,7 +679,7 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
                       : Row(
                           children: [
                             IconButton(
-                              tooltip: 'Bab sebelumnya',
+                              tooltip: tr('Bab sebelumnya'),
                               onPressed: hasPrev ? () => _step(-1, chapters, totalPages) : null,
                               icon: const Icon(Icons.skip_previous),
                             ),
@@ -692,7 +693,7 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
                               ),
                             ),
                             IconButton(
-                              tooltip: 'Bab berikutnya',
+                              tooltip: tr('Bab berikutnya'),
                               onPressed: hasNext ? () => _step(1, chapters, totalPages) : null,
                               icon: const Icon(Icons.skip_next),
                             ),
@@ -713,7 +714,7 @@ extension on _NovelReaderScreenState {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           IconButton(
-              tooltip: 'Paragraf sebelumnya', icon: const Icon(Icons.fast_rewind), onPressed: () => _tts.skip(-1)),
+              tooltip: tr('Paragraf sebelumnya'), icon: const Icon(Icons.fast_rewind), onPressed: () => _tts.skip(-1)),
           IconButton.filled(
             tooltip: _tts.playing ? 'Jeda' : 'Lanjutkan',
             iconSize: 32,
@@ -721,9 +722,9 @@ extension on _NovelReaderScreenState {
             onPressed: () => _tts.playing ? _tts.pause() : _tts.resume(),
           ),
           IconButton(
-              tooltip: 'Paragraf berikutnya', icon: const Icon(Icons.fast_forward), onPressed: () => _tts.skip(1)),
+              tooltip: tr('Paragraf berikutnya'), icon: const Icon(Icons.fast_forward), onPressed: () => _tts.skip(1)),
           PopupMenuButton<int>(
-            tooltip: 'Timer tidur',
+            tooltip: tr('Timer tidur'),
             icon: Icon(_tts.sleepActive ? Icons.bedtime : Icons.bedtime_outlined),
             onSelected: (m) {
               if (m == 0) {
@@ -736,11 +737,11 @@ extension on _NovelReaderScreenState {
             },
             itemBuilder: (_) => [
               for (final m in const [15, 30, 45, 60]) PopupMenuItem(value: m, child: Text('$m menit')),
-              const PopupMenuItem(value: -1, child: Text('Akhir bab ini')),
-              if (_tts.sleepActive) const PopupMenuItem(value: 0, child: Text('Matikan timer')),
+              PopupMenuItem(value: -1, child: Text(tr('Akhir bab ini'))),
+              if (_tts.sleepActive) PopupMenuItem(value: 0, child: Text(tr('Matikan timer'))),
             ],
           ),
-          IconButton(tooltip: 'Berhenti', icon: const Icon(Icons.stop), onPressed: _tts.stop),
+          IconButton(tooltip: tr('Berhenti'), icon: const Icon(Icons.stop), onPressed: _tts.stop),
         ],
       );
 }
@@ -783,7 +784,7 @@ class _ReaderSettingsSheet extends ConsumerWidget {
                 s.padding.toStringAsFixed(0)),
             Row(
               children: [
-                const SizedBox(width: 110, child: Text('Huruf')),
+                SizedBox(width: 110, child: Text(tr('Huruf'))),
                 Expanded(
                   child: Wrap(spacing: 6, runSpacing: 6, children: [
                     for (final f in NovelFont.values)
@@ -800,7 +801,7 @@ class _ReaderSettingsSheet extends ConsumerWidget {
                 (v) => n.update((x) => x.copyWith(paragraphSpacing: v)), s.paragraphSpacing.toStringAsFixed(1)),
             Row(
               children: [
-                const SizedBox(width: 110, child: Text('Font kustom')),
+                SizedBox(width: 110, child: Text(tr('Font kustom'))),
                 Expanded(
                   child: Wrap(spacing: 6, runSpacing: 6, children: [
                     ActionChip(
@@ -810,7 +811,7 @@ class _ReaderSettingsSheet extends ConsumerWidget {
                     ),
                     if (s.customFontPath != null)
                       ActionChip(
-                        label: const Text('Hapus'),
+                        label: Text(tr('Hapus')),
                         onPressed: () => n.update((x) => x.copyWith(customFontPath: null)),
                       ),
                   ]),
@@ -819,13 +820,13 @@ class _ReaderSettingsSheet extends ConsumerWidget {
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Teks tebal'),
+              title: Text(tr('Teks tebal')),
               value: s.bold,
               onChanged: (v) => n.update((x) => x.copyWith(bold: v)),
             ),
             Row(
               children: [
-                const SizedBox(width: 110, child: Text('Perataan')),
+                SizedBox(width: 110, child: Text(tr('Perataan'))),
                 Expanded(
                   child: Wrap(spacing: 6, runSpacing: 6, children: [
                     for (final e in const {
@@ -847,34 +848,34 @@ class _ReaderSettingsSheet extends ConsumerWidget {
             _colorRow(context, 'Warna teks', s.customFg, _fgSwatches, (c) => n.update((x) => x.copyWith(customFg: c))),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Tarik di akhir bab untuk lanjut'),
+              title: Text(tr('Tarik di akhir bab untuk lanjut')),
               value: s.autoNext,
               onChanged: (v) => n.update((x) => x.copyWith(autoNext: v)),
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Tombol volume untuk menggulir'),
-              subtitle: const Text('Volume turun = halaman berikutnya'),
+              title: Text(tr('Tombol volume untuk menggulir')),
+              subtitle: Text(tr('Volume turun = halaman berikutnya')),
               value: s.volumeKeys,
               onChanged: (v) => n.update((x) => x.copyWith(volumeKeys: v)),
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Layar tetap menyala'),
+              title: Text(tr('Layar tetap menyala')),
               value: s.keepScreenOn,
               onChanged: (v) => n.update((x) => x.copyWith(keepScreenOn: v)),
             ),
             _slider(context, 'Gulir otomatis', s.autoScrollSpeed, 10, 200, 19,
                 (v) => n.update((x) => x.copyWith(autoScrollSpeed: v)), s.autoScrollSpeed.toStringAsFixed(0)),
             const Divider(),
-            Text('Suara (TTS)', style: Theme.of(context).textTheme.titleSmall),
+            Text(tr('Suara (TTS)'), style: Theme.of(context).textTheme.titleSmall),
             _slider(context, 'Kecepatan', s.ttsRate, 0.1, 1.0, 18, (v) => n.update((x) => x.copyWith(ttsRate: v)),
                 '${(s.ttsRate * 2).toStringAsFixed(1)}x'),
             _slider(context, 'Nada', s.ttsPitch, 0.5, 2.0, 15, (v) => n.update((x) => x.copyWith(ttsPitch: v)),
                 s.ttsPitch.toStringAsFixed(1)),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Lanjut ke bab berikutnya'),
+              title: Text(tr('Lanjut ke bab berikutnya')),
               value: s.ttsAutoNext,
               onChanged: (v) => n.update((x) => x.copyWith(ttsAutoNext: v)),
             ),
@@ -994,9 +995,9 @@ class _LookupSheetState extends State<_LookupSheet> {
               const SizedBox(height: 12),
               SegmentedButton<String>(
                 showSelectedIcon: false,
-                segments: const [
-                  ButtonSegment(value: 'id', label: Text('Ke Indonesia')),
-                  ButtonSegment(value: 'en', label: Text('Ke Inggris')),
+                segments: [
+                  ButtonSegment(value: 'id', label: Text(tr('Ke Indonesia'))),
+                  ButtonSegment(value: 'en', label: Text(tr('Ke Inggris'))),
                 ],
                 selected: {_target},
                 onSelectionChanged: (v) => setState(() {
@@ -1016,7 +1017,7 @@ class _LookupSheetState extends State<_LookupSheet> {
                   }
                   final r = snap.data;
                   if (r == null || r.isEmpty) {
-                    return const Text('Tidak ada hasil. Teks mungkin sudah berbahasa itu, atau periksa koneksi internet.');
+                    return Text(tr('Tidak ada hasil. Teks mungkin sudah berbahasa itu, atau periksa koneksi internet.'));
                   }
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1045,7 +1046,7 @@ class _LookupSheetState extends State<_LookupSheet> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Teks dikirim ke layanan terjemah web (MyMemory, dictionaryapi.dev).',
+                tr('Teks dikirim ke layanan terjemah web (MyMemory, dictionaryapi.dev).'),
                 style: theme.textTheme.bodySmall,
               ),
             ],

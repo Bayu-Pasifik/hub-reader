@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/i18n/strings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -27,17 +28,17 @@ class DownloadsScreen extends ConsumerWidget {
 
     if (queue.isEmpty && series.isEmpty) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Unduhan')),
-        body: const EmptyView(
+        appBar: AppBar(title: Text(tr('Unduhan'))),
+        body: EmptyView(
           icon: Icons.download_outlined,
-          title: 'Belum ada unduhan',
-          message: 'Ketuk ikon unduh di daftar bab untuk menyimpan bab agar bisa dibaca offline.',
+          title: tr('Belum ada unduhan'),
+          message: tr('Ketuk ikon unduh di daftar bab untuk menyimpan bab agar bisa dibaca offline.'),
         ),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Unduhan')),
+      appBar: AppBar(title: Text(tr('Unduhan'))),
       body: ListView(
         children: [
           if (queue.isNotEmpty) ...[
@@ -67,12 +68,12 @@ class DownloadsScreen extends ConsumerWidget {
                   children: [
                     if (task.status == DownloadStatus.failed)
                       IconButton(
-                        tooltip: 'Coba lagi',
+                        tooltip: tr('Coba lagi'),
                         icon: const Icon(Icons.refresh),
                         onPressed: () => ref.read(downloadQueueProvider.notifier).retry(task.key),
                       ),
                     IconButton(
-                      tooltip: 'Batalkan',
+                      tooltip: tr('Batalkan'),
                       icon: const Icon(Icons.close),
                       onPressed: () => ref.read(downloadQueueProvider.notifier).cancel(task.key),
                     ),
@@ -102,10 +103,10 @@ class _SeriesDownloads extends ConsumerWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Hapus ${chapters.length} bab "${first.mangaTitle}"?'),
-        content: const Text('File unduhan akan dihapus dari perangkat.'),
+        content: Text(tr('File unduhan akan dihapus dari perangkat.')),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Hapus')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr('Batal'))),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(tr('Hapus'))),
         ],
       ),
     );
@@ -125,7 +126,7 @@ class _SeriesDownloads extends ConsumerWidget {
       title: Text(first.mangaTitle, maxLines: 1, overflow: TextOverflow.ellipsis),
       subtitle: Text('${chapters.length} bab · ${info.name}${info.isNovel ? ' · novel' : ''}'),
       trailing: IconButton(
-        tooltip: 'Hapus semua bab seri ini',
+        tooltip: tr('Hapus semua bab seri ini'),
         icon: const Icon(Icons.delete_outline),
         onPressed: () => _confirmDeleteAll(context, ref),
       ),
@@ -138,7 +139,7 @@ class _SeriesDownloads extends ConsumerWidget {
             subtitle: info.isNovel ? null : Text('${c.files.length} halaman'),
             onTap: () => context.push(info.readerLocation(c.mangaUrl, c.chapterUrl)),
             trailing: IconButton(
-              tooltip: 'Hapus',
+              tooltip: tr('Hapus'),
               icon: const Icon(Icons.close),
               onPressed: () => ref.read(downloadIndexProvider.notifier).remove(c.key),
             ),

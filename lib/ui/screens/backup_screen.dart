@@ -1,4 +1,5 @@
 import 'dart:convert';
+import '../../core/i18n/strings.dart';
 import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
@@ -116,7 +117,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Pulihkan cadangan?'),
+        title: Text(tr('Pulihkan cadangan?')),
         content: Text([
           if (created != null)
             'Dibuat ${created.day}-${created.month}-${created.year} '
@@ -131,8 +132,8 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
           '\nFavorit, riwayat, progres, dan pengaturan di HP ini akan DIGANTI. Unduhan tidak berubah.',
         ].join('\n')),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Pulihkan')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr('Batal'))),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(tr('Pulihkan'))),
         ],
       ),
     );
@@ -163,7 +164,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     final auto = ref.watch(autoBackupProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Cadangan'),
+        title: Text(tr('Cadangan')),
         bottom: _busy ? const PreferredSize(preferredSize: Size.fromHeight(4), child: LinearProgressIndicator()) : null,
       ),
       body: ListView(
@@ -179,21 +180,21 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
             child: Column(
               children: [
                 SwitchListTile(
-                  title: const Text('Sertakan cookie login & pengaturan plugin'),
-                  subtitle: const Text('Berisi sesi login situs; jangan bagikan file ini ke orang lain.'),
+                  title: Text(tr('Sertakan cookie login & pengaturan plugin')),
+                  subtitle: Text(tr('Berisi sesi login situs; jangan bagikan file ini ke orang lain.')),
                   value: _secrets,
                   onChanged: _busy ? null : (v) => setState(() => _secrets = v),
                 ),
                 SwitchListTile(
-                  title: const Text('Sertakan plugin novel terpasang'),
-                  subtitle: const Text('Kode plugin ikut disimpan, jadi sumber tetap bisa dipasang walau repo-nya hilang.'),
+                  title: Text(tr('Sertakan plugin novel terpasang')),
+                  subtitle: Text(tr('Kode plugin ikut disimpan, jadi sumber tetap bisa dipasang walau repo-nya hilang.')),
                   value: _plugins,
                   onChanged: _busy ? null : (v) => setState(() => _plugins = v),
                 ),
                 ListTile(
                   leading: const Icon(Icons.save_alt),
-                  title: const Text('Buat cadangan'),
-                  subtitle: const Text('Simpan file .json ke penyimpanan / Drive'),
+                  title: Text(tr('Buat cadangan')),
+                  subtitle: Text(tr('Simpan file .json ke penyimpanan / Drive')),
                   enabled: !_busy,
                   onTap: _backup,
                 ),
@@ -204,14 +205,14 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
           Card(
             child: ListTile(
               leading: const Icon(Icons.restore),
-              title: const Text('Pulihkan dari file'),
-              subtitle: const Text('Mengganti data di HP ini dengan isi cadangan'),
+              title: Text(tr('Pulihkan dari file')),
+              subtitle: Text(tr('Mengganti data di HP ini dengan isi cadangan')),
               enabled: !_busy,
               onTap: _restore,
             ),
           ),
           const SizedBox(height: 24),
-          Text('Cadangan otomatis', style: theme.textTheme.titleMedium),
+          Text(tr('Cadangan otomatis'), style: theme.textTheme.titleMedium),
           const SizedBox(height: 4),
           Text(
             'Disimpan di folder aplikasi (Android/data/<paket>/files/backups), bisa diambil lewat USB / pengelola file. '
@@ -224,7 +225,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
               children: [
                 ListTile(
                   leading: const Icon(Icons.schedule),
-                  title: const Text('Jadwal'),
+                  title: Text(tr('Jadwal')),
                   trailing: DropdownButton<int>(
                     value: auto.hours,
                     underline: const SizedBox.shrink(),
@@ -237,7 +238,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                 ),
                 ListTile(
                   leading: const Icon(Icons.layers_outlined),
-                  title: const Text('Simpan cadangan terbaru'),
+                  title: Text(tr('Simpan cadangan terbaru')),
                   trailing: DropdownButton<int>(
                     value: auto.keep,
                     underline: const SizedBox.shrink(),
@@ -248,19 +249,19 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                   ),
                 ),
                 SwitchListTile(
-                  title: const Text('Sertakan plugin novel'),
+                  title: Text(tr('Sertakan plugin novel')),
                   value: auto.plugins,
                   onChanged: _busy ? null : (v) => _setAuto(auto.copyWith(plugins: v)),
                 ),
                 SwitchListTile(
-                  title: const Text('Sertakan cookie login'),
-                  subtitle: const Text('Disimpan tanpa enkripsi di folder aplikasi.'),
+                  title: Text(tr('Sertakan cookie login')),
+                  subtitle: Text(tr('Disimpan tanpa enkripsi di folder aplikasi.')),
                   value: auto.secrets,
                   onChanged: _busy ? null : (v) => _setAuto(auto.copyWith(secrets: v)),
                 ),
                 ListTile(
                   leading: const Icon(Icons.backup_outlined),
-                  title: const Text('Cadangkan sekarang'),
+                  title: Text(tr('Cadangkan sekarang')),
                   subtitle: Builder(builder: (_) {
                     final last = AutoBackup.lastRun(ref.read(sharedPreferencesProvider));
                     return Text(last == null ? 'Belum pernah' : 'Terakhir ${_stamp(last)}');
@@ -289,7 +290,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                         onTap: () => _restoreAuto(e),
                         trailing: IconButton(
                           icon: const Icon(Icons.delete_outline),
-                          tooltip: 'Hapus',
+                          tooltip: tr('Hapus'),
                           onPressed: _busy
                               ? null
                               : () async {

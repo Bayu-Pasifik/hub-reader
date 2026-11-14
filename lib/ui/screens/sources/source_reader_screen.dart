@@ -1,4 +1,5 @@
 import 'dart:io';
+import '../../../core/i18n/strings.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -101,14 +102,14 @@ class _SourceReaderScreenState extends ConsumerState<SourceReaderScreen> {
               );
             }),
           IconButton(
-            tooltip: 'Pengaturan baca',
+            tooltip: tr('Pengaturan baca'),
             icon: const Icon(Icons.tune),
             onPressed: () => showReaderSettingsSheet(context, seriesKey),
           ),
         ],
       ),
       body: source == null
-          ? const EmptyView(title: 'Sumber tidak ditemukan')
+          ? EmptyView(title: tr('Sumber tidak ditemukan'))
           : _Pages(
               // Kunci menyertakan mode: ganti mode = posisi dibaca ulang dari progres.
               key: ValueKey('${chapter.url}|${mode.name}'),
@@ -129,16 +130,16 @@ class _SourceReaderScreenState extends ConsumerState<SourceReaderScreen> {
                   TextButton.icon(
                     onPressed: prev == null ? null : () => _goTo(prev),
                     icon: const Icon(Icons.chevron_left),
-                    label: const Text('Sebelumnya'),
+                    label: Text(tr('Sebelumnya')),
                   ),
                   const Spacer(),
                   Text('${chapters.length - index}/${chapters.length}'),
                   const Spacer(),
                   TextButton(
                     onPressed: next == null ? null : () => _goTo(next),
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
-                      children: [Text('Berikutnya'), Icon(Icons.chevron_right)],
+                      children: [Text(tr('Berikutnya')), Icon(Icons.chevron_right)],
                     ),
                   ),
                 ],
@@ -608,20 +609,20 @@ class _ChapterTransition extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Selesai', style: theme.textTheme.labelLarge),
+            Text(tr('Selesai'), style: theme.textTheme.labelLarge),
             Text(finished.name, style: theme.textTheme.titleMedium, textAlign: TextAlign.center),
             const SizedBox(height: 16),
             if (next != null) ...[
-              Text('Berikutnya', style: theme.textTheme.labelLarge),
+              Text(tr('Berikutnya'), style: theme.textTheme.labelLarge),
               Text(next!.name, style: theme.textTheme.titleMedium, textAlign: TextAlign.center),
               const SizedBox(height: 12),
               FilledButton.icon(
                 onPressed: onNext,
                 icon: const Icon(Icons.skip_next),
-                label: const Text('Lanjut ke bab berikutnya'),
+                label: Text(tr('Lanjut ke bab berikutnya')),
               ),
             ] else
-              Text('Ini bab terbaru.', style: theme.textTheme.bodyMedium),
+              Text(tr('Ini bab terbaru.'), style: theme.textTheme.bodyMedium),
           ],
         ),
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/i18n/strings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -102,10 +103,10 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Hapus "${manga.title}"?'),
-        content: const Text('File komik di perangkat ikut dihapus dan tidak bisa dikembalikan.'),
+        content: Text(tr('File komik di perangkat ikut dihapus dan tidak bisa dikembalikan.')),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Hapus')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr('Batal'))),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(tr('Hapus'))),
         ],
       ),
     );
@@ -129,7 +130,7 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
       ..showSnackBar(SnackBar(
         content: Text(wasFavorite ? 'Dihapus dari favorit' : 'Ditambahkan ke favorit'),
         duration: const Duration(seconds: 4),
-        action: wasFavorite ? null : SnackBarAction(label: 'Kategori', onPressed: () => showCategorySheet(context, item.key)),
+        action: wasFavorite ? null : SnackBarAction(label: tr('Kategori'), onPressed: () => showCategorySheet(context, item.key)),
       ));
   }
 
@@ -183,12 +184,12 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
             ),
           if (loaded != null && source is! LocalSource)
             PopupMenuButton<int?>(
-              tooltip: 'Unduh',
+              tooltip: tr('Unduh'),
               icon: const Icon(Icons.download_outlined),
               onSelected: (limit) => _downloadMany(loaded, limit: limit == 0 ? null : limit),
-              itemBuilder: (_) => const [
-                PopupMenuItem(value: 5, child: Text('Unduh 5 bab berikutnya')),
-                PopupMenuItem(value: 0, child: Text('Unduh semua yang belum dibaca')),
+              itemBuilder: (_) => [
+                PopupMenuItem(value: 5, child: Text(tr('Unduh 5 bab berikutnya'))),
+                PopupMenuItem(value: 0, child: Text(tr('Unduh semua yang belum dibaca'))),
               ],
             ),
           IconButton(
@@ -234,16 +235,16 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
                 }
               },
               itemBuilder: (_) => [
-                if (source is! LocalSource) const PopupMenuItem(value: 'share', child: Text('Bagikan')),
-                const PopupMenuItem(value: 'track', child: Text('Tracking')),
-                const PopupMenuItem(value: 'note', child: Text('Catatan')),
+                if (source is! LocalSource) PopupMenuItem(value: 'share', child: Text(tr('Bagikan'))),
+                PopupMenuItem(value: 'track', child: Text(tr('Tracking'))),
+                PopupMenuItem(value: 'note', child: Text(tr('Catatan'))),
                 CheckedPopupMenuItem(
                   value: 'bookmarked',
                   checked: _onlyBookmarked,
-                  child: const Text('Hanya bab ber-bookmark'),
+                  child: Text(tr('Hanya bab ber-bookmark')),
                 ),
-                const PopupMenuItem(value: 'migrate', child: Text('Pindah sumber')),
-                if (source is LocalSource) const PopupMenuItem(value: 'delete', child: Text('Hapus dari perangkat')),
+                PopupMenuItem(value: 'migrate', child: Text(tr('Pindah sumber'))),
+                if (source is LocalSource) PopupMenuItem(value: 'delete', child: Text(tr('Hapus dari perangkat'))),
               ],
             ),
         ],
@@ -352,7 +353,7 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
                 // Bab terakhir di list situs = bab pertama.
                 onPressed: () => _openChapter(manga.chapters.last.url),
                 icon: const Icon(Icons.play_arrow),
-                label: const Text('Mulai baca'),
+                label: Text(tr('Mulai baca')),
               ),
         _ => null,
       },
@@ -444,8 +445,8 @@ class _SimilarSeriesState extends ConsumerState<_SimilarSeries> {
         ListTile(
           contentPadding: EdgeInsets.zero,
           leading: const Icon(Icons.recommend_outlined),
-          title: const Text('Mirip ini'),
-          subtitle: const Text('Karya penulis sama & seri sejudul'),
+          title: Text(tr('Mirip ini')),
+          subtitle: Text(tr('Karya penulis sama & seri sejudul')),
           trailing: Icon(_open ? Icons.expand_less : Icons.expand_more),
           onTap: () => setState(() => _open = !_open),
         ),
@@ -455,11 +456,11 @@ class _SimilarSeriesState extends ConsumerState<_SimilarSeries> {
                   padding: EdgeInsets.all(16),
                   child: Center(child: CircularProgressIndicator()),
                 ),
-                error: (_, __) => const Padding(padding: EdgeInsets.all(8), child: Text('Gagal memuat rekomendasi')),
+                error: (_, __) => Padding(padding: EdgeInsets.all(8), child: Text(tr('Gagal memuat rekomendasi'))),
                 data: (items) => items.isEmpty
                     ? Padding(
                         padding: const EdgeInsets.all(8),
-                        child: Text('Tidak ada seri mirip ditemukan', style: theme.textTheme.bodySmall),
+                        child: Text(tr('Tidak ada seri mirip ditemukan'), style: theme.textTheme.bodySmall),
                       )
                     : SizedBox(
                         height: 230,
@@ -506,14 +507,14 @@ class _ChapterDownloadButton extends ConsumerWidget {
 
     if (downloaded) {
       return IconButton(
-        tooltip: 'Hapus unduhan',
+        tooltip: tr('Hapus unduhan'),
         icon: Icon(Icons.offline_pin, color: Theme.of(context).colorScheme.primary),
         onPressed: () => ref.read(downloadIndexProvider.notifier).remove(key),
       );
     }
     return switch (task?.status) {
       DownloadStatus.queued || DownloadStatus.downloading => IconButton(
-          tooltip: 'Batalkan unduhan',
+          tooltip: tr('Batalkan unduhan'),
           onPressed: () => queue.cancel(key),
           icon: SizedBox.square(
             dimension: 22,
@@ -526,7 +527,7 @@ class _ChapterDownloadButton extends ConsumerWidget {
           onPressed: () => queue.retry(key),
         ),
       null => IconButton(
-          tooltip: 'Unduh',
+          tooltip: tr('Unduh'),
           icon: const Icon(Icons.download_for_offline_outlined),
           onPressed: () => queue.enqueue(
             sourceId: sourceId,

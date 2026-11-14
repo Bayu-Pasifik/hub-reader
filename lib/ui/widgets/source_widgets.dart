@@ -1,4 +1,5 @@
 import 'dart:io';
+import '../../core/i18n/strings.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -136,13 +137,13 @@ class SourceErrorView extends StatelessWidget {
             FilledButton.icon(
               onPressed: () => _verify(context, verifyTarget),
               icon: const Icon(Icons.open_in_browser),
-              label: const Text('Buka di WebView'),
+              label: Text(tr('Buka di WebView')),
             ),
           if (onRetry != null)
             FilledButton.tonalIcon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
-              label: const Text('Coba lagi'),
+              label: Text(tr('Coba lagi')),
             ),
         ],
       ),
