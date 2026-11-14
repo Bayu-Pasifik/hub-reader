@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../data/models/source_library.dart';
+import '../../../state/download_providers.dart' show downloadIndexProvider;
 import '../../../state/library_updates_provider.dart';
 import '../../../state/novel_providers.dart';
 import '../../../state/source_library_providers.dart';
@@ -47,6 +48,7 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
     LibraryView view,
     Map<String, int> unread,
     Map<String, DateTime> lastRead,
+    Set<String> downloaded,
   ) {
     final q = _search.text.trim().toLowerCase();
     final out = list.where((f) {
@@ -55,6 +57,7 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
       if (view.kind == LibraryKind.comic && novel) return false;
       if (view.kind == LibraryKind.novel && !novel) return false;
       if (view.unreadOnly && (unread[f.item.key] ?? 0) == 0) return false;
+      if (view.downloadedOnly && !downloaded.contains(f.item.key)) return false;
       if (q.isNotEmpty && !f.item.title.toLowerCase().contains(q)) return false;
       return true;
     }).toList();
@@ -96,7 +99,11 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
     final lastRead = {for (final h in ref.watch(sourceHistoryProvider)) h.item.key: h.readAt};
     final unseen = ref.watch(libraryUpdatesProvider.select((s) => s.unseen));
     final checking = ref.watch(libraryUpdatesProvider.select((s) => s.checking));
-    final filtered = view.kind != LibraryKind.all || view.unreadOnly || view.sort != LibrarySort.added;
+    final downloaded = {for (final c in ref.watch(downloadIndexProvider).values) c.mangaKey};
+    final filtered = view.kind != LibraryKind.all ||
+        view.unreadOnly ||
+        view.downloadedOnly ||
+        view.sort != LibrarySort.added;
     final tabs = <String?>[null, ...categories];
 
     return DefaultTabController(
@@ -174,7 +181,7 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
                 children: [
                   for (final c in tabs)
                     _FavoritesGrid(
-                      entries: _apply(favorites, c, view, unread, lastRead),
+                      entries: _apply(favorites, c, view, unread, lastRead, downloaded),
                       unread: unread,
                       onLongPress: _openActions,
                     ),
@@ -288,6 +295,12 @@ class _ViewSheet extends ConsumerWidget {
               title: const Text('Hanya yang ada bab baru belum dibaca'),
               value: view.unreadOnly,
               onChanged: (v) => n.set(unreadOnly: v),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Hanya yang sudah diunduh'),
+              value: view.downloadedOnly,
+              onChanged: (v) => n.set(downloadedOnly: v),
             ),
             Text('Urutkan', style: theme.textTheme.titleSmall),
             RadioGroup<LibrarySort>(

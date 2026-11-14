@@ -149,7 +149,7 @@ enum LibraryKind {
   final String label;
 }
 
-typedef LibraryView = ({LibrarySort sort, LibraryKind kind, bool unreadOnly});
+typedef LibraryView = ({LibrarySort sort, LibraryKind kind, bool unreadOnly, bool downloadedOnly});
 
 final libraryViewProvider = NotifierProvider<LibraryViewNotifier, LibraryView>(LibraryViewNotifier.new);
 
@@ -165,14 +165,21 @@ class LibraryViewNotifier extends Notifier<LibraryView> {
       sort: pick(LibrarySort.values, 0, LibrarySort.added),
       kind: pick(LibraryKind.values, 1, LibraryKind.all),
       unreadOnly: raw.length > 2 && raw[2] == '1',
+      downloadedOnly: raw.length > 3 && raw[3] == '1',
     );
   }
 
-  Future<void> set({LibrarySort? sort, LibraryKind? kind, bool? unreadOnly}) async {
-    state = (sort: sort ?? state.sort, kind: kind ?? state.kind, unreadOnly: unreadOnly ?? state.unreadOnly);
-    await ref
-        .read(sharedPreferencesProvider)
-        .setStringList(_key, [state.sort.name, state.kind.name, state.unreadOnly ? '1' : '0']);
+  Future<void> set({LibrarySort? sort, LibraryKind? kind, bool? unreadOnly, bool? downloadedOnly}) async {
+    state = (
+      sort: sort ?? state.sort,
+      kind: kind ?? state.kind,
+      unreadOnly: unreadOnly ?? state.unreadOnly,
+      downloadedOnly: downloadedOnly ?? state.downloadedOnly,
+    );
+    await ref.read(sharedPreferencesProvider).setStringList(
+      _key,
+      [state.sort.name, state.kind.name, state.unreadOnly ? '1' : '0', state.downloadedOnly ? '1' : '0'],
+    );
   }
 }
 

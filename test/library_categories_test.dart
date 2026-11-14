@@ -28,4 +28,24 @@ void main() {
     expect(c.read(sourceFavoritesProvider).single.categories, ['Sedang dibaca']);
     expect(c.read(libraryCategoriesProvider), ['Sedang dibaca']);
   });
+
+  test('downloadedOnly filter persists and defaults off for old saved views', () async {
+    SharedPreferences.setMockInitialValues({
+      'library.view.v1': ['title', 'novel', '1'],
+    });
+    final prefs = await SharedPreferences.getInstance();
+    final c = ProviderContainer(overrides: [sharedPreferencesProvider.overrideWithValue(prefs)]);
+    addTearDown(c.dispose);
+    expect(c.read(libraryViewProvider).downloadedOnly, isFalse);
+    expect(c.read(libraryViewProvider).unreadOnly, isTrue);
+
+    await c.read(libraryViewProvider.notifier).set(downloadedOnly: true);
+    final c2 = ProviderContainer(overrides: [sharedPreferencesProvider.overrideWithValue(prefs)]);
+    addTearDown(c2.dispose);
+    final v = c2.read(libraryViewProvider);
+    expect(v.downloadedOnly, isTrue);
+    expect(v.unreadOnly, isTrue);
+    expect(v.kind, LibraryKind.novel);
+    expect(v.sort, LibrarySort.title);
+  });
 }
