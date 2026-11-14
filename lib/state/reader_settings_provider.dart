@@ -145,10 +145,14 @@ class ReaderDisplay {
     this.invert = false,
     this.dim = 0,
     this.spread = true,
+    this.keepScreenOn = true,
   });
 
   /// Dua halaman berdampingan (mode per halaman, tablet landscape).
   final bool spread;
+
+  /// Layar tetap menyala selama membaca.
+  final bool keepScreenOn;
 
   /// Buang tepi polos (putih/hitam) di sekeliling gambar. Di mode webtoon
   /// hanya kiri-kanan, supaya potongan strip tetap menyambung.
@@ -161,17 +165,18 @@ class ReaderDisplay {
 
   bool get hasColorFilter => grayscale || invert || dim > 0;
 
-  ReaderDisplay copyWith({bool? cropBorders, bool? grayscale, bool? invert, double? dim, bool? spread}) =>
+  ReaderDisplay copyWith({bool? cropBorders, bool? grayscale, bool? invert, double? dim, bool? spread, bool? keepScreenOn}) =>
       ReaderDisplay(
         cropBorders: cropBorders ?? this.cropBorders,
         grayscale: grayscale ?? this.grayscale,
         invert: invert ?? this.invert,
         dim: dim ?? this.dim,
         spread: spread ?? this.spread,
+        keepScreenOn: keepScreenOn ?? this.keepScreenOn,
       );
 
   Map<String, Object> toJson() =>
-      {'crop': cropBorders, 'gray': grayscale, 'invert': invert, 'dim': dim, 'spread': spread};
+      {'crop': cropBorders, 'gray': grayscale, 'invert': invert, 'dim': dim, 'spread': spread, 'keep': keepScreenOn};
 
   factory ReaderDisplay.fromJson(Map<String, Object?> json) => ReaderDisplay(
         cropBorders: json['crop'] == true,
@@ -179,6 +184,7 @@ class ReaderDisplay {
         invert: json['invert'] == true,
         dim: ((json['dim'] as num?)?.toDouble() ?? 0).clamp(0, 0.8),
         spread: json['spread'] != false,
+        keepScreenOn: json['keep'] != false,
       );
 
   @override
@@ -188,10 +194,11 @@ class ReaderDisplay {
       other.grayscale == grayscale &&
       other.invert == invert &&
       other.dim == dim &&
-      other.spread == spread;
+      other.spread == spread &&
+      other.keepScreenOn == keepScreenOn;
 
   @override
-  int get hashCode => Object.hash(cropBorders, grayscale, invert, dim, spread);
+  int get hashCode => Object.hash(cropBorders, grayscale, invert, dim, spread, keepScreenOn);
 }
 
 /// Lebar minimum (dp) layar landscape agar dua halaman ditampilkan.

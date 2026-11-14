@@ -6,6 +6,7 @@ import 'package:flutter/scheduler.dart' show Ticker;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
+import '../../../core/platform/reader_bridge.dart';
 import '../../../data/models/source_library.dart';
 import '../../../sources/models.dart';
 import '../../../sources/source.dart';
@@ -213,6 +214,15 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
     _positions.itemPositions.addListener(_onScroll);
     _session.activity();
     _lifecycle = AppLifecycleListener(onPause: _session.pause, onResume: _session.activity);
+    ReaderBridge.setKeepScreenOn(widget.display.keepScreenOn);
+  }
+
+  @override
+  void didUpdateWidget(covariant _Pages old) {
+    super.didUpdateWidget(old);
+    if (old.display.keepScreenOn != widget.display.keepScreenOn) {
+      ReaderBridge.setKeepScreenOn(widget.display.keepScreenOn);
+    }
   }
 
   void _toggleAutoScroll() {
@@ -245,6 +255,7 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
 
   @override
   void dispose() {
+    ReaderBridge.setKeepScreenOn(false);
     _ticker.dispose();
     _lifecycle.dispose();
     _session.pause();

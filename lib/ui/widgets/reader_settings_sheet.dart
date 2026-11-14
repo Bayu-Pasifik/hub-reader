@@ -154,6 +154,12 @@ class _ReaderSettingsSheet extends ConsumerWidget {
               value: global.spread,
               onChanged: (v) => setDisplay(global.copyWith(spread: v)),
             ),
+            SwitchListTile(
+              title: const Text('Layar tetap menyala'),
+              subtitle: const Text('Cegah layar mati saat membaca'),
+              value: global.keepScreenOn,
+              onChanged: (v) => setDisplay(global.copyWith(keepScreenOn: v)),
+            ),
             const Divider(),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
