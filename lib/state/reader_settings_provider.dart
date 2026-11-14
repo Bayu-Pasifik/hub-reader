@@ -137,6 +137,20 @@ class WebtoonAutoScrollSpeedNotifier extends Notifier<double> {
   }
 }
 
+/// Efek perpindahan halaman (mode per halaman).
+enum PageTransitionStyle {
+  slide('Geser (biasa)'),
+  fade('Pudar'),
+  zoom('Zoom'),
+  flip('Balik halaman');
+
+  const PageTransitionStyle(this.label);
+
+  final String label;
+
+  static PageTransitionStyle? byName(String? name) => values.where((m) => m.name == name).firstOrNull;
+}
+
 /// Tampilan halaman komik: potong tepi kosong dan filter warna.
 class ReaderDisplay {
   const ReaderDisplay({
@@ -146,6 +160,7 @@ class ReaderDisplay {
     this.dim = 0,
     this.spread = true,
     this.keepScreenOn = true,
+    this.transition = PageTransitionStyle.slide,
   });
 
   /// Dua halaman berdampingan (mode per halaman, tablet landscape).
@@ -153,6 +168,9 @@ class ReaderDisplay {
 
   /// Layar tetap menyala selama membaca.
   final bool keepScreenOn;
+
+  /// Efek perpindahan halaman.
+  final PageTransitionStyle transition;
 
   /// Buang tepi polos (putih/hitam) di sekeliling gambar. Di mode webtoon
   /// hanya kiri-kanan, supaya potongan strip tetap menyambung.
@@ -165,7 +183,7 @@ class ReaderDisplay {
 
   bool get hasColorFilter => grayscale || invert || dim > 0;
 
-  ReaderDisplay copyWith({bool? cropBorders, bool? grayscale, bool? invert, double? dim, bool? spread, bool? keepScreenOn}) =>
+  ReaderDisplay copyWith({bool? cropBorders, bool? grayscale, bool? invert, double? dim, bool? spread, bool? keepScreenOn, PageTransitionStyle? transition}) =>
       ReaderDisplay(
         cropBorders: cropBorders ?? this.cropBorders,
         grayscale: grayscale ?? this.grayscale,
@@ -173,10 +191,11 @@ class ReaderDisplay {
         dim: dim ?? this.dim,
         spread: spread ?? this.spread,
         keepScreenOn: keepScreenOn ?? this.keepScreenOn,
+        transition: transition ?? this.transition,
       );
 
   Map<String, Object> toJson() =>
-      {'crop': cropBorders, 'gray': grayscale, 'invert': invert, 'dim': dim, 'spread': spread, 'keep': keepScreenOn};
+      {'crop': cropBorders, 'gray': grayscale, 'invert': invert, 'dim': dim, 'spread': spread, 'keep': keepScreenOn, 'transition': transition.name};
 
   factory ReaderDisplay.fromJson(Map<String, Object?> json) => ReaderDisplay(
         cropBorders: json['crop'] == true,
@@ -185,6 +204,7 @@ class ReaderDisplay {
         dim: ((json['dim'] as num?)?.toDouble() ?? 0).clamp(0, 0.8),
         spread: json['spread'] != false,
         keepScreenOn: json['keep'] != false,
+        transition: PageTransitionStyle.byName(json['transition'] as String?) ?? PageTransitionStyle.slide,
       );
 
   @override
@@ -195,10 +215,11 @@ class ReaderDisplay {
       other.invert == invert &&
       other.dim == dim &&
       other.spread == spread &&
-      other.keepScreenOn == keepScreenOn;
+      other.keepScreenOn == keepScreenOn &&
+      other.transition == transition;
 
   @override
-  int get hashCode => Object.hash(cropBorders, grayscale, invert, dim, spread, keepScreenOn);
+  int get hashCode => Object.hash(cropBorders, grayscale, invert, dim, spread, keepScreenOn, transition);
 }
 
 /// Lebar minimum (dp) layar landscape agar dua halaman ditampilkan.

@@ -154,6 +154,19 @@ class _ReaderSettingsSheet extends ConsumerWidget {
               value: global.spread,
               onChanged: (v) => setDisplay(global.copyWith(spread: v)),
             ),
+            ListTile(
+              title: const Text('Efek pindah halaman'),
+              subtitle: const Text('Mode per halaman'),
+              trailing: DropdownButton<PageTransitionStyle>(
+                value: global.transition,
+                onChanged: (v) {
+                  if (v != null) setDisplay(global.copyWith(transition: v));
+                },
+                items: [
+                  for (final t in PageTransitionStyle.values) DropdownMenuItem(value: t, child: Text(t.label)),
+                ],
+              ),
+            ),
             SwitchListTile(
               title: const Text('Layar tetap menyala'),
               subtitle: const Text('Cegah layar mati saat membaca'),

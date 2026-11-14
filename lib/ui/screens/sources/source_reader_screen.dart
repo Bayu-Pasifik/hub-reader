@@ -323,6 +323,43 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
 
   /// Controller diganti saat masuk/keluar mode spread (rotasi layar), dengan
   /// posisi dikonversi dari halaman yang sedang dibaca.
+  /// Efek perpindahan halaman: [delta] = jarak halaman ini dari yang tampil
+  /// (0 = di layar, ±1 = tepat di luar layar).
+  Widget _transitioned(PageController controller, int index, Widget child) {
+    final style = widget.display.transition;
+    if (style == PageTransitionStyle.slide) return child;
+    return AnimatedBuilder(
+      animation: controller,
+      child: child,
+      builder: (context, child) {
+        final page = controller.hasClients && controller.position.haveDimensions
+            ? (controller.page ?? index.toDouble())
+            : index.toDouble();
+        final delta = (index - page).clamp(-1.0, 1.0);
+        final away = delta.abs();
+        switch (style) {
+          case PageTransitionStyle.fade:
+            return Opacity(opacity: 1 - away, child: child);
+          case PageTransitionStyle.zoom:
+            return Opacity(
+              opacity: 1 - away * 0.6,
+              child: Transform.scale(scale: 1 - away * 0.25, child: child),
+            );
+          case PageTransitionStyle.flip:
+            return Transform(
+              alignment: delta > 0 ? Alignment.centerLeft : Alignment.centerRight,
+              transform: Matrix4.identity()
+                ..setEntry(3, 2, 0.0015)
+                ..rotateY(delta * 1.1),
+              child: child,
+            );
+          case PageTransitionStyle.slide:
+            return child!;
+        }
+      },
+    );
+  }
+
   PageController _controllerFor(bool spread, int total) {
     if (_pageController != null && _spreadActive == spread) return _pageController!;
     final old = _pageController;
@@ -476,13 +513,17 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
                   onPageChanged: _onPageChanged,
                   itemBuilder: (_, i) => i >= units
                       ? transition
-                      : spread
-                          ? _spreadItem(i, urls, headers)
-                          : InteractiveViewer(
-                              minScale: 1,
-                              maxScale: 4,
-                              child: Center(child: _image(urls[i], i, headers, BoxFit.contain)),
-                            ),
+                      : _transitioned(
+                          controller,
+                          i,
+                          spread
+                              ? _spreadItem(i, urls, headers)
+                              : InteractiveViewer(
+                                  minScale: 1,
+                                  maxScale: 4,
+                                  child: Center(child: _image(urls[i], i, headers, BoxFit.contain)),
+                                ),
+                        ),
                 ),
               );
             },
