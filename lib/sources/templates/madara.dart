@@ -562,6 +562,28 @@ class MadaraSource extends HttpSource {
         uploadedAt: madaraDate(dateText),
       ));
     }
+    return chapters.isEmpty ? _chaptersFromSeriesLinks(doc, pageUrl) : chapters;
+  }
+
+  /// Cadangan untuk tema yang mengganti markup daftar bab (tanpa
+  /// `li.wp-manga-chapter`): tautan satu tingkat di bawah path seri, mis.
+  /// `/manga/judul/bolum-1/`, dianggap bab. Hanya dipakai bila daftar kosong.
+  List<SourceChapter> _chaptersFromSeriesLinks(Document doc, Uri pageUrl) {
+    final base = pageUrl.path.endsWith('/') ? pageUrl.path : '${pageUrl.path}/';
+    final seen = <String>{};
+    final chapters = <SourceChapter>[];
+    for (final a in doc.querySelectorAll('a[href]')) {
+      final url = attrAbs(a, 'href', pageUrl);
+      if (url == null) continue;
+      final uri = Uri.tryParse(url);
+      if (uri == null || uri.host != pageUrl.host || !uri.path.startsWith(base) || uri.hasFragment) continue;
+      final rest = uri.path.substring(base.length).replaceAll(RegExp(r'/$'), '');
+      if (rest.isEmpty || rest.contains('/') || !RegExp(r'\d').hasMatch(rest)) continue;
+      if (!seen.add(url)) continue;
+      final name = clean(a.querySelector('span')?.text ?? a.text);
+      if (name.isEmpty) continue;
+      chapters.add(SourceChapter(url: url, name: name, number: parseChapterNumber(name)));
+    }
     return chapters;
   }
 

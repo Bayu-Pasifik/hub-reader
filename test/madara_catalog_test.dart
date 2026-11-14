@@ -86,6 +86,22 @@ void main() {
       expect(chapters.first.uploadedAt, isNotNull);
     });
 
+    test('chapter list falls back to links under the series path', () {
+      final doc = html_parser.parse('''
+<a href="https://ex.com/manga/no-mo/">Seri</a>
+<a href="#">x</a>
+<div id="grid">
+  <a href="https://ex.com/manga/no-mo/bolum-2/"><span>Bölüm 2</span><span>01.01.2024</span></a>
+  <a href="https://ex.com/manga/no-mo/bolum-1/"><span>Bölüm 1</span></a>
+  <a href="https://ex.com/manga/no-mo/bolum-1/"><span>Bölüm 1</span></a>
+  <a href="https://ex.com/manga/other/bolum-9/"><span>Bölüm 9</span></a>
+  <a href="https://ex.com/manga/no-mo/feed/">Feed</a>
+</div>''');
+      final chapters = madara.parseChapters(doc, Uri.parse('https://ex.com/manga/no-mo/'));
+      expect(chapters.map((c) => c.name), ['Bölüm 2', 'Bölüm 1']);
+      expect(chapters.map((c) => c.number), [2, 1]);
+    });
+
     test('relative dates in several languages', () {
       final now = DateTime(2026, 11, 12, 12);
       expect(madaraDate('3 días', now: now), DateTime(2026, 11, 9, 12));
