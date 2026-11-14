@@ -120,7 +120,7 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
         ],
       ),
       body: manifest.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const LoadingView(),
         error: (e, _) => SourceErrorView(
           error: e,
           onRetry: () => ref.read(novelManifestProvider.notifier).refresh(),

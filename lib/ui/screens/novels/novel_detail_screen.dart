@@ -347,7 +347,7 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
                 ],
               ),
         body: details.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const LoadingView(),
           error: (error, _) => SourceErrorView(
             error: novelError(error, site: source?.site),
             onRetry: () => ref.invalidate(novelDetailsProvider(_key)),
@@ -452,7 +452,7 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
 
     return chaptersAsync.when(
       loading: () => const SliverToBoxAdapter(
-        child: Padding(padding: EdgeInsets.all(24), child: Center(child: CircularProgressIndicator())),
+        child: Padding(padding: EdgeInsets.all(24), child: LoadingView()),
       ),
       error: (e, _) => SliverToBoxAdapter(
         child: SourceErrorView(

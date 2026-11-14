@@ -150,7 +150,7 @@ class _MangaGrid extends ConsumerWidget {
       );
     }
     if (state.isLoading && state.items.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
+      return const LoadingView();
     }
     if (state.isEmpty) {
       return EmptyView(
@@ -238,7 +238,7 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
       child: ConstrainedBox(
         constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.85),
         child: defs.when(
-          loading: () => const SizedBox(height: 200, child: Center(child: CircularProgressIndicator())),
+          loading: () => const SizedBox(height: 200, child: LoadingView()),
           error: (error, _) => SourceErrorView(
             compact: true,
             error: error,

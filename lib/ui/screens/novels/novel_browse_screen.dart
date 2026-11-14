@@ -184,7 +184,7 @@ class NovelGrid extends ConsumerWidget {
       return SourceErrorView(error: state.error!, onRetry: notifier.refresh, verifyUrl: source.site);
     }
     if (state.isLoading && state.items.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
+      return const LoadingView();
     }
     if (state.isEmpty) {
       return EmptyView(

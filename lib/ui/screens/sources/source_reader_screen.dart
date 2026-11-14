@@ -385,7 +385,7 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
         cacheKey: url,
         image: local ? FileImage(File(url)) : CachedNetworkImageProvider(url, headers: headers),
         vertical: widget.mode.isPaged,
-        placeholder: (_) => const SizedBox(height: 400, child: Center(child: CircularProgressIndicator())),
+        placeholder: (_) => const SizedBox(height: 400, child: LoadingView()),
         error: (_) => SizedBox(
           height: 200,
           child: Center(
@@ -410,7 +410,7 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
       fit: fit,
       placeholder: (_, __) => const SizedBox(
         height: 400,
-        child: Center(child: CircularProgressIndicator()),
+        child: LoadingView(),
       ),
       errorWidget: (_, __, ___) => SizedBox(
         height: 200,
@@ -428,7 +428,7 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
     _preloadNext();
 
     return pages.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const LoadingView(),
       error: (error, _) => SourceErrorView(
         error: error,
         onRetry: () => ref.invalidate(sourcePagesProvider(key)),

@@ -247,7 +247,7 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
         ],
       ),
       body: details.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const LoadingView(),
         error: (error, _) => SourceErrorView(
           error: error,
           onRetry: () => ref.invalidate(sourceDetailsProvider(_key)),

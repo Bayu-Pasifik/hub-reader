@@ -40,6 +40,7 @@ dependencies:
   xml: ^7.1.0
   share_plus: ^13.3.1
   charset: 2.0.1
+  lottie: ^3.8.2
 
 dev_dependencies:
   flutter_test:
@@ -55,3 +56,5 @@ flutter:
     - assets/lnreader/runtime.js
     # Status awal plugin novel dari cek di PC (tool/lnreader_runtime/health.mjs)
     - assets/lnreader/health.json
+    # Animasi Lottie (dibuat oleh tool/gen_lottie.mjs)
+    - assets/lottie/
