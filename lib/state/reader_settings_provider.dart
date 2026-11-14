@@ -40,6 +40,83 @@ class ReaderModeNotifier extends Notifier<ReaderMode> {
   }
 }
 
+/// Bentuk zona ketuk untuk pindah halaman (mode per halaman).
+enum TapZoneLayout {
+  /// Sepertiga kiri dan kanan; tengah tidak berbuat apa-apa.
+  thirds('Sepertiga (kiri / kanan)', 1 / 3),
+
+  /// Setengah layar kiri dan kanan.
+  halves('Setengah layar', 1 / 2),
+
+  /// Pinggir sempit: seperempat kiri dan kanan.
+  edges('Pinggir sempit', 1 / 4),
+
+  /// Ketuk tidak memindah halaman (hanya geser).
+  off('Mati (hanya geser)', 0);
+
+  const TapZoneLayout(this.label, this.zone);
+
+  final String label;
+
+  /// Lebar tiap zona sebagai pecahan lebar layar.
+  final double zone;
+
+  static TapZoneLayout? byName(String? name) => values.where((m) => m.name == name).firstOrNull;
+}
+
+/// Pengaturan zona ketuk: bentuk dan arah (tukar kiri/kanan).
+class TapZones {
+  const TapZones({this.layout = TapZoneLayout.thirds, this.swap = false});
+
+  final TapZoneLayout layout;
+
+  /// Tukar fungsi kiri dan kanan.
+  final bool swap;
+
+  TapZones copyWith({TapZoneLayout? layout, bool? swap}) =>
+      TapZones(layout: layout ?? this.layout, swap: swap ?? this.swap);
+
+  /// Hasil ketukan di posisi [x] pada layar selebar [width]: true = halaman
+  /// berikutnya, false = sebelumnya, null = tidak ada aksi. [rtl] = mode
+  /// kanan → kiri (ketuk kiri maju).
+  bool? resolve(double x, double width, {required bool rtl}) {
+    if (layout == TapZoneLayout.off || width <= 0) return null;
+    final edge = width * layout.zone;
+    final bool? right = x >= width - edge ? true : (x <= edge ? false : null);
+    if (right == null) return null;
+    return (right != rtl) != swap;
+  }
+
+  Map<String, Object> toJson() => {'layout': layout.name, 'swap': swap};
+
+  factory TapZones.fromJson(Map<String, Object?> json) => TapZones(
+        layout: TapZoneLayout.byName(json['layout'] as String?) ?? TapZoneLayout.thirds,
+        swap: json['swap'] == true,
+      );
+}
+
+final tapZonesProvider = NotifierProvider<TapZonesNotifier, TapZones>(TapZonesNotifier.new);
+
+class TapZonesNotifier extends Notifier<TapZones> {
+  static const _key = 'reader.tapzones.v1';
+
+  @override
+  TapZones build() {
+    final raw = ref.watch(sharedPreferencesProvider).getString(_key);
+    if (raw == null) return const TapZones();
+    try {
+      return TapZones.fromJson(Map<String, Object?>.from(jsonDecode(raw) as Map));
+    } on Object {
+      return const TapZones();
+    }
+  }
+
+  Future<void> set(TapZones value) async {
+    state = value;
+    await ref.read(sharedPreferencesProvider).setString(_key, jsonEncode(value.toJson()));
+  }
+}
+
 /// Tampilan halaman komik: potong tepi kosong dan filter warna.
 class ReaderDisplay {
   const ReaderDisplay({this.cropBorders = false, this.grayscale = false, this.invert = false, this.dim = 0});

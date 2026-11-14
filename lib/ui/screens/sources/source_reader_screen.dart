@@ -263,9 +263,9 @@ class _PagesState extends ConsumerState<_Pages> {
   void _onTapPaged(TapUpDetails details, double width) {
     final controller = _pageController;
     if (controller == null || !controller.hasClients) return;
-    final x = details.localPosition.dx;
-    final rtl = widget.mode == ReaderMode.pagedRtl;
-    final forward = x > width * 2 / 3 ? !rtl : (x < width / 3 ? rtl : null);
+    final forward = ref
+        .read(tapZonesProvider)
+        .resolve(details.localPosition.dx, width, rtl: widget.mode == ReaderMode.pagedRtl);
     if (forward == null) return;
     const duration = Duration(milliseconds: 200);
     forward

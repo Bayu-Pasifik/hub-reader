@@ -14,6 +14,54 @@ Future<void> showReaderSettingsSheet(BuildContext context, String seriesKey) => 
       builder: (_) => _ReaderSettingsSheet(seriesKey: seriesKey),
     );
 
+/// Pratinjau layar: zona kiri/kanan berlabel "Maju" / "Mundur".
+class _TapZonePreview extends StatelessWidget {
+  const _TapZonePreview({required this.zones, required this.rtl});
+
+  final TapZones zones;
+  final bool rtl;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    // Titik uji di tengah tiap zona; lebar 1 supaya x = pecahan layar.
+    final edge = zones.layout.zone;
+    final leftForward = zones.resolve(edge / 2, 1, rtl: rtl) ?? false;
+    Widget zone(bool forward) => Expanded(
+          flex: (edge * 100).round(),
+          child: ColoredBox(
+            color: (forward ? scheme.primaryContainer : scheme.tertiaryContainer),
+            child: Center(
+              child: Text(
+                forward ? 'Maju' : 'Mundur',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: forward ? scheme.onPrimaryContainer : scheme.onTertiaryContainer,
+                ),
+              ),
+            ),
+          ),
+        );
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: SizedBox(
+        height: 72,
+        child: Row(
+          children: [
+            zone(leftForward),
+            if (edge < 0.5)
+              Expanded(
+                flex: ((1 - 2 * edge) * 100).round(),
+                child: ColoredBox(color: scheme.surfaceContainerHighest),
+              ),
+            zone(!leftForward),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _ReaderSettingsSheet extends ConsumerWidget {
   const _ReaderSettingsSheet({required this.seriesKey});
 
@@ -25,6 +73,7 @@ class _ReaderSettingsSheet extends ConsumerWidget {
     final global = ref.watch(readerDisplayProvider);
     final override = ref.watch(seriesReaderOverridesProvider)[seriesKey];
     final perSeries = override != null;
+    final tapZones = ref.watch(tapZonesProvider);
     final theme = Theme.of(context);
 
     void setMode(ReaderMode mode) {
@@ -98,6 +147,44 @@ class _ReaderSettingsSheet extends ConsumerWidget {
               value: effective.display.cropBorders,
               onChanged: setCrop,
             ),
+            const Divider(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+              child: Text('Zona ketuk', style: theme.textTheme.titleSmall),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                'Ketuk pinggir layar untuk pindah halaman (mode per halaman).',
+                style: theme.textTheme.bodySmall,
+              ),
+            ),
+            RadioGroup<TapZoneLayout>(
+              groupValue: tapZones.layout,
+              onChanged: (l) {
+                if (l != null) ref.read(tapZonesProvider.notifier).set(tapZones.copyWith(layout: l));
+              },
+              child: Column(
+                children: [
+                  for (final l in TapZoneLayout.values) RadioListTile<TapZoneLayout>(value: l, title: Text(l.label)),
+                ],
+              ),
+            ),
+            if (tapZones.layout != TapZoneLayout.off) ...[
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                child: _TapZonePreview(
+                  zones: tapZones,
+                  rtl: effective.mode == ReaderMode.pagedRtl,
+                ),
+              ),
+              SwitchListTile(
+                title: const Text('Tukar kiri / kanan'),
+                subtitle: const Text('Ketuk kiri maju, ketuk kanan mundur'),
+                value: tapZones.swap,
+                onChanged: (v) => ref.read(tapZonesProvider.notifier).set(tapZones.copyWith(swap: v)),
+              ),
+            ],
             const Divider(),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
