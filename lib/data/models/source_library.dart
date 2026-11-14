@@ -146,3 +146,20 @@ class SourceHistoryEntry {
         'read_at': readAt.toIso8601String(),
       };
 }
+
+String _normalizeTitle(String t) => t.toLowerCase().replaceAll(RegExp(r'[^\p{L}\p{N}]+', unicode: true), '');
+
+bool _isNovelId(String id) => id.startsWith('lnr:');
+
+/// Favorit lain dengan judul sama (abaikan huruf besar/kecil dan tanda baca)
+/// dari sumber berbeda, tapi jenis sama (komik/novel). Null bila tidak ada.
+SourceFavorite? findDuplicateFavorite(Iterable<SourceFavorite> favorites, SourceLibraryItem item) {
+  final title = _normalizeTitle(item.title);
+  if (title.isEmpty) return null;
+  for (final f in favorites) {
+    if (f.item.key == item.key) continue;
+    if (_isNovelId(f.item.sourceId) != _isNovelId(item.sourceId)) continue;
+    if (_normalizeTitle(f.item.title) == title) return f;
+  }
+  return null;
+}

@@ -155,9 +155,11 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
     });
   }
 
-  void _toggleFavorite(NovelDetails n) {
+  Future<void> _toggleFavorite(NovelDetails n) async {
     final was = ref.read(isSourceFavoriteProvider(_libKey));
     final item = _item(n);
+    if (!was && !await confirmAddDuplicateFavorite(context, ref, item)) return;
+    if (!mounted) return;
     ref.read(sourceFavoritesProvider.notifier).toggle(item);
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()

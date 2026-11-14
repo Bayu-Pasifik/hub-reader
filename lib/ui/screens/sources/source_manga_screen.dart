@@ -117,9 +117,11 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
     if (mounted) context.pop();
   }
 
-  void _toggleFavorite(SourceMangaDetails manga) {
+  Future<void> _toggleFavorite(SourceMangaDetails manga) async {
     final item = SourceLibraryItem.fromDetails(widget.sourceId, widget.url, manga);
     final wasFavorite = ref.read(isSourceFavoriteProvider(_key));
+    if (!wasFavorite && !await confirmAddDuplicateFavorite(context, ref, item)) return;
+    if (!mounted) return;
     ref.read(sourceFavoritesProvider.notifier).toggle(item);
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()

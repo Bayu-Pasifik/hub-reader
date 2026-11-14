@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/models/source_library.dart';
 import '../../state/source_library_providers.dart';
 
 /// Pilih kategori untuk satu favorit ([key] = `SourceLibraryItem.key`).
@@ -86,4 +87,24 @@ Future<String?> askCategoryName(BuildContext context, {required String title, St
       ],
     ),
   );
+}
+
+/// Bila [item] mirip favorit yang sudah ada (judul sama, sumber lain), tanya
+/// dulu. Mengembalikan true bila boleh lanjut menambahkan.
+Future<bool> confirmAddDuplicateFavorite(BuildContext context, WidgetRef ref, SourceLibraryItem item) async {
+  final dup = findDuplicateFavorite(ref.read(sourceFavoritesProvider), item);
+  if (dup == null) return true;
+  final source = dup.item.sourceId.replaceFirst('lnr:', '');
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: const Text('Judul sudah ada di favorit'),
+      content: Text('"${dup.item.title}" sudah ada di favorit dari sumber $source. Tetap tambahkan dari sumber ini?'),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
+        FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Tambahkan')),
+      ],
+    ),
+  );
+  return ok == true;
 }
