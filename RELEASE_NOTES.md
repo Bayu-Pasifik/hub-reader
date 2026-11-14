@@ -1,17 +1,16 @@
-## Hub Reader v1.1.0
+## Hub Reader v1.2.0
 
 ### Fitur baru
-- **DNS over HTTPS (opsional)**: lewati blokir DNS provider. Aktifkan di Pengaturan → Jaringan, pilihan Cloudflare, Google, AdGuard, DNS.SB, AliDNS, DNSPod, dan varian Cloudflare/AdGuard. Default mati.
-- **Animasi Lottie**: loading, empty state, error, sinkron, sukses, pencarian, dan efek hati saat favorit.
-- **Backup otomatis berkala** dengan rotasi file.
-- **Hapus otomatis chapter terunduh** setelah dibaca.
-- **Pilih kategori** langsung dari halaman detail komik dan novel.
-- **Pengaturan tipografi pembaca novel** (font, ukuran, spasi).
-- **Reader**: zona ketuk halaman yang bisa diatur, mode dua halaman untuk tablet landscape, auto-scroll untuk webtoon.
-- **Library**: filter hanya yang sudah diunduh.
+- **Server OPDS** (Komga, Kavita, Calibre-Web): jelajahi katalog dengan login Basic, cari, dan unduh EPUB/CBZ langsung ke perpustakaan Lokal. Pengaturan → Server OPDS.
+- **Widget layar utama "Lanjut baca"**: menampilkan seri dan bab terakhir; ketuk untuk membukanya.
+- **Pintasan ikon aplikasi**: tekan lama ikon untuk Cari komik, Cari novel, Favorit, atau Unduhan.
+- **Rekomendasi "Mirip ini"** di detail komik (karya penulis sama dan seri dengan kata judul serupa).
+- **Sorot teks dan kamus/terjemah** di reader novel: pilih teks, lalu Sorot atau Kamus (terjemah ke Indonesia/Inggris, definisi untuk kata Inggris).
+- **Efek pindah halaman** di reader komik: pudar, zoom, balik halaman.
+- **Layar tetap menyala** di reader komik (bisa dimatikan di pengaturan baca).
+- **Pilihan bahasa antarmuka** Indonesia/English (baru mencakup layar utama dan pengaturan).
 
-### Peningkatan
-- Smart update: cek pembaruan melewati seri yang sudah tamat atau belum pernah dibaca, jadi lebih ringan.
-
-### Perbaikan
-- Penanda terakhir auto-backup tidak hilang saat restore, dan jadwal job dibuat ulang setelah restore.
+### Catatan
+- Lalu lintas HTTP (tanpa TLS) kini diizinkan agar server OPDS di jaringan lokal bisa dipakai.
+- Kamus/terjemah mengirim teks terpilih ke layanan web (MyMemory, dictionaryapi.dev).
+- Kata sandi server OPDS disimpan di penyimpanan aplikasi tanpa enkripsi tambahan.
