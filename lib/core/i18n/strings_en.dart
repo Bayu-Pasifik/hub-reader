@@ -181,6 +181,17 @@ const Map<String, String> stringsEn = {
   'Unduh 10 bab berikutnya': 'Download next 10 chapters',
   'Bagikan': 'Share',
   'Buka di WebView': 'Open in WebView',
+  'Selesaikan verifikasi bila diminta. Layar ini menutup otomatis setelah berhasil.':
+      'Complete the verification if asked. This screen closes automatically on success.',
+  'Login di situs bila perlu, lalu ketuk Selesai. Sesi login disalin ke plugin.':
+      'Log in on the site if needed, then tap Done. The login session is copied to the plugin.',
+  'Belum ada tanda verifikasi. Bila halaman sudah terbuka normal, ketuk Selesai.':
+      'No verification detected yet. If the page already opens normally, tap Done.',
+  'Verifikasi sedang diproses, tunggu sebentar…': 'Verification in progress, please wait…',
+  'Verifikasi berhasil terdeteksi.': 'Verification detected.',
+  'Verifikasi berhasil, memuat ulang…': 'Verified, reloading…',
+  'Sesi situs disimpan, memuat ulang…': 'Site session saved, reloading…',
+  'Cookie disimpan, memuat ulang…': 'Cookie saved, reloading…',
   'Tracking': 'Tracking',
   'Catatan': 'Notes',
   'Hanya bab ber-bookmark': 'Bookmarked chapters only',
