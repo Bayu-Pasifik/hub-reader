@@ -353,8 +353,7 @@ Kompatibilitas runtime:
   di-gitignore. Tanpa `key.properties`, APK release ditandatangani debug key.
   **Simpan cadangan keystore dan password-nya.** Tanpa keduanya, update aplikasi tidak
   bisa dipasang di atas versi lama.
-- **Cleartext:** HTTP biasa hanya diizinkan di build debug (`src/debug/AndroidManifest.xml`).
-  Build rilis HTTPS saja.
+- **Cleartext:** HTTP biasa diizinkan di manifest agar server OPDS di jaringan lokal bisa dipakai; `OpdsClient` menolak HTTP ke host publik (hanya localhost, IP privat, `.local`). Kata sandi server OPDS disimpan di Android Keystore (`flutter_secure_storage`), tidak ikut cadangan.
 - **GitHub Actions** (`.github/workflows/android.yml`): setiap push atau PR menjalankan
   `analyze`, `test`, dan build APK release, lalu APK diunggah sebagai artifact
   *hub-reader-apk*. Push tag `v*` (mis. `git tag v1.0.0 && git push --tags`) juga

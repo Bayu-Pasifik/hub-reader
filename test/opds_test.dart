@@ -22,6 +22,7 @@ const _feed = '''<?xml version="1.0" encoding="UTF-8"?>
 </feed>''';
 
 void main() {
+  opdsSecurityTests();
   final base = Uri.parse('http://nas.local:8080/opds/v1.2/catalog');
   final feed = OpdsClient.parse(_feed, base);
 
@@ -53,5 +54,22 @@ void main() {
       const OpdsServer(id: '1', name: 'a', url: 'http://x', username: 'u', password: 'p').headers['Authorization'],
       'Basic dTpw',
     );
+  });
+}
+
+void opdsSecurityTests() {
+  group('OPDS cleartext guard', () {
+    bool ok(String u) => OpdsServer.isCleartextAllowed(Uri.parse(u));
+    test('HTTPS selalu boleh', () => expect(ok('https://example.com/opds'), isTrue));
+    test('IP privat & lokal boleh', () {
+      for (final u in ['http://192.168.1.5:25600/x', 'http://10.0.0.2/x', 'http://172.20.1.1/x', 'http://nas.local/x', 'http://localhost/x', 'http://nas/x']) {
+        expect(ok(u), isTrue, reason: u);
+      }
+    });
+    test('host publik ditolak', () {
+      for (final u in ['http://example.com/x', 'http://8.8.8.8/x', 'http://172.32.0.1/x']) {
+        expect(ok(u), isFalse, reason: u);
+      }
+    });
   });
 }

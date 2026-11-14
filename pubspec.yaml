@@ -44,6 +44,7 @@ dependencies:
   dynamic_color: ^2.1.0
   quick_actions: ^1.1.1
   home_widget: ^0.10.0
+  flutter_secure_storage: ^11.2.0
 
 dev_dependencies:
   flutter_test:

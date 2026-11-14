@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:xml/xml.dart';
@@ -21,7 +22,32 @@ class OpdsServer {
   Map<String, String> get headers =>
       hasAuth ? {'Authorization': 'Basic ${base64Encode(utf8.encode('$username:$password'))}'} : const {};
 
-  Map<String, String> toJson() => {'id': id, 'name': name, 'url': url, 'user': username, 'pass': password};
+  OpdsServer withPassword(String value) =>
+      OpdsServer(id: id, name: name, url: url, username: username, password: value);
+
+  Map<String, String> toJson({bool includePassword = true}) => {
+        'id': id,
+        'name': name,
+        'url': url,
+        'user': username,
+        if (includePassword) 'pass': password,
+      };
+
+  /// HTTP polos hanya untuk jaringan lokal (localhost, IP privat, `.local`).
+  /// Login lewat HTTP ke host publik terkirim tanpa enkripsi.
+  static bool isCleartextAllowed(Uri uri) {
+    if (uri.scheme != 'http') return true;
+    final h = uri.host.toLowerCase();
+    if (h == 'localhost' || h.endsWith('.local')) return true;
+    final ip = InternetAddress.tryParse(h);
+    if (ip == null) return !h.contains('.'); // nama host tanpa titik = LAN
+    if (ip.isLoopback || ip.isLinkLocal) return true;
+    final b = ip.rawAddress;
+    if (ip.type == InternetAddressType.IPv4) {
+      return b[0] == 10 || (b[0] == 172 && b[1] >= 16 && b[1] <= 31) || (b[0] == 192 && b[1] == 168);
+    }
+    return (b[0] & 0xfe) == 0xfc; // fc00::/7
+  }
 
   factory OpdsServer.fromJson(Map<String, Object?> j) => OpdsServer(
         id: '${j['id']}',
@@ -101,7 +127,14 @@ class OpdsClient {
 
   final Dio _dio;
 
+  static void _guard(String url) {
+    if (!OpdsServer.isCleartextAllowed(Uri.parse(url))) {
+      throw const FormatException('HTTP tanpa enkripsi hanya boleh untuk jaringan lokal. Pakai HTTPS.');
+    }
+  }
+
   Future<OpdsFeed> fetch(OpdsServer server, String url) async {
+    _guard(url);
     final res = await _dio.get<String>(
       url,
       options: Options(headers: {'Accept': 'application/atom+xml, application/xml, text/xml, */*', ...server.headers}),
@@ -111,6 +144,7 @@ class OpdsClient {
 
   /// Unduh [url] ke [path] dengan login server (mengikuti redirect).
   Future<void> download(OpdsServer server, String url, String path) async {
+    _guard(url);
     await _dio.download(url, path, options: Options(headers: server.headers, responseType: ResponseType.bytes));
   }
 

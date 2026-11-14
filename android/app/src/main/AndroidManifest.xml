@@ -4,8 +4,9 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
 
-    <!-- HTTP biasa (cleartext) hanya diizinkan di build debug, lihat
-         src/debug/AndroidManifest.xml. Build rilis HTTPS saja. -->
+    <!-- HTTP biasa (cleartext) diizinkan agar server OPDS di jaringan lokal
+         (mis. http://192.168.x.x) bisa dipakai. OpdsClient menolak HTTP ke host
+         publik; sumber komik/novel memakai HTTPS. -->
     <application
         android:label="Hub Reader"
         android:name="${applicationName}"
