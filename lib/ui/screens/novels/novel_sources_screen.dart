@@ -139,13 +139,18 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
     final languages = _orderedLanguages(counts);
     final lang = languages.contains(selectedLang) ? selectedLang : null;
     final query = _search.text.trim().toLowerCase();
-    final filtered = manifest.plugins.where((p) {
+    final health = ref.watch(novelHealthProvider);
+    final unique = dedupeNovelPlugins(
+      manifest.plugins,
+      health,
+      keep: (p) => installed.contains(NovelPluginRepository.safeId(p.id)),
+    );
+    final filtered = unique.where((p) {
       if (lang != null && p.lang != lang) return false;
       if (query.isEmpty) return true;
       return p.name.toLowerCase().contains(query) || p.site.toLowerCase().contains(query);
     }).toList();
 
-    final health = ref.watch(novelHealthProvider);
     final hideBroken = ref.watch(novelHideBrokenProvider);
     final run = ref.watch(novelHealthRunProvider);
     final hiddenCount = hideBroken ? filtered.where((p) => !novelUsable(health[p.id])).length : 0;

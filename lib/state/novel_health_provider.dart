@@ -154,3 +154,40 @@ Map<String, SourceHealth> parseNovelHealthBaseline(String raw) {
         e.key: SourceHealth(s, at, detail: asString(asMap(e.value)['d'])),
   };
 }
+
+/// Host situs plugin tanpa `www.`, untuk mendeteksi plugin kembar (satu situs, dua plugin).
+String? novelSiteKey(NovelPluginInfo p) {
+  final host = Uri.tryParse(p.site)?.host.toLowerCase();
+  if (host == null || host.isEmpty) return null;
+  return host.startsWith('www.') ? host.substring(4) : host;
+}
+
+/// Buang plugin kembar: satu situs + satu bahasa hanya menyisakan satu plugin.
+/// Prioritas: pernah dipakai ([keep]), lalu yang jalan, lalu urutan manifest.
+/// Plugin tanpa situs yang valid tidak pernah dianggap kembar.
+List<NovelPluginInfo> dedupeNovelPlugins(
+  List<NovelPluginInfo> plugins,
+  Map<String, SourceHealth> health, {
+  bool Function(NovelPluginInfo p)? keep,
+}) {
+  int rank(NovelPluginInfo p) {
+    if (p.orphaned || (keep?.call(p) ?? false)) return 0;
+    final s = health[p.id]?.status;
+    if (s == HealthStatus.ok) return 1;
+    if (s == null || s == HealthStatus.cloudflare) return 2;
+    return 3;
+  }
+
+  final best = <String, NovelPluginInfo>{};
+  for (final p in plugins) {
+    final site = novelSiteKey(p);
+    if (site == null) continue;
+    final k = '$site|${p.lang}';
+    final cur = best[k];
+    if (cur == null || rank(p) < rank(cur)) best[k] = p;
+  }
+  return [
+    for (final p in plugins)
+      if (novelSiteKey(p) == null || identical(best['${novelSiteKey(p)}|${p.lang}'], p) || (keep?.call(p) ?? false)) p,
+  ];
+}
