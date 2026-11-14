@@ -25,6 +25,7 @@ class AppBackup {
     'downloads.queue.v1',
     'app.update_checked_at.v1',
     'app.update_skipped.v1',
+    'backup.auto.last.v1',
   };
 
   /// Berisi sesi login / cookie situs.

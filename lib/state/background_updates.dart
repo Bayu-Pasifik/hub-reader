@@ -112,6 +112,8 @@ abstract final class BackgroundUpdates {
   /// Satu cadangan otomatis di isolate latar.
   static Future<void> runBackupOnce() async {
     final deps = await AppDependencies.open(background: true);
+    // Job lama bisa tersisa setelah jadwal dimatikan (mis. lewat restore).
+    if (!AutoBackupConfig.read(deps.prefs).enabled) return;
     await AutoBackup.run(deps.prefs, deps.novelPlugins);
   }
 

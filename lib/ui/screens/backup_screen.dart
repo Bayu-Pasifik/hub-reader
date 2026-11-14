@@ -140,6 +140,10 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     setState(() => _busy = true);
     try {
       await AppBackup.restore(ref.read(sharedPreferencesProvider), decoded);
+      // Jadwal cadangan/cek bab ikut isi cadangan: pasang ulang job-nya.
+      final prefs = ref.read(sharedPreferencesProvider);
+      await BackgroundUpdates.scheduleBackup(AutoBackupConfig.read(prefs), replace: true);
+      await BackgroundUpdates.schedule(BackgroundUpdateConfig.read(prefs), replace: true);
       final plugins = await ref.read(novelRepositoryProvider).importPlugins(AppBackup.novelPlugins(decoded));
       if (!mounted) return;
       _snack(plugins > 0 ? 'Cadangan dipulihkan, $plugins plugin novel dipasang' : 'Cadangan dipulihkan');

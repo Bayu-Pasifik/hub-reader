@@ -66,6 +66,16 @@ void main() {
     expect(AutoBackup.lastRun(prefs), base.add(const Duration(days: 3)));
   });
 
+  test('restore keeps the device-local last-run marker', () async {
+    SharedPreferences.setMockInitialValues({'source_library.favorites.v1': '[]'});
+    final prefs = await SharedPreferences.getInstance();
+    final data = jsonDecode(jsonEncode(await AppBackup.create(prefs, includeSecrets: false)));
+    await prefs.setInt('backup.auto.last.v1', 1234);
+    await AppBackup.restore(prefs, data);
+    expect(prefs.getInt('backup.auto.last.v1'), 1234);
+    expect((data['prefs'] as Map).keys, isNot(contains('backup.auto.last.v1')));
+  });
+
   test('config round-trips through prefs', () async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
