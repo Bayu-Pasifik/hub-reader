@@ -205,9 +205,13 @@ class NovelBlockView extends StatelessWidget {
     this.align = TextAlign.start,
     this.paragraphSpacing = 0.9,
     this.imageHeaders = const {},
+    this.highlights = const [],
   });
 
   final NovelBlock block;
+
+  /// Teks yang disorot pembaca (latar kuning) di blok ini.
+  final List<String> highlights;
   final TextStyle style;
   final TextAlign align;
 
@@ -252,9 +256,10 @@ class NovelBlockView extends StatelessWidget {
         Widget text = Text.rich(
           TextSpan(children: [
             for (final r in b.spans)
-              TextSpan(
-                text: r.text,
-                style: TextStyle(
+              ...highlightRuns(
+                r.text,
+                highlights,
+                TextStyle(
                   fontWeight: r.bold ? FontWeight.w700 : null,
                   fontStyle: r.italic ? FontStyle.italic : null,
                   decoration: TextDecoration.combine([
@@ -279,6 +284,34 @@ class NovelBlockView extends StatelessWidget {
         return Padding(padding: EdgeInsets.only(bottom: size * paragraphSpacing), child: text);
     }
   }
+}
+
+/// Pecah [text] menjadi span; bagian yang cocok dengan [highlights] diberi latar.
+List<TextSpan> highlightRuns(String text, List<String> highlights, TextStyle style) {
+  final hs = highlights.where((h) => h.isNotEmpty && text.contains(h)).toList();
+  if (hs.isEmpty) return [TextSpan(text: text, style: style)];
+  final marked = List<bool>.filled(text.length, false);
+  for (final h in hs) {
+    var from = 0;
+    while (true) {
+      final i = text.indexOf(h, from);
+      if (i < 0) break;
+      for (var k = i; k < i + h.length; k++) {
+        marked[k] = true;
+      }
+      from = i + h.length;
+    }
+  }
+  final hl = style.copyWith(backgroundColor: const Color(0x66FFEB3B));
+  final out = <TextSpan>[];
+  var start = 0;
+  for (var i = 1; i <= text.length; i++) {
+    if (i == text.length || marked[i] != marked[start]) {
+      out.add(TextSpan(text: text.substring(start, i), style: marked[start] ? hl : style));
+      start = i;
+    }
+  }
+  return out;
 }
 
 /// Huruf & angka saja, huruf kecil (untuk membandingkan judul).

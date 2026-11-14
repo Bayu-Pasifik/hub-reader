@@ -15,6 +15,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/platform/reader_bridge.dart';
 import '../../../data/models/source_library.dart';
 import '../../../novels/local_epub.dart';
+import '../../../novels/lookup.dart';
 import '../../../novels/novel_models.dart';
 import '../../../novels/novel_source.dart';
 import '../../../novels/novel_tts.dart';
@@ -22,6 +23,7 @@ import '../../../state/app_settings_provider.dart';
 import '../../../sources/models.dart';
 import '../../../state/bookmarks_provider.dart';
 import '../../../state/download_providers.dart' show downloadIndexProvider;
+import '../../../state/novel_highlights.dart';
 import '../../../state/novel_providers.dart';
 import '../../../state/reading_stats_provider.dart';
 import '../../../state/source_library_providers.dart';
@@ -65,6 +67,9 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
 
   // ---- TTS
   final _tts = NovelTts();
+
+  /// Teks yang sedang dipilih pembaca (untuk sorot / kamus).
+  String _selected = '';
   List<GlobalKey> _blockKeys = const [];
   List<NovelBlock> _blocks = const [];
   String? _blocksFor;
@@ -363,6 +368,47 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
         NovelReaderTheme.black => const Color(0xFFBDBDBD),
       };
 
+  /// Menu pilih-teks: bawaan + sorot, hapus sorot, dan kamus/terjemah.
+  Widget _selectionMenu(BuildContext context, SelectableRegionState state) {
+    final key = highlightKey(widget.pluginId, _chapterPath);
+    final highlights = ref.read(novelHighlightsProvider)[key] ?? const [];
+    final text = _selected.trim();
+    final alreadyHighlighted = text.isNotEmpty && highlights.any((h) => h == text || text.contains(h));
+    return AdaptiveTextSelectionToolbar.buttonItems(
+      anchors: state.contextMenuAnchors,
+      buttonItems: [
+        ...state.contextMenuButtonItems,
+        if (text.isNotEmpty)
+          ContextMenuButtonItem(
+            label: alreadyHighlighted ? 'Hapus sorot' : 'Sorot',
+            onPressed: () {
+              final n = ref.read(novelHighlightsProvider.notifier);
+              alreadyHighlighted ? n.remove(key, text) : n.add(key, text);
+              state.hideToolbar();
+              state.clearSelection();
+            },
+          ),
+        if (text.isNotEmpty)
+          ContextMenuButtonItem(
+            label: 'Kamus',
+            onPressed: () {
+              state.hideToolbar();
+              _showLookup(text);
+            },
+          ),
+      ],
+    );
+  }
+
+  void _showLookup(String text) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => _LookupSheet(text: text),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(novelReaderSettingsProvider);
@@ -458,7 +504,10 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
                           side,
                           MediaQuery.paddingOf(context).bottom + 32,
                         ),
-                        child: Column(
+                        child: SelectionArea(
+                          onSelectionChanged: (c) => _selected = c?.plainText ?? '',
+                          contextMenuBuilder: _selectionMenu,
+                          child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             // Banyak situs sudah menulis judul bab di isi bab;
@@ -495,6 +544,8 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
                                       NovelAlign.end => TextAlign.end,
                                     },
                                     imageHeaders: source?.imageHeaders ?? const {},
+                                    highlights: ref.watch(novelHighlightsProvider)[highlightKey(widget.pluginId, _chapterPath)] ??
+                                        const [],
                                   ),
                                 ),
                             const SizedBox(height: 24),
@@ -530,6 +581,7 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
                               const SizedBox(height: 24),
                             ],
                           ],
+                        ),
                         ),
                       ),
                     );
@@ -909,4 +961,97 @@ class _ReaderSettingsSheet extends ConsumerWidget {
           SizedBox(width: 36, child: Text(display, textAlign: TextAlign.end)),
         ],
       );
+}
+
+/// Lembar kamus/terjemah untuk teks terpilih.
+class _LookupSheet extends StatefulWidget {
+  const _LookupSheet({required this.text});
+
+  final String text;
+
+  @override
+  State<_LookupSheet> createState() => _LookupSheetState();
+}
+
+class _LookupSheetState extends State<_LookupSheet> {
+  final _lookup = TextLookup();
+  String _target = 'id';
+  late Future<LookupResult> _future = _lookup.lookup(widget.text, target: _target);
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return SafeArea(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.7),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(widget.text, style: theme.textTheme.titleMedium),
+              const SizedBox(height: 12),
+              SegmentedButton<String>(
+                showSelectedIcon: false,
+                segments: const [
+                  ButtonSegment(value: 'id', label: Text('Ke Indonesia')),
+                  ButtonSegment(value: 'en', label: Text('Ke Inggris')),
+                ],
+                selected: {_target},
+                onSelectionChanged: (v) => setState(() {
+                  _target = v.first;
+                  _future = _lookup.lookup(widget.text, target: _target);
+                }),
+              ),
+              const SizedBox(height: 12),
+              FutureBuilder<LookupResult>(
+                future: _future,
+                builder: (context, snap) {
+                  if (snap.connectionState != ConnectionState.done) {
+                    return const Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                  final r = snap.data;
+                  if (r == null || r.isEmpty) {
+                    return const Text('Tidak ada hasil. Teks mungkin sudah berbahasa itu, atau periksa koneksi internet.');
+                  }
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (r.translation != null) ...[
+                        Text(_target == 'id' ? 'Terjemahan (Indonesia)' : 'Terjemahan (Inggris)', style: theme.textTheme.labelLarge),
+                        const SizedBox(height: 4),
+                        SelectableText(r.translation!, style: theme.textTheme.bodyLarge),
+                        const SizedBox(height: 16),
+                      ],
+                      if (r.definitions.isNotEmpty) ...[
+                        Text(
+                          r.phonetic == null ? 'Definisi (Inggris)' : 'Definisi (Inggris) ${r.phonetic}',
+                          style: theme.textTheme.labelLarge,
+                        ),
+                        const SizedBox(height: 4),
+                        for (final d in r.definitions)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 6),
+                            child: Text('• $d'),
+                          ),
+                      ],
+                    ],
+                  );
+                },
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Teks dikirim ke layanan terjemah web (MyMemory, dictionaryapi.dev).',
+                style: theme.textTheme.bodySmall,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
