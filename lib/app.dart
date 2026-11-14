@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'state/app_settings_provider.dart';
 import 'state/download_providers.dart';
+import 'ui/app_shortcuts.dart';
 import 'ui/deep_links.dart';
 import 'ui/router.dart';
 import 'ui/widgets/app_update_ui.dart';
@@ -23,6 +24,10 @@ class _HubReaderAppState extends ConsumerState<HubReaderApp> {
     // Tautan hubreader:// (lihat DeepLinks): buka di atas tab yang aktif.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       DeepLinks.listen((location) => ref.read(routerProvider).push(location));
+      AppShortcuts.init((location, isTab) {
+        final router = ref.read(routerProvider);
+        isTab ? router.go(location) : router.push(location);
+      });
       // Lanjutkan antrean unduhan yang tersimpan dari sesi sebelumnya.
       ref.read(downloadQueueProvider);
       // Bersihkan unduhan bab yang sudah dibaca (bila pengaturan aktif).
