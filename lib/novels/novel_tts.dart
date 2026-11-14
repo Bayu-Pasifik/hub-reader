@@ -22,6 +22,36 @@ class NovelTts extends ChangeNotifier {
 
   bool get playing => _playing;
 
+  Timer? _sleepTimer;
+  DateTime? _sleepAt;
+  bool _sleepAtChapterEnd = false;
+
+  /// Waktu timer tidur berakhir; null bila tidak ada timer menit.
+  DateTime? get sleepAt => _sleepAt;
+
+  /// True bila TTS akan berhenti di akhir bab ini.
+  bool get sleepAtChapterEnd => _sleepAtChapterEnd;
+  bool get sleepActive => _sleepAt != null || _sleepAtChapterEnd;
+
+  /// Pasang timer tidur: berhenti setelah [after], atau di akhir bab bila
+  /// [atChapterEnd]. Tanpa argumen, timer dibatalkan.
+  void setSleep({Duration? after, bool atChapterEnd = false}) {
+    _clearSleep();
+    _sleepAtChapterEnd = atChapterEnd;
+    if (after != null) {
+      _sleepAt = DateTime.now().add(after);
+      _sleepTimer = Timer(after, stop);
+    }
+    notifyListeners();
+  }
+
+  void _clearSleep() {
+    _sleepTimer?.cancel();
+    _sleepTimer = null;
+    _sleepAt = null;
+    _sleepAtChapterEnd = false;
+  }
+
   /// Blok yang sedang/akan dibacakan; -1 bila TTS tidak aktif.
   int get index => _active ? _index : -1;
   bool _active = false;
@@ -75,8 +105,10 @@ class NovelTts extends ChangeNotifier {
     if (run != _run) return;
     _playing = false;
     _active = false;
+    final sleepHere = _sleepAtChapterEnd;
+    if (sleepHere) _clearSleep();
     notifyListeners();
-    onChapterEnd?.call();
+    if (!sleepHere) onChapterEnd?.call();
   }
 
   Future<void> pause() async {
@@ -103,6 +135,7 @@ class NovelTts extends ChangeNotifier {
   }
 
   Future<void> stop() async {
+    _clearSleep();
     _run++;
     _playing = false;
     _active = false;
@@ -112,6 +145,7 @@ class NovelTts extends ChangeNotifier {
 
   @override
   void dispose() {
+    _clearSleep();
     _run++;
     _tts.stop();
     super.dispose();

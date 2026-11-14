@@ -670,6 +670,24 @@ extension on _NovelReaderScreenState {
           ),
           IconButton(
               tooltip: 'Paragraf berikutnya', icon: const Icon(Icons.fast_forward), onPressed: () => _tts.skip(1)),
+          PopupMenuButton<int>(
+            tooltip: 'Timer tidur',
+            icon: Icon(_tts.sleepActive ? Icons.bedtime : Icons.bedtime_outlined),
+            onSelected: (m) {
+              if (m == 0) {
+                _tts.setSleep();
+              } else if (m == -1) {
+                _tts.setSleep(atChapterEnd: true);
+              } else {
+                _tts.setSleep(after: Duration(minutes: m));
+              }
+            },
+            itemBuilder: (_) => [
+              for (final m in const [15, 30, 45, 60]) PopupMenuItem(value: m, child: Text('$m menit')),
+              const PopupMenuItem(value: -1, child: Text('Akhir bab ini')),
+              if (_tts.sleepActive) const PopupMenuItem(value: 0, child: Text('Matikan timer')),
+            ],
+          ),
           IconButton(tooltip: 'Berhenti', icon: const Icon(Icons.stop), onPressed: _tts.stop),
         ],
       );
