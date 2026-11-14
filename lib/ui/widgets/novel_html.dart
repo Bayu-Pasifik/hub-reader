@@ -202,13 +202,17 @@ class NovelBlockView extends StatelessWidget {
     super.key,
     required this.block,
     required this.style,
-    required this.justify,
+    this.align = TextAlign.start,
+    this.paragraphSpacing = 0.9,
     this.imageHeaders = const {},
   });
 
   final NovelBlock block;
   final TextStyle style;
-  final bool justify;
+  final TextAlign align;
+
+  /// Jarak bawah tiap paragraf, kelipatan ukuran huruf.
+  final double paragraphSpacing;
   final Map<String, String> imageHeaders;
 
   @override
@@ -242,7 +246,7 @@ class NovelBlockView extends StatelessWidget {
         final scale = switch (b.heading) { 1 => 1.5, 2 => 1.35, 3 => 1.2, 4 || 5 || 6 => 1.1, _ => 1.0 };
         final base = style.copyWith(
           fontSize: size * scale,
-          fontWeight: b.heading > 0 ? FontWeight.w700 : null,
+          fontWeight: b.heading > 0 ? FontWeight.w700 : style.fontWeight,
           fontStyle: b.quote ? FontStyle.italic : null,
         );
         Widget text = Text.rich(
@@ -261,11 +265,7 @@ class NovelBlockView extends StatelessWidget {
               ),
           ]),
           style: base,
-          textAlign: b.center || b.heading > 0
-              ? TextAlign.center
-              : justify
-                  ? TextAlign.justify
-                  : TextAlign.start,
+          textAlign: b.center || b.heading > 0 ? TextAlign.center : align,
         );
         if (b.quote) {
           text = Container(
@@ -276,7 +276,7 @@ class NovelBlockView extends StatelessWidget {
             child: text,
           );
         }
-        return Padding(padding: EdgeInsets.only(bottom: size * 0.9), child: text);
+        return Padding(padding: EdgeInsets.only(bottom: size * paragraphSpacing), child: text);
     }
   }
 }

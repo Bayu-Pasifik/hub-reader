@@ -1,5 +1,9 @@
 import 'dart:async';
+import 'dart:io' show Directory;
 import 'dart:math' as math;
+
+import 'package:file_picker/file_picker.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show ScrollDirection;
@@ -375,8 +379,9 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
     _totalPages = totalPages;
     final content = ref.watch(novelChapterProvider((pluginId: widget.pluginId, path: _chapterPath)));
     final scheme = Theme.of(context).colorScheme;
-    final bg = _bg(settings.theme, scheme);
-    final fg = _fg(settings.theme, scheme);
+    final bg = settings.customBg != null ? Color(settings.customBg!) : _bg(settings.theme, scheme);
+    final fg = settings.customFg != null ? Color(settings.customFg!) : _fg(settings.theme, scheme);
+    final customFamily = ref.watch(novelCustomFontProvider(settings.customFontPath)).valueOrNull;
 
     final index = chapters.indexWhere((c) => c.path == _chapterPath);
     final chapter = index >= 0
@@ -396,7 +401,8 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
       fontSize: settings.fontSize,
       height: settings.lineHeight,
       color: fg,
-      fontFamily: settings.font.family,
+      fontFamily: customFamily ?? settings.font.family,
+      fontWeight: settings.bold ? FontWeight.w700 : null,
     );
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -481,7 +487,13 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
                                   child: NovelBlockView(
                                     block: blocks[i],
                                     style: textStyle,
-                                    justify: settings.justify,
+                                    paragraphSpacing: settings.paragraphSpacing,
+                                    align: switch (settings.align) {
+                                      NovelAlign.start => TextAlign.start,
+                                      NovelAlign.justify => TextAlign.justify,
+                                      NovelAlign.center => TextAlign.center,
+                                      NovelAlign.end => TextAlign.end,
+                                    },
                                     imageHeaders: source?.imageHeaders ?? const {},
                                   ),
                                 ),
@@ -714,12 +726,55 @@ class _ReaderSettingsSheet extends ConsumerWidget {
                 ),
               ],
             ),
+            _slider(context, 'Jarak paragraf', s.paragraphSpacing, 0, 2, 20,
+                (v) => n.update((x) => x.copyWith(paragraphSpacing: v)), s.paragraphSpacing.toStringAsFixed(1)),
+            Row(
+              children: [
+                const SizedBox(width: 110, child: Text('Font kustom')),
+                Expanded(
+                  child: Wrap(spacing: 6, runSpacing: 6, children: [
+                    ActionChip(
+                      avatar: const Icon(Icons.upload_file, size: 18),
+                      label: Text(s.customFontPath == null ? 'Impor TTF/OTF' : _fileName(s.customFontPath!)),
+                      onPressed: () => _importFont(context, n),
+                    ),
+                    if (s.customFontPath != null)
+                      ActionChip(
+                        label: const Text('Hapus'),
+                        onPressed: () => n.update((x) => x.copyWith(customFontPath: null)),
+                      ),
+                  ]),
+                ),
+              ],
+            ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('Rata kiri-kanan'),
-              value: s.justify,
-              onChanged: (v) => n.update((x) => x.copyWith(justify: v)),
+              title: const Text('Teks tebal'),
+              value: s.bold,
+              onChanged: (v) => n.update((x) => x.copyWith(bold: v)),
             ),
+            Row(
+              children: [
+                const SizedBox(width: 110, child: Text('Perataan')),
+                Expanded(
+                  child: Wrap(spacing: 6, runSpacing: 6, children: [
+                    for (final e in const {
+                      NovelAlign.start: 'Kiri',
+                      NovelAlign.justify: 'Kiri-kanan',
+                      NovelAlign.center: 'Tengah',
+                      NovelAlign.end: 'Kanan',
+                    }.entries)
+                      ChoiceChip(
+                        label: Text(e.value),
+                        selected: s.align == e.key,
+                        onSelected: (_) => n.update((x) => x.copyWith(align: e.key)),
+                      ),
+                  ]),
+                ),
+              ],
+            ),
+            _colorRow(context, 'Warna latar', s.customBg, _bgSwatches, (c) => n.update((x) => x.copyWith(customBg: c))),
+            _colorRow(context, 'Warna teks', s.customFg, _fgSwatches, (c) => n.update((x) => x.copyWith(customFg: c))),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
               title: const Text('Tarik di akhir bab untuk lanjut'),
@@ -758,6 +813,72 @@ class _ReaderSettingsSheet extends ConsumerWidget {
       ),
     );
   }
+
+  static const _bgSwatches = [
+    0xFFFFFFFF, 0xFFF4ECD8, 0xFFE8F0E3, 0xFFDDE7F0, 0xFF2B2B2B, 0xFF1E1F22, 0xFF0B1A2B, 0xFF000000,
+  ];
+  static const _fgSwatches = [
+    0xFF000000, 0xFF333333, 0xFF5B4636, 0xFF1B3A57, 0xFFBDBDBD, 0xFFD7D7D7, 0xFFE8D9B5, 0xFFFFFFFF,
+  ];
+
+  static String _fileName(String path) => path.split(RegExp(r'[\\/]')).last;
+
+  Future<void> _importFont(BuildContext context, NovelReaderSettingsNotifier n) async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final picked = await FilePicker.pickFiles(
+        dialogTitle: 'Pilih font (TTF/OTF)',
+        type: FileType.custom,
+        allowedExtensions: const ['ttf', 'otf'],
+      );
+      if (picked.isEmpty) return;
+      final f = picked.first;
+      final dir = Directory('${(await getApplicationSupportDirectory()).path}/novel_fonts');
+      await dir.create(recursive: true);
+      final dest = '${dir.path}/${f.name}';
+      await f.xFile.saveTo(dest);
+      await n.update((x) => x.copyWith(customFontPath: dest));
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('Gagal mengimpor font: $e')));
+    }
+  }
+
+  Widget _colorRow(BuildContext context, String label, int? current, List<int> swatches, ValueChanged<int?> onPick) =>
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          children: [
+            SizedBox(width: 110, child: Text(label)),
+            Expanded(
+              child: Wrap(spacing: 8, runSpacing: 8, children: [
+                GestureDetector(
+                  onTap: () => onPick(null),
+                  child: CircleAvatar(
+                    radius: 14,
+                    backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    child: Icon(current == null ? Icons.check : Icons.auto_awesome, size: 14),
+                  ),
+                ),
+                for (final c in swatches)
+                  GestureDetector(
+                    onTap: () => onPick(c),
+                    child: CircleAvatar(
+                      radius: 14,
+                      backgroundColor: Theme.of(context).colorScheme.outline,
+                      child: CircleAvatar(
+                        radius: 12,
+                        backgroundColor: Color(c),
+                        child: current == c
+                            ? Icon(Icons.check, size: 14, color: ThemeData.estimateBrightnessForColor(Color(c)) == Brightness.dark ? Colors.white : Colors.black)
+                            : null,
+                      ),
+                    ),
+                  ),
+              ]),
+            ),
+          ],
+        ),
+      );
 
   Widget _slider(BuildContext context, String label, double value, double min, double max, int divisions,
           ValueChanged<double> onChanged, String display) =>

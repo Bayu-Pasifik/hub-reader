@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show File;
 
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -402,12 +403,22 @@ enum NovelFont {
   final String? family;
 }
 
+/// Perataan teks pembaca.
+enum NovelAlign { start, justify, center, end }
+
+const Object _keep = Object();
+
 class NovelReaderSettings {
   const NovelReaderSettings({
+    this.paragraphSpacing = 0.9,
+    this.bold = false,
+    this.align = NovelAlign.start,
+    this.customFontPath,
+    this.customBg,
+    this.customFg,
     this.fontSize = 18,
     this.lineHeight = 1.6,
     this.font = NovelFont.sans,
-    this.justify = false,
     this.theme = NovelReaderTheme.system,
     this.padding = 18,
     this.ttsRate = 0.5,
@@ -422,7 +433,17 @@ class NovelReaderSettings {
   final double fontSize;
   final double lineHeight;
   final NovelFont font;
-  final bool justify;
+  /// Jarak antar paragraf, kelipatan ukuran huruf.
+  final double paragraphSpacing;
+  final bool bold;
+  final NovelAlign align;
+
+  /// Berkas font (ttf/otf) pilihan pengguna; menggantikan [font] bila ada.
+  final String? customFontPath;
+
+  /// Warna latar/teks kustom (ARGB); null = ikut tema.
+  final int? customBg;
+  final int? customFg;
   final NovelReaderTheme theme;
   final double padding;
 
@@ -447,7 +468,12 @@ class NovelReaderSettings {
     double? fontSize,
     double? lineHeight,
     NovelFont? font,
-    bool? justify,
+    double? paragraphSpacing,
+    bool? bold,
+    NovelAlign? align,
+    Object? customFontPath = _keep,
+    Object? customBg = _keep,
+    Object? customFg = _keep,
     NovelReaderTheme? theme,
     double? padding,
     double? ttsRate,
@@ -462,7 +488,12 @@ class NovelReaderSettings {
         fontSize: fontSize ?? this.fontSize,
         lineHeight: lineHeight ?? this.lineHeight,
         font: font ?? this.font,
-        justify: justify ?? this.justify,
+        paragraphSpacing: paragraphSpacing ?? this.paragraphSpacing,
+        bold: bold ?? this.bold,
+        align: align ?? this.align,
+        customFontPath: identical(customFontPath, _keep) ? this.customFontPath : customFontPath as String?,
+        customBg: identical(customBg, _keep) ? this.customBg : customBg as int?,
+        customFg: identical(customFg, _keep) ? this.customFg : customFg as int?,
         theme: theme ?? this.theme,
         padding: padding ?? this.padding,
         ttsRate: ttsRate ?? this.ttsRate,
@@ -478,7 +509,12 @@ class NovelReaderSettings {
         'font_size': fontSize,
         'line_height': lineHeight,
         'font': font.name,
-        'justify': justify,
+        'paragraph_spacing': paragraphSpacing,
+        'bold': bold,
+        'align': align.name,
+        if (customFontPath != null) 'custom_font': customFontPath!,
+        if (customBg != null) 'custom_bg': customBg!,
+        if (customFg != null) 'custom_fg': customFg!,
         'theme': theme.name,
         'padding': padding,
         'tts_rate': ttsRate,
@@ -495,7 +531,13 @@ class NovelReaderSettings {
         lineHeight: (json['line_height'] as num?)?.toDouble() ?? 1.6,
         font: NovelFont.values.where((f) => f.name == json['font']).firstOrNull ??
             (json['serif'] == true ? NovelFont.serif : NovelFont.sans),
-        justify: json['justify'] == true,
+        paragraphSpacing: (json['paragraph_spacing'] as num?)?.toDouble() ?? 0.9,
+        bold: json['bold'] == true,
+        align: NovelAlign.values.where((a) => a.name == json['align']).firstOrNull ??
+            (json['justify'] == true ? NovelAlign.justify : NovelAlign.start),
+        customFontPath: json['custom_font'] as String?,
+        customBg: (json['custom_bg'] as num?)?.toInt(),
+        customFg: (json['custom_fg'] as num?)?.toInt(),
         theme: NovelReaderTheme.values.where((t) => t.name == json['theme']).firstOrNull ?? NovelReaderTheme.system,
         padding: (json['padding'] as num?)?.toDouble() ?? 18,
         ttsRate: (json['tts_rate'] as num?)?.toDouble() ?? 0.5,
@@ -507,6 +549,21 @@ class NovelReaderSettings {
         autoScrollSpeed: (json['auto_scroll_speed'] as num?)?.toDouble() ?? 40,
       );
 }
+
+/// Memuat font kustom dari path; hasil = nama keluarga font, atau null bila gagal.
+final novelCustomFontProvider = FutureProvider.family<String?, String?>((ref, path) async {
+  if (path == null) return null;
+  try {
+    final bytes = await File(path).readAsBytes();
+    // Nama unik per berkas agar mengganti font tidak bentrok dengan yang lama.
+    final family = 'NovelCustom${path.hashCode.toUnsigned(32)}';
+    final loader = FontLoader(family)..addFont(Future.value(ByteData.sublistView(bytes)));
+    await loader.load();
+    return family;
+  } catch (_) {
+    return null;
+  }
+});
 
 final novelReaderSettingsProvider =
     NotifierProvider<NovelReaderSettingsNotifier, NovelReaderSettings>(NovelReaderSettingsNotifier.new);
