@@ -202,7 +202,7 @@ class _FavoritesGrid extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (entries.isEmpty) {
-      return const EmptyView(icon: Icons.filter_list_off, title: 'Tidak ada favorit yang cocok');
+      return const EmptyView(animation: AppAnimation.search, title: 'Tidak ada favorit yang cocok');
     }
     final theme = Theme.of(context);
     return GridView.builder(

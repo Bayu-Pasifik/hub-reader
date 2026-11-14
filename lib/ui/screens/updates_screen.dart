@@ -160,7 +160,11 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
                 children: [
                   const SizedBox(height: 80),
                   EmptyView(
-                    icon: Icons.new_releases_outlined,
+                    animation: s.checking
+                        ? AppAnimation.sync
+                        : favorites.isEmpty
+                            ? AppAnimation.empty
+                            : AppAnimation.success,
                     title: s.checking ? 'Mengecek ${s.done}/${s.total} favorit…' : 'Belum ada bab baru',
                     message: favorites.isEmpty
                         ? 'Tambahkan komik atau novel ke favorit; bab barunya akan muncul di sini.'

@@ -175,8 +175,7 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
           if (loaded != null)
             IconButton(
               tooltip: isFavorite ? 'Hapus dari favorit' : 'Tambah ke favorit',
-              icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border),
-              color: isFavorite ? Theme.of(context).colorScheme.primary : null,
+              icon: FavoriteIcon(isFavorite: isFavorite),
               onPressed: () => _toggleFavorite(loaded),
             ),
           if (loaded != null && source is! LocalSource)

@@ -6,13 +6,13 @@ import { dirname, join } from 'node:path';
 const OUT = join(dirname(fileURLToPath(import.meta.url)), '..', 'assets', 'lottie');
 mkdirSync(OUT, { recursive: true });
 
-const k = (frames) => ({
+const k = (frames, linear = false) => ({
   a: 1,
   k: frames.map(([t, v], i) => {
     const e = { t, s: Array.isArray(v) ? v : [v] };
     if (i < frames.length - 1) {
-      e.i = { x: [0.4], y: [1] };
-      e.o = { x: [0.6], y: [0] };
+      e.i = linear ? { x: [1], y: [1] } : { x: [0.4], y: [1] };
+      e.o = linear ? { x: [0], y: [0] } : { x: [0.6], y: [0] };
     }
     return e;
   }),
@@ -29,10 +29,10 @@ const group = (items, t) => ({ ty: 'gr', it: [...items, t ?? tr()] });
 const layer = (shapes, pos, ind, extra = {}) => ({
   ddd: 0, ind, ty: 4, nm: `l${ind}`, sr: 1,
   ks: { o: s(100), r: s(0), p: s([...pos, 0]), a: s([0, 0, 0]), s: s([100, 100, 100]), ...extra },
-  ao: 0, shapes, ip: 0, op: 60, st: 0, bm: 0,
+  ao: 0, shapes, ip: 0, op: 120, st: 0, bm: 0,
 });
-const comp = (nm, layers) => ({
-  v: '5.7.0', fr: 30, ip: 0, op: 60, w: 200, h: 200, nm, ddd: 0, assets: [], layers,
+const comp = (nm, layers, op = 60) => ({
+  v: '5.7.0', fr: 30, ip: 0, op, w: 200, h: 200, nm, ddd: 0, assets: [], layers,
 });
 
 const BLUE = [0.38, 0.45, 0.95, 1];
@@ -66,7 +66,58 @@ const error = () => {
   return comp('error', [layer(shapes, [100, 100], 1, { r: rot })]);
 };
 
-for (const [n, f] of Object.entries({ loading, empty, error })) {
+const path = (v, i, o, closed) => ({
+  ty: 'sh', ks: s({ c: closed, v, i, o }),
+});
+const trim = (e) => ({ ty: 'tm', s: s(0), e, o: s(0), m: 1 });
+
+// Hati meletup saat difavoritkan (sekali jalan, 24 frame).
+const heart = () => {
+  const v = [[0, 32], [-36, -4], [-18, -30], [0, -14], [18, -30], [36, -4]];
+  const i = [[14, -10], [6, 14], [-12, 0], [-6, -8], [-12, 0], [0, -16]];
+  const o = [[-14, -10], [0, -16], [12, 0], [6, -8], [12, 0], [-6, 14]];
+  const pop = k([[0, [4, 4, 100]], [9, [125, 125, 100]], [15, [92, 92, 100]], [21, [100, 100, 100]]]);
+  const ring = group([ell([150, 150]), stroke(BLUE, 5)], tr({
+    sc: k([[2, [30, 30]], [20, [100, 100]]]),
+  }));
+  const ringLayer = layer([ring], [100, 100], 2, {
+    o: k([[2, 0], [4, 70], [22, 0]]),
+  });
+  const heartLayer = layer([group([path(v, i, o, true), fill(BLUE)])], [100, 104], 1, { s: pop });
+  return comp('heart', [heartLayer, ringLayer], 24);
+};
+
+// Pemeriksaan/sinkronisasi: busur berputar.
+const sync = () => {
+  const arc = group([ell([110, 110]), stroke(BLUE, 12), trim(s(70))]);
+  const dot = group([ell([14, 14], [0, -55]), fill(BLUE)]);
+  const rot = k([[0, 0], [60, 360]], true);
+  return comp('sync', [layer([arc, dot], [100, 100], 1, { r: rot })]);
+};
+
+// Centang sukses: lingkaran membesar lalu centang tergambar.
+const success = () => {
+  const circ = group([ell([120, 120]), fill(LIGHT)], tr({
+    sc: k([[0, [4, 4]], [14, [112, 112]], [22, [100, 100]]]),
+  }));
+  const check = group([
+    path([[-24, 2], [-7, 19], [26, -16]], [[0, 0], [0, 0], [0, 0]], [[0, 0], [0, 0], [0, 0]], false),
+    stroke(BLUE, 12),
+    { ty: 'tm', s: s(0), e: k([[12, 0], [28, 100]]), o: s(0), m: 1 },
+  ]);
+  return comp('success', [layer([check, circ], [100, 100], 1)], 90);
+};
+
+// Kaca pembesar menyisir: dipakai untuk "tidak ada hasil".
+const search = () => {
+  const lens = group([ell([68, 68], [-10, -10]), stroke(BLUE, 10)]);
+  const handle = group([rect([14, 44], 7, [0, 0]), fill(BLUE)], tr({ p: s([34, 34]) }));
+  handle.it[handle.it.length - 1].r = s(-45);
+  const move = k([[0, [100, 100, 0]], [15, [116, 96, 0]], [30, [100, 100, 0]], [45, [84, 104, 0]], [60, [100, 100, 0]]]);
+  return comp('search', [layer([lens, handle], [100, 100], 1, { p: move })]);
+};
+
+for (const [n, f] of Object.entries({ loading, empty, error, heart, sync, success, search })) {
   writeFileSync(join(OUT, `${n}.json`), JSON.stringify(f()));
   console.log('ok', n);
 }

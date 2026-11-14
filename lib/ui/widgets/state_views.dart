@@ -5,14 +5,19 @@ import 'package:lottie/lottie.dart';
 enum AppAnimation {
   loading('assets/lottie/loading.json'),
   empty('assets/lottie/empty.json'),
-  error('assets/lottie/error.json');
+  error('assets/lottie/error.json'),
+  heart('assets/lottie/heart.json'),
+  sync('assets/lottie/sync.json'),
+  success('assets/lottie/success.json'),
+  search('assets/lottie/search.json');
 
   const AppAnimation(this.asset);
   final String asset;
 }
 
 class AppLottie extends StatelessWidget {
-  const AppLottie(this.animation, {super.key, this.size = 120, this.repeat = true});
+  const AppLottie(this.animation,
+      {super.key, this.size = 120, this.repeat = true});
 
   final AppAnimation animation;
   final double size;
@@ -37,6 +42,87 @@ class AppLottie extends StatelessWidget {
   }
 }
 
+/// Ikon favorit yang meletup (animasi Lottie) saat baru difavoritkan.
+class FavoriteIcon extends StatefulWidget {
+  const FavoriteIcon({super.key, required this.isFavorite});
+
+  final bool isFavorite;
+
+  @override
+  State<FavoriteIcon> createState() => _FavoriteIconState();
+}
+
+class _FavoriteIconState extends State<FavoriteIcon>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 800), // 24 frame @ 30 fps
+  );
+
+  @override
+  void didUpdateWidget(FavoriteIcon old) {
+    super.didUpdateWidget(old);
+    if (widget.isFavorite &&
+        !old.isFavorite &&
+        !MediaQuery.of(context).disableAnimations) {
+      _c.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme.primary;
+    return AnimatedBuilder(
+      animation: _c,
+      builder: (context, _) {
+        final playing = _c.isAnimating;
+        return Stack(
+          alignment: Alignment.center,
+          clipBehavior: Clip.none,
+          children: [
+            Opacity(
+              opacity: playing ? 0 : 1,
+              child: Icon(
+                widget.isFavorite ? Icons.favorite : Icons.favorite_border,
+                color: widget.isFavorite ? color : null,
+              ),
+            ),
+            Offstage(
+              offstage: !playing,
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: OverflowBox(
+                  maxWidth: 64,
+                  maxHeight: 64,
+                  child: Lottie.asset(
+                    AppAnimation.heart.asset,
+                    controller: _c,
+                    width: 64,
+                    height: 64,
+                    delegates: LottieDelegates(values: [
+                      ValueDelegate.color(const ['**', 'Fill 1', '**'],
+                          value: color),
+                      ValueDelegate.strokeColor(const ['**', 'Stroke 1', '**'],
+                          value: color),
+                    ]),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
 /// Indikator memuat layar penuh dengan animasi Lottie.
 class LoadingView extends StatelessWidget {
   const LoadingView({super.key, this.size = 96});
@@ -44,7 +130,8 @@ class LoadingView extends StatelessWidget {
   final double size;
 
   @override
-  Widget build(BuildContext context) => Center(child: AppLottie(AppAnimation.loading, size: size));
+  Widget build(BuildContext context) =>
+      Center(child: AppLottie(AppAnimation.loading, size: size));
 }
 
 class EmptyView extends StatelessWidget {
@@ -105,9 +192,12 @@ class _MessageView extends StatelessWidget {
             if (animation != null)
               AppLottie(animation!, size: compact ? 80 : 140)
             else
-              Icon(icon, size: compact ? 32 : 56, color: theme.colorScheme.outline),
+              Icon(icon,
+                  size: compact ? 32 : 56, color: theme.colorScheme.outline),
             const SizedBox(height: 12),
-            Text(title, style: theme.textTheme.titleMedium, textAlign: TextAlign.center),
+            Text(title,
+                style: theme.textTheme.titleMedium,
+                textAlign: TextAlign.center),
             if (message != null) ...[
               const SizedBox(height: 6),
               Text(
@@ -120,7 +210,11 @@ class _MessageView extends StatelessWidget {
             ],
             if (actions.isNotEmpty) ...[
               const SizedBox(height: 16),
-              Wrap(spacing: 8, runSpacing: 8, alignment: WrapAlignment.center, children: actions),
+              Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  alignment: WrapAlignment.center,
+                  children: actions),
             ],
           ],
         ),
