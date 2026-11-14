@@ -10,6 +10,7 @@ import '../../../sources/models.dart';
 import '../../../state/bookmarks_provider.dart';
 import '../../../state/download_providers.dart';
 import '../../../state/source_library_providers.dart';
+import '../../../state/similar_series.dart';
 import '../../../state/source_providers.dart';
 import '../../deep_links.dart';
 import '../../router.dart';
@@ -411,8 +412,73 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
             ),
           ],
           SeriesNoteCard(series: _key),
+          if (ref.read(sourceProvider(widget.sourceId)) is! LocalSource) _SimilarSeries(sourceId: widget.sourceId, url: widget.url, headers: headers),
         ],
       ),
+    );
+  }
+}
+
+/// "Mirip ini": seri sejenis dari sumber yang sama; dimuat saat dibuka.
+class _SimilarSeries extends ConsumerStatefulWidget {
+  const _SimilarSeries({required this.sourceId, required this.url, required this.headers});
+
+  final String sourceId;
+  final String url;
+  final Map<String, String> headers;
+
+  @override
+  ConsumerState<_SimilarSeries> createState() => _SimilarSeriesState();
+}
+
+class _SimilarSeriesState extends ConsumerState<_SimilarSeries> {
+  bool _open = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 8),
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: const Icon(Icons.recommend_outlined),
+          title: const Text('Mirip ini'),
+          subtitle: const Text('Karya penulis sama & seri sejudul'),
+          trailing: Icon(_open ? Icons.expand_less : Icons.expand_more),
+          onTap: () => setState(() => _open = !_open),
+        ),
+        if (_open)
+          ref.watch(similarSeriesProvider((sourceId: widget.sourceId, url: widget.url))).when(
+                loading: () => const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+                error: (_, __) => const Padding(padding: EdgeInsets.all(8), child: Text('Gagal memuat rekomendasi')),
+                data: (items) => items.isEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Text('Tidak ada seri mirip ditemukan', style: theme.textTheme.bodySmall),
+                      )
+                    : SizedBox(
+                        height: 230,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: items.length,
+                          separatorBuilder: (_, __) => const SizedBox(width: 12),
+                          itemBuilder: (context, i) => SizedBox(
+                            width: 120,
+                            child: SourceMangaCard(
+                              manga: items[i],
+                              headers: widget.headers,
+                              onTap: () => context.push(sourceMangaLocation(widget.sourceId, items[i].url)),
+                            ),
+                          ),
+                        ),
+                      ),
+              ),
+      ],
     );
   }
 }
