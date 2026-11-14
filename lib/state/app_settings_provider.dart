@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/net/doh.dart';
 import 'core_providers.dart';
 
 /// Warna utama aplikasi.
@@ -103,5 +104,19 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
     await p.setInt(_lockAfter, state.lockAfter.inSeconds);
     await p.setBool(_incognito, state.incognito);
     await p.setBool(_autoDeleteRead, state.autoDeleteRead);
+  }
+}
+
+/// DNS-over-HTTPS untuk melewati blokir DNS dari provider internet.
+final dohProviderProvider = NotifierProvider<DohNotifier, DohProvider>(DohNotifier.new);
+
+class DohNotifier extends Notifier<DohProvider> {
+  @override
+  DohProvider build() => DohProvider.read(ref.watch(sharedPreferencesProvider));
+
+  Future<void> set(DohProvider v) async {
+    state = v;
+    applyDoh(v);
+    await ref.read(sharedPreferencesProvider).setString(DohProvider.prefsKey, v.name);
   }
 }

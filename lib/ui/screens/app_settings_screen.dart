@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../../core/net/doh.dart';
 import '../../state/app_settings_provider.dart';
 import '../../state/app_update_provider.dart';
 import '../../state/core_providers.dart';
@@ -226,6 +227,17 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
               await n.update((x) => x.copyWith(autoDeleteRead: v));
               if (v) await ref.read(downloadIndexProvider.notifier).purgeRead();
             },
+          ),
+          header('Jaringan'),
+          ListTile(
+            leading: const Icon(Icons.shield_outlined),
+            title: const Text('DNS over HTTPS (DoH)'),
+            subtitle: const Text('Opsional. Nyalakan bila situs diblokir provider internet (tanpa VPN)'),
+            trailing: DropdownButton<DohProvider>(
+              value: ref.watch(dohProviderProvider),
+              items: [for (final d in DohProvider.values) DropdownMenuItem(value: d, child: Text(d.label))],
+              onChanged: (v) => ref.read(dohProviderProvider.notifier).set(v ?? DohProvider.none),
+            ),
           ),
           header('Sumber'),
           SwitchListTile(

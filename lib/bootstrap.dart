@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'core/net/doh.dart';
 import 'core/platform/webview_bridge.dart';
 import 'core/storage/json_cache.dart';
 import 'data/local/download_store.dart';
@@ -48,6 +49,7 @@ class AppDependencies {
   /// User-Agent-nya; pakai yang disimpan saat aplikasi terakhir dibuka.
   static Future<AppDependencies> open({bool background = false}) async {
     final prefs = await SharedPreferences.getInstance();
+    applyDoh(DohProvider.read(prefs));
     final cache = await JsonCache.open();
     final downloads = await DownloadStore.open(prefs);
     final supportDir = await getApplicationSupportDirectory();
