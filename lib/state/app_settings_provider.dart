@@ -34,6 +34,7 @@ class AppSettings {
     this.appLock = false,
     this.lockAfter = const Duration(minutes: 1),
     this.incognito = false,
+    this.secureScreen = false,
     this.autoDeleteRead = false,
     this.autoDownloadNew = false,
     this.downloadWifiOnly = false,
@@ -59,6 +60,9 @@ class AppSettings {
   /// Mode samaran: riwayat & posisi baca tidak dicatat.
   final bool incognito;
 
+  /// Blokir screenshot, rekam layar, dan pratinjau di daftar aplikasi terbaru.
+  final bool secureScreen;
+
   /// Hapus unduhan bab yang sudah selesai dibaca agar penyimpanan tidak penuh.
   final bool autoDeleteRead;
 
@@ -82,6 +86,7 @@ class AppSettings {
     bool? appLock,
     Duration? lockAfter,
     bool? incognito,
+    bool? secureScreen,
     bool? autoDeleteRead,
     bool? autoDownloadNew,
     bool? downloadWifiOnly,
@@ -96,6 +101,7 @@ class AppSettings {
         appLock: appLock ?? this.appLock,
         lockAfter: lockAfter ?? this.lockAfter,
         incognito: incognito ?? this.incognito,
+        secureScreen: secureScreen ?? this.secureScreen,
         autoDeleteRead: autoDeleteRead ?? this.autoDeleteRead,
         autoDownloadNew: autoDownloadNew ?? this.autoDownloadNew,
         downloadWifiOnly: downloadWifiOnly ?? this.downloadWifiOnly,
@@ -114,6 +120,7 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
   static const _lock = 'app.lock.v1';
   static const _lockAfter = 'app.lock_after_seconds.v1';
   static const _incognito = 'app.incognito.v1';
+  static const _secureScreen = 'app.secure_screen.v1';
   static const _autoDeleteRead = 'app.auto_delete_read.v1';
   static const _autoDownloadNew = 'app.auto_download_new.v1';
   static const _downloadWifiOnly = 'app.download_wifi_only.v1';
@@ -132,6 +139,7 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
       appLock: p.getBool(_lock) ?? false,
       lockAfter: Duration(seconds: p.getInt(_lockAfter) ?? 60),
       incognito: p.getBool(_incognito) ?? false,
+      secureScreen: p.getBool(_secureScreen) ?? false,
       autoDeleteRead: p.getBool(_autoDeleteRead) ?? false,
       autoDownloadNew: p.getBool(_autoDownloadNew) ?? false,
       downloadWifiOnly: p.getBool(_downloadWifiOnly) ?? false,
@@ -157,6 +165,7 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
     await p.setBool(_lock, state.appLock);
     await p.setInt(_lockAfter, state.lockAfter.inSeconds);
     await p.setBool(_incognito, state.incognito);
+    await p.setBool(_secureScreen, state.secureScreen);
     await p.setBool(_autoDeleteRead, state.autoDeleteRead);
     await p.setBool(_autoDownloadNew, state.autoDownloadNew);
     await p.setBool(_downloadWifiOnly, state.downloadWifiOnly);

@@ -89,6 +89,14 @@ class MainActivity : FlutterFragmentActivity() {
                         interceptVolume = call.arguments as? Boolean ?: false
                         result.success(null)
                     }
+                    "secure" -> {
+                        if (call.arguments as? Boolean == true) {
+                            window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                        } else {
+                            window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                        }
+                        result.success(null)
+                    }
                     "keepScreenOn" -> {
                         if (call.arguments as? Boolean == true) {
                             window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)

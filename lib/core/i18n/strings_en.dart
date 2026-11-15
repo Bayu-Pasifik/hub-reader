@@ -50,6 +50,8 @@ const Map<String, String> stringsEn = {
   'Warna dari wallpaper': 'Colors from wallpaper',
   'Material You, perlu Android 12 ke atas': 'Material You, needs Android 12 or newer',
   'Kunci aplikasi': 'App lock',
+  'Blokir screenshot': 'Block screenshots',
+  'Layar tidak bisa di-screenshot atau direkam, dan pratinjau di aplikasi terbaru dikosongkan': 'Screen cannot be captured or recorded, and the recent-apps preview is blanked',
   'Sidik jari / PIN perangkat saat membuka aplikasi': 'Device fingerprint / PIN when opening the app',
   'Kunci lagi setelah di latar': 'Lock again after being in background',
   'Mode samaran': 'Incognito mode',

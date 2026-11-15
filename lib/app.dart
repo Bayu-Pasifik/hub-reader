@@ -2,6 +2,7 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/platform/reader_bridge.dart';
 import 'data/models/source_library.dart';
 import 'state/app_settings_provider.dart';
 import 'state/home_widget_sync.dart';
@@ -27,6 +28,7 @@ class _HubReaderAppState extends ConsumerState<HubReaderApp> {
     super.initState();
     // Tautan hubreader:// (lihat DeepLinks): buka di atas tab yang aktif.
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      ReaderBridge.setSecure(ref.read(appSettingsProvider).secureScreen);
       DeepLinks.listen((location) => ref.read(routerProvider).push(location));
       AppShortcuts.init((location, isTab) {
         final router = ref.read(routerProvider);
@@ -60,6 +62,7 @@ class _HubReaderAppState extends ConsumerState<HubReaderApp> {
   @override
   Widget build(BuildContext context) {
     ref.listen(sourceHistoryProvider, (_, next) => _syncHomeWidget(next));
+    ref.listen(appSettingsProvider.select((x) => x.secureScreen), (_, on) => ReaderBridge.setSecure(on));
     final s = ref.watch(appSettingsProvider);
     return DynamicColorBuilder(
       builder: (lightDynamic, darkDynamic) {

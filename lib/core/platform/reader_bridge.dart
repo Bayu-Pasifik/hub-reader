@@ -22,6 +22,13 @@ class ReaderBridge {
     await _invoke('volumeKeys', onVolume != null);
   }
 
+  /// FLAG_SECURE: layar tidak bisa di-screenshot/direkam dan pratinjau di
+  /// daftar aplikasi terbaru dikosongkan.
+  static Future<void> setSecure(bool on) async {
+    if (!Platform.isAndroid) return;
+    await _invoke('secure', on);
+  }
+
   static Future<void> setKeepScreenOn(bool on) async {
     if (!Platform.isAndroid) return;
     await _invoke('keepScreenOn', on);

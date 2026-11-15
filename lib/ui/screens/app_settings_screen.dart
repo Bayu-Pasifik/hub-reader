@@ -295,6 +295,13 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
               ),
             ),
           SwitchListTile(
+            secondary: const Icon(Icons.screenshot_monitor_outlined),
+            title: Text(tr('Blokir screenshot')),
+            subtitle: Text(tr('Layar tidak bisa di-screenshot atau direkam, dan pratinjau di aplikasi terbaru dikosongkan')),
+            value: s.secureScreen,
+            onChanged: (v) => n.update((x) => x.copyWith(secureScreen: v)),
+          ),
+          SwitchListTile(
             secondary: const Icon(Icons.visibility_off_outlined),
             title: Text(tr('Mode samaran')),
             subtitle: Text(tr('Riwayat & posisi baca tidak dicatat')),

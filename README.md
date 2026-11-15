@@ -206,6 +206,8 @@ tampil di bawah sinopsis) dan filter **Hanya bab ber-bookmark**. Disimpan di `li
 `library.notes.v1`, ikut cadangan, dan ikut dipindah saat **Pindah sumber** (bookmark dicocokkan lewat
 nomor bab).
 
+**Blokir screenshot** (Pengaturan → Privasi & keamanan, `app.secure_screen.v1`, mati secara default): memasang `FLAG_SECURE` lewat channel `hub_reader/reader`, jadi screenshot dan rekam layar menghasilkan layar hitam, dan pratinjau di daftar aplikasi terbaru dikosongkan.
+
 **Mode samaran** (ikon mata di Riwayat, atau Pengaturan): riwayat dan posisi baca otomatis tidak
 dicatat; tanda dibaca manual tetap bisa. Bilah kecil di atas navigasi menandai mode ini aktif.
 
