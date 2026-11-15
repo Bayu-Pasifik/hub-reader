@@ -42,6 +42,7 @@ class AppSettings {
     this.downloadWifiOnly = false,
     this.downloadParallel = 2,
     this.downloadAhead = 0,
+    this.imageCacheMb = 500,
     this.language = AppLanguage.id,
   });
 
@@ -85,6 +86,9 @@ class AppSettings {
   /// Saat membaca komik favorit, unduh sekian bab berikutnya (0 = mati).
   final int downloadAhead;
 
+  /// Batas ukuran cache gambar (MB); entri terlama dibuang bila lewat. 0 = tanpa batas.
+  final int imageCacheMb;
+
   /// Bahasa antarmuka.
   final AppLanguage language;
 
@@ -103,6 +107,7 @@ class AppSettings {
     bool? downloadWifiOnly,
     int? downloadParallel,
     int? downloadAhead,
+    int? imageCacheMb,
     AppLanguage? language,
   }) =>
       AppSettings(
@@ -120,6 +125,7 @@ class AppSettings {
         downloadWifiOnly: downloadWifiOnly ?? this.downloadWifiOnly,
         downloadParallel: downloadParallel ?? this.downloadParallel,
         downloadAhead: downloadAhead ?? this.downloadAhead,
+        imageCacheMb: imageCacheMb ?? this.imageCacheMb,
         language: language ?? this.language,
       );
 }
@@ -141,6 +147,7 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
   static const _downloadWifiOnly = 'app.download_wifi_only.v1';
   static const _downloadParallel = 'app.download_parallel.v1';
   static const _downloadAhead = 'app.download_ahead.v1';
+  static const _imageCacheMb = 'app.image_cache_mb.v1';
   static const _language = 'app.language.v1';
 
   @override
@@ -162,6 +169,7 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
       downloadWifiOnly: p.getBool(_downloadWifiOnly) ?? false,
       downloadParallel: (p.getInt(_downloadParallel) ?? 2).clamp(1, 4),
       downloadAhead: (p.getInt(_downloadAhead) ?? 0).clamp(0, 10),
+      imageCacheMb: (p.getInt(_imageCacheMb) ?? 500).clamp(0, 10000),
       language: currentLanguage,
     );
   }
@@ -190,6 +198,7 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
     await p.setBool(_downloadWifiOnly, state.downloadWifiOnly);
     await p.setInt(_downloadParallel, state.downloadParallel);
     await p.setInt(_downloadAhead, state.downloadAhead);
+    await p.setInt(_imageCacheMb, state.imageCacheMb);
     await p.setString(_language, state.language.name);
   }
 }

@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../../core/net/image_cache.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -360,7 +361,7 @@ class _PluginIcon extends StatelessWidget {
         height: 40,
         child: url == null
             ? fallback
-            : CachedNetworkImage(
+            : CachedNetworkImage(cacheManager: AppImageCache.instance, 
                 imageUrl: url!,
                 fit: BoxFit.cover,
                 placeholder: (_, __) => fallback,

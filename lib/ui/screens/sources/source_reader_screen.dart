@@ -2,6 +2,7 @@ import 'dart:io';
 import '../../../core/i18n/strings.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../../core/net/image_cache.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart' show Ticker;
 import 'package:flutter/semantics.dart' show CustomSemanticsAction;
@@ -491,7 +492,7 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
     _nextPrecached = true;
     final nextHeaders = widget.source.imageHeaders(referer: next.url);
     for (final url in urls.take(2).where((u) => u.startsWith('http'))) {
-      precacheImage(CachedNetworkImageProvider(url, headers: nextHeaders), context).ignore();
+      precacheImage(CachedNetworkImageProvider(cacheManager: AppImageCache.instance, url, headers: nextHeaders), context).ignore();
     }
   }
 
@@ -511,7 +512,7 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       for (final i in todo) {
-        precacheImage(CachedNetworkImageProvider(urls[i], headers: headers), context).ignore();
+        precacheImage(CachedNetworkImageProvider(cacheManager: AppImageCache.instance, urls[i], headers: headers), context).ignore();
       }
     });
   }
@@ -540,7 +541,7 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
       final local = !url.startsWith('http');
       return CroppedPageImage(
         cacheKey: url,
-        image: local ? FileImage(File(url)) : CachedNetworkImageProvider(url, headers: headers),
+        image: local ? FileImage(File(url)) : CachedNetworkImageProvider(cacheManager: AppImageCache.instance, url, headers: headers),
         vertical: widget.mode.isPaged,
         placeholder: (_) => const SizedBox(height: 400, child: LoadingView()),
         error: (_) => SizedBox(
@@ -561,7 +562,7 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
         ),
       );
     }
-    return CachedNetworkImage(
+    return CachedNetworkImage(cacheManager: AppImageCache.instance, 
       imageUrl: url,
       httpHeaders: headers,
       fit: fit,

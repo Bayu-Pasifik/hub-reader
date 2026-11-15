@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/platform/reader_bridge.dart';
+import 'core/net/image_cache.dart';
 import 'data/models/source_library.dart';
 import 'state/app_settings_provider.dart';
 import 'state/home_widget_sync.dart';
@@ -25,9 +26,24 @@ class HubReaderApp extends ConsumerStatefulWidget {
 }
 
 class _HubReaderAppState extends ConsumerState<HubReaderApp> {
+  /// Rapikan cache gambar sesuai batas ukuran: saat aplikasi dibuka dan setiap masuk ke latar.
+  void _trimImageCache() {
+    final mb = ref.read(appSettingsProvider).imageCacheMb;
+    AppImageCache.instance.trimTo(mb * 1024 * 1024).ignore();
+  }
+
+  late final AppLifecycleListener _lifecycle;
+
+  @override
+  void dispose() {
+    _lifecycle.dispose();
+    super.dispose();
+  }
+
   @override
   void initState() {
     super.initState();
+    _lifecycle = AppLifecycleListener(onPause: _trimImageCache);
     // Tautan hubreader:// (lihat DeepLinks): buka di atas tab yang aktif.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ReaderBridge.setSecure(ref.read(appSettingsProvider).secureScreen);
@@ -41,6 +57,8 @@ class _HubReaderAppState extends ConsumerState<HubReaderApp> {
       ref.read(downloadQueueProvider);
       // Bersihkan unduhan bab yang sudah dibaca (bila pengaturan aktif).
       ref.read(downloadIndexProvider.notifier).purgeRead().ignore();
+      // Tunda sebentar supaya tidak bersaing dengan pemuatan layar pertama.
+      Future<void>.delayed(const Duration(seconds: 8), _trimImageCache);
       // Rilis baru di GitHub (paling sering sekali sehari).
       autoCheckForUpdates(() => ref.read(routerProvider).routerDelegate.navigatorKey.currentContext, ref).ignore();
     });

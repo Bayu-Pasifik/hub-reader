@@ -2,6 +2,7 @@ import 'dart:io';
 import '../../core/i18n/strings.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../core/net/image_cache.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -48,7 +49,7 @@ class SourceCover extends StatelessWidget {
                       cacheWidth: 360,
                       errorBuilder: (_, __, ___) => box(Icons.broken_image_outlined),
                     )
-                  : CachedNetworkImage(
+                  : CachedNetworkImage(cacheManager: AppImageCache.instance, 
                   imageUrl: url!,
                   httpHeaders: headers,
                   fit: BoxFit.cover,

@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import '../../core/net/image_cache.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
@@ -64,7 +64,7 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
   }
 
   Future<Directory> _imagesDir() async =>
-      Directory('${(await getTemporaryDirectory()).path}${Platform.pathSeparator}${DefaultCacheManager.key}');
+      Directory('${(await getTemporaryDirectory()).path}${Platform.pathSeparator}${AppImageCache.key}');
   Future<Directory> _apiDir() async =>
       Directory('${(await getApplicationCacheDirectory()).path}${Platform.pathSeparator}api_cache');
   Future<Directory> _pluginsDir() async => Directory(
@@ -149,7 +149,7 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
   }
 
   Future<void> _clearImages() async {
-    await DefaultCacheManager().emptyCache();
+    await AppImageCache.instance.emptyCache();
     PaintingBinding.instance.imageCache.clear();
     _snack(tr('Cache gambar dihapus'));
     await _measure();
@@ -432,6 +432,24 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
             title: Text(tr('Cache gambar')),
             subtitle: Text('${sizeOf(sizes?.images)} · ${tr('sampul & halaman komik yang pernah dibuka')}'),
             trailing: TextButton(onPressed: _clearImages, child: Text(tr('Hapus'))),
+          ),
+          ListTile(
+            leading: const Icon(Icons.speed_outlined),
+            title: Text(tr('Batas cache gambar')),
+            subtitle: Text(tr('Entri yang paling lama tidak dibuka dibuang bila lewat batas')),
+            trailing: DropdownButton<int>(
+              value: const [0, 100, 250, 500, 1000, 2000].contains(s.imageCacheMb) ? s.imageCacheMb : 500,
+              onChanged: (v) async {
+                if (v == null) return;
+                await n.update((x) => x.copyWith(imageCacheMb: v));
+                await AppImageCache.instance.trimTo(v * 1024 * 1024);
+                _measure();
+              },
+              items: [
+                for (final mb in const [0, 100, 250, 500, 1000, 2000])
+                  DropdownMenuItem(value: mb, child: Text(mb == 0 ? tr('Tanpa batas') : '$mb MB')),
+              ],
+            ),
           ),
           ListTile(
             leading: const Icon(Icons.storage_outlined),

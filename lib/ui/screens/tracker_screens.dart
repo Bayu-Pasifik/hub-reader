@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../core/net/image_cache.dart';
 import '../../core/i18n/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -521,7 +522,7 @@ class _TrackSearchDialogState extends State<_TrackSearchDialog> {
                             height: 56,
                             child: r.cover == null
                                 ? const Icon(Icons.image_outlined)
-                                : CachedNetworkImage(imageUrl: r.cover!, fit: BoxFit.cover),
+                                : CachedNetworkImage(cacheManager: AppImageCache.instance, imageUrl: r.cover!, fit: BoxFit.cover),
                           ),
                           title: Text(r.title, maxLines: 2, overflow: TextOverflow.ellipsis),
                           subtitle:

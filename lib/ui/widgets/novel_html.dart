@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../core/net/image_cache.dart';
 import 'package:flutter/material.dart';
 import 'package:html/dom.dart' as dom;
 import 'package:html/parser.dart' as html_parser;
@@ -311,7 +312,7 @@ class NovelBlockView extends StatelessWidget {
                   fit: BoxFit.fitWidth,
                   errorBuilder: (_, __, ___) => Icon(Icons.broken_image_outlined, color: style.color),
                 )
-              : CachedNetworkImage(
+              : CachedNetworkImage(cacheManager: AppImageCache.instance, 
                   imageUrl: b.url,
                   httpHeaders: imageHeaders,
                   fit: BoxFit.fitWidth,

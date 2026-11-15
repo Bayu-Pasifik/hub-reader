@@ -3,7 +3,7 @@ import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import '../../core/net/image_cache.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -33,7 +33,7 @@ String pageFileName(String chapterName, int page, String ext) {
 /// Byte gambar halaman: file unduhan, atau dari cache gambar (tanpa unduh ulang bila sudah tampil).
 Future<Uint8List> loadPageBytes(String url, Map<String, String> headers) async {
   if (!url.startsWith('http')) return File(url).readAsBytes();
-  final file = await DefaultCacheManager().getSingleFile(url, headers: headers);
+  final file = await AppImageCache.instance.getSingleFile(url, headers: headers);
   return file.readAsBytes();
 }
 

@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../core/net/image_cache.dart';
 import '../../core/i18n/strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -278,7 +279,7 @@ class _EntryTile extends StatelessWidget {
         child: entry.thumbnail != null
             ? ClipRRect(
                 borderRadius: BorderRadius.circular(4),
-                child: CachedNetworkImage(
+                child: CachedNetworkImage(cacheManager: AppImageCache.instance, 
                   imageUrl: entry.thumbnail!,
                   httpHeaders: headers,
                   fit: BoxFit.cover,

@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../core/net/image_cache.dart';
 import 'package:flutter/material.dart';
 
 /// Sampul rasio 3:4.
@@ -27,7 +28,7 @@ class CoverImage extends StatelessWidget {
           borderRadius: BorderRadius.circular(borderRadius),
           child: resolved == null
               ? placeholder
-              : CachedNetworkImage(
+              : CachedNetworkImage(cacheManager: AppImageCache.instance, 
                   imageUrl: resolved,
                   fit: BoxFit.cover,
                   fadeInDuration: const Duration(milliseconds: 150),
