@@ -958,4 +958,13 @@ const Map<String, String> stringsEn = {
   '{n} bab ditandai sudah dibaca': '{n} chapters marked as read',
   'Tracker dinaikkan ke bab {n}': 'Tracker raised to chapter {n}',
   'Sudah sinkron': 'Already in sync',
+  'Ubah info seri': 'Edit series info',
+  'Ubah info': 'Edit info',
+  'Judul': 'Title',
+  'Penulis': 'Author',
+  'Deskripsi': 'Description',
+  'Pilih sampul': 'Choose cover',
+  'Gambar terlalu besar (maks. 8 MB)': 'Image too large (max 8 MB)',
+  'Pakai sampul situs': 'Use site cover',
+  'Setel ulang': 'Reset',
 };

@@ -23,6 +23,8 @@ import '../../router.dart';
 import '../../widgets/category_sheet.dart';
 import '../../widgets/layout.dart';
 import '../../widgets/series_notes.dart';
+import '../../widgets/series_info_editor.dart';
+import '../../../state/series_overrides.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/cover_hero.dart';
 import '../../widgets/state_views.dart';
@@ -282,7 +284,8 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final source = ref.watch(novelSourceProvider(widget.pluginId)).valueOrNull;
-    final details = ref.watch(novelDetailsProvider(_key));
+    final rawDetails = ref.watch(novelDetailsProvider(_key));
+    final details = rawDetails.whenData((d) => applyNovelOverride(d, ref.watch(seriesOverrideProvider(_libKey))));
     final isFavorite = ref.watch(isSourceFavoriteProvider(_libKey));
     final lastRead = ref.watch(sourceLastReadProvider(_libKey));
     final loaded = details.valueOrNull;
@@ -337,6 +340,13 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
                         }
                         if (v == 'track' && loaded != null) _openTracking(loaded);
                         if (v == 'note') editSeriesNote(context, ref, _libKey);
+                        if (v == 'edit') {
+                          final raw = rawDetails.valueOrNull;
+                          if (raw != null) {
+                            editSeriesInfo(context, ref, _libKey,
+                                siteTitle: raw.name, siteAuthor: raw.author, siteDescription: raw.summary);
+                          }
+                        }
                         if (v == 'bookmarked') setState(() => _onlyBookmarked = !_onlyBookmarked);
                         if (v == 'migrate' && loaded != null) {
                           context.push(migrateLocation(novelLibraryId(widget.pluginId), widget.path, loaded.name));
@@ -347,6 +357,7 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
                         if (source is! LocalNovelSource) PopupMenuItem(value: 'web', child: Text(tr('Buka di WebView'))),
                         PopupMenuItem(value: 'track', child: Text(tr('Tracking'))),
                         PopupMenuItem(value: 'note', child: Text(tr('Catatan'))),
+                        PopupMenuItem(value: 'edit', child: Text(tr('Ubah info'))),
                         CheckedPopupMenuItem(
                           value: 'bookmarked',
                           checked: _onlyBookmarked,

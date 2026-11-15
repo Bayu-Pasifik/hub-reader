@@ -21,6 +21,8 @@ import '../../router.dart';
 import '../../widgets/category_sheet.dart';
 import '../../widgets/layout.dart';
 import '../../widgets/series_notes.dart';
+import '../../widgets/series_info_editor.dart';
+import '../../../state/series_overrides.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/cover_hero.dart';
 import '../../widgets/state_views.dart';
@@ -207,7 +209,8 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
   @override
   Widget build(BuildContext context) {
     final source = ref.watch(sourceProvider(widget.sourceId));
-    final details = ref.watch(sourceDetailsProvider(_key));
+    final rawDetails = ref.watch(sourceDetailsProvider(_key));
+    final details = rawDetails.whenData((d) => applyMangaOverride(d, ref.watch(seriesOverrideProvider(_key))));
     final headers = source?.imageHeaders() ?? const <String, String>{};
     final isFavorite = ref.watch(isSourceFavoriteProvider(_key));
     final lastRead = ref.watch(sourceLastReadProvider(_key));
@@ -245,6 +248,13 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
             PopupMenuButton<String>(
               onSelected: (v) {
                 if (v == 'note') editSeriesNote(context, ref, _key);
+                if (v == 'edit') {
+                  final raw = rawDetails.valueOrNull;
+                  if (raw != null) {
+                    editSeriesInfo(context, ref, _key,
+                        siteTitle: raw.title, siteAuthor: raw.author, siteDescription: raw.description);
+                  }
+                }
                 if (v == 'bookmarked') setState(() => _onlyBookmarked = !_onlyBookmarked);
                 if (v == 'scanlator') _scanlatorDialog(loaded);
                 if (v == 'migrate') context.push(migrateLocation(widget.sourceId, widget.url, loaded.title));
@@ -290,6 +300,7 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
                 if (source is! LocalSource) PopupMenuItem(value: 'share', child: Text(tr('Bagikan'))),
                 PopupMenuItem(value: 'track', child: Text(tr('Tracking'))),
                 PopupMenuItem(value: 'note', child: Text(tr('Catatan'))),
+                PopupMenuItem(value: 'edit', child: Text(tr('Ubah info'))),
                 CheckedPopupMenuItem(
                   value: 'bookmarked',
                   checked: _onlyBookmarked,
