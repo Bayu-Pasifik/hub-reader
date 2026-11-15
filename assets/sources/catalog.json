@@ -2,7 +2,7 @@
  "source": "https://github.com/keiyoushi/extensions-source",
  "license": "Apache-2.0",
  "generatedAt": "2026-11-12",
- "count": 453,
+ "count": 458,
  "sources": [
   {
    "id": "all.allporncomicsco",
@@ -6621,6 +6621,70 @@
     "vals": {
      "mangaDetailsSelectorStatus": ".post-content_item:contains(状态) .summary-content",
      "chapterDateSelector": "span.chapter-release-date i"
+    },
+    "customized": true
+   }
+  },
+  {
+   "id": "id.crotpedia",
+   "name": "CrotPedia",
+   "lang": "id",
+   "baseUrl": "https://crotpedia.net",
+   "contentWarning": "nsfw",
+   "theme": "zmanga",
+   "options": {
+    "vals": {
+     "hasProjectPage": false
+    }
+   }
+  },
+  {
+   "id": "id.maidmanga",
+   "name": "Maid - Manga",
+   "lang": "id",
+   "baseUrl": "https://www.maid.my.id",
+   "contentWarning": "mixed",
+   "theme": "zmanga",
+   "options": {
+    "vals": {
+     "hasProjectPage": true
+    }
+   }
+  },
+  {
+   "id": "id.mangapoi",
+   "name": "Mangapoi",
+   "lang": "id",
+   "baseUrl": "https://mangapoi.io",
+   "contentWarning": "nsfw",
+   "theme": "zmanga",
+   "options": {
+    "customized": true
+   }
+  },
+  {
+   "id": "id.shirodoujin",
+   "name": "Shiro Doujin",
+   "lang": "id",
+   "baseUrl": "https://shirodoujin.com",
+   "contentWarning": "nsfw",
+   "theme": "zmanga",
+   "options": {
+    "vals": {
+     "hasProjectPage": true
+    }
+   }
+  },
+  {
+   "id": "th.oremanga",
+   "name": "OreManga",
+   "lang": "th",
+   "baseUrl": "https://www.oremanga.net",
+   "contentWarning": "mixed",
+   "theme": "zmanga",
+   "options": {
+    "vals": {
+     "searchPath": "advance-search"
     },
     "customized": true
    }

@@ -297,3 +297,170 @@ class HwalumiSource extends _CatalogHttpSource {
     return pages;
   }
 }
+
+// ===================================================================
+// ZManga (CrotPedia, Maid Manga, Mangapoi, Shiro Doujin, OreManga)
+// Port dari lib-multisrc/zmanga.
+// ===================================================================
+
+class ZMangaSource extends _CatalogHttpSource {
+  ZMangaSource({
+    required super.id,
+    required super.name,
+    required super.baseUrl,
+    required super.lang,
+    super.contentWarning = ContentWarning.safe,
+    this.searchPath = 'advanced-search',
+  });
+
+  /// Sebagian situs mengganti rute pencarian (mis. `advance-search`).
+  final String searchPath;
+
+  static const _thaiMonths = {
+    'มกราคม': 'january',
+    'กุมภาพันธ์': 'february',
+    'มีนาคม': 'march',
+    'เมษายน': 'april',
+    'พฤษภาคม': 'may',
+    'มิถุนายน': 'june',
+    'กรกฎาคม': 'july',
+    'สิงหาคม': 'august',
+    'กันยายน': 'september',
+    'ตุลาคม': 'october',
+    'พฤศจิกายน': 'november',
+    'ธันวาคม': 'december',
+  };
+
+  @override
+  Future<MangaPage> popular(int page) => search(page, '', filters: FilterValues.empty.withSingle('order', 'popular'));
+
+  @override
+  Future<MangaPage> latest(int page) => search(page, '', filters: FilterValues.empty.withSingle('order', 'update'));
+
+  @override
+  Future<MangaPage> search(int page, String query, {FilterValues filters = FilterValues.empty}) async {
+    final segment = page > 1 ? 'page/$page/' : '';
+    final params = <String, String>{
+      if (query.trim().isNotEmpty) 'title': query.trim(),
+      if (filters.single('type') case final t?) 'type': t,
+      if (filters.single('status') case final s?) 'status': s,
+      'order': filters.single('order') ?? 'popular',
+    };
+    final res = await fetchHtml(Uri.parse('$baseUrl/$searchPath/$segment').replace(queryParameters: params));
+    return parseList(res.document, res.url);
+  }
+
+  MangaPage parseList(Document doc, Uri pageUrl) {
+    final items = <SourceManga>[];
+    // `flexbox4` = markup ala Shiro Doujin (judul di `.title a`).
+    for (final el in doc.querySelectorAll('div.flexbox2-item, div.flexbox4-item')) {
+      final url = attrAbs(el.querySelector('div.flexbox2-content a, div.flexbox4-content a'), 'href', pageUrl);
+      final title = clean(el.querySelector('div.flexbox2-title > span, .flexbox4-side .title a')?.text);
+      if (url == null || title.isEmpty) continue;
+      final manga = SourceManga(url: url, title: title, thumbnailUrl: imgAttr(el.querySelector('img'), pageUrl));
+      if (!items.contains(manga)) items.add(manga);
+    }
+    return MangaPage(items, hasNextPage: doc.querySelector('div.pagination .next') != null);
+  }
+
+  @override
+  Future<List<FilterDef>> filters() async => const [
+        SelectFilterDef('order', 'Urutkan', [
+          FilterOption('Populer', 'popular'),
+          FilterOption('Update terbaru', 'update'),
+          FilterOption('Judul A-Z', 'title'),
+          FilterOption('Judul Z-A', 'titlereverse'),
+        ]),
+        SelectFilterDef('status', 'Status', [
+          FilterOption('Semua', ''),
+          FilterOption('Berjalan', 'ongoing'),
+          FilterOption('Tamat', 'completed'),
+        ]),
+        SelectFilterDef('type', 'Tipe', [
+          FilterOption('Semua', ''),
+          FilterOption('Manga', 'Manga'),
+          FilterOption('Manhua', 'Manhua'),
+          FilterOption('Manhwa', 'Manhwa'),
+          FilterOption('One-Shot', 'One-Shot'),
+          FilterOption('Doujin', 'Doujin'),
+        ]),
+      ];
+
+  @override
+  Future<SourceMangaDetails> details(String mangaUrl) async {
+    final res = await fetchHtml(Uri.parse(mangaUrl));
+    return parseDetails(res.document, res.url);
+  }
+
+  static String? _info(Document doc, String label) {
+    for (final li in doc.querySelectorAll('.series-infolist li')) {
+      if (li.text.toLowerCase().contains(label)) return nonPlaceholder(li.querySelector('span')?.text);
+    }
+    return null;
+  }
+
+  SourceMangaDetails parseDetails(Document doc, Uri pageUrl) {
+    final h2 = clean(doc.querySelector('.series-title h2')?.text);
+    final title = h2.isNotEmpty ? h2 : clean(doc.querySelector('h1')?.text);
+    if (title.isEmpty) throw SourceException(SourceErrorKind.parse, detail: tr('Judul seri tidak ditemukan.'));
+    final genres = [
+      for (final a in doc.querySelectorAll('div.series-genres a'))
+        if (clean(a.text).isNotEmpty) clean(a.text),
+    ];
+    final type = nonPlaceholder(doc.querySelector('div.block span.type')?.text);
+    if (type != null && !genres.any((g) => g.toLowerCase() == type.toLowerCase())) genres.add(type);
+    final status = clean(doc.querySelector('.series-infoz .status')?.text).toLowerCase();
+    final alt = nonPlaceholder(doc.querySelector('.series-title span')?.text);
+    final synopsis = clean(doc.querySelector('div.series-synops')?.text);
+    return SourceMangaDetails(
+      url: pageUrl.toString(),
+      title: title,
+      thumbnailUrl: imgAttr(doc.querySelector('div.series-thumb img'), pageUrl),
+      author: _info(doc, 'author'),
+      artist: _info(doc, 'artist'),
+      description: [synopsis, if (alt != null) 'Alternative Name: $alt'].where((s) => s.isNotEmpty).join('\n\n'),
+      genres: genres,
+      status: status.contains('ongoing')
+          ? SourceMangaStatus.ongoing
+          : status.contains('completed')
+              ? SourceMangaStatus.completed
+              : SourceMangaStatus.unknown,
+      chapters: [
+        // `ul[data-chapter-list]` = markup ala Shiro Doujin.
+        for (final a in doc.querySelectorAll('ul.series-chapterlist div.flexch-infoz a, ul[data-chapter-list] li a'))
+          if (attrAbs(a, 'href', pageUrl) case final url?)
+            SourceChapter(
+              url: url,
+              name: clean((a.querySelector('strong') ?? a.querySelector('span'))?.text),
+              number: parseChapterNumber(clean((a.querySelector('strong') ?? a.querySelector('span'))?.text)),
+              uploadedAt: parseLooseDate(_thai((a.querySelector('span.date') ?? a.querySelector('span:last-child'))?.text)),
+            ),
+      ],
+    );
+  }
+
+  static String _thai(String? raw) {
+    var s = clean(raw);
+    _thaiMonths.forEach((th, en) => s = s.replaceAll(th, en));
+    return s;
+  }
+
+  @override
+  Future<List<String>> pages(SourceChapter chapter) async {
+    final res = await fetchHtml(Uri.parse(chapter.url));
+    if (res.url.path.contains('login') || (res.document.querySelector('title')?.text ?? '').startsWith('Login')) {
+      throw SourceException(SourceErrorKind.parse,
+          detail: tr('Situs ini wajib login (member) untuk membaca bab. Login lewat "Buka di WebView".'));
+    }
+    final pages = <String>[];
+    for (final el
+        in res.document.querySelectorAll('div.reader-area img, .reader-area-main img, .reader-area-main canvas')) {
+      final url = el.localName == 'canvas'
+          ? absUrl(res.url, el.attributes['data-url'])
+          : imgAttr(el, res.url)?.replaceAll('\\', '');
+      if (url != null && !pages.contains(url)) pages.add(url);
+    }
+    if (pages.isEmpty) throw SourceException(SourceErrorKind.parse, detail: tr('Gambar bab tidak ditemukan.'));
+    return pages;
+  }
+}

@@ -138,6 +138,14 @@ class CatalogEntry {
           ),
         'colorlibanime' =>
           ColorlibAnimeSource(id: id, name: name, lang: lang, baseUrl: baseUrl, contentWarning: contentWarning),
+        'zmanga' => ZMangaSource(
+            id: id,
+            name: name,
+            lang: lang,
+            baseUrl: baseUrl,
+            contentWarning: contentWarning,
+            searchPath: asString(asMap(options['vals'])['searchPath']) ?? 'advanced-search',
+          ),
         'hwalumi' => HwalumiSource(id: id, name: name, lang: lang, baseUrl: baseUrl, contentWarning: contentWarning),
         'keyoapp' => KeyoappSource(
             id: id,
