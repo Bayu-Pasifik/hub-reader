@@ -978,4 +978,6 @@ const Map<String, String> stringsEn = {
   'Potret': 'Portrait',
   'Lanskap': 'Landscape',
   'Geser untuk mengurutkan': 'Drag to reorder',
+  'Gestur kecerahan': 'Brightness gesture',
+  'Geser naik/turun di tepi kiri layar untuk mengatur kecerahan': 'Swipe up/down on the left edge of the screen to adjust brightness',
 };

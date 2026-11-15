@@ -29,6 +29,7 @@ import '../../widgets/cropped_page_image.dart';
 import '../../widgets/reader_settings_sheet.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/state_views.dart';
+import '../../widgets/brightness_strip.dart';
 import '../../widgets/page_actions.dart';
 import '../../widgets/zoomable_page.dart';
 
@@ -672,6 +673,17 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
         return Stack(
           children: [
             Positioned.fill(child: applyReaderFilters(widget.display, KeyedSubtree(key: _bodyKey, child: body))),
+            if (widget.display.brightnessGesture)
+              Positioned(
+                left: 0,
+                top: 0,
+                bottom: 0,
+                child: BrightnessStrip(
+                  brightness: widget.display.brightness,
+                  onChanged: ReaderBridge.setBrightness,
+                  onCommit: (v) => ref.read(readerDisplayProvider.notifier).set(widget.display.copyWith(brightness: v)),
+                ),
+              ),
             if (!widget.mode.isPaged)
               Positioned(
                 left: 12,

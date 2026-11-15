@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../state/reader_settings_provider.dart';
 import '../../core/i18n/strings.dart';
+import 'brightness_strip.dart';
 import '../../core/platform/reader_bridge.dart' show ReaderOrientation;
 
 /// Lembar pengaturan reader komik: mode, potong tepi, filter warna.
@@ -285,6 +286,12 @@ class _ReaderSettingsSheet extends ConsumerWidget {
               divisions: 20,
               label: global.brightness <= 0 ? tr('Sistem') : '${(global.brightness * 100).round()}%',
               onChanged: (v) => setDisplay(global.copyWith(brightness: v < 0.05 ? 0 : v)),
+            ),
+            SwitchListTile(
+              title: Text(tr('Gestur kecerahan')),
+              subtitle: Text(brightnessGestureHint()),
+              value: global.brightnessGesture,
+              onChanged: (v) => setDisplay(global.copyWith(brightnessGesture: v)),
             ),
             ListTile(
               title: Text(tr('Redupkan')),
