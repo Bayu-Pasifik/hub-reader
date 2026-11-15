@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/platform/network_bridge.dart';
 import '../data/local/download_store.dart';
 import '../data/models/download.dart';
 import '../sources/models.dart';
@@ -79,11 +81,15 @@ final localPagesProvider = Provider.family<List<String>?, String>((ref, key) {
 final downloadQueueProvider =
     NotifierProvider<DownloadQueueNotifier, List<DownloadTask>>(DownloadQueueNotifier.new);
 
+/// True selama antrean menunggu Wi-Fi karena "Unduh hanya lewat Wi-Fi" aktif.
+final downloadWaitingForWifiProvider = StateProvider<bool>((ref) => false);
+
 class DownloadQueueNotifier extends Notifier<List<DownloadTask>> {
-  /// Gambar yang diunduh bersamaan dalam satu bab.
-  static const _parallel = 2;
+  /// Jeda antar pengecekan jaringan saat menunggu Wi-Fi.
+  static const wifiPoll = Duration(seconds: 20);
 
   bool _running = false;
+  Timer? _wifiTimer;
   final _cancelled = <String>{};
   final _http = Dio(BaseOptions(
     connectTimeout: const Duration(seconds: 20),
@@ -100,6 +106,7 @@ class DownloadQueueNotifier extends Notifier<List<DownloadTask>> {
     final store = ref.watch(downloadStoreProvider);
     final restored = store.readQueue();
     listenSelf((_, next) => _persist(next));
+    ref.onDispose(() => _wifiTimer?.cancel());
     _savedSignature = _signature(restored);
     if (restored.any((t) => t.status == DownloadStatus.queued)) Future.microtask(_run);
     return restored;
@@ -164,8 +171,17 @@ class DownloadQueueNotifier extends Notifier<List<DownloadTask>> {
       while (true) {
         final task = state.where((t) => t.status == DownloadStatus.queued).firstOrNull;
         if (task == null) break;
+        if (ref.read(appSettingsProvider).downloadWifiOnly && !await NetworkBridge.isUnmetered()) {
+          // Tetap antre; coba lagi sebentar lagi (Wi-Fi bisa tersambung kapan saja).
+          ref.read(downloadWaitingForWifiProvider.notifier).state = true;
+          _wifiTimer?.cancel();
+          _wifiTimer = Timer(wifiPoll, _run);
+          return;
+        }
+        ref.read(downloadWaitingForWifiProvider.notifier).state = false;
         await _download(task);
       }
+      ref.read(downloadWaitingForWifiProvider.notifier).state = false;
     } finally {
       _running = false;
     }
@@ -211,7 +227,8 @@ class DownloadQueueNotifier extends Notifier<List<DownloadTask>> {
         }
       }
 
-      await Future.wait([for (var w = 0; w < _parallel; w++) worker()]);
+      final parallel = ref.read(appSettingsProvider).downloadParallel.clamp(1, 4);
+      await Future.wait([for (var w = 0; w < parallel; w++) worker()]);
       if (_cancelled.contains(task.key)) throw const _Cancelled();
 
       await ref.read(downloadIndexProvider.notifier).add(DownloadedChapter(

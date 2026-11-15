@@ -2,6 +2,8 @@ package com.hubreader.hub_reader
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Bundle
 import android.view.KeyEvent
@@ -99,6 +101,19 @@ class MainActivity : FlutterFragmentActivity() {
                 }
             }
         }
+
+        // Jaringan tanpa kuota (Wi-Fi/ethernet) untuk opsi "unduh hanya lewat Wi-Fi".
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "hub_reader/network")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "unmetered" -> {
+                        val cm = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+                        val caps = cm.getNetworkCapabilities(cm.activeNetwork)
+                        result.success(caps?.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED) == true)
+                    }
+                    else -> result.notImplemented()
+                }
+            }
 
         // Membaca cookie WebView, termasuk yang HttpOnly seperti cf_clearance,
         // yang tidak bisa diakses lewat document.cookie.

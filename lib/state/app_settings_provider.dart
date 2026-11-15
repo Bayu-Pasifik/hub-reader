@@ -36,6 +36,8 @@ class AppSettings {
     this.incognito = false,
     this.autoDeleteRead = false,
     this.autoDownloadNew = false,
+    this.downloadWifiOnly = false,
+    this.downloadParallel = 2,
     this.language = AppLanguage.id,
   });
 
@@ -63,6 +65,12 @@ class AppSettings {
   /// Unduh otomatis bab baru yang ditemukan saat cek pembaruan.
   final bool autoDownloadNew;
 
+  /// Antrean unduhan hanya berjalan lewat jaringan tanpa kuota (Wi-Fi).
+  final bool downloadWifiOnly;
+
+  /// Gambar yang diunduh bersamaan dalam satu bab (1-4).
+  final int downloadParallel;
+
   /// Bahasa antarmuka.
   final AppLanguage language;
 
@@ -76,6 +84,8 @@ class AppSettings {
     bool? incognito,
     bool? autoDeleteRead,
     bool? autoDownloadNew,
+    bool? downloadWifiOnly,
+    int? downloadParallel,
     AppLanguage? language,
   }) =>
       AppSettings(
@@ -88,6 +98,8 @@ class AppSettings {
         incognito: incognito ?? this.incognito,
         autoDeleteRead: autoDeleteRead ?? this.autoDeleteRead,
         autoDownloadNew: autoDownloadNew ?? this.autoDownloadNew,
+        downloadWifiOnly: downloadWifiOnly ?? this.downloadWifiOnly,
+        downloadParallel: downloadParallel ?? this.downloadParallel,
         language: language ?? this.language,
       );
 }
@@ -104,6 +116,8 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
   static const _incognito = 'app.incognito.v1';
   static const _autoDeleteRead = 'app.auto_delete_read.v1';
   static const _autoDownloadNew = 'app.auto_download_new.v1';
+  static const _downloadWifiOnly = 'app.download_wifi_only.v1';
+  static const _downloadParallel = 'app.download_parallel.v1';
   static const _language = 'app.language.v1';
 
   @override
@@ -120,6 +134,8 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
       incognito: p.getBool(_incognito) ?? false,
       autoDeleteRead: p.getBool(_autoDeleteRead) ?? false,
       autoDownloadNew: p.getBool(_autoDownloadNew) ?? false,
+      downloadWifiOnly: p.getBool(_downloadWifiOnly) ?? false,
+      downloadParallel: (p.getInt(_downloadParallel) ?? 2).clamp(1, 4),
       language: currentLanguage,
     );
   }
@@ -143,6 +159,8 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
     await p.setBool(_incognito, state.incognito);
     await p.setBool(_autoDeleteRead, state.autoDeleteRead);
     await p.setBool(_autoDownloadNew, state.autoDownloadNew);
+    await p.setBool(_downloadWifiOnly, state.downloadWifiOnly);
+    await p.setInt(_downloadParallel, state.downloadParallel);
     await p.setString(_language, state.language.name);
   }
 }

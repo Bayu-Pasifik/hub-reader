@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../core/net/doh.dart';
+import '../../data/local/download_store.dart';
 import '../../state/app_settings_provider.dart';
 import '../../state/app_update_provider.dart';
 import '../../state/core_providers.dart';
@@ -81,6 +82,69 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
   void _snack(String text) => ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
     ..showSnackBar(SnackBar(content: Text(text)));
+
+  static String _locationLabel(DownloadLocationKind kind) => switch (kind) {
+        DownloadLocationKind.internal => tr('Penyimpanan internal (privat)'),
+        DownloadLocationKind.shared => tr('Memori bersama (Android/data, bisa diakses lewat USB)'),
+        DownloadLocationKind.sdCard => tr('Kartu SD'),
+      };
+
+  /// Pilih folder unduhan lalu pindahkan semua unduhan ke sana.
+  Future<void> _pickDownloadLocation() async {
+    final store = ref.read(downloadStoreProvider);
+    if (ref.read(downloadQueueProvider).isNotEmpty) {
+      _snack(tr('Tunggu antrean unduhan selesai sebelum memindahkan.'));
+      return;
+    }
+    final options = await DownloadStore.locations();
+    if (!mounted) return;
+    final current = store.root.absolute.path;
+    final picked = await showDialog<DownloadLocation>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: Text(tr('Lokasi unduhan')),
+        children: [
+          for (final o in options)
+            ListTile(
+              leading: Icon(o.directory.absolute.path == current ? Icons.radio_button_checked : Icons.radio_button_off),
+              title: Text(_locationLabel(o.kind)),
+              subtitle: Text(o.directory.path, style: const TextStyle(fontSize: 11)),
+              onTap: () => Navigator.pop(context, o),
+            ),
+        ],
+      ),
+    );
+    if (picked == null || picked.directory.absolute.path == current || !mounted) return;
+    final progress = ValueNotifier<(int, int)>((0, 0));
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => PopScope(
+        canPop: false,
+        child: AlertDialog(
+          title: Text(tr('Memindahkan unduhan…')),
+          content: ValueListenableBuilder<(int, int)>(
+            valueListenable: progress,
+            builder: (_, p, __) => Column(mainAxisSize: MainAxisSize.min, children: [
+              LinearProgressIndicator(value: p.$2 == 0 ? null : p.$1 / p.$2),
+              const SizedBox(height: 8),
+              Text(p.$2 == 0 ? '' : '${p.$1} / ${p.$2}'),
+            ]),
+          ),
+        ),
+      ),
+    );
+    String? error;
+    try {
+      await store.moveTo(picked.directory, onProgress: (d, t) => progress.value = (d, t));
+    } catch (e) {
+      error = '$e';
+    }
+    if (!mounted) return;
+    Navigator.of(context, rootNavigator: true).pop();
+    _snack(error == null ? tr('Unduhan dipindahkan') : trp('Gagal memindahkan: {e}', {'e': error}));
+    await _measure();
+  }
 
   Future<void> _clearImages() async {
     await DefaultCacheManager().emptyCache();
@@ -254,6 +318,24 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
             value: s.autoDownloadNew,
             onChanged: (v) => n.update((x) => x.copyWith(autoDownloadNew: v)),
           ),
+          SwitchListTile(
+            secondary: const Icon(Icons.wifi),
+            title: Text(tr('Unduh hanya lewat Wi-Fi')),
+            subtitle: Text(tr('Antrean menunggu sampai tersambung Wi-Fi (bukan data seluler)')),
+            value: s.downloadWifiOnly,
+            onChanged: (v) => n.update((x) => x.copyWith(downloadWifiOnly: v)),
+          ),
+          ListTile(
+            leading: const Icon(Icons.speed_outlined),
+            title: Text(tr('Gambar diunduh bersamaan')),
+            subtitle: Text(tr('Lebih banyak = lebih cepat, tapi situs bisa memblokir')),
+            trailing: DropdownButton<int>(
+              value: s.downloadParallel,
+              underline: const SizedBox.shrink(),
+              items: [for (var i = 1; i <= 4; i++) DropdownMenuItem(value: i, child: Text('$i'))],
+              onChanged: (v) => n.update((x) => x.copyWith(downloadParallel: v ?? 2)),
+            ),
+          ),
           header(tr('Jaringan')),
           ListTile(
             leading: const Icon(Icons.shield_outlined),
@@ -326,6 +408,12 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
               await context.push('/downloads');
               _measure();
             },
+          ),
+          ListTile(
+            leading: const Icon(Icons.folder_outlined),
+            title: Text(tr('Lokasi unduhan')),
+            subtitle: Text(ref.watch(downloadStoreProvider).root.path, style: const TextStyle(fontSize: 12)),
+            onTap: _pickDownloadLocation,
           ),
           header('Data'),
           ListTile(

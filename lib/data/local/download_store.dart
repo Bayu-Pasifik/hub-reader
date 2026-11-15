@@ -14,17 +14,102 @@ import '../models/download.dart';
 class DownloadStore {
   DownloadStore(this.root, this._prefs);
 
-  final Directory root;
+  /// Folder induk unduhan. Berubah hanya lewat [moveTo]; indeks memakai path
+  /// relatif, jadi tidak ikut berubah.
+  Directory root;
   final SharedPreferences _prefs;
+
+  /// Path folder unduhan pilihan pengguna (kosong = bawaan).
+  static const rootKey = 'downloads.root.v1';
 
   static const _indexKey = 'downloads.index.v1';
   static const queueKey = 'downloads.queue.v1';
 
   static Future<DownloadStore> open(SharedPreferences prefs) async {
     final docs = await getApplicationDocumentsDirectory();
-    final root = Directory('${docs.path}${Platform.pathSeparator}downloads');
-    await root.create(recursive: true);
-    return DownloadStore(root, prefs);
+    final fallback = Directory('${docs.path}${Platform.pathSeparator}downloads');
+    final chosen = prefs.getString(rootKey);
+    if (chosen != null && chosen.isNotEmpty) {
+      // Volume pilihan (mis. kartu SD) bisa hilang: kembali ke folder bawaan.
+      try {
+        final dir = Directory(chosen);
+        await dir.create(recursive: true);
+        return DownloadStore(dir, prefs);
+      } on Object {
+        // pakai bawaan
+      }
+    }
+    await fallback.create(recursive: true);
+    return DownloadStore(fallback, prefs);
+  }
+
+  /// Lokasi yang bisa dipilih: penyimpanan privat aplikasi, lalu tiap volume
+  /// eksternal (folder `Android/data/<paket>/files` di memori bersama atau kartu SD).
+  static Future<List<DownloadLocation>> locations() async {
+    final docs = await getApplicationDocumentsDirectory();
+    final sep = Platform.pathSeparator;
+    final result = [DownloadLocation(DownloadLocationKind.internal, Directory('${docs.path}${sep}downloads'))];
+    try {
+      final externals = await getExternalStorageDirectories() ?? const <Directory>[];
+      for (var i = 0; i < externals.length; i++) {
+        result.add(DownloadLocation(
+          i == 0 ? DownloadLocationKind.shared : DownloadLocationKind.sdCard,
+          Directory('${externals[i].path}${sep}downloads'),
+        ));
+      }
+    } on Object {
+      // tanpa penyimpanan eksternal
+    }
+    return result;
+  }
+
+  /// Pindahkan semua unduhan ke [target] lalu pakai sebagai folder unduhan.
+  /// File asal baru dihapus setelah semuanya tersalin; bila gagal di tengah,
+  /// salinan setengah jadi dibuang dan lokasi lama tetap dipakai.
+  Future<void> moveTo(Directory target, {void Function(int done, int total)? onProgress}) async {
+    final from = root.absolute.path;
+    if (target.absolute.path == from) return;
+    await target.create(recursive: true);
+
+    final files = <File>[];
+    if (await root.exists()) {
+      await for (final e in root.list(recursive: true, followLinks: false)) {
+        if (e is File) files.add(e);
+      }
+    }
+    final created = <File>[];
+    try {
+      for (var i = 0; i < files.length; i++) {
+        final rel = files[i].path.substring(from.length);
+        final dest = File('${target.path}$rel');
+        await dest.parent.create(recursive: true);
+        await files[i].copy(dest.path);
+        created.add(dest);
+        onProgress?.call(i + 1, files.length);
+      }
+    } on Object {
+      for (final f in created) {
+        try {
+          await f.delete();
+        } on Object {
+          // sisa file kosong tidak berbahaya
+        }
+      }
+      rethrow;
+    }
+    await _prefs.setString(rootKey, target.path);
+    final old = root;
+    root = target;
+    try {
+      if (await old.exists()) await old.delete(recursive: true);
+    } on Object {
+      // sisa di lokasi lama hanya memakai ruang
+    }
+    try {
+      await old.create(recursive: true);
+    } on Object {
+      // dibuat ulang saat dibutuhkan
+    }
   }
 
   Map<String, DownloadedChapter> readIndex() {
@@ -95,6 +180,14 @@ class DownloadStore {
   }
 
   static String _safe(String s) => s.replaceAll(RegExp(r'[^a-zA-Z0-9._-]'), '_');
+}
+
+enum DownloadLocationKind { internal, shared, sdCard }
+
+class DownloadLocation {
+  const DownloadLocation(this.kind, this.directory);
+  final DownloadLocationKind kind;
+  final Directory directory;
 }
 
 /// Hash stabil untuk nama folder: dua FNV-1a 32-bit dengan seed berbeda
