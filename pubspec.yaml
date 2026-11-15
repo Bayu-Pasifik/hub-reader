@@ -1,7 +1,7 @@
 name: hub_reader
 description: Aplikasi pembaca komik & novel yang membaca langsung dari situs sumber di perangkat.
 publish_to: 'none'
-version: 1.5.0+6
+version: 1.6.0+7
 
 environment:
   sdk: ^3.5.0
