@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import '../core/utils/json.dart';
 import '../sources/source_exception.dart';
+import '../sources/source_report.dart';
 import 'lnreader/engine_isolate.dart';
 import 'lnreader/http_bridge.dart';
 import 'lnreader/js_engine.dart';
@@ -23,6 +24,9 @@ class NovelSource {
         imageHeaders = {
           for (final e in asMap(asMap(meta['imageRequestInit'])['headers']).entries) e.key: '${e.value}',
         };
+
+  /// true untuk sumber tanpa plugin JS (EPUB lokal).
+  bool get isLocal => _engine == null;
 
   /// Sumber tanpa plugin JS (mis. EPUB lokal). Subkelas wajib meng-override
   /// popular, search, detailsRaw, chapterPageRaw, chapter, dan webUrl.
@@ -187,3 +191,14 @@ SourceException novelError(Object error, {String? site}) {
   }
   return SourceException(SourceErrorKind.unknown, detail: message);
 }
+
+/// Target laporan sumber rusak untuk plugin novel; null untuk sumber lokal (EPUB).
+SourceReportTarget? novelReportTarget(NovelSource? source) =>
+    source == null || source.isLocal
+        ? null
+        : novelPluginReportTarget(name: source.name, pluginId: source.info.id, version: source.version, site: source.site);
+
+/// Sama, tapi dari data manifest saja (plugin gagal dimuat sehingga belum ada [NovelSource]).
+SourceReportTarget? novelInfoReportTarget(NovelPluginInfo? info) => info == null
+    ? null
+    : novelPluginReportTarget(name: info.name, pluginId: info.id, version: info.version, site: info.site);

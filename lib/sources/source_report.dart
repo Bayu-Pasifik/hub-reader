@@ -44,3 +44,14 @@ Uri buildSourceReportUri(
     'body': body.toString(),
   });
 }
+
+/// Target laporan untuk plugin novel LNReader: id berisi id plugin dan versinya
+/// (`lnr:<id> v<versi>`), domain = situs plugin. Plugin lokal (EPUB) tidak
+/// dilaporkan karena tidak ada situs yang bisa rusak.
+SourceReportTarget novelPluginReportTarget({
+  required String name,
+  required String pluginId,
+  required String version,
+  required String site,
+}) =>
+    (name: name, id: 'lnr:$pluginId v$version', baseUrl: site);

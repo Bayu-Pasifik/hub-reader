@@ -387,6 +387,7 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
             error: novelError(error, site: source?.site),
             onRetry: () => ref.invalidate(novelDetailsProvider(_key)),
             verifyUrl: source?.site,
+            reportSource: novelReportTarget(source),
           ),
           data: (novel) {
             // Tablet / landscape lebar: info novel di kiri, daftar bab di kanan.

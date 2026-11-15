@@ -601,6 +601,7 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
                     child: SourceErrorView(
                       error: novelError(e, site: source?.site),
                       verifyUrl: source?.site,
+                      reportSource: novelReportTarget(source),
                       onRetry: () =>
                           ref.invalidate(novelChapterProvider((pluginId: widget.pluginId, path: _chapterPath))),
                     ),

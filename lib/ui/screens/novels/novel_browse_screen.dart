@@ -86,6 +86,7 @@ class _NovelBrowseScreenState extends ConsumerState<NovelBrowseScreen> {
           error: novelError(e, site: info?.site),
           onRetry: () => ref.invalidate(novelSourceProvider(widget.pluginId)),
           verifyUrl: info?.site,
+          reportSource: novelInfoReportTarget(info),
         ),
       ),
       data: (source) => _buildBrowser(context, source),
@@ -184,7 +185,12 @@ class NovelGrid extends ConsumerWidget {
     final notifier = ref.read(novelListProvider(listKey).notifier);
 
     if (state.error != null) {
-      return SourceErrorView(error: state.error!, onRetry: notifier.refresh, verifyUrl: source.site);
+      return SourceErrorView(
+        error: state.error!,
+        onRetry: notifier.refresh,
+        verifyUrl: source.site,
+        reportSource: novelReportTarget(source),
+      );
     }
     if (state.isLoading && state.items.isEmpty) {
       return const LoadingView();
@@ -252,6 +258,7 @@ class NovelGrid extends ConsumerWidget {
                           error: state.loadMoreError!,
                           onRetry: () => notifier.loadMore(retry: true),
                           verifyUrl: source.site,
+                          reportSource: novelReportTarget(source),
                         )
                       : LoadMoreFooter(onShown: notifier.loadMore),
                 ),
