@@ -393,7 +393,7 @@ Kompatibilitas runtime:
    flutter pub get
    ```
 3. Jalankan: `flutter run` (emulator atau HP).
-4. Build APK: `flutter build apk --release` → `build/app/outputs/flutter-apk/app-release.apk`.
+4. Build APK: `flutter build apk --release --obfuscate --split-debug-info=build/symbols` → `build/app/outputs/flutter-apk/app-release.apk`.
 5. Tes: `flutter test`.
 
 ## Rilis & CI
