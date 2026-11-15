@@ -347,6 +347,13 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/backup'),
           ),
+          ListTile(
+            leading: const Icon(Icons.bug_report_outlined),
+            title: Text(tr('Log error')),
+            subtitle: Text(tr('Catatan error lokal untuk laporan bug (tidak dikirim otomatis)')),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/crash-log'),
+          ),
           header('Tentang'),
           ListTile(
             leading: const Icon(Icons.system_update_outlined),

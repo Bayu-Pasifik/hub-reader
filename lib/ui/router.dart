@@ -15,6 +15,7 @@ import 'screens/sources/downloads_screen.dart';
 import 'screens/app_settings_screen.dart';
 import 'screens/backup_screen.dart';
 import 'screens/migrate_screen.dart';
+import 'screens/crash_log_screen.dart';
 import 'screens/stats_screen.dart';
 import 'screens/updates_screen.dart';
 import 'screens/sources/source_browse_screen.dart';
@@ -147,6 +148,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/backup',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (_, __) => const BackupScreen(),
+      ),
+      GoRoute(
+        path: '/crash-log',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, __) => const CrashLogScreen(),
       ),
       GoRoute(
         path: '/stats',

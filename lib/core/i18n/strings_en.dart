@@ -866,4 +866,7 @@ const Map<String, String> stringsEn = {
   'Filter scanlator ({n} disembunyikan)': 'Scanlator filter ({n} hidden)',
   'Tampilkan semua': 'Show all',
   'Semua bab disembunyikan filter scanlator': 'All chapters are hidden by the scanlator filter',
+  'Log error': 'Error log',
+  'Catatan error lokal untuk laporan bug (tidak dikirim otomatis)': 'Local error record for bug reports (never sent automatically)',
+  'Belum ada error tercatat': 'No errors recorded yet',
 };

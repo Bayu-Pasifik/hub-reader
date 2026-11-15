@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app.dart';
 import 'app_restart.dart';
 import 'bootstrap.dart';
+import 'core/crash/crash_log.dart';
 import 'data/local/auto_backup.dart';
 import 'state/background_updates.dart';
 
@@ -14,6 +15,7 @@ import 'state/background_updates.dart';
 /// memakainya secara sinkron.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await CrashLog.install();
 
   final deps = await AppDependencies.open();
   // Jadwal cek bab baru di latar (tidak ditunggu: WorkManager lambat start).
