@@ -21,15 +21,19 @@ import '../../widgets/category_sheet.dart';
 import '../../widgets/layout.dart';
 import '../../widgets/series_notes.dart';
 import '../../widgets/source_widgets.dart';
+import '../../widgets/cover_hero.dart';
 import '../../widgets/state_views.dart';
 import '../tracker_screens.dart';
 
 /// Detail seri dari sumber on-device + daftar bab.
 class SourceMangaScreen extends ConsumerStatefulWidget {
-  const SourceMangaScreen({super.key, required this.sourceId, required this.url});
+  const SourceMangaScreen({super.key, required this.sourceId, required this.url, this.preview});
 
   final String sourceId;
   final String url;
+
+  /// Sampul + judul dari daftar asal; tampil langsung selama detail dimuat.
+  final SeriesPreview? preview;
 
   @override
   ConsumerState<SourceMangaScreen> createState() => _SourceMangaScreenState();
@@ -297,7 +301,16 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
         ],
       ),
       body: details.when(
-        loading: () => const LoadingView(),
+        loading: () => widget.preview == null
+            ? const LoadingView()
+            : Column(children: [
+                SeriesPreviewHeader(
+                  preview: widget.preview!,
+                  heroTag: coverHeroTag(widget.sourceId, widget.url),
+                  headers: headers,
+                ),
+                const Expanded(child: LoadingView()),
+              ]),
         error: (error, _) => SourceErrorView(
           error: error,
           onRetry: () => ref.invalidate(sourceDetailsProvider(_key)),
@@ -431,7 +444,12 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SourceCover(url: manga.thumbnailUrl, headers: headers, width: 110),
+              SourceCover(
+                url: manga.thumbnailUrl,
+                headers: headers,
+                width: 110,
+                heroTag: coverHeroTag(widget.sourceId, widget.url),
+              ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -527,7 +545,11 @@ class _SimilarSeriesState extends ConsumerState<_SimilarSeries> {
                             child: SourceMangaCard(
                               manga: items[i],
                               headers: widget.headers,
-                              onTap: () => context.push(sourceMangaLocation(widget.sourceId, items[i].url)),
+                              heroTag: coverHeroTagAt(items, i, widget.sourceId, (m) => m.url),
+                              onTap: () => context.push(
+                                sourceMangaLocation(widget.sourceId, items[i].url),
+                                extra: SeriesPreview(title: items[i].title, coverUrl: items[i].thumbnailUrl),
+                              ),
                             ),
                           ),
                         ),

@@ -14,7 +14,10 @@ import 'state_views.dart';
 
 /// Sampul 3:4 dari situs sumber, dengan header (Referer) milik sumber.
 class SourceCover extends StatelessWidget {
-  const SourceCover({super.key, required this.url, required this.headers, this.width});
+  const SourceCover({super.key, required this.url, required this.headers, this.width, this.heroTag});
+
+  /// Tag Hero (lihat `coverHeroTag`); null = tanpa animasi terbang ke layar detail.
+  final String? heroTag;
 
   final String? url;
   final Map<String, String> headers;
@@ -29,7 +32,7 @@ class SourceCover extends StatelessWidget {
           child: Icon(icon, color: scheme.onSurfaceVariant),
         );
 
-    return SizedBox(
+    final cover = SizedBox(
       width: width,
       child: AspectRatio(
         aspectRatio: 3 / 4,
@@ -56,15 +59,17 @@ class SourceCover extends StatelessWidget {
         ),
       ),
     );
+    return heroTag == null ? cover : Hero(tag: heroTag!, child: cover);
   }
 }
 
 class SourceMangaCard extends StatelessWidget {
-  const SourceMangaCard({super.key, required this.manga, required this.headers, this.onTap});
+  const SourceMangaCard({super.key, required this.manga, required this.headers, this.onTap, this.heroTag});
 
   final SourceManga manga;
   final Map<String, String> headers;
   final VoidCallback? onTap;
+  final String? heroTag;
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +80,7 @@ class SourceMangaCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          SourceCover(url: manga.thumbnailUrl, headers: headers),
+          SourceCover(url: manga.thumbnailUrl, headers: headers, heroTag: heroTag),
           const SizedBox(height: 6),
           Text(
             manga.title,

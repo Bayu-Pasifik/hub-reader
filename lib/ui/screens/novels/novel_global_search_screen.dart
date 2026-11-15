@@ -11,6 +11,7 @@ import '../../../state/novel_health_provider.dart';
 import '../../../state/novel_providers.dart';
 import '../../router.dart';
 import '../../widgets/source_widgets.dart';
+import '../../widgets/cover_hero.dart';
 import '../sources/sources_screen.dart' show languageName;
 
 /// Hasil pencarian satu plugin.
@@ -237,13 +238,21 @@ class _PluginRow extends ConsumerWidget {
               itemBuilder: (context, i) {
                 final n = items[i];
                 return InkWell(
-                  onTap: () => context.push(novelDetailLocation(info.id, n.path)),
+                  onTap: () => context.push(
+                    novelDetailLocation(info.id, n.path),
+                    extra: SeriesPreview(title: n.name, coverUrl: n.cover),
+                  ),
                   child: SizedBox(
                     width: 104,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SourceCover(url: n.cover, headers: headers, width: 104),
+                        SourceCover(
+                          url: n.cover,
+                          headers: headers,
+                          width: 104,
+                          heroTag: coverHeroTagAt(items, i, info.id, (x) => x.path),
+                        ),
                         const SizedBox(height: 4),
                         Text(n.name, maxLines: 2, overflow: TextOverflow.ellipsis, style: theme.textTheme.bodySmall),
                       ],

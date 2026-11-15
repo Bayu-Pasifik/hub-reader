@@ -11,6 +11,7 @@ import '../../../state/novel_providers.dart';
 import '../../router.dart';
 import '../../widgets/layout.dart';
 import '../../widgets/source_widgets.dart';
+import '../../widgets/cover_hero.dart';
 import '../../widgets/state_views.dart';
 import 'novel_settings_sheet.dart';
 
@@ -215,12 +216,19 @@ class NovelGrid extends ConsumerWidget {
                   final novel = state.items[i];
                   return InkWell(
                     borderRadius: BorderRadius.circular(8),
-                    onTap: () => context.push(novelDetailLocation(source.id, novel.path)),
+                    onTap: () => context.push(
+                      novelDetailLocation(source.id, novel.path),
+                      extra: SeriesPreview(title: novel.name, coverUrl: novel.cover),
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        SourceCover(url: novel.cover, headers: source.imageHeaders),
+                        SourceCover(
+                          url: novel.cover,
+                          headers: source.imageHeaders,
+                          heroTag: coverHeroTagAt(state.items, i, source.id, (n) => n.path),
+                        ),
                         const SizedBox(height: 6),
                         Text(
                           novel.name,

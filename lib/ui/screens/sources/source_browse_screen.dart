@@ -8,6 +8,7 @@ import '../../../state/source_providers.dart';
 import '../../router.dart';
 import '../../widgets/layout.dart';
 import '../../widgets/source_widgets.dart';
+import '../../widgets/cover_hero.dart';
 import '../../widgets/state_views.dart';
 
 /// Jelajah satu sumber: tab Populer / Terbaru + pencarian.
@@ -187,7 +188,11 @@ class _MangaGrid extends ConsumerWidget {
                   return SourceMangaCard(
                     manga: manga,
                     headers: headers,
-                    onTap: () => context.push(sourceMangaLocation(source.id, manga.url)),
+                    heroTag: coverHeroTagAt(state.items, i, source.id, (m) => m.url),
+                    onTap: () => context.push(
+                      sourceMangaLocation(source.id, manga.url),
+                      extra: SeriesPreview(title: manga.title, coverUrl: manga.thumbnailUrl),
+                    ),
                   );
                 },
               ),

@@ -28,6 +28,7 @@ import 'screens/opds_screens.dart';
 import 'screens/sources/source_webview_screen.dart';
 import 'screens/sources/sources_screen.dart';
 import 'shell/main_shell.dart';
+import 'widgets/cover_hero.dart' show SeriesPreview;
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -198,6 +199,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (_, state) => NovelDetailScreen(
               pluginId: state.pathParameters['pid'] ?? '',
               path: state.uri.queryParameters['path'] ?? '',
+              preview: state.extra is SeriesPreview ? state.extra as SeriesPreview : null,
             ),
           ),
           GoRoute(
@@ -223,6 +225,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (_, state) => SourceMangaScreen(
               sourceId: state.pathParameters['sid'] ?? '',
               url: state.uri.queryParameters['url'] ?? '',
+              preview: state.extra is SeriesPreview ? state.extra as SeriesPreview : null,
             ),
           ),
           GoRoute(

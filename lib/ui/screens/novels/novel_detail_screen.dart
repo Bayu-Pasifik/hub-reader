@@ -24,6 +24,7 @@ import '../../widgets/category_sheet.dart';
 import '../../widgets/layout.dart';
 import '../../widgets/series_notes.dart';
 import '../../widgets/source_widgets.dart';
+import '../../widgets/cover_hero.dart';
 import '../../widgets/state_views.dart';
 
 /// Halaman daftar bab terakhir yang dibuka per novel (plugin berhalaman).
@@ -35,10 +36,13 @@ Future<void> saveNovelLastPage(WidgetRef ref, String pluginId, String path, int 
 
 /// Detail novel + daftar bab.
 class NovelDetailScreen extends ConsumerStatefulWidget {
-  const NovelDetailScreen({super.key, required this.pluginId, required this.path});
+  const NovelDetailScreen({super.key, required this.pluginId, required this.path, this.preview});
 
   final String pluginId;
   final String path;
+
+  /// Sampul + judul dari daftar asal; tampil langsung selama detail dimuat.
+  final SeriesPreview? preview;
 
   @override
   ConsumerState<NovelDetailScreen> createState() => _NovelDetailScreenState();
@@ -353,7 +357,16 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
                 ],
               ),
         body: details.when(
-          loading: () => const LoadingView(),
+          loading: () => widget.preview == null
+              ? const LoadingView()
+              : Column(children: [
+                  SeriesPreviewHeader(
+                    preview: widget.preview!,
+                    heroTag: coverHeroTag(widget.pluginId, widget.path),
+                    headers: source?.imageHeaders ?? const {},
+                  ),
+                  const Expanded(child: LoadingView()),
+                ]),
           error: (error, _) => SourceErrorView(
             error: novelError(error, site: source?.site),
             onRetry: () => ref.invalidate(novelDetailsProvider(_key)),
@@ -558,7 +571,12 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SourceCover(url: novel.cover, headers: source?.imageHeaders ?? const {}, width: 110),
+              SourceCover(
+                url: novel.cover,
+                headers: source?.imageHeaders ?? const {},
+                width: 110,
+                heroTag: coverHeroTag(widget.pluginId, widget.path),
+              ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(

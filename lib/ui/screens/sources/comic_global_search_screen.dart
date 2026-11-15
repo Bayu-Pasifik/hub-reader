@@ -16,6 +16,7 @@ import '../../../state/source_providers.dart';
 import '../../../state/source_settings_provider.dart';
 import '../../router.dart';
 import '../../widgets/source_widgets.dart';
+import '../../widgets/cover_hero.dart';
 import 'sources_screen.dart' show languageName;
 
 /// Hasil pencarian satu sumber.
@@ -288,13 +289,21 @@ class _SourceRow extends StatelessWidget {
               itemBuilder: (context, i) {
                 final m = items[i];
                 return InkWell(
-                  onTap: () => context.push(sourceMangaLocation(source.id, m.url)),
+                  onTap: () => context.push(
+                    sourceMangaLocation(source.id, m.url),
+                    extra: SeriesPreview(title: m.title, coverUrl: m.thumbnailUrl),
+                  ),
                   child: SizedBox(
                     width: 104,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SourceCover(url: m.thumbnailUrl, headers: source.imageHeaders(), width: 104),
+                        SourceCover(
+                          url: m.thumbnailUrl,
+                          headers: source.imageHeaders(),
+                          width: 104,
+                          heroTag: coverHeroTagAt(items, i, source.id, (x) => x.url),
+                        ),
                         const SizedBox(height: 4),
                         Text(m.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: theme.textTheme.bodySmall),
                       ],
