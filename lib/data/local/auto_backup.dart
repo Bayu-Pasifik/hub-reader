@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../novels/plugin_repository.dart';
 import 'backup.dart';
+import 'backup_crypto.dart';
 import 'webdav_backup.dart';
 import '../../core/i18n/strings.dart';
 
@@ -85,6 +86,24 @@ abstract final class AutoBackup {
   static const _prefix = 'hub_reader_auto_';
 
   static const webDavStatusKey = 'backup.webdav.status.v1';
+
+  /// Penanda bahwa cadangan otomatis harus dienkripsi (sandinya di Keystore).
+  static const encryptedKey = 'backup.auto.encrypted.v1';
+
+  /// Sandi enkripsi cadangan otomatis, atau null bila tidak dienkripsi.
+  /// Melempar bila enkripsi diminta tapi sandi tidak terbaca (Keystore):
+  /// lebih baik gagal daripada diam-diam menulis cadangan polos.
+  static Future<String?> autoPassword(SharedPreferences prefs) async {
+    if (prefs.getBool(encryptedKey) != true) return null;
+    final p = await BackupCrypto.readAutoPassword();
+    if (p.isEmpty) throw StateError('Sandi enkripsi cadangan tidak terbaca');
+    return p;
+  }
+
+  static Future<void> setAutoPassword(SharedPreferences prefs, String password) async {
+    await BackupCrypto.writeAutoPassword(password);
+    await prefs.setBool(encryptedKey, password.isNotEmpty);
+  }
 
   /// Hanya untuk test: ganti klien WebDAV.
   static WebDavClient? webDavClient;
@@ -171,7 +190,7 @@ abstract final class AutoBackup {
     final dir = await directory();
     final target = File('${dir.path}${Platform.pathSeparator}$name');
     final temp = File('${target.path}.tmp');
-    final json = jsonEncode(data);
+    final json = await BackupCrypto.encode(data, password: await autoPassword(prefs));
     await temp.writeAsString(json, flush: true);
     await temp.rename(target.path);
     await prefs.setInt(_lastKey, stamp.millisecondsSinceEpoch);

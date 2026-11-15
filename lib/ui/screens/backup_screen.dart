@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app_restart.dart';
 import '../../data/local/auto_backup.dart';
 import '../../data/local/backup.dart';
+import '../../data/local/backup_crypto.dart';
 import '../../data/local/webdav_backup.dart';
 import '../../state/background_updates.dart';
 import '../../state/core_providers.dart';
@@ -104,7 +105,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
       final now = DateTime.now();
       String two(int v) => v.toString().padLeft(2, '0');
       final name = 'hub_reader_auto_${now.year}${two(now.month)}${two(now.day)}_${two(now.hour)}${two(now.minute)}${two(now.second)}.json';
-      await AutoBackup.uploadToWebDav(prefs, name, utf8.encode(jsonEncode(data)), keep: cfg.keep, force: true);
+      await AutoBackup.uploadToWebDav(prefs, name, utf8.encode(await BackupCrypto.encode(data, password: await AutoBackup.autoPassword(prefs))), keep: cfg.keep, force: true);
       if (mounted) _snack(trp('Cadangan diunggah: {name}', {'name': name}));
     } catch (e) {
       if (mounted) _snack(trp('Gagal: {e}', {'e': e}));
@@ -150,7 +151,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     setState(() => _busy = true);
     Object? decoded;
     try {
-      decoded = jsonDecode(await WebDavClient(_dav).download(picked.name));
+      decoded = await _unlock(jsonDecode(await WebDavClient(_dav).download(picked.name)));
     } catch (e) {
       if (mounted) {
         setState(() => _busy = false);
@@ -190,6 +191,11 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
   Future<void> _backup() async {
     setState(() => _busy = true);
     try {
+      final password = await _askNewPassword();
+      if (password == null) {
+        if (mounted) setState(() => _busy = false);
+        return;
+      }
       final data = await AppBackup.create(
         ref.read(sharedPreferencesProvider),
         includeSecrets: _secrets,
@@ -200,7 +206,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
       final name = 'hub_reader_${now.year}${two(now.month)}${two(now.day)}_${two(now.hour)}${two(now.minute)}.json';
       final uri = await FilePicker.saveFile(
         fileName: name,
-        bytes: Uint8List.fromList(utf8.encode(jsonEncode(data))),
+        bytes: Uint8List.fromList(utf8.encode(await BackupCrypto.encode(data, password: password))),
         mimeType: 'application/json',
         dialogTitle: tr('Simpan cadangan'),
       );
@@ -212,12 +218,121 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     }
   }
 
+  /// Dialog sandi untuk cadangan baru. null = dibatalkan, string kosong = tanpa enkripsi.
+  Future<String?> _askNewPassword() async {
+    final pass = TextEditingController();
+    final again = TextEditingController();
+    String? error;
+    return showDialog<String>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setLocal) => AlertDialog(
+          title: Text(tr('Enkripsi cadangan?')),
+          content: SingleChildScrollView(
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              Text(_secrets
+                  ? tr('Cadangan ini berisi cookie login & token. Sebaiknya diberi kata sandi. Kosongkan untuk tanpa enkripsi.')
+                  : tr('Isi kata sandi untuk mengenkripsi file. Kosongkan untuk tanpa enkripsi.')),
+              TextField(controller: pass, obscureText: true, decoration: InputDecoration(labelText: tr('Kata sandi'))),
+              TextField(
+                controller: again,
+                obscureText: true,
+                decoration: InputDecoration(labelText: tr('Ulangi kata sandi'), errorText: error),
+              ),
+              const SizedBox(height: 8),
+              Text(tr('Kata sandi yang hilang tidak bisa dipulihkan: cadangan tidak akan terbuka.'),
+                  style: Theme.of(context).textTheme.bodySmall),
+            ]),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: Text(tr('Batal'))),
+            FilledButton(
+              onPressed: () {
+                if (pass.text != again.text) {
+                  setLocal(() => error = tr('Kata sandi tidak sama'));
+                  return;
+                }
+                Navigator.pop(context, pass.text);
+              },
+              child: Text(tr('Lanjut')),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Buka cadangan terenkripsi (minta sandi sampai benar atau dibatalkan);
+  /// cadangan polos dikembalikan apa adanya. Batal = lempar [_UnlockCancelled].
+  Future<Object?> _unlock(Object? decoded) async {
+    if (!BackupCrypto.isEncrypted(decoded)) return decoded;
+    var retry = false;
+    while (mounted) {
+      final pass = TextEditingController();
+      final entered = await showDialog<String>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(tr('Cadangan terenkripsi')),
+          content: TextField(
+            controller: pass,
+            obscureText: true,
+            autofocus: true,
+            decoration: InputDecoration(
+              labelText: tr('Kata sandi'),
+              errorText: retry ? tr('Kata sandi salah atau cadangan rusak') : null,
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: Text(tr('Batal'))),
+            FilledButton(onPressed: () => Navigator.pop(context, pass.text), child: Text(tr('Buka'))),
+          ],
+        ),
+      );
+      if (entered == null) break;
+      try {
+        return await BackupCrypto.decrypt(decoded, entered);
+      } on BackupPasswordException {
+        retry = true;
+      }
+    }
+    throw const _UnlockCancelled();
+  }
+
+  Future<void> _autoPasswordDialog() async {
+    final prefs = ref.read(sharedPreferencesProvider);
+    final pass = TextEditingController(text: await BackupCrypto.readAutoPassword());
+    if (!mounted) return;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(tr('Enkripsi cadangan otomatis')),
+        content: Column(mainAxisSize: MainAxisSize.min, children: [
+          Text(tr('Cadangan otomatis dan unggahan WebDAV dienkripsi dengan kata sandi ini. Kosongkan untuk mematikan.')),
+          TextField(controller: pass, obscureText: true, decoration: InputDecoration(labelText: tr('Kata sandi'))),
+          const SizedBox(height: 8),
+          Text(tr('Kata sandi yang hilang tidak bisa dipulihkan: cadangan tidak akan terbuka.'),
+              style: Theme.of(context).textTheme.bodySmall),
+        ]),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr('Batal'))),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(tr('Simpan'))),
+        ],
+      ),
+    );
+    if (ok == true) {
+      await AutoBackup.setAutoPassword(prefs, pass.text);
+      if (mounted) setState(() {});
+    }
+  }
+
   Future<void> _restore() async {
     final files = await FilePicker.pickFiles(dialogTitle: tr('Pilih file cadangan'));
     if (files.isEmpty || !mounted) return;
     Object? decoded;
     try {
-      decoded = jsonDecode(utf8.decode(await files.first.xFile.readAsBytes()));
+      decoded = await _unlock(jsonDecode(utf8.decode(await files.first.xFile.readAsBytes())));
+    } on _UnlockCancelled {
+      return;
     } catch (_) {
       _snack(tr('File tidak bisa dibaca sebagai cadangan.'));
       return;
@@ -228,7 +343,9 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
   Future<void> _restoreAuto(AutoBackupEntry entry) async {
     Object? decoded;
     try {
-      decoded = jsonDecode(await entry.file.readAsString());
+      decoded = await _unlock(jsonDecode(await entry.file.readAsString()));
+    } on _UnlockCancelled {
+      return;
     } catch (_) {
       _snack(tr('Cadangan rusak, tidak bisa dibaca.'));
       return;
@@ -402,9 +519,20 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                 ),
                 SwitchListTile(
                   title: Text(tr('Sertakan cookie login')),
-                  subtitle: Text(tr('Disimpan tanpa enkripsi di folder aplikasi.')),
+                  subtitle: Text(ref.read(sharedPreferencesProvider).getBool(AutoBackup.encryptedKey) == true
+                      ? tr('Dienkripsi dengan kata sandi cadangan.')
+                      : tr('Disimpan tanpa enkripsi di folder aplikasi.')),
                   value: auto.secrets,
                   onChanged: _busy ? null : (v) => _setAuto(auto.copyWith(secrets: v)),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.lock_outline),
+                  title: Text(tr('Enkripsi cadangan otomatis')),
+                  subtitle: Text(ref.read(sharedPreferencesProvider).getBool(AutoBackup.encryptedKey) == true
+                      ? tr('Aktif')
+                      : tr('Mati (file JSON polos)')),
+                  enabled: !_busy,
+                  onTap: _autoPasswordDialog,
                 ),
                 ListTile(
                   leading: const Icon(Icons.backup_outlined),
@@ -503,4 +631,9 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
       ),
     );
   }
+}
+
+/// Pengguna membatalkan dialog kata sandi saat membuka cadangan terenkripsi.
+class _UnlockCancelled implements Exception {
+  const _UnlockCancelled();
 }
