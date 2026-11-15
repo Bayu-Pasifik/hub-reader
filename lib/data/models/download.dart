@@ -109,6 +109,7 @@ class DownloadTask {
         'chapter_name': chapter.name,
         'chapter_number': chapter.number,
         'uploaded_at': chapter.uploadedAt?.toIso8601String(),
+        'scanlator': chapter.scanlator,
         'failed': status == DownloadStatus.failed,
         'error': error,
       };
@@ -128,6 +129,7 @@ class DownloadTask {
         name: asString(json['chapter_name']) ?? tr('Bab'),
         number: asDouble(json['chapter_number']),
         uploadedAt: asDate(json['uploaded_at']),
+        scanlator: asString(json['scanlator']),
       ),
       status: failed ? DownloadStatus.failed : DownloadStatus.queued,
       error: failed ? asString(json['error']) : null,

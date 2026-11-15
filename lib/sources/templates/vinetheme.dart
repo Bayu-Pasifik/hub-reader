@@ -286,6 +286,7 @@ class VineThemeSource extends HttpSource {
           name: name,
           number: number,
           uploadedAt: DateTime.tryParse(_flightString(c['publishedAt']) ?? '')?.toLocal(),
+          scanlator: nonPlaceholder(asString(asMap(series['team'])['name'])),
         ),
       ));
     }

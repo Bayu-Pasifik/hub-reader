@@ -8,6 +8,8 @@ import '../../../data/models/download.dart';
 import '../../../data/models/source_library.dart';
 import '../../../sources/local/local_source.dart';
 import '../../../sources/models.dart';
+import '../../../sources/scanlator.dart';
+import '../../../state/core_providers.dart';
 import '../../../state/bookmarks_provider.dart';
 import '../../../state/download_providers.dart';
 import '../../../state/source_library_providers.dart';
@@ -41,6 +43,43 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
 
   /// Tampilkan hanya bab ber-bookmark.
   bool _onlyBookmarked = false;
+
+  String get _seriesId => '${widget.sourceId}|${widget.url}';
+
+  /// Grup scanlation yang disembunyikan (disimpan per seri).
+  late Set<String> _hiddenGroups = ScanlatorFilter.read(ref.read(sharedPreferencesProvider), _seriesId);
+
+  Future<void> _scanlatorDialog(SourceMangaDetails manga) async {
+    final counts = groupCounts(manga.chapters);
+    final hidden = {..._hiddenGroups};
+    final result = await showDialog<Set<String>>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text(tr('Filter scanlator')),
+          contentPadding: const EdgeInsets.only(top: 12),
+          content: SingleChildScrollView(
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              for (final e in counts.entries)
+                CheckboxListTile(
+                  value: !hidden.contains(e.key),
+                  onChanged: (v) => setState(() => v == true ? hidden.remove(e.key) : hidden.add(e.key)),
+                  title: Text(e.key),
+                  subtitle: Text(trp('{n} bab', {'n': e.value})),
+                ),
+            ]),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context, <String>{}), child: Text(tr('Tampilkan semua'))),
+            FilledButton(onPressed: () => Navigator.pop(context, hidden), child: Text(tr('Simpan'))),
+          ],
+        ),
+      ),
+    );
+    if (result == null) return;
+    await ScanlatorFilter.write(ref.read(sharedPreferencesProvider), _seriesId, result);
+    if (mounted) setState(() => _hiddenGroups = result);
+  }
 
   /// Tekan lama bab: tandai dibaca / bookmark.
   Future<void> _chapterActions(SourceChapter chapter, {required bool done, required bool bookmarked}) async {
@@ -140,7 +179,7 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
     final progress = ref.read(sourceSeriesProgressProvider(_key));
     final lastRead = ref.read(sourceLastReadProvider(_key));
     // Urut lama → baru supaya antrean mengikuti urutan baca.
-    var chapters = manga.chapters.reversed.toList();
+    var chapters = [for (final c in manga.chapters.reversed) if (chapterVisible(c, _hiddenGroups)) c];
     if (limit != null && lastRead != null) {
       final from = chapters.indexWhere((c) => c.url == lastRead.chapterUrl);
       if (from >= 0) chapters = chapters.sublist(from + 1);
@@ -202,6 +241,7 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
               onSelected: (v) {
                 if (v == 'note') editSeriesNote(context, ref, _key);
                 if (v == 'bookmarked') setState(() => _onlyBookmarked = !_onlyBookmarked);
+                if (v == 'scanlator') _scanlatorDialog(loaded);
                 if (v == 'migrate') context.push(migrateLocation(widget.sourceId, widget.url, loaded.title));
                 if (v == 'delete' && source is LocalSource) _deleteLocal(source, loaded);
                 if (v == 'share') {
@@ -243,6 +283,13 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
                   checked: _onlyBookmarked,
                   child: Text(tr('Hanya bab ber-bookmark')),
                 ),
+                if (groupCounts(loaded.chapters).length >= 2)
+                  PopupMenuItem(
+                    value: 'scanlator',
+                    child: Text(_hiddenGroups.isEmpty
+                        ? tr('Filter scanlator')
+                        : trp('Filter scanlator ({n} disembunyikan)', {'n': _hiddenGroups.length})),
+                  ),
                 PopupMenuItem(value: 'migrate', child: Text(tr('Pindah sumber'))),
                 if (source is LocalSource) PopupMenuItem(value: 'delete', child: Text(tr('Hapus dari perangkat'))),
               ],
@@ -258,7 +305,8 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
         ),
         data: (manga) {
           final ordered = _oldestFirst ? manga.chapters.reversed.toList() : manga.chapters;
-          final chapters = _onlyBookmarked ? ordered.where((c) => bookmarks.contains(c.url)).toList() : ordered;
+          final byGroup = [for (final c in ordered) if (chapterVisible(c, _hiddenGroups)) c];
+          final chapters = _onlyBookmarked ? byGroup.where((c) => bookmarks.contains(c.url)).toList() : byGroup;
           // Tablet / landscape lebar: info seri di kiri, daftar bab di kanan.
           final wide = MediaQuery.sizeOf(context).width >= twoPaneBreakpoint;
           final list = RefreshIndicator(
@@ -270,7 +318,11 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
                   SliverToBoxAdapter(
                     child: EmptyView(
                       compact: true,
-                      title: _onlyBookmarked && ordered.isNotEmpty ? tr('Belum ada bab ber-bookmark') : tr('Belum ada bab'),
+                      title: _onlyBookmarked && ordered.isNotEmpty
+                          ? tr('Belum ada bab ber-bookmark')
+                          : _hiddenGroups.isNotEmpty && ordered.isNotEmpty
+                              ? tr('Semua bab disembunyikan filter scanlator')
+                              : tr('Belum ada bab'),
                     ),
                   )
                 else
@@ -284,6 +336,7 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
                       final done = p?.done ?? false;
                       final inProgress = p != null && !done && p.total > 0;
                       final subtitle = [
+                        if (chapterGroup(chapter) case final g?) g,
                         if (chapter.uploadedAt != null) relativeTime(chapter.uploadedAt!),
                         if (inProgress) trp('Hal. {p}/{total}', {'p': p.page + 1, 'total': p.total}),
                       ].join(' · ');

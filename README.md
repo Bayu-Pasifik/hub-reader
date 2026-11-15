@@ -291,6 +291,8 @@ acak dari tab yang sedang tampil (mengikuti filter & pencarian).
 belum dibaca, dan kategori tertentu (seri dilewati bila semua kategorinya dikecualikan). Berlaku juga untuk cek di latar
 belakang. Bawaan: lewati tamat dan belum dibaca. Disimpan di `library.updates.rules.v1`.
 
+**Filter scanlator** (menu ⋮ detail seri, muncul bila ada ≥2 grup): `SourceChapter.scanlator` diisi sumber yang punya data grup (kini VineTheme, dari nama tim); selain itu grup dibaca dari awalan `[Grup]` pada nama bab/folder (berguna di Sumber Lokal). Grup tampil di subtitle bab; pilihan disembunyikan disimpan per seri dan ikut membatasi unduh massal. Mayoritas sumber situs satu-grup tidak punya data ini, jadi filter tidak muncul di sana.
+
 **Cadangan WebDAV** (layar Cadangan): unggah cadangan otomatis/manual ke server WebDAV (Nextcloud, ownCloud, Synology, Koofr), tes koneksi, dan pulihkan dari daftar berkas di server. Kata sandi disimpan di Keystore, bukan di cadangan.
 
 **Ekspor CBZ** (layar Unduhan): ikon arsip per bab menyimpan CBZ lewat dialog sistem; ikon di tingkat seri mengekspor

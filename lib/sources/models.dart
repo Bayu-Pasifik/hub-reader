@@ -61,10 +61,14 @@ class SourceChapter {
     required this.name,
     this.number,
     this.uploadedAt,
+    this.scanlator,
   });
 
   final String url;
   final String name;
+
+  /// Grup scanlation/penerjemah bila sumber menyediakannya.
+  final String? scanlator;
 
   /// Nomor bab hasil parsing (bisa null bila judul tidak mengandung angka).
   final double? number;

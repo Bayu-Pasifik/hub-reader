@@ -862,4 +862,8 @@ const Map<String, String> stringsEn = {
       'Upload now',
   'Pulihkan dari WebDAV':
       'Restore from WebDAV',
+  'Filter scanlator': 'Scanlator filter',
+  'Filter scanlator ({n} disembunyikan)': 'Scanlator filter ({n} hidden)',
+  'Tampilkan semua': 'Show all',
+  'Semua bab disembunyikan filter scanlator': 'All chapters are hidden by the scanlator filter',
 };
