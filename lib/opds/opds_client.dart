@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:xml/xml.dart';
 import '../core/i18n/strings.dart';
+import '../core/net/cleartext.dart' as cleartext;
 
 /// Server OPDS milik pengguna (Komga, Kavita, Calibre-Web, dll).
 class OpdsServer {
@@ -36,19 +37,7 @@ class OpdsServer {
 
   /// HTTP polos hanya untuk jaringan lokal (localhost, IP privat, `.local`).
   /// Login lewat HTTP ke host publik terkirim tanpa enkripsi.
-  static bool isCleartextAllowed(Uri uri) {
-    if (uri.scheme != 'http') return true;
-    final h = uri.host.toLowerCase();
-    if (h == 'localhost' || h.endsWith('.local')) return true;
-    final ip = InternetAddress.tryParse(h);
-    if (ip == null) return !h.contains('.'); // nama host tanpa titik = LAN
-    if (ip.isLoopback || ip.isLinkLocal) return true;
-    final b = ip.rawAddress;
-    if (ip.type == InternetAddressType.IPv4) {
-      return b[0] == 10 || (b[0] == 172 && b[1] >= 16 && b[1] <= 31) || (b[0] == 192 && b[1] == 168);
-    }
-    return (b[0] & 0xfe) == 0xfc; // fc00::/7
-  }
+  static bool isCleartextAllowed(Uri uri) => cleartext.isCleartextAllowed(uri);
 
   factory OpdsServer.fromJson(Map<String, Object?> j) => OpdsServer(
         id: '${j['id']}',

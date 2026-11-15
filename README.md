@@ -206,6 +206,8 @@ tampil di bawah sinopsis) dan filter **Hanya bab ber-bookmark**. Disimpan di `li
 `library.notes.v1`, ikut cadangan, dan ikut dipindah saat **Pindah sumber** (bookmark dicocokkan lewat
 nomor bab).
 
+**Cleartext HTTP**: permintaan sumber komik, gambar hasil parse (`absUrl`), dan ganti domain tidak pernah lewat `http://` ke host publik. Dio sumber menaikkannya ke `https://` (`lib/core/net/cleartext.dart`), dan dialog ganti domain menolak `http://` publik. Pengecualian: localhost, IP privat, `.local`, dan nama host tanpa titik.
+
 **Blokir screenshot** (Pengaturan → Privasi & keamanan, `app.secure_screen.v1`, mati secara default): memasang `FLAG_SECURE` lewat channel `hub_reader/reader`, jadi screenshot dan rekam layar menghasilkan layar hitam, dan pratinjau di daftar aplikasi terbaru dikosongkan.
 
 **Mode samaran** (ikon mata di Riwayat, atau Pengaturan): riwayat dan posisi baca otomatis tidak

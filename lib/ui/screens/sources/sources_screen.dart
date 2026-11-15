@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/net/cleartext.dart';
 import '../../../sources/models.dart';
 import '../../../sources/local/local_source.dart';
 import '../../../sources/source.dart';
@@ -337,6 +338,7 @@ class _BaseUrlDialogState extends ConsumerState<_BaseUrlDialog> {
     if (uri == null || !uri.hasScheme || !uri.scheme.startsWith('http') || uri.host.isEmpty) {
       return tr('Masukkan URL lengkap, mis. https://domain-baru.com');
     }
+    if (!isCleartextAllowed(uri)) return tr('Situs publik wajib memakai https://');
     return null;
   }
 

@@ -1,5 +1,6 @@
 import 'package:html/dom.dart';
 
+import '../core/net/cleartext.dart';
 import 'models.dart';
 
 /// Helper parsing HTML, padanan util Jsoup yang dipakai extension Mihon.
@@ -33,7 +34,8 @@ String? absUrl(Uri base, String? href) {
     return null;
   }
   try {
-    return base.resolve(value).toString();
+    // http:// ke host publik dinaikkan ke https:// (gambar & tautan situs).
+    return upgradeCleartext(base.resolve(value)).toString();
   } on FormatException {
     return null;
   }

@@ -667,6 +667,7 @@ const Map<String, String> stringsEn = {
   'tidak ada hasil': 'no results',
   '{n} hasil': '{n} results',
   'mencari…': 'searching…',
+  'Situs publik wajib memakai https://': 'Public sites must use https://',
   'Masukkan URL lengkap, mis. https://domain-baru.com': 'Enter the full URL, e.g. https://new-domain.com',
   'Gagal terhubung: {name}': 'Failed to connect: {name}',
   'Mode samaran: riwayat & posisi baca tidak dicatat': 'Incognito mode: history & reading position are not recorded',

@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:html/dom.dart';
 import 'package:html/parser.dart' as html_parser;
 
+import '../core/net/cleartext.dart';
 import 'cookie_store.dart';
 import 'filters.dart';
 import 'models.dart';
@@ -121,6 +122,13 @@ abstract class HttpSource extends MangaSource {
         ..interceptors.add(InterceptorsWrapper(onRequest: (options, handler) {
           // UA & cookie dibaca per request: keduanya bisa berubah setelah
           // verifikasi Cloudflare di WebView.
+          // Jangan pernah kirim request atau cookie lewat HTTP polos ke host publik.
+          final secure = upgradeCleartext(options.uri);
+          if (secure != options.uri) {
+            options.baseUrl = '';
+            options.path = secure.toString();
+            options.queryParameters = {};
+          }
           options.headers.putIfAbsent('User-Agent', () => userAgent);
           final cookie = cookies.cookieHeaderFor(options.uri);
           if (cookie != null) options.headers['Cookie'] = cookie;
