@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../data/models/download.dart';
 import '../../../data/models/source_library.dart';
+import '../../../sources/html_utils.dart' show parseChapterNumber;
 import '../../../sources/local/local_source.dart';
 import '../../../sources/models.dart';
 import '../../../sources/scanlator.dart';
@@ -274,6 +275,13 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
                       title: loaded.title,
                       novel: false,
                       localProgress: local,
+                      chapters: [
+                        for (final c in loaded.chapters)
+                          (url: c.url, number: c.number ?? parseChapterNumber(c.name), done: progress[c.url]?.done ?? false),
+                      ],
+                      onMarkRead: (urls) => ref
+                          .read(sourceProgressProvider.notifier)
+                          .setDoneMany(_key, urls, done: true),
                     ),
                   );
                 }

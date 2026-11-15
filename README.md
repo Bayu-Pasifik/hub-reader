@@ -442,3 +442,5 @@ Kompatibilitas runtime:
     pengguna APK rilis bisa langsung login tanpa membuat aplikasi OAuth sendiri
 
 **Kembali prediktif (Android 13+)**: `android:enableOnBackInvokedCallback="true"` di manifest dan `PredictiveBackPageTransitionsBuilder` di tema (`lib/app.dart`). Menggeser dari tepi layar menampilkan pratinjau layar sebelumnya dan animasi penutupan. Di Android lama tombol kembali berjalan seperti biasa. Uji emulator API 37: geser dari tepi di jelajah sumber, dan kembali di onboarding.
+
+**Sinkron tracker dua arah**: di sheet Tracking (menu ⋮ detail seri), tombol **Sinkronkan dari tracker** menarik progres, status, dan jumlah bab dari tiap tracker yang tertaut. Bab lokal bernomor ≤ progres tracker ditandai sudah dibaca (`chapterUrlsToMarkRead`), dan bila progres lokal lebih tinggi, tracker dinaikkan (jadi "Selesai" bila mencapai jumlah bab). Menautkan seri yang sudah ada progresnya di tracker juga langsung menandai bab lokal. Satu tracker gagal tidak menghentikan yang lain. Belum ada: impor seluruh daftar tracker ke library.

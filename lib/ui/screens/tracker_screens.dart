@@ -257,7 +257,15 @@ class TrackingSheet extends ConsumerWidget {
     required this.title,
     required this.novel,
     this.localProgress,
+    this.chapters = const [],
+    this.onMarkRead,
   });
+
+  /// Bab lokal seri ini, untuk menandai yang sudah dibaca di tracker.
+  final List<TrackableChapter> chapters;
+
+  /// Menandai bab (URL/path) sudah dibaca di aplikasi.
+  final Future<void> Function(List<String> urls)? onMarkRead;
 
   final String seriesKey;
   final String title;
@@ -289,6 +297,15 @@ class TrackingSheet extends ConsumerWidget {
                 title: title,
                 novel: novel,
                 localProgress: localProgress,
+                chapters: chapters,
+                onMarkRead: onMarkRead,
+              ),
+            if (links.isNotEmpty && onMarkRead != null)
+              _SyncButton(
+                seriesKey: seriesKey,
+                localProgress: localProgress ?? 0,
+                chapters: chapters,
+                onMarkRead: onMarkRead!,
               ),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
@@ -312,7 +329,12 @@ class _TrackerRow extends ConsumerStatefulWidget {
     required this.title,
     required this.novel,
     required this.localProgress,
+    required this.chapters,
+    required this.onMarkRead,
   });
+
+  final List<TrackableChapter> chapters;
+  final Future<void> Function(List<String> urls)? onMarkRead;
 
   final Tracker tracker;
   final TrackLink? link;
@@ -359,6 +381,11 @@ class _TrackerRowState extends ConsumerState<_TrackerRow> {
         url: picked.url,
       );
       await ref.read(trackLinksProvider.notifier).push(widget.seriesKey, link);
+      // Progres yang sudah ada di tracker ikut menandai bab lokal sebagai dibaca.
+      final mark = widget.onMarkRead;
+      if (mark != null && (remote?.progress ?? 0) > 0) {
+        await mark(chapterUrlsToMarkRead(widget.chapters, remote!.progress));
+      }
     });
   }
 
@@ -511,4 +538,66 @@ class _TrackSearchDialogState extends State<_TrackSearchDialog> {
         ),
         actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text(tr('Batal')))],
       );
+}
+
+/// Sinkron dua arah: tarik progres dari tracker (tandai bab lokal dibaca) dan
+/// kirim naik progres lokal bila lebih tinggi.
+class _SyncButton extends ConsumerStatefulWidget {
+  const _SyncButton({
+    required this.seriesKey,
+    required this.localProgress,
+    required this.chapters,
+    required this.onMarkRead,
+  });
+
+  final String seriesKey;
+  final int localProgress;
+  final List<TrackableChapter> chapters;
+  final Future<void> Function(List<String> urls) onMarkRead;
+
+  @override
+  ConsumerState<_SyncButton> createState() => _SyncButtonState();
+}
+
+class _SyncButtonState extends ConsumerState<_SyncButton> {
+  bool _busy = false;
+
+  Future<void> _sync() async {
+    setState(() => _busy = true);
+    final messenger = ScaffoldMessenger.of(context);
+    String message;
+    try {
+      final r = await ref
+          .read(trackLinksProvider.notifier)
+          .sync(widget.seriesKey, localProgress: widget.localProgress);
+      final urls = chapterUrlsToMarkRead(widget.chapters, r.remoteProgress);
+      if (urls.isNotEmpty) await widget.onMarkRead(urls);
+      final parts = [
+        if (urls.isNotEmpty) trp('{n} bab ditandai sudah dibaca', {'n': urls.length}),
+        if (r.pushedTo > 0) trp('Tracker dinaikkan ke bab {n}', {'n': r.pushedTo}),
+      ];
+      message = parts.isEmpty ? tr('Sudah sinkron') : parts.join(' · ');
+    } catch (e) {
+      message = '$e';
+    }
+    messenger.showSnackBar(SnackBar(content: Text(message)));
+    if (mounted) setState(() => _busy = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: OutlinedButton.icon(
+          onPressed: _busy ? null : _sync,
+          icon: _busy
+              ? const SizedBox.square(dimension: 16, child: CircularProgressIndicator(strokeWidth: 2))
+              : const Icon(Icons.sync),
+          label: Text(tr('Sinkronkan dari tracker')),
+        ),
+      ),
+    );
+  }
 }

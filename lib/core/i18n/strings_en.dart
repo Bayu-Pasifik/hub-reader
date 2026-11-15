@@ -954,4 +954,8 @@ const Map<String, String> stringsEn = {
   'Unduhan dipindahkan': 'Downloads moved',
   'Gagal memindahkan: {e}': 'Failed to move: {e}',
   'Menunggu Wi-Fi': 'Waiting for Wi-Fi',
+  'Sinkronkan dari tracker': 'Sync from tracker',
+  '{n} bab ditandai sudah dibaca': '{n} chapters marked as read',
+  'Tracker dinaikkan ke bab {n}': 'Tracker raised to chapter {n}',
+  'Sudah sinkron': 'Already in sync',
 };

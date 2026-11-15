@@ -125,6 +125,48 @@ class TrackLinksNotifier extends Notifier<Map<String, List<TrackLink>>> {
     await put(seriesKey, link);
   }
 
+  /// Sinkron dua arah satu seri: tarik progres, status, dan jumlah bab dari tiap
+  /// tracker yang tertaut dan sudah login; bila progres lokal [localProgress]
+  /// lebih tinggi dari tracker, kirim naik. Mengembalikan progres tertinggi di
+  /// tracker (untuk menandai bab lokal). Satu tracker gagal tidak menghentikan
+  /// yang lain; error dilempar hanya bila tidak ada tracker yang berhasil.
+  Future<TrackSyncResult> sync(String seriesKey, {required int localProgress}) async {
+    final trackers = ref.read(trackersProvider);
+    var remoteMax = 0;
+    var pushedTo = 0;
+    var ok = 0;
+    Object? firstError;
+    for (final link in [...?state[seriesKey]]) {
+      final tracker = trackerById(trackers, link.tracker);
+      if (tracker == null || !tracker.loggedIn) continue;
+      try {
+        final remote = await tracker.entry(link.mediaId);
+        if (remote == null) continue;
+        ok++;
+        var updated = link.copyWith(
+          progress: remote.progress,
+          total: remote.total ?? link.total,
+          status: remote.status ?? link.status,
+        );
+        await put(seriesKey, updated);
+        if (remote.progress > remoteMax) remoteMax = remote.progress;
+        if (localProgress > remote.progress) {
+          final total = updated.total;
+          updated = updated.copyWith(
+            progress: localProgress,
+            status: total != null && localProgress >= total ? TrackStatus.completed : null,
+          );
+          await push(seriesKey, updated);
+          if (localProgress > pushedTo) pushedTo = localProgress;
+        }
+      } catch (e) {
+        firstError ??= e;
+      }
+    }
+    if (ok == 0 && firstError != null) throw firstError;
+    return (remoteProgress: remoteMax, pushedTo: pushedTo);
+  }
+
   /// Bab [chapterName] selesai dibaca: naikkan progres di semua tracker yang
   /// tertaut bila nomor bab lebih tinggi (tidak pernah menurunkan progres).
   /// Gagal kirim diabaikan (dicoba lagi saat bab berikutnya selesai).
@@ -149,3 +191,20 @@ class TrackLinksNotifier extends Notifier<Map<String, List<TrackLink>>> {
     }
   }
 }
+
+/// Bab lokal untuk sinkron dari tracker: URL/path, nomor hasil parsing, dan status selesai.
+typedef TrackableChapter = ({String url, double? number, bool done});
+
+/// URL bab yang harus ditandai sudah dibaca karena tracker mencatat progres
+/// [remoteProgress] (bab bernomor ≤ progres dan belum selesai). Bab tanpa nomor
+/// tidak disentuh.
+List<String> chapterUrlsToMarkRead(Iterable<TrackableChapter> chapters, int remoteProgress) {
+  if (remoteProgress <= 0) return const [];
+  return [
+    for (final c in chapters)
+      if (!c.done && c.number != null && c.number!.floor() <= remoteProgress) c.url,
+  ];
+}
+
+/// Hasil sinkron dua arah satu seri.
+typedef TrackSyncResult = ({int remoteProgress, int pushedTo});

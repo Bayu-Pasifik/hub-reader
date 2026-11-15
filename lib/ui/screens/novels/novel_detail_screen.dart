@@ -230,6 +230,11 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
         title: novel.name,
         novel: true,
         localProgress: local,
+        chapters: [
+          for (final c in _visible)
+            (url: c.path, number: c.number ?? parseChapterNumber(c.name), done: progress[c.path]?.done ?? false),
+        ],
+        onMarkRead: (paths) => ref.read(sourceProgressProvider.notifier).setDoneMany(_libKey, paths, done: true),
       ),
     );
   }
