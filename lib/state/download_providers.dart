@@ -153,6 +153,13 @@ class DownloadQueueNotifier extends Notifier<List<DownloadTask>> {
     state = state.where((t) => t.key != key).toList();
   }
 
+  /// Pindahkan tugas dari [oldIndex] ke [newIndex] (konvensi ReorderableListView). Tugas yang
+  /// sedang berjalan tetap berjalan; urutan menentukan bab antre mana yang diunduh berikutnya.
+  void reorder(int oldIndex, int newIndex) {
+    final next = reorderList(state, oldIndex, newIndex);
+    if (next != null) state = next;
+  }
+
   void retry(String key) {
     state = [
       for (final t in state) t.key == key ? t.copyWith(status: DownloadStatus.queued, done: 0) : t,
@@ -292,3 +299,15 @@ class _Cancelled implements Exception {
 final downloadTaskProvider = Provider.family<DownloadTask?, String>(
   (ref, key) => ref.watch(downloadQueueProvider.select((q) => q.where((t) => t.key == key).firstOrNull)),
 );
+
+/// Salinan [list] dengan item [oldIndex] dipindah ke [newIndex] (konvensi
+/// ReorderableListView: [newIndex] dihitung sebelum item dicabut). Null bila
+/// indeks di luar rentang atau urutan tidak berubah.
+List<T>? reorderList<T>(List<T> list, int oldIndex, int newIndex) {
+  if (oldIndex < 0 || oldIndex >= list.length || newIndex < 0 || newIndex > list.length) return null;
+  final target = newIndex > oldIndex ? newIndex - 1 : newIndex;
+  if (target == oldIndex) return null;
+  final next = [...list];
+  next.insert(target, next.removeAt(oldIndex));
+  return next;
+}

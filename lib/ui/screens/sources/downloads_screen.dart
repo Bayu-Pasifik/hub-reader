@@ -50,8 +50,16 @@ class DownloadsScreen extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
               child: Text(trp('Antrean ({n})', {'n': queue.length}), style: theme.textTheme.titleSmall),
             ),
-            for (final task in queue)
-              ListTile(
+            ReorderableListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              buildDefaultDragHandles: false,
+              itemCount: queue.length,
+              onReorder: ref.read(downloadQueueProvider.notifier).reorder,
+              itemBuilder: (context, index) {
+                final task = queue[index];
+                return ListTile(
+                key: ValueKey(task.key),
                 title: Text(task.mangaTitle, maxLines: 1, overflow: TextOverflow.ellipsis),
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,9 +89,19 @@ class DownloadsScreen extends ConsumerWidget {
                       icon: const Icon(Icons.close),
                       onPressed: () => ref.read(downloadQueueProvider.notifier).cancel(task.key),
                     ),
+                    if (queue.length > 1)
+                      ReorderableDragStartListener(
+                        index: index,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Icon(Icons.drag_handle, semanticLabel: tr('Geser untuk mengurutkan')),
+                        ),
+                      ),
                   ],
                 ),
-              ),
+              );
+              },
+            ),
             const Divider(),
           ],
           for (final chapters in series) _SeriesDownloads(chapters: chapters),

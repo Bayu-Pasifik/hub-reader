@@ -977,4 +977,5 @@ const Map<String, String> stringsEn = {
   'Orientasi layar': 'Screen orientation',
   'Potret': 'Portrait',
   'Lanskap': 'Landscape',
+  'Geser untuk mengurutkan': 'Drag to reorder',
 };
