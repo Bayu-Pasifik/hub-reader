@@ -91,6 +91,14 @@ class MainActivity : FlutterFragmentActivity() {
                         interceptVolume = call.arguments as? Boolean ?: false
                         result.success(null)
                     }
+                    // 0.05..1 = kecerahan jendela; -1 = ikut sistem.
+                    "brightness" -> {
+                        val v = (call.arguments as? Number)?.toFloat() ?: -1f
+                        val lp = window.attributes
+                        lp.screenBrightness = if (v < 0f) WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE else v
+                        window.attributes = lp
+                        result.success(null)
+                    }
                     "secure" -> {
                         if (call.arguments as? Boolean == true) {
                             window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)

@@ -168,7 +168,20 @@ class ReaderDisplay {
     this.spread = true,
     this.keepScreenOn = true,
     this.transition = PageTransitionStyle.slide,
+    this.doubleTapZoom = true,
+    this.brightness = 0,
+    this.preload = 2,
   });
+
+  /// Ketuk dua kali untuk memperbesar halaman. Mengetuk pinggir untuk pindah
+  /// halaman jadi tertunda sebentar (menunggu ketukan kedua).
+  final bool doubleTapZoom;
+
+  /// Kecerahan layar saat membaca: 0 = ikut sistem, 0.05…1 = diatur sendiri.
+  final double brightness;
+
+  /// Halaman di depan yang dimuat lebih dulu (mode per halaman), 0-6.
+  final int preload;
 
   /// Dua halaman berdampingan (mode per halaman, tablet landscape).
   final bool spread;
@@ -190,7 +203,18 @@ class ReaderDisplay {
 
   bool get hasColorFilter => grayscale || invert || dim > 0;
 
-  ReaderDisplay copyWith({bool? cropBorders, bool? grayscale, bool? invert, double? dim, bool? spread, bool? keepScreenOn, PageTransitionStyle? transition}) =>
+  ReaderDisplay copyWith({
+    bool? cropBorders,
+    bool? grayscale,
+    bool? invert,
+    double? dim,
+    bool? spread,
+    bool? keepScreenOn,
+    PageTransitionStyle? transition,
+    bool? doubleTapZoom,
+    double? brightness,
+    int? preload,
+  }) =>
       ReaderDisplay(
         cropBorders: cropBorders ?? this.cropBorders,
         grayscale: grayscale ?? this.grayscale,
@@ -199,10 +223,13 @@ class ReaderDisplay {
         spread: spread ?? this.spread,
         keepScreenOn: keepScreenOn ?? this.keepScreenOn,
         transition: transition ?? this.transition,
+        doubleTapZoom: doubleTapZoom ?? this.doubleTapZoom,
+        brightness: brightness ?? this.brightness,
+        preload: preload ?? this.preload,
       );
 
   Map<String, Object> toJson() =>
-      {'crop': cropBorders, 'gray': grayscale, 'invert': invert, 'dim': dim, 'spread': spread, 'keep': keepScreenOn, 'transition': transition.name};
+      {'crop': cropBorders, 'gray': grayscale, 'invert': invert, 'dim': dim, 'spread': spread, 'keep': keepScreenOn, 'transition': transition.name, 'dtz': doubleTapZoom, 'bright': brightness, 'preload': preload};
 
   factory ReaderDisplay.fromJson(Map<String, Object?> json) => ReaderDisplay(
         cropBorders: json['crop'] == true,
@@ -212,6 +239,9 @@ class ReaderDisplay {
         spread: json['spread'] != false,
         keepScreenOn: json['keep'] != false,
         transition: PageTransitionStyle.byName(json['transition'] as String?) ?? PageTransitionStyle.slide,
+        doubleTapZoom: json['dtz'] != false,
+        brightness: ((json['bright'] as num?)?.toDouble() ?? 0).clamp(0, 1),
+        preload: ((json['preload'] as num?)?.toInt() ?? 2).clamp(0, 6),
       );
 
   @override
@@ -223,10 +253,13 @@ class ReaderDisplay {
       other.dim == dim &&
       other.spread == spread &&
       other.keepScreenOn == keepScreenOn &&
-      other.transition == transition;
+      other.transition == transition &&
+      other.doubleTapZoom == doubleTapZoom &&
+      other.brightness == brightness &&
+      other.preload == preload;
 
   @override
-  int get hashCode => Object.hash(cropBorders, grayscale, invert, dim, spread, keepScreenOn, transition);
+  int get hashCode => Object.hash(cropBorders, grayscale, invert, dim, spread, keepScreenOn, transition, doubleTapZoom, brightness, preload);
 }
 
 /// Lebar minimum (dp) layar landscape agar dua halaman ditampilkan.

@@ -122,6 +122,7 @@ Batasan saat ini:
   dan indeksnya ada di SharedPreferences (`downloads.index.v1`). Reader otomatis memakai
   file lokal bila babnya lengkap terunduh. Antrean disimpan (`downloads.queue.v1`) dan
   dilanjutkan otomatis saat aplikasi dibuka lagi; bab yang terputus diulang tanpa mengunduh ulang halaman yang sudah ada.
+- Reader komik (tambahan): **Zoom ketuk dua kali** (`ZoomablePage`; memperbesar ke titik yang diketuk, ketuk lagi untuk kembali; di mode per halaman, ketuk pinggir jadi tertunda ±300 ms karena menunggu ketukan kedua, bisa dimatikan), **Kecerahan layar** (jendela Android, 0 = ikut sistem, kembali otomatis saat reader ditutup), dan **Pra-muat halaman** 0-6 di depan (mode per halaman, halaman dari jaringan). Semuanya di `reader.display.v1`.
 - Reader komik: ikon pengaturan di reader berisi mode baca, **Potong tepi kosong**, dan filter warna
   (hitam putih, balik warna, redupkan). Mode dan potong tepi bisa disimpan khusus per seri
   (`reader.series.v1`); filter warna berlaku umum (`reader.display.v1`). Deteksi tepi memakai salinan

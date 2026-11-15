@@ -169,6 +169,25 @@ class _ReaderSettingsSheet extends ConsumerWidget {
               ),
             ),
             SwitchListTile(
+              title: Text(tr('Zoom ketuk dua kali')),
+              subtitle: Text(tr('Ketuk dua kali untuk memperbesar. Ketuk pinggir jadi sedikit tertunda')),
+              value: global.doubleTapZoom,
+              onChanged: (v) => setDisplay(global.copyWith(doubleTapZoom: v)),
+            ),
+            ListTile(
+              title: Text(tr('Pra-muat halaman')),
+              subtitle: Text(tr('Mode per halaman: halaman di depan dimuat lebih dulu')),
+              trailing: DropdownButton<int>(
+                value: global.preload,
+                onChanged: (v) {
+                  if (v != null) setDisplay(global.copyWith(preload: v));
+                },
+                items: [
+                  for (final n in const [0, 1, 2, 3, 4, 6]) DropdownMenuItem(value: n, child: Text('$n')),
+                ],
+              ),
+            ),
+            SwitchListTile(
               title: Text(tr('Layar tetap menyala')),
               subtitle: Text(tr('Cegah layar mati saat membaca')),
               value: global.keepScreenOn,
@@ -244,6 +263,17 @@ class _ReaderSettingsSheet extends ConsumerWidget {
               subtitle: Text(tr('Halaman putih jadi gelap untuk baca malam')),
               value: global.invert,
               onChanged: (v) => setDisplay(global.copyWith(invert: v)),
+            ),
+            ListTile(
+              title: Text(tr('Kecerahan layar')),
+              trailing: Text(global.brightness <= 0 ? tr('Sistem') : '${(global.brightness * 100).round()}%'),
+            ),
+            Slider(
+              value: global.brightness,
+              max: 1,
+              divisions: 20,
+              label: global.brightness <= 0 ? tr('Sistem') : '${(global.brightness * 100).round()}%',
+              onChanged: (v) => setDisplay(global.copyWith(brightness: v < 0.05 ? 0 : v)),
             ),
             ListTile(
               title: Text(tr('Redupkan')),

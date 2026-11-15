@@ -22,6 +22,7 @@ import '../../widgets/cropped_page_image.dart';
 import '../../widgets/reader_settings_sheet.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/state_views.dart';
+import '../../widgets/zoomable_page.dart';
 
 /// Pembaca komik untuk sumber on-device: mode webtoon (vertikal) atau per
 /// halaman (kiri→kanan / kanan→kiri), dengan halaman transisi ke bab berikutnya.
@@ -216,6 +217,7 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
     _session.activity();
     _lifecycle = AppLifecycleListener(onPause: _session.pause, onResume: _session.activity);
     ReaderBridge.setKeepScreenOn(widget.display.keepScreenOn);
+    ReaderBridge.setBrightness(widget.display.brightness);
   }
 
   @override
@@ -223,6 +225,9 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
     super.didUpdateWidget(old);
     if (old.display.keepScreenOn != widget.display.keepScreenOn) {
       ReaderBridge.setKeepScreenOn(widget.display.keepScreenOn);
+    }
+    if (old.display.brightness != widget.display.brightness) {
+      ReaderBridge.setBrightness(widget.display.brightness);
     }
   }
 
@@ -257,6 +262,7 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
   @override
   void dispose() {
     ReaderBridge.setKeepScreenOn(false);
+    ReaderBridge.setBrightness(null);
     _ticker.dispose();
     _lifecycle.dispose();
     _session.pause();
@@ -395,7 +401,7 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
       final right = rtl ? pages[0] : pages[1];
       row = Row(children: [cell(left, Alignment.centerRight), cell(right, Alignment.centerLeft)]);
     }
-    return InteractiveViewer(minScale: 1, maxScale: 4, child: Center(child: row));
+    return ZoomablePage(doubleTapZoom: widget.display.doubleTapZoom, child: Center(child: row));
   }
 
   /// Ketuk sepertiga kiri/kanan layar untuk pindah halaman (mode per halaman).
@@ -425,6 +431,27 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
     for (final url in urls.take(2).where((u) => u.startsWith('http'))) {
       precacheImage(CachedNetworkImageProvider(url, headers: nextHeaders), context).ignore();
     }
+  }
+
+  final _precached = <int>{};
+
+  /// Mode per halaman: muat [ReaderDisplay.preload] halaman di depan halaman
+  /// yang sedang dibaca ke cache gambar.
+  void _preloadAhead(List<String> urls, Map<String, String> headers) {
+    final n = widget.display.preload;
+    if (n <= 0 || !widget.mode.isPaged) return;
+    final from = _spreadActive ? pagesOfSpread(spreadOfPage(_current), urls.length).last : _current;
+    final todo = <int>[
+      for (var k = 1; k <= n * (_spreadActive ? 2 : 1); k++)
+        if (from + k < urls.length && urls[from + k].startsWith('http') && _precached.add(from + k)) from + k,
+    ];
+    if (todo.isEmpty) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      for (final i in todo) {
+        precacheImage(CachedNetworkImageProvider(urls[i], headers: headers), context).ignore();
+      }
+    });
   }
 
   Widget _image(String url, int i, Map<String, String> headers, BoxFit fit) {
@@ -485,6 +512,7 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
       ),
       data: (urls) {
         _total = urls.length;
+        _preloadAhead(urls, headers);
         final initial = _initialPage.clamp(0, urls.isEmpty ? 0 : urls.length - 1);
         final transition = _ChapterTransition(
           finished: widget.chapter,
@@ -519,9 +547,8 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
                           i,
                           spread
                               ? _spreadItem(i, urls, headers)
-                              : InteractiveViewer(
-                                  minScale: 1,
-                                  maxScale: 4,
+                              : ZoomablePage(
+                                  doubleTapZoom: widget.display.doubleTapZoom,
                                   child: Center(child: _image(urls[i], i, headers, BoxFit.contain)),
                                 ),
                         ),
@@ -535,9 +562,10 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
             onPointerDown: (_) => _touching = true,
             onPointerUp: (_) => _touching = false,
             onPointerCancel: (_) => _touching = false,
-            child: InteractiveViewer(
-              minScale: 1,
+            child: ZoomablePage(
+              doubleTapZoom: widget.display.doubleTapZoom,
               maxScale: 3,
+              doubleTapScale: 2,
               child: ScrollablePositionedList.builder(
                 scrollOffsetController: _offsetController,
                 itemCount: urls.length + 1,

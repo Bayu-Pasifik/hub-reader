@@ -29,6 +29,12 @@ class ReaderBridge {
     await _invoke('secure', on);
   }
 
+  /// Kecerahan jendela 0.05…1; 0 atau null = kembali ke kecerahan sistem.
+  static Future<void> setBrightness(double? value) async {
+    if (!Platform.isAndroid) return;
+    await _invoke('brightness', (value == null || value <= 0) ? -1.0 : value.clamp(0.05, 1.0));
+  }
+
   static Future<void> setKeepScreenOn(bool on) async {
     if (!Platform.isAndroid) return;
     await _invoke('keepScreenOn', on);
