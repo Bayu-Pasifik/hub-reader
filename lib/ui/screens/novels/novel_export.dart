@@ -36,13 +36,13 @@ Future<void> exportNovelEpub(
           ...await ref.read(novelChapterPageProvider((pluginId: pluginId, path: path, page: p)).future),
       ];
     } catch (e) {
-      if (context.mounted) snack('Gagal memuat daftar bab: $e');
+      if (context.mounted) snack(trp('Gagal memuat daftar bab: {e}', {'e': e}));
       return;
     }
   }
   if (!context.mounted) return;
   if (chapters.isEmpty) {
-    snack('Novel ini belum punya bab.');
+    snack(tr('Novel ini belum punya bab.'));
     return;
   }
   final index = ref.read(downloadIndexProvider);
@@ -61,7 +61,7 @@ Future<void> exportNovelEpub(
             title: Text(trp('Semua bab ({n})', {'n': chapters.length})),
             subtitle: Text(local || downloaded.length == chapters.length
                 ? 'Tanpa internet'
-                : 'Bab yang belum diunduh diambil dari situs'),
+                : tr('Bab yang belum diunduh diambil dari situs')),
           ),
         ),
         if (!local && downloaded.isNotEmpty && downloaded.length < chapters.length)
@@ -158,7 +158,7 @@ Future<void> exportNovelEpub(
   progress.dispose();
   if (cancelled || !context.mounted) return;
   if (out.isEmpty) {
-    snack('Tidak ada bab yang berhasil dimuat.');
+    snack(tr('Tidak ada bab yang berhasil dimuat.'));
     return;
   }
 
@@ -179,13 +179,13 @@ Future<void> exportNovelEpub(
       fileName: name,
       bytes: bytes,
       mimeType: 'application/epub+zip',
-      dialogTitle: 'Simpan EPUB',
+      dialogTitle: tr('Simpan EPUB'),
     );
     if (!context.mounted || saved == null) return;
     snack(failed.isEmpty
-        ? 'EPUB disimpan: $name (${out.length} bab)'
-        : 'EPUB disimpan: ${out.length} bab, ${failed.length} bab gagal dimuat dan dilewati');
+        ? trp('EPUB disimpan: {name} ({length} bab)', {'name': name, 'length': out.length})
+        : trp('EPUB disimpan: {length} bab, {length2} bab gagal dimuat dan dilewati', {'length': out.length, 'length2': failed.length}));
   } catch (e) {
-    if (context.mounted) snack('Gagal menyimpan: $e');
+    if (context.mounted) snack(trp('Gagal menyimpan: {e}', {'e': e}));
   }
 }

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
+import '../core/i18n/strings.dart';
 
 /// Tautan aplikasi `hubreader://open/<lokasi rute>`.
 ///
@@ -71,7 +72,7 @@ abstract final class DeepLinks {
       title,
       if (webUrl != null && webUrl.startsWith('http')) webUrl,
       '',
-      'Buka di Hub Reader: ${linkFor(location)}',
+      trp('Buka di Hub Reader: {location}', {'location': linkFor(location)}),
     ].join('\n');
     await SharePlus.instance.share(ShareParams(text: text, subject: title));
   }

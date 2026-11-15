@@ -147,7 +147,7 @@ class _MigrateScreenState extends ConsumerState<MigrateScreen> {
         try {
           t.items = await t.search(q).timeout(_timeout);
         } catch (e) {
-          t.error = e is TimeoutException ? 'Waktu habis' : novelError(e).title;
+          t.error = e is TimeoutException ? tr('Waktu habis') : novelError(e).title;
         }
         if (mounted && run == _run) setState(() {});
       }
@@ -212,9 +212,9 @@ class _MigrateScreenState extends ConsumerState<MigrateScreen> {
       Navigator.of(context).pop(); // dialog progres
       messenger.showSnackBar(SnackBar(
         content: Text([
-          'Dipindah ke ${target.name}',
-          if (result.markedRead > 0) '${result.markedRead} bab ditandai dibaca',
-          if (result.lastRead != null) 'lanjut di ${result.lastRead}',
+          trp('Dipindah ke {name}', {'name': target.name}),
+          if (result.markedRead > 0) trp('{markedRead} bab ditandai dibaca', {'markedRead': result.markedRead}),
+          if (result.lastRead != null) trp('lanjut di {lastRead}', {'lastRead': result.lastRead}),
         ].join(' · ')),
       ));
       context.pushReplacement(librarySourceInfo(ref, target.sourceId).detailLocation(pick.url));
@@ -294,7 +294,7 @@ class _MigrateScreenState extends ConsumerState<MigrateScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
             child: Text(
-              'Pilih judul yang sama di sumber lain untuk memindahkan "${widget.title}".',
+              trp('Pilih judul yang sama di sumber lain untuk memindahkan "{title}".', {'title': widget.title}),
               style: theme.textTheme.bodySmall,
             ),
           ),
@@ -303,7 +303,7 @@ class _MigrateScreenState extends ConsumerState<MigrateScreen> {
               ListTile(
                 dense: true,
                 title: Text(t.name, style: theme.textTheme.titleSmall),
-                subtitle: Text(t.loading ? 'mencari…' : (t.error ?? '${t.items!.length} hasil')),
+                subtitle: Text(t.loading ? tr('mencari…') : (t.error ?? trp('{n} hasil', {'n': t.items!.length}))),
                 trailing: t.loading
                     ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2))
                     : null,

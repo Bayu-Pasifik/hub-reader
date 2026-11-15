@@ -11,6 +11,7 @@ import 'app_settings_provider.dart';
 import 'novel_providers.dart';
 import 'source_library_providers.dart' show sourceProgressProvider;
 import 'source_providers.dart';
+import '../core/i18n/strings.dart';
 
 /// Di-override di main() setelah folder unduhan dibuka.
 final downloadStoreProvider = Provider<DownloadStore>(
@@ -183,7 +184,7 @@ class DownloadQueueNotifier extends Notifier<List<DownloadTask>> {
         return;
       }
       final source = ref.read(sourceProvider(task.sourceId));
-      if (source == null) throw SourceException(SourceErrorKind.unknown, detail: 'Sumber ${task.sourceId} tidak ada.');
+      if (source == null) throw SourceException(SourceErrorKind.unknown, detail: trp('Sumber {id} tidak ada.', {'id': task.sourceId}));
       final urls = await source.pages(task.chapter);
       current = current.copyWith(total: urls.length);
       _update(current);
@@ -239,7 +240,7 @@ class DownloadQueueNotifier extends Notifier<List<DownloadTask>> {
     _update(task.copyWith(status: DownloadStatus.downloading, done: 0, total: 1));
     final source = await ref.read(novelSourceProvider(pluginIdOf(task.sourceId)).future);
     final html = await source.chapter(task.chapter.url);
-    if (html.trim().isEmpty) throw const SourceException(SourceErrorKind.parse, detail: 'Isi bab kosong.');
+    if (html.trim().isEmpty) throw SourceException(SourceErrorKind.parse, detail: tr('Isi bab kosong.'));
     if (_cancelled.contains(task.key)) throw const _Cancelled();
     final dir = store.dirOf(relativeDir);
     await dir.create(recursive: true);

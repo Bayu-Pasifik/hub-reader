@@ -145,7 +145,7 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
               : Text(tr('Favorit')),
           actions: [
             IconButton(
-              tooltip: _searching ? 'Tutup pencarian' : 'Cari',
+              tooltip: _searching ? tr('Tutup pencarian') : tr('Cari'),
               icon: Icon(_searching ? Icons.close : Icons.search),
               onPressed: () => setState(() {
                 _searching = !_searching;
@@ -322,7 +322,7 @@ class _FavoriteTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final item = entry.item;
-    final subtitle = source.isNovel ? 'Novel · ${source.name}' : source.name;
+    final subtitle = source.isNovel ? '${tr('Novel')} · ${source.name}' : source.name;
 
     if (display == LibraryDisplay.list) {
       return ListTile(

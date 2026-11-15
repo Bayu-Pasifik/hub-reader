@@ -12,6 +12,7 @@ import '../html_utils.dart';
 import '../models.dart';
 import '../source.dart';
 import '../source_exception.dart';
+import '../../core/i18n/strings.dart';
 
 enum MangaCatalogLayout { grid, table, blogger }
 
@@ -170,7 +171,7 @@ class MangaCatalogSource extends HttpSource {
   Future<List<String>> pages(SourceChapter chapter) async {
     final res = await fetchHtml(Uri.parse(chapter.url));
     final pages = parsePages(res.document, res.url);
-    if (pages.isEmpty) throw const SourceException(SourceErrorKind.parse, detail: 'Gambar bab tidak ditemukan.');
+    if (pages.isEmpty) throw SourceException(SourceErrorKind.parse, detail: tr('Gambar bab tidak ditemukan.'));
     return pages;
   }
 

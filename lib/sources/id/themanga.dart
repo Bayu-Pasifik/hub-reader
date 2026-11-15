@@ -7,6 +7,7 @@ import '../html_utils.dart';
 import '../models.dart';
 import '../source.dart';
 import '../source_exception.dart';
+import '../../core/i18n/strings.dart';
 
 class TheMangaSource extends HttpSource {
   TheMangaSource({super.dio});
@@ -115,7 +116,7 @@ class TheMangaSource extends HttpSource {
 
   SourceMangaDetails parseDetails(Document doc, Uri mangaUrl) {
     final title = clean(doc.querySelector('.hero-title')?.text);
-    if (title.isEmpty) throw const SourceException(SourceErrorKind.parse, detail: 'Judul tidak ditemukan.');
+    if (title.isEmpty) throw SourceException(SourceErrorKind.parse, detail: tr('Judul tidak ditemukan.'));
     final genres = [
       for (final p in doc.querySelectorAll('.meta-pill-row .meta-pill'))
         if (clean(p.text).isNotEmpty) clean(p.text),
@@ -155,7 +156,7 @@ class TheMangaSource extends HttpSource {
       for (final img in res.document.querySelectorAll('img.page-img'))
         if (imgAttr(img, res.url) case final url?) url,
     ];
-    if (pages.isEmpty) throw const SourceException(SourceErrorKind.parse, detail: 'Gambar bab tidak ditemukan.');
+    if (pages.isEmpty) throw SourceException(SourceErrorKind.parse, detail: tr('Gambar bab tidak ditemukan.'));
     return pages;
   }
 }

@@ -14,6 +14,7 @@ import '../models.dart';
 import '../source.dart';
 import '../source_exception.dart';
 import 'madara.dart' show madaraStatus;
+import '../../core/i18n/strings.dart';
 
 /// Tema WordPress komik paling umum di situs Indonesia (29 situs id di
 /// keiyoushi). Situs baru cukup:
@@ -158,7 +159,7 @@ class MangaThemesiaSource extends HttpSource {
         : clean(element.querySelector('.tt, .bigor .tt, h2')?.text);
     return SourceManga(
       url: url,
-      title: title.isEmpty ? 'Tanpa judul' : title,
+      title: title.isEmpty ? tr('Tanpa judul') : title,
       thumbnailUrl: imgAttr(
         element.querySelector('img.ts-post-image') ?? element.querySelector('img'),
         pageUrl,
@@ -212,16 +213,16 @@ class MangaThemesiaSource extends HttpSource {
   SourceMangaDetails parseDetails(Document doc, Uri pageUrl) {
     final root = doc.querySelector(detailsSelector) ?? doc.body;
     if (root == null) {
-      throw const SourceException(SourceErrorKind.parse, detail: 'Halaman seri kosong.');
+      throw SourceException(SourceErrorKind.parse, detail: tr('Halaman seri kosong.'));
     }
 
     final title = clean(root.querySelector('.entry-title')?.text).isNotEmpty
         ? clean(root.querySelector('.entry-title')!.text)
         : clean(root.querySelectorAll('.ts-breadcrumb li').lastOrNull?.text);
     if (title.isEmpty) {
-      throw const SourceException(
+      throw SourceException(
         SourceErrorKind.parse,
-        detail: 'Judul seri tidak ditemukan; mungkin bukan halaman seri.',
+        detail: tr('Judul seri tidak ditemukan; mungkin bukan halaman seri.'),
       );
     }
 
@@ -245,7 +246,7 @@ class MangaThemesiaSource extends HttpSource {
           .where((n) => n.isNotEmpty)
           .map((n) => '- $n')
           .join('\n');
-      description = [if (description != null) description, 'Judul alternatif:\n$names'].join('\n\n');
+      description = [if (description != null) description, trp('Judul alternatif:\n{names}', {'names': names})].join('\n\n');
     }
 
     final genres = <String>{
@@ -301,7 +302,7 @@ class MangaThemesiaSource extends HttpSource {
       final name = label.isNotEmpty ? label : clean(a!.text);
       chapters.add(SourceChapter(
         url: url,
-        name: name.isEmpty ? 'Bab' : name,
+        name: name.isEmpty ? tr('Bab') : name,
         number: double.tryParse(li.attributes['data-num'] ?? '') ?? parseChapterNumber(name),
         uploadedAt: parseLooseDate(li.querySelector('.chapterdate')?.text),
       ));
@@ -316,9 +317,9 @@ class MangaThemesiaSource extends HttpSource {
     final res = await fetchHtml(Uri.parse(chapter.url));
     final pages = parsePages(res.document, res.body, res.url);
     if (pages.isEmpty) {
-      throw const SourceException(
+      throw SourceException(
         SourceErrorKind.parse,
-        detail: 'Gambar bab tidak ditemukan. Bab mungkin terkunci atau format situs berubah.',
+        detail: tr('Gambar bab tidak ditemukan. Bab mungkin terkunci atau format situs berubah.'),
       );
     }
     return pages;

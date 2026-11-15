@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core_providers.dart';
+import '../core/i18n/strings.dart';
 
 enum ReaderMode {
   /// Gulir vertikal tanpa jeda (manhwa/webtoon).
@@ -14,9 +15,11 @@ enum ReaderMode {
   /// Per halaman, geser ke kanan untuk lanjut (manga Jepang).
   pagedRtl('Per halaman (kanan → kiri)');
 
-  const ReaderMode(this.label);
+  const ReaderMode(this._label);
 
-  final String label;
+  final String _label;
+
+  String get label => tr(_label);
 
   bool get isPaged => this != webtoon;
 
@@ -54,9 +57,11 @@ enum TapZoneLayout {
   /// Ketuk tidak memindah halaman (hanya geser).
   off('Mati (hanya geser)', 0);
 
-  const TapZoneLayout(this.label, this.zone);
+  const TapZoneLayout(this._label, this.zone);
 
-  final String label;
+  final String _label;
+
+  String get label => tr(_label);
 
   /// Lebar tiap zona sebagai pecahan lebar layar.
   final double zone;
@@ -144,9 +149,11 @@ enum PageTransitionStyle {
   zoom('Zoom'),
   flip('Balik halaman');
 
-  const PageTransitionStyle(this.label);
+  const PageTransitionStyle(this._label);
 
-  final String label;
+  final String _label;
+
+  String get label => tr(_label);
 
   static PageTransitionStyle? byName(String? name) => values.where((m) => m.name == name).firstOrNull;
 }

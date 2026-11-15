@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../novels/plugin_repository.dart';
 import 'backup.dart';
+import '../../core/i18n/strings.dart';
 
 /// Pengaturan cadangan otomatis.
 class AutoBackupConfig {
@@ -31,10 +32,10 @@ class AutoBackupConfig {
 
   static String label(int hours) => switch (hours) {
         0 => 'Mati',
-        24 => 'Tiap hari',
-        72 => 'Tiap 3 hari',
-        168 => 'Tiap minggu',
-        _ => 'Tiap $hours jam',
+        24 => tr('Tiap hari'),
+        72 => tr('Tiap 3 hari'),
+        168 => tr('Tiap minggu'),
+        _ => trp('Tiap {hours} jam', {'hours': hours}),
       };
 
   static const _hoursKey = 'backup.auto.hours.v1';

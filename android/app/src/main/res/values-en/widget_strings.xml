@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_label">CONTINUE READING</string>
+    <string name="widget_description">Continue the chapter you read last</string>
+    <string name="widget_empty_title">Nothing read yet</string>
+    <string name="widget_empty_subtitle">Open Hub Reader to get started</string>
+</resources>

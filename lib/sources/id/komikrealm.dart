@@ -13,6 +13,7 @@ import '../html_utils.dart';
 import '../models.dart';
 import '../source.dart';
 import '../source_exception.dart';
+import '../../core/i18n/strings.dart';
 
 class KomikRealmSource extends HttpSource {
   KomikRealmSource({super.dio});
@@ -55,7 +56,7 @@ class KomikRealmSource extends HttpSource {
     for (final loader in asMap(decoded['loaders']).values) {
       if (predicate(loader)) return loader;
     }
-    throw const SourceException(SourceErrorKind.parse, detail: 'Data halaman tidak ditemukan.');
+    throw SourceException(SourceErrorKind.parse, detail: tr('Data halaman tidak ditemukan.'));
   }
 
   static String imageUrl(String url) {
@@ -98,7 +99,7 @@ class KomikRealmSource extends HttpSource {
     try {
       return raw == null ? null : jsonDecode(raw);
     } on FormatException {
-      throw const SourceException(SourceErrorKind.parse, detail: 'Respons tidak dikenali.');
+      throw SourceException(SourceErrorKind.parse, detail: tr('Respons tidak dikenali.'));
     }
   }
 
@@ -136,7 +137,7 @@ class KomikRealmSource extends HttpSource {
       artist: names['artist']?.join(', '),
       description: [
         if (synopsis != null && synopsis.isNotEmpty) synopsis,
-        if (alter != null && alter.isNotEmpty) 'Judul alternatif: $alter',
+        if (alter != null && alter.isNotEmpty) trp('Judul alternatif: {alter}', {'alter': alter}),
       ].join('\n\n'),
       genres: [if (asString(s['type']) case final t?) t, ...?names['genre']],
       status: switch (asString(s['status'])) {
@@ -165,7 +166,7 @@ class KomikRealmSource extends HttpSource {
   Future<List<String>> pages(SourceChapter chapter) async {
     final route = asMap(await _routeData(chapter.url, (l) => l is Map && l.containsKey('data')));
     final chapters = asList(asMap(route['data'])['chapters']);
-    if (chapters.isEmpty) throw const SourceException(SourceErrorKind.parse, detail: 'Gambar tidak ditemukan.');
+    if (chapters.isEmpty) throw SourceException(SourceErrorKind.parse, detail: tr('Gambar tidak ditemukan.'));
     final images = asMap(asMap(chapters.first)['images']);
     final keys = images.keys.toList()..sort((a, b) => (int.tryParse(a) ?? 0).compareTo(int.tryParse(b) ?? 0));
     return [

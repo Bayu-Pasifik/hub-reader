@@ -13,6 +13,7 @@ import 'core_providers.dart';
 import 'download_providers.dart';
 import 'source_health_provider.dart';
 import 'source_settings_provider.dart';
+import '../core/i18n/strings.dart';
 
 /// Registry dibuat ulang saat domain sumber diubah di pengaturan, jadi
 /// semua provider turunan (daftar, detail, halaman) ikut memuat ulang.
@@ -45,8 +46,8 @@ class SourceCatalogReposNotifier extends Notifier<List<String>> {
   /// Error teks bila gagal, null bila berhasil.
   Future<String?> add(String input) async {
     final url = normalizeRepoUrl(input);
-    if (url == null) return 'Bukan URL http(s) yang valid';
-    if (state.contains(url)) return 'Repo sudah ada';
+    if (url == null) return tr('Bukan URL http(s) yang valid');
+    if (state.contains(url)) return tr('Repo sudah ada');
     await _save([...state, url]);
     return null;
   }
@@ -185,7 +186,7 @@ final sourceProvider = Provider.family<MangaSource?, String>(
 );
 
 SourceException _missing(String id) =>
-    SourceException(SourceErrorKind.unknown, detail: 'Sumber "$id" tidak terdaftar.');
+    SourceException(SourceErrorKind.unknown, detail: trp('Sumber "{id}" tidak terdaftar.', {'id': id}));
 
 // ------------------------------------------------------------------ daftar
 
@@ -280,7 +281,7 @@ class SourceListNotifier extends AutoDisposeFamilyNotifier<SourceListState, Sour
         ref.read(sourceHealthProvider.notifier).record(
               arg.sourceId,
               result.items.isEmpty
-                  ? SourceHealth(HealthStatus.broken, DateTime.now(), detail: 'Daftar kosong')
+                  ? SourceHealth(HealthStatus.broken, DateTime.now(), detail: tr('Daftar kosong'))
                   : SourceHealth(HealthStatus.ok, DateTime.now()),
             );
       }

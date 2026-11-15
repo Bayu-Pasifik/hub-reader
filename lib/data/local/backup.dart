@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/utils/json.dart';
+import '../../core/i18n/strings.dart';
 
 /// Cadangan data aplikasi: semua SharedPreferences (favorit, riwayat,
 /// progres baca, kategori, pengaturan) + daftar pembaruan favorit.
@@ -113,7 +114,7 @@ class AppBackup {
   /// perangkat tetap dipakai bila cadangan tidak menyertakannya.
   static Future<void> restore(SharedPreferences prefs, Object? decoded) async {
     final json = asMap(decoded);
-    if (json['format'] != format) throw const FormatException('Bukan file cadangan Hub Reader');
+    if (json['format'] != format) throw FormatException(tr('Bukan file cadangan Hub Reader'));
     final withSecrets = json['secrets'] == true;
     for (final key in prefs.getKeys().toList()) {
       if (_neverKeys.contains(key) || (!withSecrets && isSecretKey(key))) continue;

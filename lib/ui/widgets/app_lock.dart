@@ -66,7 +66,7 @@ class _AppLockGateState extends ConsumerState<AppLockGate> with WidgetsBindingOb
   Future<void> _unlock() async {
     if (_authenticating) return;
     _authenticating = true;
-    final ok = await AppLockGate.authenticate('Buka Hub Reader');
+    final ok = await AppLockGate.authenticate(tr('Buka Hub Reader'));
     _authenticating = false;
     if (ok && mounted) setState(() => _locked = false);
   }

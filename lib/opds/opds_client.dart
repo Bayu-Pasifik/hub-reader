@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:xml/xml.dart';
+import '../core/i18n/strings.dart';
 
 /// Server OPDS milik pengguna (Komga, Kavita, Calibre-Web, dll).
 class OpdsServer {
@@ -129,7 +130,7 @@ class OpdsClient {
 
   static void _guard(String url) {
     if (!OpdsServer.isCleartextAllowed(Uri.parse(url))) {
-      throw const FormatException('HTTP tanpa enkripsi hanya boleh untuk jaringan lokal. Pakai HTTPS.');
+      throw FormatException(tr('HTTP tanpa enkripsi hanya boleh untuk jaringan lokal. Pakai HTTPS.'));
     }
   }
 
@@ -201,7 +202,7 @@ class OpdsClient {
         }
       }
       entries.add(OpdsEntry(
-        title: text(e, 'title') ?? '(tanpa judul)',
+        title: text(e, 'title') ?? tr('(tanpa judul)'),
         author: e.getElement('author')?.getElement('name')?.innerText.trim(),
         summary: text(e, 'summary') ?? text(e, 'content'),
         thumbnail: thumb,

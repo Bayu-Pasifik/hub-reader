@@ -119,21 +119,21 @@ class StatsScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
         children: [
-          heading('Waktu baca'),
+          heading(tr('Waktu baca')),
           grid([
-            tile('Hari ini', duration(stats.secondsOn(now)), icon: Icons.today),
-            tile('7 hari terakhir', duration(stats.secondsLast(7, now: now)), icon: Icons.date_range),
-            tile('Total', duration(stats.totalSeconds), icon: Icons.timer_outlined),
-            tile('Rentetan', '${stats.streak(now: now)} hari', icon: Icons.local_fire_department_outlined),
+            tile(tr('Hari ini'), duration(stats.secondsOn(now)), icon: Icons.today),
+            tile(tr('7 hari terakhir'), duration(stats.secondsLast(7, now: now)), icon: Icons.date_range),
+            tile(tr('Total'), duration(stats.totalSeconds), icon: Icons.timer_outlined),
+            tile(tr('Rentetan'), (stats.streak(now: now) == 1 ? tr('1 hari') : trp('{now} hari', {'now': stats.streak(now: now)})), icon: Icons.local_fire_department_outlined),
           ]),
           const SizedBox(height: 16),
           _DailyChart(stats: stats, now: now),
-          heading('Bab'),
+          heading(tr('Bab')),
           grid([
-            tile('Selesai dibaca', '${stats.totalComicChapters + stats.totalNovelChapters}',
+            tile(tr('Selesai dibaca'), '${stats.totalComicChapters + stats.totalNovelChapters}',
                 icon: Icons.check_circle_outline),
-            tile('Ditandai dibaca', '${comicDone + novelDone}', icon: Icons.done_all),
-            tile('Komik', '$comicDone', icon: Icons.photo_library_outlined),
+            tile(tr('Ditandai dibaca'), '${comicDone + novelDone}', icon: Icons.done_all),
+            tile(tr('Komik'), '$comicDone', icon: Icons.photo_library_outlined),
             tile('Novel', '$novelDone', icon: Icons.menu_book_outlined),
           ]),
           Padding(
@@ -143,15 +143,15 @@ class StatsScreen extends ConsumerWidget {
               style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
             ),
           ),
-          heading('Pustaka'),
+          heading(tr('Pustaka')),
           grid([
-            tile('Favorit komik', '${favorites.length - novelFavorites}', icon: Icons.favorite_border),
-            tile('Favorit novel', '$novelFavorites', icon: Icons.favorite_border),
-            tile('Seri dibuka', '$seriesStarted', icon: Icons.auto_stories_outlined),
-            tile('Hari membaca', '${stats.activeDays}', icon: Icons.event_available_outlined),
+            tile(tr('Favorit komik'), '${favorites.length - novelFavorites}', icon: Icons.favorite_border),
+            tile(tr('Favorit novel'), '$novelFavorites', icon: Icons.favorite_border),
+            tile(tr('Seri dibuka'), '$seriesStarted', icon: Icons.auto_stories_outlined),
+            tile(tr('Hari membaca'), '${stats.activeDays}', icon: Icons.event_available_outlined),
           ]),
           if (top.isNotEmpty) ...[
-            heading('Paling banyak dibaca'),
+            heading(tr('Paling banyak dibaca')),
             Card.outlined(
               margin: EdgeInsets.zero,
               child: Column(
@@ -161,7 +161,7 @@ class StatsScreen extends ConsumerWidget {
                       dense: true,
                       leading: CircleAvatar(radius: 14, child: Text('${i + 1}')),
                       title: Text(titles[e.key]!, maxLines: 1, overflow: TextOverflow.ellipsis),
-                      subtitle: Text(isNovelSourceId(e.key.split('|').first) ? 'Novel' : 'Komik'),
+                      subtitle: Text(isNovelSourceId(e.key.split('|').first) ? 'Novel' : tr('Komik')),
                       trailing: Text(trp('{n} bab', {'n': e.value}), style: text.labelLarge),
                     ),
                 ],
@@ -183,6 +183,7 @@ class _DailyChart extends StatelessWidget {
 
   static const _days = 14;
   static const _weekdays = ['S', 'S', 'R', 'K', 'J', 'S', 'M'];
+  static const _weekdaysEn = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
   @override
   Widget build(BuildContext context) {
@@ -232,7 +233,7 @@ class _DailyChart extends StatelessWidget {
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                _weekdays[d.weekday - 1],
+                                (currentLanguage == AppLanguage.en ? _weekdaysEn : _weekdays)[d.weekday - 1],
                                 style: text.labelSmall?.copyWith(
                                   color: d == today ? scheme.primary : scheme.onSurfaceVariant,
                                   fontWeight: d == today ? FontWeight.w700 : null,

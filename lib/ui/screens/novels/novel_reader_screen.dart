@@ -381,7 +381,7 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
         ...state.contextMenuButtonItems,
         if (text.isNotEmpty)
           ContextMenuButtonItem(
-            label: alreadyHighlighted ? 'Hapus sorot' : 'Sorot',
+            label: alreadyHighlighted ? tr('Hapus sorot') : tr('Sorot'),
             onPressed: () {
               final n = ref.read(novelHighlightsProvider.notifier);
               alreadyHighlighted ? n.remove(key, text) : n.add(key, text);
@@ -433,7 +433,7 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
     final index = chapters.indexWhere((c) => c.path == _chapterPath);
     final chapter = index >= 0
         ? chapters[index]
-        : NovelChapter(path: _chapterPath, name: ref.read(sourceLastReadProvider(_libKey))?.chapterName ?? 'Bab');
+        : NovelChapter(path: _chapterPath, name: ref.read(sourceLastReadProvider(_libKey))?.chapterName ?? tr('Bab'));
     if (chaptersAsync.hasValue) _record(chapter);
     final hasPrev = index > 0 || (index == 0 && _page > 1);
     final hasNext = (index >= 0 && index < chapters.length - 1) || (index == chapters.length - 1 && _page < totalPages);
@@ -630,8 +630,8 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
                         ),
                         IconButton(
                           tooltip: ref.watch(seriesBookmarksProvider(_libKey)).contains(_chapterPath)
-                              ? 'Hapus bookmark'
-                              : 'Bookmark bab ini',
+                              ? tr('Hapus bookmark')
+                              : tr('Bookmark bab ini'),
                           icon: Icon(ref.watch(seriesBookmarksProvider(_libKey)).contains(_chapterPath)
                               ? Icons.bookmark
                               : Icons.bookmark_border),
@@ -643,7 +643,7 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
                           onPressed: content.hasValue ? () => _tts.active ? _tts.stop() : _startTts() : null,
                         ),
                         IconButton(
-                          tooltip: _autoScroll ? 'Hentikan gulir otomatis' : 'Gulir otomatis',
+                          tooltip: _autoScroll ? tr('Hentikan gulir otomatis') : tr('Gulir otomatis'),
                           icon: Icon(_autoScroll ? Icons.pause_circle_outline : Icons.keyboard_double_arrow_down),
                           onPressed: content.hasValue ? _toggleAutoScroll : null,
                         ),
@@ -686,7 +686,7 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
                             Expanded(
                               child: Text(
                                 index >= 0
-                                    ? 'Bab ${index + 1} dari ${chapters.length}${totalPages > 1 ? ' · hal. $_page/$totalPages' : ''}'
+                                    ? trp('Bab {n} dari {total}', {'n': index + 1, 'total': chapters.length}) + (totalPages > 1 ? ' · ' + trp('hal. {p}/{total}', {'p': _page, 'total': totalPages}) : '')
                                     : '',
                                 textAlign: TextAlign.center,
                                 style: Theme.of(context).textTheme.bodySmall,
@@ -716,7 +716,7 @@ extension on _NovelReaderScreenState {
           IconButton(
               tooltip: tr('Paragraf sebelumnya'), icon: const Icon(Icons.fast_rewind), onPressed: () => _tts.skip(-1)),
           IconButton.filled(
-            tooltip: _tts.playing ? 'Jeda' : 'Lanjutkan',
+            tooltip: _tts.playing ? tr('Jeda') : 'Lanjutkan',
             iconSize: 32,
             icon: Icon(_tts.playing ? Icons.pause : Icons.play_arrow),
             onPressed: () => _tts.playing ? _tts.pause() : _tts.resume(),
@@ -770,17 +770,17 @@ class _ReaderSettingsSheet extends ConsumerWidget {
             Wrap(spacing: 6, runSpacing: 6, children: [
               for (final e in themes.entries)
                 ChoiceChip(
-                  label: Text(e.value),
+                  label: Text(tr(e.value)),
                   selected: s.theme == e.key,
                   onSelected: (_) => n.update((x) => x.copyWith(theme: e.key)),
                 ),
             ]),
             const SizedBox(height: 8),
-            _slider(context, 'Ukuran huruf', s.fontSize, 12, 32, 20, (v) => n.update((x) => x.copyWith(fontSize: v)),
+            _slider(context, tr('Ukuran huruf'), s.fontSize, 12, 32, 20, (v) => n.update((x) => x.copyWith(fontSize: v)),
                 s.fontSize.toStringAsFixed(0)),
-            _slider(context, 'Jarak baris', s.lineHeight, 1.1, 2.4, 13,
+            _slider(context, tr('Jarak baris'), s.lineHeight, 1.1, 2.4, 13,
                 (v) => n.update((x) => x.copyWith(lineHeight: v)), s.lineHeight.toStringAsFixed(1)),
-            _slider(context, 'Margin', s.padding, 6, 40, 17, (v) => n.update((x) => x.copyWith(padding: v)),
+            _slider(context, tr('Margin'), s.padding, 6, 40, 17, (v) => n.update((x) => x.copyWith(padding: v)),
                 s.padding.toStringAsFixed(0)),
             Row(
               children: [
@@ -797,7 +797,7 @@ class _ReaderSettingsSheet extends ConsumerWidget {
                 ),
               ],
             ),
-            _slider(context, 'Jarak paragraf', s.paragraphSpacing, 0, 2, 20,
+            _slider(context, tr('Jarak paragraf'), s.paragraphSpacing, 0, 2, 20,
                 (v) => n.update((x) => x.copyWith(paragraphSpacing: v)), s.paragraphSpacing.toStringAsFixed(1)),
             Row(
               children: [
@@ -806,7 +806,7 @@ class _ReaderSettingsSheet extends ConsumerWidget {
                   child: Wrap(spacing: 6, runSpacing: 6, children: [
                     ActionChip(
                       avatar: const Icon(Icons.upload_file, size: 18),
-                      label: Text(s.customFontPath == null ? 'Impor TTF/OTF' : _fileName(s.customFontPath!)),
+                      label: Text(s.customFontPath == null ? tr('Impor TTF/OTF') : _fileName(s.customFontPath!)),
                       onPressed: () => _importFont(context, n),
                     ),
                     if (s.customFontPath != null)
@@ -836,7 +836,7 @@ class _ReaderSettingsSheet extends ConsumerWidget {
                       NovelAlign.end: 'Kanan',
                     }.entries)
                       ChoiceChip(
-                        label: Text(e.value),
+                        label: Text(tr(e.value)),
                         selected: s.align == e.key,
                         onSelected: (_) => n.update((x) => x.copyWith(align: e.key)),
                       ),
@@ -844,8 +844,8 @@ class _ReaderSettingsSheet extends ConsumerWidget {
                 ),
               ],
             ),
-            _colorRow(context, 'Warna latar', s.customBg, _bgSwatches, (c) => n.update((x) => x.copyWith(customBg: c))),
-            _colorRow(context, 'Warna teks', s.customFg, _fgSwatches, (c) => n.update((x) => x.copyWith(customFg: c))),
+            _colorRow(context, tr('Warna latar'), s.customBg, _bgSwatches, (c) => n.update((x) => x.copyWith(customBg: c))),
+            _colorRow(context, tr('Warna teks'), s.customFg, _fgSwatches, (c) => n.update((x) => x.copyWith(customFg: c))),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
               title: Text(tr('Tarik di akhir bab untuk lanjut')),
@@ -865,13 +865,13 @@ class _ReaderSettingsSheet extends ConsumerWidget {
               value: s.keepScreenOn,
               onChanged: (v) => n.update((x) => x.copyWith(keepScreenOn: v)),
             ),
-            _slider(context, 'Gulir otomatis', s.autoScrollSpeed, 10, 200, 19,
+            _slider(context, tr('Gulir otomatis'), s.autoScrollSpeed, 10, 200, 19,
                 (v) => n.update((x) => x.copyWith(autoScrollSpeed: v)), s.autoScrollSpeed.toStringAsFixed(0)),
             const Divider(),
             Text(tr('Suara (TTS)'), style: Theme.of(context).textTheme.titleSmall),
             _slider(context, 'Kecepatan', s.ttsRate, 0.1, 1.0, 18, (v) => n.update((x) => x.copyWith(ttsRate: v)),
                 '${(s.ttsRate * 2).toStringAsFixed(1)}x'),
-            _slider(context, 'Nada', s.ttsPitch, 0.5, 2.0, 15, (v) => n.update((x) => x.copyWith(ttsPitch: v)),
+            _slider(context, tr('Nada'), s.ttsPitch, 0.5, 2.0, 15, (v) => n.update((x) => x.copyWith(ttsPitch: v)),
                 s.ttsPitch.toStringAsFixed(1)),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
@@ -898,7 +898,7 @@ class _ReaderSettingsSheet extends ConsumerWidget {
     final messenger = ScaffoldMessenger.of(context);
     try {
       final picked = await FilePicker.pickFiles(
-        dialogTitle: 'Pilih font (TTF/OTF)',
+        dialogTitle: tr('Pilih font (TTF/OTF)'),
         type: FileType.custom,
         allowedExtensions: const ['ttf', 'otf'],
       );
@@ -1030,7 +1030,7 @@ class _LookupSheetState extends State<_LookupSheet> {
                       ],
                       if (r.definitions.isNotEmpty) ...[
                         Text(
-                          r.phonetic == null ? 'Definisi (Inggris)' : 'Definisi (Inggris) ${r.phonetic}',
+                          r.phonetic == null ? tr('Definisi (Inggris)') : '${tr('Definisi (Inggris)')} ${r.phonetic}',
                           style: theme.textTheme.labelLarge,
                         ),
                         const SizedBox(height: 4),

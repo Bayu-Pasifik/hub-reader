@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/i18n/strings.dart';
 import '../core/net/doh.dart';
 import 'core_providers.dart';
+import '../ui/app_shortcuts.dart';
+import 'home_widget_sync.dart';
 
 /// Warna utama aplikasi.
 enum AppAccent {
@@ -15,9 +17,11 @@ enum AppAccent {
   purple('Ungu', Colors.deepPurple),
   blueGrey('Abu biru', Colors.blueGrey);
 
-  const AppAccent(this.label, this.color);
+  const AppAccent(this._label, this.color);
 
-  final String label;
+  final String _label;
+
+  String get label => tr(_label);
   final Color color;
 }
 
@@ -116,7 +120,11 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
     final before = state.language;
     state = change(state);
     currentLanguage = state.language;
-    if (state.language != before) rebuildAllWidgets();
+    if (state.language != before) {
+      rebuildAllWidgets();
+      HomeWidgetSync.refreshLabels();
+      AppShortcuts.refresh();
+    }
     final p = ref.read(sharedPreferencesProvider);
     await p.setString(_theme, state.themeMode.name);
     await p.setBool(_black, state.pureBlack);

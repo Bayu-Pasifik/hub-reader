@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/utils/json.dart';
+import '../core/i18n/strings.dart';
 
 /// Status baca di tracker (dipetakan ke istilah tiap layanan).
 enum TrackStatus {
@@ -15,9 +16,11 @@ enum TrackStatus {
   planning('Rencana'),
   rereading('Baca ulang');
 
-  const TrackStatus(this.label);
+  const TrackStatus(this._label);
 
-  final String label;
+  final String _label;
+
+  String get label => tr(_label);
 }
 
 /// Hasil pencarian di tracker.
@@ -109,10 +112,10 @@ abstract class Tracker {
   String get usernameLabel => 'Username';
 
   Future<void> loginWithPassword(String username, String password) =>
-      throw UnsupportedError('$name tidak memakai login password');
+      throw UnsupportedError(trp('{name} tidak memakai login password', {'name': name}));
 
   /// URL yang dibuka di WebView untuk login (tracker OAuth).
-  Uri authorizeUrl() => throw UnsupportedError('$name tidak memakai OAuth');
+  Uri authorizeUrl() => throw UnsupportedError(trp('{name} tidak memakai OAuth', {'name': name}));
 
   /// Dipanggil untuk setiap URL yang dibuka WebView; true bila login selesai
   /// (token tersimpan) dari URL ini.
@@ -182,9 +185,9 @@ class AniListTracker extends Tracker {
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
         await logout();
-        throw const TrackerException('Sesi AniList berakhir, login lagi.');
+        throw TrackerException(tr('Sesi AniList berakhir, login lagi.'));
       }
-      throw TrackerException('AniList tidak bisa dihubungi (${e.response?.statusCode ?? e.type.name})');
+      throw TrackerException(trp('{name} tidak bisa dihubungi ({code})', {'name': 'AniList', 'code': e.response?.statusCode ?? e.type.name}));
     }
   }
 
@@ -320,12 +323,12 @@ class MalTracker extends Tracker {
       );
       final body = asMap(res.data is String ? jsonDecode(res.data as String) : res.data);
       final access = asString(body['access_token']);
-      if (access == null) throw const TrackerException('Login MyAnimeList gagal');
+      if (access == null) throw TrackerException(tr('Login MyAnimeList gagal'));
       await prefs.setString('tracker.mal.token', access);
       final refresh = asString(body['refresh_token']);
       if (refresh != null) await prefs.setString('tracker.mal.refresh', refresh);
     } on DioException catch (e) {
-      throw TrackerException('Login MyAnimeList gagal (${e.response?.statusCode ?? e.type.name})');
+      throw TrackerException(trp('Login {name} gagal ({code})', {'name': 'MyAnimeList', 'code': e.response?.statusCode ?? e.type.name}));
     }
   }
 
@@ -343,10 +346,10 @@ class MalTracker extends Tracker {
           return (await send(headers())).data;
         } catch (_) {
           await logout();
-          throw const TrackerException('Sesi MyAnimeList berakhir, login lagi.');
+          throw TrackerException(tr('Sesi MyAnimeList berakhir, login lagi.'));
         }
       }
-      throw TrackerException('MyAnimeList tidak bisa dihubungi (${e.response?.statusCode ?? e.type.name})');
+      throw TrackerException(trp('{name} tidak bisa dihubungi ({code})', {'name': 'MyAnimeList', 'code': e.response?.statusCode ?? e.type.name}));
     }
   }
 

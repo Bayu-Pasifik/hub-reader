@@ -16,6 +16,7 @@ import '../html_utils.dart';
 import '../models.dart';
 import '../source.dart';
 import '../source_exception.dart';
+import '../../core/i18n/strings.dart';
 
 /// Cara situs Madara menyajikan daftar bab (sama dengan enum di Kotlin).
 enum MadaraChapterMode { mangaPage, adminAjax, mangaAjax, mangaAjaxPaginated, mangaAjaxQuery }
@@ -226,7 +227,7 @@ class MadaraSource extends HttpSource {
       if (url == null) continue;
       final manga = SourceManga(
         url: url,
-        title: clean(link!.text).isEmpty ? 'Tanpa judul' : clean(link.text),
+        title: clean(link!.text).isEmpty ? tr('Tanpa judul') : clean(link.text),
         thumbnailUrl: madaraImage(element.querySelector('img'), pageUrl),
       );
       if (!items.contains(manga)) items.add(manga);
@@ -245,7 +246,7 @@ class MadaraSource extends HttpSource {
         }
         final manga = SourceManga(
           url: url,
-          title: clean(link.text).isEmpty ? (link.attributes['title'] ?? 'Tanpa judul') : clean(link.text),
+          title: clean(link.text).isEmpty ? (link.attributes['title'] ?? tr('Tanpa judul')) : clean(link.text),
           thumbnailUrl: madaraImage(img, pageUrl),
         );
         if (!items.contains(manga)) items.add(manga);
@@ -359,8 +360,8 @@ class MadaraSource extends HttpSource {
     final requested = Uri.parse(mangaUrl);
     final res = await fetchHtml(requested);
     if (res.url.path.contains('wp-login.php')) {
-      throw const SourceException(SourceErrorKind.parse,
-          detail: 'Situs ini wajib login untuk membuka seri. Login lewat "Buka di WebView".');
+      throw SourceException(SourceErrorKind.parse,
+          detail: tr('Situs ini wajib login untuk membuka seri. Login lewat "Buka di WebView".'));
     }
     // Dialihkan ke beranda: seri dihapus/pindah (sering terjadi di situs satu judul).
     if (res.url.path.replaceAll('/', '').isEmpty && requested.path.replaceAll('/', '').isNotEmpty) {
@@ -437,7 +438,7 @@ class MadaraSource extends HttpSource {
     // Tema turunan (mis. Toonizy, ManhwaToon) memindah judul; og:title tetap ada.
     if (title.isEmpty) title = _ogTitle(doc);
     if (title.isEmpty) {
-      throw const SourceException(SourceErrorKind.parse, detail: 'Judul seri tidak ditemukan.');
+      throw SourceException(SourceErrorKind.parse, detail: tr('Judul seri tidak ditemukan.'));
     }
 
     final descEl = _first(doc, sel('mangaDetailsSelectorDescription')) ?? doc.querySelector(
@@ -449,7 +450,7 @@ class MadaraSource extends HttpSource {
     var description = paragraphs.isNotEmpty ? paragraphs.join('\n\n') : nonPlaceholder(descEl?.text);
     final alt = _infoItem(doc, const ['Alt']);
     if (alt != null && !_updating.hasMatch(alt)) {
-      description = [if (description != null) description, 'Judul alternatif: $alt'].join('\n\n');
+      description = [if (description != null) description, trp('Judul alternatif: {alt}', {'alt': alt})].join('\n\n');
     }
 
     final genreSelector = [sel('mangaDetailsSelectorGenre'), sel('mangaDetailsSelectorTag')].nonNulls.join(', ');
@@ -597,13 +598,13 @@ class MadaraSource extends HttpSource {
       res = await fetchHtml(url.replace(queryParameters: {...url.queryParameters, 'style': 'list'}));
     }
     if (res.document.querySelector('.content-blocked.login-required') != null) {
-      throw const SourceException(SourceErrorKind.parse,
-          detail: 'Situs ini wajib login (member) untuk membaca bab. Login lewat "Buka di WebView".');
+      throw SourceException(SourceErrorKind.parse,
+          detail: tr('Situs ini wajib login (member) untuk membaca bab. Login lewat "Buka di WebView".'));
     }
     final protector = res.document.querySelector('#chapter-protector-data');
     final pages = protector != null ? decryptProtectedPages(protector) : parsePages(res.document, res.url);
     if (pages.isEmpty) {
-      throw const SourceException(SourceErrorKind.parse, detail: 'Gambar bab tidak ditemukan.');
+      throw SourceException(SourceErrorKind.parse, detail: tr('Gambar bab tidak ditemukan.'));
     }
     return pages;
   }
@@ -629,7 +630,7 @@ class MadaraSource extends HttpSource {
       // Isinya string JSON yang membungkus array JSON.
       return [for (final url in asList(jsonDecode(jsonDecode(plain) as String))) '$url'];
     } catch (_) {
-      throw const SourceException(SourceErrorKind.parse, detail: 'Gagal mendekripsi gambar bab (chapter protector).');
+      throw SourceException(SourceErrorKind.parse, detail: tr('Gagal mendekripsi gambar bab (chapter protector).'));
     }
   }
 

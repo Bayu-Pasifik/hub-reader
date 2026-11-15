@@ -6,6 +6,7 @@ import '../sources/models.dart';
 import '../sources/source_exception.dart';
 import 'novel_providers.dart';
 import 'source_providers.dart';
+import '../core/i18n/strings.dart';
 
 /// Bab satu seri (komik atau novel) dalam bentuk seragam.
 typedef LibraryChapter = ({String url, String name, double? number});
@@ -59,7 +60,7 @@ Future<({List<LibraryChapter> chapters, bool completed})> fetchLibrarySeries(
     );
   }
   final source = read(sourceProvider(item.sourceId));
-  if (source == null) throw SourceException(SourceErrorKind.unknown, detail: 'Sumber ${item.sourceId} tidak ada.');
+  if (source == null) throw SourceException(SourceErrorKind.unknown, detail: trp('Sumber {id} tidak ada.', {'id': item.sourceId}));
   final details = await source.details(item.url);
   return (
     chapters: [

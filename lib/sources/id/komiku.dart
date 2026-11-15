@@ -7,6 +7,7 @@ import '../html_utils.dart';
 import '../models.dart';
 import '../source.dart';
 import '../source_exception.dart';
+import '../../core/i18n/strings.dart';
 
 /// Komiku: daftar dari api.komiku.org (HTML), detail & bab dari komiku.org.
 class KomikuSource extends HttpSource {
@@ -235,14 +236,14 @@ class KomikuSource extends HttpSource {
         ? clean(doc.querySelector('#Judul h1, h1')!.text)
         : clean(doc.querySelector('meta[property="og:title"]')?.attributes['content']);
     if (title.isEmpty) {
-      throw const SourceException(SourceErrorKind.parse, detail: 'Judul seri tidak ditemukan.');
+      throw SourceException(SourceErrorKind.parse, detail: tr('Judul seri tidak ditemukan.'));
     }
 
     final synopsis = nonPlaceholder(doc.querySelector('#Sinopsis > p, p.desc[itemprop=description]')?.text);
     final alt = _info(doc, ['Judul Indonesia', 'Judul Alternatif']);
     final description = [
       if (synopsis != null) synopsis,
-      if (alt != null) 'Judul alternatif: $alt',
+      if (alt != null) trp('Judul alternatif: {alt}', {'alt': alt}),
     ].join('\n\n');
 
     return SourceMangaDetails(
@@ -295,7 +296,7 @@ class KomikuSource extends HttpSource {
         .whereType<String>()
         .toList();
     if (pages.isEmpty) {
-      throw const SourceException(SourceErrorKind.parse, detail: 'Gambar bab tidak ditemukan.');
+      throw SourceException(SourceErrorKind.parse, detail: tr('Gambar bab tidak ditemukan.'));
     }
     return pages;
   }

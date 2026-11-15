@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 
 import '../core/utils/json.dart';
 import 'novel_models.dart';
+import '../core/i18n/strings.dart';
 
 /// Hasil penggabungan manifest semua repo + plugin yatim di perangkat.
 typedef PluginCatalog = ({List<NovelPluginInfo> plugins, DateTime savedAt, Object? error});
@@ -110,7 +111,7 @@ class NovelPluginRepository {
     );
     final body = response.data ?? '[]';
     final list = _parseManifest(body, repo);
-    if (list.isEmpty) throw const FormatException('Manifest plugin kosong');
+    if (list.isEmpty) throw FormatException(tr('Manifest plugin kosong'));
     final file = _manifestFile(repo);
     await file.parent.create(recursive: true);
     await file.writeAsString(body, flush: true);
@@ -266,13 +267,13 @@ class NovelPluginRepository {
       return file.readAsString();
     }
     try {
-      if (info.url.isEmpty) throw StateError('Plugin "${info.id}" tidak punya URL kode');
+      if (info.url.isEmpty) throw StateError(trp('Plugin "{id}" tidak punya URL kode', {'id': info.id}));
       final response = await _dio.get<String>(
         info.url,
         options: Options(headers: {'Cache-Control': 'no-cache', 'Pragma': 'no-cache'}),
       );
       final code = response.data ?? '';
-      if (code.trim().isEmpty) throw const FormatException('Kode plugin kosong');
+      if (code.trim().isEmpty) throw FormatException(tr('Kode plugin kosong'));
       await file.parent.create(recursive: true);
       await file.writeAsString(code, flush: true);
       await versionFile.writeAsString(info.version, flush: true);

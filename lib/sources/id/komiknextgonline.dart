@@ -7,6 +7,7 @@ import '../html_utils.dart';
 import '../models.dart';
 import '../source.dart';
 import '../source_exception.dart';
+import '../../core/i18n/strings.dart';
 
 /// Komik edukasi; tiap judul hanya satu "bab" (halaman komik itu sendiri).
 class KomikNextGOnlineSource extends HttpSource {
@@ -91,7 +92,7 @@ class KomikNextGOnlineSource extends HttpSource {
     final res = await fetchHtml(Uri.parse(mangaUrl));
     final doc = res.document;
     final title = (_meta(doc, 'og:title') ?? '').split(' - ').first.trim();
-    if (title.isEmpty) throw const SourceException(SourceErrorKind.parse, detail: 'Judul tidak ditemukan.');
+    if (title.isEmpty) throw SourceException(SourceErrorKind.parse, detail: tr('Judul tidak ditemukan.'));
     return SourceMangaDetails(
       url: res.url.toString(),
       title: title,
@@ -116,7 +117,7 @@ class KomikNextGOnlineSource extends HttpSource {
       for (final img in res.document.querySelectorAll('div#spliced-comic img'))
         if (imgAttr(img, res.url) case final url?) url,
     ];
-    if (pages.isEmpty) throw const SourceException(SourceErrorKind.parse, detail: 'Gambar tidak ditemukan.');
+    if (pages.isEmpty) throw SourceException(SourceErrorKind.parse, detail: tr('Gambar tidak ditemukan.'));
     return pages;
   }
 }

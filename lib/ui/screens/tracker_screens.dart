@@ -170,7 +170,7 @@ class _TrackerSettingsTileState extends ConsumerState<TrackerSettingsTile> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  error ?? 'Password tidak disimpan; hanya token sesi.',
+                  error ?? tr('Password tidak disimpan; hanya token sesi.'),
                   style: TextStyle(
                     fontSize: 12,
                     color: error == null
@@ -216,7 +216,7 @@ class _TrackerSettingsTileState extends ConsumerState<TrackerSettingsTile> {
     setState(() {});
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(
-          ok == true ? 'Login ${t.name} berhasil${t.username != null ? ' (${t.username})' : ''}' : 'Login dibatalkan'),
+          ok == true ? trp('Login {name} berhasil', {'name': t.name}) + (t.username != null ? ' (${t.username})' : '') : tr('Login dibatalkan')),
     ));
   }
 
@@ -228,12 +228,12 @@ class _TrackerSettingsTileState extends ConsumerState<TrackerSettingsTile> {
       title: Text(t.name),
       subtitle: Text(
         t.loggedIn
-            ? 'Masuk${t.username != null ? ' sebagai ${t.username}' : ''}'
+            ? (t.username != null ? trp('Masuk sebagai {name}', {'name': t.username}) : tr('Masuk'))
             : t.passwordLogin
-                ? 'Belum login'
+                ? tr('Belum login')
                 : hasId
-                ? 'Belum login${t.usesDefaultClientId ? ' · Client ID bawaan' : ''}'
-                : 'Belum ada Client ID',
+                ? tr('Belum login') + (t.usesDefaultClientId ? ' · ' + tr('Client ID bawaan') : '')
+                : tr('Belum ada Client ID'),
       ),
       onTap: t.passwordLogin ? null : _editClientId,
       trailing: t.loggedIn
@@ -496,7 +496,7 @@ class _TrackSearchDialogState extends State<_TrackSearchDialog> {
                           ),
                           title: Text(r.title, maxLines: 2, overflow: TextOverflow.ellipsis),
                           subtitle:
-                              Text([r.format, if (r.total != null) '${r.total} bab'].whereType<String>().join(' · ')),
+                              Text([r.format, if (r.total != null) trp('{total} bab', {'total': r.total})].whereType<String>().join(' · ')),
                           onTap: () => Navigator.pop(context, r),
                         );
                       },

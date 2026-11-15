@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 
 import '../core/utils/json.dart';
 import 'tracker.dart';
+import '../core/i18n/strings.dart';
 
 /// MangaUpdates (Baka-Updates), API v1. Login username/password memberi
 /// session token; daftar baca memakai `list_id` bawaan situs.
@@ -65,10 +66,10 @@ class MangaUpdatesTracker extends Tracker {
       if (code == 401 && token != null) {
         // Session token tidak bisa diperbarui; login ulang.
         await logout();
-        throw const TrackerException('Sesi MangaUpdates berakhir, login lagi.');
+        throw TrackerException(tr('Sesi MangaUpdates berakhir, login lagi.'));
       }
       final reason = asString(_json(e.response?.data)['reason']);
-      throw TrackerException(reason ?? 'MangaUpdates tidak bisa dihubungi (${code ?? e.type.name})');
+      throw TrackerException(reason ?? trp('MangaUpdates tidak bisa dihubungi ({name})', {'name': code ?? e.type.name}));
     }
   }
 
@@ -76,7 +77,7 @@ class MangaUpdatesTracker extends Tracker {
   Future<void> loginWithPassword(String username, String password) async {
     final res = await _call('PUT', '/account/login', body: {'username': username, 'password': password});
     final session = asString(asMap(res['context'])['session_token']);
-    if (session == null) throw TrackerException(asString(res['reason']) ?? 'Login MangaUpdates gagal');
+    if (session == null) throw TrackerException(asString(res['reason']) ?? tr('Login MangaUpdates gagal'));
     await prefs.setString('tracker.mangaupdates.token', session);
     final uid = asString(asMap(res['context'])['uid']) ?? '${asMap(res['context'])['uid'] ?? ''}';
     if (uid.isNotEmpty) await prefs.setString('tracker.mangaupdates.user_id', uid);

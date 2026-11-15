@@ -254,7 +254,7 @@ Indonesia dan dibungkus `tr()` (`lib/core/i18n/strings.dart`); terjemahan Inggri
 `strings_en.dart` (kunci = teks Indonesia, yang belum diterjemahkan tampil apa adanya). Teks dengan nilai
 sisipan memakai `trp('{n} bab', {'n': 3})` (penampung `{nama}`). Status sumber, peringatan konten, status seri,
 dan nama bahasa ikut diterjemahkan; `test/i18n_test.dart` memastikan setiap kunci punya terjemahan.
-Belum diterjemahkan: filter dan pesan error dari tiap sumber, serta teks widget layar utama.
+Pesan error sumber, label filter bawaan, widget layar utama, dan pintasan ikon ikut berganti bahasa. Yang tetap apa adanya hanya konten dari situs (judul, genre, filter dan pesan error dari plugin novel).
 
 **Tema & jaringan**: **Warna dari wallpaper** (Material You, Android 12+) di Pengaturan → Tampilan.
 **DNS over HTTPS** (`lib/core/net/doh.dart`) bersifat opsional dan mati secara default; nyalakan di

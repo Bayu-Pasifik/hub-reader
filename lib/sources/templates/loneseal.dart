@@ -9,6 +9,7 @@ import '../html_utils.dart';
 import '../models.dart';
 import '../source.dart';
 import '../source_exception.dart';
+import '../../core/i18n/strings.dart';
 
 class LoneSealSource extends HttpSource {
   LoneSealSource({
@@ -159,7 +160,7 @@ class LoneSealSource extends HttpSource {
     final synopsis = asString(d['synopsis']);
     return SourceMangaDetails(
       url: url,
-      title: clean(asString(d['title'])).isEmpty ? 'Tanpa judul' : clean(asString(d['title'])),
+      title: clean(asString(d['title'])).isEmpty ? tr('Tanpa judul') : clean(asString(d['title'])),
       thumbnailUrl: asString(d['poster_image_url']),
       author: nonPlaceholder(asString(d['author_name'])),
       artist: nonPlaceholder(asString(d['artist_name'])),
@@ -224,7 +225,7 @@ class LoneSealSource extends HttpSource {
     final segs = Uri.parse(chapter.url).pathSegments.where((s) => s.isNotEmpty).toList();
     final i = segs.indexOf('chapter');
     if (i < 1 || i + 1 >= segs.length) {
-      throw const SourceException(SourceErrorKind.parse, detail: 'URL bab tidak valid.');
+      throw SourceException(SourceErrorKind.parse, detail: tr('URL bab tidak valid.'));
     }
     final json = asMap(await fetchJson(Uri.parse('$apiUrl/series/comic/${segs[i - 1]}/chapter/${segs[i + 1]}')));
     final ch = asMap(json['chapter']);
@@ -235,12 +236,12 @@ class LoneSealSource extends HttpSource {
     ].where((u) => !_adFile.hasMatch(Uri.tryParse(u)?.pathSegments.lastOrNull ?? '')).toList();
     if (pages.isEmpty) {
       if (ch['password_required'] == true) {
-        throw const SourceException(SourceErrorKind.parse, detail: 'Bab ini dikunci password di situsnya.');
+        throw SourceException(SourceErrorKind.parse, detail: tr('Bab ini dikunci password di situsnya.'));
       }
       if (ch['login_required'] == true) {
-        throw const SourceException(SourceErrorKind.parse, detail: 'Bab ini perlu login di situsnya.');
+        throw SourceException(SourceErrorKind.parse, detail: tr('Bab ini perlu login di situsnya.'));
       }
-      throw const SourceException(SourceErrorKind.parse, detail: 'Gambar bab tidak ditemukan.');
+      throw SourceException(SourceErrorKind.parse, detail: tr('Gambar bab tidak ditemukan.'));
     }
     return pages;
   }

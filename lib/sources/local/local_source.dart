@@ -56,7 +56,7 @@ class LocalSource extends MangaSource {
 
   Directory get _root {
     final r = root;
-    if (r == null) throw const SourceException(SourceErrorKind.unknown, detail: 'Folder lokal belum siap.');
+    if (r == null) throw SourceException(SourceErrorKind.unknown, detail: tr('Folder lokal belum siap.'));
     return r;
   }
 
@@ -66,12 +66,12 @@ class LocalSource extends MangaSource {
 
   static List<String> segmentsOf(String url) {
     if (!url.startsWith(_scheme)) {
-      throw SourceException(SourceErrorKind.parse, detail: 'Bukan URL lokal: $url');
+      throw SourceException(SourceErrorKind.parse, detail: trp('Bukan URL lokal: {url}', {'url': url}));
     }
     final segments = url.substring(_scheme.length).split('/').map(Uri.decodeComponent).toList();
     // Tolak "..": URL hanya boleh menunjuk ke dalam [root].
     if (segments.any((s) => s.isEmpty || s == '.' || s == '..')) {
-      throw SourceException(SourceErrorKind.parse, detail: 'URL lokal tidak valid: $url');
+      throw SourceException(SourceErrorKind.parse, detail: trp('URL lokal tidak valid: {url}', {'url': url}));
     }
     return segments;
   }
@@ -180,7 +180,7 @@ class LocalSource extends MangaSource {
     }
     final dir = Directory(path);
     if (!await dir.exists()) {
-      throw SourceException(SourceErrorKind.notFound, detail: 'Folder "${segments.last}" tidak ada lagi.');
+      throw SourceException(SourceErrorKind.notFound, detail: trp('Folder "{name}" tidak ada lagi.', {'name': segments.last}));
     }
     final chapters = <SourceChapter>[];
     var hasLooseImages = false;
@@ -293,11 +293,11 @@ class LocalSource extends MangaSource {
     final path = _pathOf(chapter.url);
     if (await FileSystemEntity.isDirectory(path)) {
       final pages = await _folderPages(Directory(path));
-      if (pages.isEmpty) throw const SourceException(SourceErrorKind.parse, detail: 'Folder bab tidak berisi gambar.');
+      if (pages.isEmpty) throw SourceException(SourceErrorKind.parse, detail: tr('Folder bab tidak berisi gambar.'));
       return pages;
     }
     if (!await File(path).exists()) {
-      throw const SourceException(SourceErrorKind.notFound, detail: 'File bab tidak ada lagi.');
+      throw SourceException(SourceErrorKind.notFound, detail: tr('File bab tidak ada lagi.'));
     }
     return extractArchive(path);
   }
@@ -345,7 +345,7 @@ class LocalSource extends MangaSource {
   /// `../x` tidak bisa menulis di luar folder cache.
   static Future<List<String>> extractArchive(String archivePath) async {
     final dir = _extractDirFor(archivePath);
-    if (dir == null) throw const SourceException(SourceErrorKind.unknown, detail: 'Folder cache belum siap.');
+    if (dir == null) throw SourceException(SourceErrorKind.unknown, detail: tr('Folder cache belum siap.'));
     final done = File('${dir.path}${Platform.pathSeparator}.done');
     if (!await done.exists()) {
       if (await dir.exists()) await dir.delete(recursive: true);
@@ -362,7 +362,7 @@ class LocalSource extends MangaSource {
           await out.writeAsBytes(bytes, flush: false);
         }
       } on FormatException catch (e) {
-        throw SourceException(SourceErrorKind.parse, detail: 'Arsip rusak: ${e.message}');
+        throw SourceException(SourceErrorKind.parse, detail: trp('Arsip rusak: {err}', {'err': e.message}));
       } finally {
         await input.close();
       }
@@ -372,7 +372,7 @@ class LocalSource extends MangaSource {
       await for (final e in dir.list())
         if (e is File && isImage(e.path)) e.path,
     ]..sort(naturalCompare);
-    if (pages.isEmpty) throw const SourceException(SourceErrorKind.parse, detail: 'Arsip tidak berisi gambar.');
+    if (pages.isEmpty) throw SourceException(SourceErrorKind.parse, detail: tr('Arsip tidak berisi gambar.'));
     return pages;
   }
 
@@ -395,7 +395,7 @@ class LocalSource extends MangaSource {
     List<({String name, Future<void> Function(String path) saveTo})> files,
   ) async {
     final r = root;
-    if (r == null) throw const SourceException(SourceErrorKind.unknown, detail: 'Folder lokal belum siap.');
+    if (r == null) throw SourceException(SourceErrorKind.unknown, detail: tr('Folder lokal belum siap.'));
     final safe = sanitizeName(series);
     final dir = Directory('${r.path}${Platform.pathSeparator}$safe');
     await dir.create(recursive: true);
@@ -416,7 +416,7 @@ class LocalSource extends MangaSource {
   static String sanitizeName(String name) {
     final cleaned = name.replaceAll(RegExp(r'[\\/:*?"<>|\x00-\x1f]'), '_').trim();
     final noDots = cleaned.replaceAll(RegExp(r'^\.+'), '');
-    return noDots.isEmpty ? 'Tanpa judul' : noDots;
+    return noDots.isEmpty ? tr('Tanpa judul') : noDots;
   }
 
   /// Hapus seri (folder atau arsip tunggal) dari penyimpanan.

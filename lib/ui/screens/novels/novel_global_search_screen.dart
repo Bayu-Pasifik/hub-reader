@@ -93,7 +93,7 @@ class _NovelGlobalSearchScreenState extends ConsumerState<NovelGlobalSearchScree
           final source = await ref.read(novelSourceProvider(r.info.id).future).timeout(_timeout);
           r.items = await source.search(query, 1).timeout(_timeout);
         } catch (e) {
-          r.error = e is TimeoutException ? 'Waktu habis' : novelError(e, site: r.info.site).title;
+          r.error = e is TimeoutException ? tr('Waktu habis') : novelError(e, site: r.info.site).title;
         }
         if (mounted && run == _run) setState(() {});
       }
@@ -136,7 +136,7 @@ class _NovelGlobalSearchScreenState extends ConsumerState<NovelGlobalSearchScree
         actions: [
           IconButton(tooltip: tr('Cari'), icon: const Icon(Icons.search), onPressed: _search),
           IconButton(
-            tooltip: _onlyWithResults ? 'Tampilkan semua sumber' : 'Hanya sumber dengan hasil',
+            tooltip: _onlyWithResults ? tr('Tampilkan semua sumber') : tr('Hanya sumber dengan hasil'),
             icon: Icon(_onlyWithResults ? Icons.filter_alt : Icons.filter_alt_outlined),
             onPressed: () => setState(() => _onlyWithResults = !_onlyWithResults),
           ),
@@ -183,8 +183,8 @@ class _NovelGlobalSearchScreenState extends ConsumerState<NovelGlobalSearchScree
                 padding: const EdgeInsets.all(32),
                 child: Text(
                   _scope == null
-                      ? 'Mencari di plugin yang pernah dibuka. Pilih bahasa di atas untuk mencari di semua plugin bahasa itu.'
-                      : 'Mencari di ${counts[_scope] ?? 0} plugin ${languageName(_scope!)}. Plugin pertama kali diunduh dulu, jadi bisa agak lama.',
+                      ? tr('Mencari di plugin yang pernah dibuka. Pilih bahasa di atas untuk mencari di semua plugin bahasa itu.')
+                      : trp('Mencari di {_scope} plugin {_scope2}. Plugin pertama kali diunduh dulu, jadi bisa agak lama.', {'_scope': counts[_scope] ?? 0, '_scope2': languageName(_scope!)}),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -212,7 +212,7 @@ class _PluginRow extends ConsumerWidget {
         ? 'mencari…'
         : result.error != null
             ? '${result.error}'
-            : '${items!.length} hasil';
+            : trp('{n} hasil', {'n': items!.length});
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

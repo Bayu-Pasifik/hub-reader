@@ -44,12 +44,12 @@ Future<void> importLocalFiles(BuildContext context, {bool epubOnly = false}) asy
   final List<PlatformFile> picked;
   try {
     picked = await FilePicker.pickFiles(
-      dialogTitle: epubOnly ? 'Pilih novel (EPUB)' : 'Pilih komik (CBZ/ZIP) atau novel (EPUB)',
+      dialogTitle: epubOnly ? tr('Pilih novel (EPUB)') : tr('Pilih komik (CBZ/ZIP) atau novel (EPUB)'),
       type: FileType.custom,
       allowedExtensions: epubOnly ? const ['epub'] : const ['cbz', 'zip', 'epub'],
     );
   } catch (e) {
-    if (context.mounted) _snack(context, 'Gagal membuka pemilih file: $e');
+    if (context.mounted) _snack(context, trp('Gagal membuka pemilih file: {e}', {'e': e}));
     return;
   }
   final epubs = picked.where((f) => f.name.toLowerCase().endsWith('.epub')).toList();
@@ -57,7 +57,7 @@ Future<void> importLocalFiles(BuildContext context, {bool epubOnly = false}) asy
   if (!context.mounted) return;
   if (files.isEmpty && epubs.isEmpty) {
     if (picked.isNotEmpty) {
-      _snack(context, epubOnly ? 'Hanya file .epub yang bisa diimpor.' : 'Hanya file .cbz, .zip, atau .epub yang bisa diimpor.');
+      _snack(context, epubOnly ? tr('Hanya file .epub yang bisa diimpor.') : tr('Hanya file .cbz, .zip, atau .epub yang bisa diimpor.'));
     }
     return;
   }
@@ -74,7 +74,7 @@ Future<void> importLocalFiles(BuildContext context, {bool epubOnly = false}) asy
       }
     });
     if (!context.mounted) return;
-    _snack(context, error == null ? '${paths.length} EPUB diimpor' : '${paths.length} EPUB diimpor, sebagian gagal: $error');
+    _snack(context, error == null ? trp('{length} EPUB diimpor', {'length': paths.length}) : trp('{length} EPUB diimpor, sebagian gagal: {error}', {'length': paths.length, 'error': error}));
     if (files.isEmpty) {
       if (paths.length == 1) {
         context.push(novelDetailLocation(LocalNovelSource.pluginId, paths.single));
@@ -127,10 +127,10 @@ Future<void> importLocalFiles(BuildContext context, {bool epubOnly = false}) asy
   });
   if (!context.mounted) return;
   if (url == null) {
-    _snack(context, 'Impor gagal: $error');
+    _snack(context, trp('Impor gagal: {error}', {'error': error}));
     return;
   }
-  _snack(context, '${files.length} file diimpor ke "$series"');
+  _snack(context, trp('{length} file diimpor ke "{series}"', {'length': files.length, 'series': series}));
   context.push(sourceMangaLocation(LocalSource.sourceId, url!));
 }
 

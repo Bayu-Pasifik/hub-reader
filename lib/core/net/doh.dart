@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../i18n/strings.dart';
 
 /// Penyedia DNS-over-HTTPS (seperti opsi "DNS over HTTPS" di Mihon).
 ///
@@ -21,9 +22,11 @@ enum DohProvider {
   cloudflareFamily('Cloudflare (keluarga)', 'https://family.cloudflare-dns.com/dns-query', ['1.1.1.3', '1.0.0.3']),
   adguardUnfiltered('AdGuard (tanpa filter)', 'https://unfiltered.adguard-dns.com/resolve', ['94.140.14.140', '94.140.14.141']);
 
-  const DohProvider(this.label, this.url, this.bootstrap);
+  const DohProvider(this._label, this.url, this.bootstrap);
 
-  final String label;
+  final String _label;
+
+  String get label => tr(_label);
   final String url;
 
   /// IP penyedia, dipakai langsung agar tidak butuh DNS untuk menemukan DoH.

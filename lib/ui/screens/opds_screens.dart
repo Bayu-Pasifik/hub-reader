@@ -28,12 +28,11 @@ class OpdsServersScreen extends ConsumerWidget {
         label: Text(tr('Tambah server')),
       ),
       body: servers.isEmpty
-          ? const Center(
+          ? Center(
               child: Padding(
-                padding: EdgeInsets.all(32),
+                padding: const EdgeInsets.all(32),
                 child: Text(
-                  'Belum ada server. Tambahkan alamat katalog OPDS dari Komga, Kavita, atau Calibre-Web '
-                  'untuk mengunduh buku dan komik ke perpustakaan Lokal.',
+                  tr('Belum ada server. Tambahkan alamat katalog OPDS dari Komga, Kavita, atau Calibre-Web untuk mengunduh buku dan komik ke perpustakaan Lokal.'),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -70,7 +69,7 @@ class OpdsServersScreen extends ConsumerWidget {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(existing == null ? 'Tambah server OPDS' : 'Ubah server OPDS'),
+        title: Text(existing == null ? tr('Tambah server OPDS') : tr('Ubah server OPDS')),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -141,7 +140,7 @@ class _OpdsBrowseScreenState extends ConsumerState<OpdsBrowseScreen> {
     if (server == null || url == null) {
       setState(() {
         _loading = false;
-        _error = 'Server tidak ditemukan';
+        _error = tr('Server tidak ditemukan');
       });
       return;
     }
@@ -339,7 +338,7 @@ class _BookSheetState extends ConsumerState<_BookSheet> {
       if (mounted) {
         setState(() {
           _busy = null;
-          _message = 'Gagal mengunduh: ${e.toString().split('\n').first}';
+          _message = trp('Gagal mengunduh: {err}', {'err': e.toString().split('\n').first});
         });
       }
     }
@@ -371,7 +370,7 @@ class _BookSheetState extends ConsumerState<_BookSheet> {
                   icon: _busy == a.url
                       ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
                       : const Icon(Icons.download),
-                  label: Text(a.importable ? 'Unduh ke Lokal (${a.formatLabel})' : '${a.formatLabel} (tidak didukung)'),
+                  label: Text(a.importable ? trp('Unduh ke Lokal ({formatLabel})', {'formatLabel': a.formatLabel}) : trp('{formatLabel} (tidak didukung)', {'formatLabel': a.formatLabel})),
                 ),
               ),
             if (_message != null) Text(_message!, style: TextStyle(color: theme.colorScheme.error)),

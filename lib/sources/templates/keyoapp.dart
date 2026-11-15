@@ -21,6 +21,7 @@ import '../html_utils.dart';
 import '../models.dart';
 import '../source.dart';
 import '../source_exception.dart';
+import '../../core/i18n/strings.dart';
 
 enum KeyoappVariant { classic, livewire, v2 }
 
@@ -384,7 +385,7 @@ class KeyoappSource extends HttpSource {
     if (variant == KeyoappVariant.v2) {
       final slug = res.document.querySelector('[data-series-uid]')?.attributes['data-series-slug'] ??
           Uri.parse(mangaUrl).pathSegments.where((s) => s.isNotEmpty).lastOrNull;
-      if (slug == null) throw const SourceException(SourceErrorKind.parse, detail: 'Seri tidak ditemukan.');
+      if (slug == null) throw SourceException(SourceErrorKind.parse, detail: tr('Seri tidak ditemukan.'));
       final json = asMap(await fetchJson(baseUri.replace(queryParameters: {'_chapters_html': '1', 'series_slug': slug}),
           headers: const {'X-Requested-With': 'XMLHttpRequest'}));
       return parseDetailsV2(res.document, res.url, html_parser.parse(asString(json['rows_html']) ?? ''));
@@ -424,7 +425,7 @@ class KeyoappSource extends HttpSource {
   SourceMangaDetails parseDetails(Document doc, Uri pageUrl) {
     final livewire = variant == KeyoappVariant.livewire;
     final h1 = doc.querySelector('div.grid > h1') ?? doc.querySelector('h1');
-    if (h1 == null) throw const SourceException(SourceErrorKind.parse, detail: 'Detail seri tidak ditemukan.');
+    if (h1 == null) throw SourceException(SourceErrorKind.parse, detail: tr('Detail seri tidak ditemukan.'));
 
     String? thumb;
     if (livewire) {
@@ -506,7 +507,7 @@ class KeyoappSource extends HttpSource {
 
   SourceMangaDetails parseDetailsV2(Document doc, Uri pageUrl, Document rows) {
     final h1 = doc.querySelector('h1');
-    if (h1 == null) throw const SourceException(SourceErrorKind.parse, detail: 'Detail seri tidak ditemukan.');
+    if (h1 == null) throw SourceException(SourceErrorKind.parse, detail: tr('Detail seri tidak ditemukan.'));
     // "Manga · Fantasy · Ongoing"
     final meta = clean(doc.querySelector('.l2-meta span')?.text).split('·').map(clean).toList();
     final status = meta.map(_status).firstWhere((s) => s != SourceMangaStatus.unknown,
@@ -567,8 +568,8 @@ class KeyoappSource extends HttpSource {
             orElse: () => '');
         final raw = _pagesJson.firstMatch(xData)?.group(1);
         if (raw == null || raw.isEmpty) {
-          throw const SourceException(SourceErrorKind.parse,
-              detail: 'Bab terkunci: login & beli bab ini lewat WebView untuk membaca.');
+          throw SourceException(SourceErrorKind.parse,
+              detail: tr('Bab terkunci: login & beli bab ini lewat WebView untuk membaca.'));
         }
         // Isi literal JS '...': \uXXXX dan escape lain diurai sebagai string JSON.
         final decoded = jsonDecode('"${raw.replaceAll(r"\'", "'").replaceAll('"', r'\"')}"') as String;
@@ -582,7 +583,7 @@ class KeyoappSource extends HttpSource {
         if (uids.isNotEmpty) {
           final host = _cdnHost.firstMatch(body)?.group(1)?.replaceAll(_cdnClean, '');
           if (host == null) {
-            throw const SourceException(SourceErrorKind.parse, detail: 'Host CDN gambar tidak ditemukan.');
+            throw SourceException(SourceErrorKind.parse, detail: tr('Host CDN gambar tidak ditemukan.'));
           }
           return [for (final uid in uids) 'https://$host/uploads/$uid'];
         }

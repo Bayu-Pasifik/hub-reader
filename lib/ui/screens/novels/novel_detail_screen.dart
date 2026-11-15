@@ -58,7 +58,7 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
     final add = !paths.every(current.contains);
     ref.read(chapterBookmarksProvider.notifier).setMany(_libKey, paths, bookmarked: add);
     setState(_selected.clear);
-    _snack(add ? '${paths.length} bab di-bookmark' : 'Bookmark ${paths.length} bab dihapus');
+    _snack(add ? trp('{length} bab di-bookmark', {'length': paths.length}) : trp('Bookmark {length} bab dihapus', {'length': paths.length}));
   }
   late int _page = novelLastPage(ref, widget.pluginId, widget.path);
 
@@ -88,7 +88,7 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
     final paths = {..._selected};
     ref.read(sourceProgressProvider.notifier).setDoneMany(_libKey, paths, done: done);
     setState(_selected.clear);
-    _snack(done ? '${paths.length} bab ditandai sudah dibaca' : '${paths.length} bab ditandai belum dibaca');
+    _snack(done ? trp('{length} bab ditandai sudah dibaca', {'length': paths.length}) : trp('{length} bab ditandai belum dibaca', {'length': paths.length}));
   }
 
   /// Semua bab sebelum bab terpilih paling akhir (urutan plugin) jadi sudah dibaca.
@@ -98,7 +98,7 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
     final paths = [for (final c in _visible.take(last + 1)) c.path];
     ref.read(sourceProgressProvider.notifier).setDoneMany(_libKey, paths, done: true);
     setState(_selected.clear);
-    _snack('${paths.length} bab ditandai sudah dibaca');
+    _snack(trp('{length} bab ditandai sudah dibaca', {'length': paths.length}));
   }
 
   void _snack(String text) => ScaffoldMessenger.of(context)
@@ -136,7 +136,7 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
                 final chosen = _visible.where((c) => _selected.contains(c.path)).toList();
                 _enqueue(novel, chosen);
                 setState(_selected.clear);
-                _snack('${chosen.length} bab masuk antrean unduhan');
+                _snack(trp('{length} bab masuk antrean unduhan', {'length': chosen.length}));
               }
             },
             itemBuilder: (_) => [
@@ -165,7 +165,7 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(
-        content: Text(was ? 'Dihapus dari favorit' : 'Ditambahkan ke favorit'),
+        content: Text(was ? tr('Dihapus dari favorit') : tr('Ditambahkan ke favorit')),
         duration: const Duration(seconds: 4),
         action: was ? null : SnackBarAction(label: tr('Kategori'), onPressed: () => showCategorySheet(context, item.key)),
       ));
@@ -288,7 +288,7 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
                 actions: [
                   if (loaded != null)
                     IconButton(
-                      tooltip: isFavorite ? 'Hapus dari favorit' : 'Tambah ke favorit',
+                      tooltip: isFavorite ? tr('Hapus dari favorit') : tr('Tambah ke favorit'),
                       icon: FavoriteIcon(isFavorite: isFavorite),
                       onPressed: () => _toggleFavorite(loaded),
                     ),
@@ -303,13 +303,13 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
                         PopupMenuItem(
                           value: 0,
                           child: Text(loaded.totalPages > 1
-                              ? 'Unduh yang belum dibaca (halaman ini)'
-                              : 'Unduh semua yang belum dibaca'),
+                              ? tr('Unduh yang belum dibaca (halaman ini)')
+                              : tr('Unduh semua yang belum dibaca')),
                         ),
                       ],
                     ),
                   IconButton(
-                    tooltip: _newestFirst ? 'Urutkan bab pertama dulu' : 'Urutkan bab terbaru dulu',
+                    tooltip: _newestFirst ? tr('Urutkan bab pertama dulu') : tr('Urutkan bab terbaru dulu'),
                     icon: Icon(_newestFirst ? Icons.arrow_upward : Icons.arrow_downward),
                     onPressed: () => setState(() => _newestFirst = !_newestFirst),
                   ),
@@ -485,7 +485,7 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
             final fade = done && !isLast;
             final subtitle = [
               if (c.releaseTime != null) _shortDate(c.releaseTime!),
-              if (p != null && !done && p.page > 0) '${p.page}% dibaca',
+              if (p != null && !done && p.page > 0) trp('{page}% dibaca', {'page': p.page}),
             ].join(' · ');
             final selected = _selected.contains(c.path);
             return ListTile(
@@ -538,7 +538,7 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
       if (novel.artist != null && novel.artist != novel.author) novel.artist!,
       if (novel.status != null) novel.status!,
       if (novel.rating != null) '★ ${novel.rating!.toStringAsFixed(1)}',
-      if (novel.totalPages <= 1) '${novel.chapters.length} bab',
+      if (novel.totalPages <= 1) trp('{length} bab', {'length': novel.chapters.length}),
     ].join(' · ');
     final summary = novel.summary == null
         ? null

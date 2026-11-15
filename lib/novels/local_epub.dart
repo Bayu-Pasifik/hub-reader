@@ -8,6 +8,7 @@ import 'package:xml/xml.dart';
 import '../sources/source_exception.dart';
 import 'novel_models.dart';
 import 'novel_source.dart';
+import '../core/i18n/strings.dart';
 
 /// Isi EPUB yang sudah diekstrak: metadata + urutan bab.
 class EpubBook {
@@ -40,16 +41,16 @@ class EpubBook {
 
     final container = at('META-INF/container.xml');
     if (!container.existsSync()) {
-      throw const SourceException(SourceErrorKind.parse, detail: 'Bukan EPUB: META-INF/container.xml tidak ada.');
+      throw SourceException(SourceErrorKind.parse, detail: tr('Bukan EPUB: META-INF/container.xml tidak ada.'));
     }
     final rootfile = XmlDocument.parse(container.readAsStringSync())
         .findAllElements('rootfile', namespace: '*')
         .map((e) => e.getAttribute('full-path'))
         .whereType<String>()
         .firstOrNull;
-    if (rootfile == null) throw const SourceException(SourceErrorKind.parse, detail: 'EPUB tanpa file OPF.');
+    if (rootfile == null) throw SourceException(SourceErrorKind.parse, detail: tr('EPUB tanpa file OPF.'));
     final opfFile = at(rootfile);
-    if (!opfFile.existsSync()) throw const SourceException(SourceErrorKind.parse, detail: 'File OPF EPUB tidak ada.');
+    if (!opfFile.existsSync()) throw SourceException(SourceErrorKind.parse, detail: tr('File OPF EPUB tidak ada.'));
     final opfDir = rootfile.contains('/') ? rootfile.substring(0, rootfile.lastIndexOf('/') + 1) : '';
     final opf = XmlDocument.parse(opfFile.readAsStringSync());
 
@@ -105,8 +106,8 @@ class EpubBook {
         if (text.isEmpty && doc.querySelector('img, image') == null) continue;
         name = doc.querySelector('h1, h2, h3')?.text.trim();
         // Halaman gambar tanpa teks di awal buku = sampul.
-        if ((name == null || name.isEmpty) && text.isEmpty && chapters.isEmpty) name = 'Sampul';
-        if (name == null || name.isEmpty) name = 'Bagian ${chapters.length + 1}';
+        if ((name == null || name.isEmpty) && text.isEmpty && chapters.isEmpty) name = tr('Sampul');
+        if (name == null || name.isEmpty) name = trp('Bagian {n}', {'n': chapters.length + 1});
       }
       chapters.add((href: href, name: name.replaceAll(RegExp(r'\s+'), ' ')));
     }
@@ -212,19 +213,19 @@ class LocalNovelSource extends NovelSource {
   static String novelPath(String fileName) => '$_scheme${Uri.encodeComponent(fileName)}';
 
   static ({String file, String? href}) parsePath(String path) {
-    if (!path.startsWith(_scheme)) throw SourceException(SourceErrorKind.parse, detail: 'Bukan path EPUB: $path');
+    if (!path.startsWith(_scheme)) throw SourceException(SourceErrorKind.parse, detail: trp('Bukan path EPUB: {path}', {'path': path}));
     final rest = path.substring(_scheme.length);
     final hash = rest.indexOf('#');
     final file = Uri.decodeComponent(hash < 0 ? rest : rest.substring(0, hash));
     if (file.isEmpty || file.contains('/') || file.contains(r'\') || file == '..') {
-      throw SourceException(SourceErrorKind.parse, detail: 'Path EPUB tidak valid: $path');
+      throw SourceException(SourceErrorKind.parse, detail: trp('Path EPUB tidak valid: {path}', {'path': path}));
     }
     return (file: file, href: hash < 0 ? null : Uri.decodeComponent(rest.substring(hash + 1)));
   }
 
   static File _file(String name) {
     final r = root;
-    if (r == null) throw const SourceException(SourceErrorKind.unknown, detail: 'Folder lokal belum siap.');
+    if (r == null) throw SourceException(SourceErrorKind.unknown, detail: tr('Folder lokal belum siap.'));
     return File('${r.path}${Platform.pathSeparator}$name');
   }
 
@@ -232,14 +233,14 @@ class LocalNovelSource extends NovelSource {
   static Future<EpubBook> book(String fileName) async {
     final file = _file(fileName);
     if (!await file.exists()) {
-      throw SourceException(SourceErrorKind.notFound, detail: 'File "$fileName" tidak ada lagi.');
+      throw SourceException(SourceErrorKind.notFound, detail: trp('File "{name}" tidak ada lagi.', {'name': fileName}));
     }
     final stat = await file.stat();
     final key = '$fileName|${stat.size}|${stat.modified.millisecondsSinceEpoch}';
     final cached = _books[key];
     if (cached != null) return cached;
     final cache = cacheDir;
-    if (cache == null) throw const SourceException(SourceErrorKind.unknown, detail: 'Folder cache belum siap.');
+    if (cache == null) throw SourceException(SourceErrorKind.unknown, detail: tr('Folder cache belum siap.'));
     final dir = Directory('${cache.path}${Platform.pathSeparator}${_fnv(key)}');
     final done = File('${dir.path}${Platform.pathSeparator}.done');
     if (!await done.exists()) {
@@ -271,7 +272,7 @@ class LocalNovelSource extends NovelSource {
         if (bytes != null) await target.writeAsBytes(bytes, flush: false);
       }
     } on FormatException catch (e) {
-      throw SourceException(SourceErrorKind.parse, detail: 'EPUB rusak: ${e.message}');
+      throw SourceException(SourceErrorKind.parse, detail: trp('EPUB rusak: {err}', {'err': e.message}));
     } finally {
       await input.close();
     }
@@ -300,7 +301,7 @@ class LocalNovelSource extends NovelSource {
         final b = await book(name);
         items.add(NovelItem(path: novelPath(name), name: b.title, cover: b.cover));
       } catch (_) {
-        items.add(NovelItem(path: novelPath(name), name: '$name (rusak)'));
+        items.add(NovelItem(path: novelPath(name), name: '$name (${tr('rusak')})'));
       }
     }
     items.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
@@ -346,11 +347,11 @@ class LocalNovelSource extends NovelSource {
   Future<String> chapter(String path) async {
     final p = parsePath(path);
     final href = p.href;
-    if (href == null) throw const SourceException(SourceErrorKind.parse, detail: 'Path bab EPUB tanpa href.');
+    if (href == null) throw SourceException(SourceErrorKind.parse, detail: tr('Path bab EPUB tanpa href.'));
     final b = await book(p.file);
     final rel = EpubBook.normalize(href);
     final file = File([b.dir.path, ...rel.split('/')].join(Platform.pathSeparator));
-    if (!await file.exists()) throw const SourceException(SourceErrorKind.notFound, detail: 'Bab tidak ada di EPUB.');
+    if (!await file.exists()) throw SourceException(SourceErrorKind.notFound, detail: tr('Bab tidak ada di EPUB.'));
     final doc = html_parser.parse(await file.readAsString());
     final baseDir = rel.contains('/') ? rel.substring(0, rel.lastIndexOf('/') + 1) : '';
     String? local(String? src) {
@@ -377,12 +378,12 @@ class LocalNovelSource extends NovelSource {
 
   @override
   Future<String> webUrl(String path, {required bool isNovel}) async =>
-      throw const SourceException(SourceErrorKind.unknown, detail: 'Novel lokal tidak punya halaman web.');
+      throw SourceException(SourceErrorKind.unknown, detail: tr('Novel lokal tidak punya halaman web.'));
 
   /// Salin file EPUB ke [root]. Mengembalikan path novel.
   static Future<String> importFile(String name, Future<void> Function(String path) saveTo) async {
     final r = root;
-    if (r == null) throw const SourceException(SourceErrorKind.unknown, detail: 'Folder lokal belum siap.');
+    if (r == null) throw SourceException(SourceErrorKind.unknown, detail: tr('Folder lokal belum siap.'));
     await r.create(recursive: true);
     var safe = name.replaceAll(RegExp(r'[\\/:*?"<>|\x00-\x1f]'), '_').trim().replaceAll(RegExp(r'^\.+'), '');
     if (safe.isEmpty) safe = 'buku.epub';

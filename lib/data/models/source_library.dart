@@ -1,5 +1,6 @@
 import '../../core/utils/json.dart';
 import '../../sources/models.dart';
+import '../../core/i18n/strings.dart';
 
 /// Ringkasan seri dari sumber on-device, disimpan lokal untuk favorit & riwayat.
 class SourceLibraryItem {
@@ -35,7 +36,7 @@ class SourceLibraryItem {
     return SourceLibraryItem(
       sourceId: sourceId,
       url: url,
-      title: asString(json['title']) ?? 'Tanpa judul',
+      title: asString(json['title']) ?? tr('Tanpa judul'),
       thumbnailUrl: asString(json['thumbnail_url']),
     );
   }
@@ -134,7 +135,7 @@ class SourceHistoryEntry {
     return SourceHistoryEntry(
       item: item,
       chapterUrl: chapterUrl,
-      chapterName: asString(json['chapter_name']) ?? 'Bab',
+      chapterName: asString(json['chapter_name']) ?? tr('Bab'),
       readAt: asDate(json['read_at']) ?? DateTime.now(),
     );
   }

@@ -7,6 +7,7 @@
 library;
 
 import '../core/utils/json.dart';
+import '../core/i18n/strings.dart';
 
 /// Satu entri `plugins.min.json` dari repo lnreader-plugins.
 class NovelPluginInfo {
@@ -134,7 +135,7 @@ class NovelItem {
     final json = asMap(raw);
     final path = asString(json['path']);
     if (path == null) return null;
-    return NovelItem(path: path, name: asString(json['name'])?.trim() ?? 'Tanpa judul', cover: _cover(json['cover']));
+    return NovelItem(path: path, name: asString(json['name'])?.trim() ?? tr('Tanpa judul'), cover: _cover(json['cover']));
   }
 
   @override
@@ -167,7 +168,7 @@ class NovelChapter {
     if (path == null) return null;
     return NovelChapter(
       path: path,
-      name: asString(json['name'])?.trim() ?? 'Bab',
+      name: asString(json['name'])?.trim() ?? tr('Bab'),
       releaseTime: asString(json['releaseTime']),
       number: (json['chapterNumber'] as num?)?.toDouble(),
       page: json['page']?.toString(),
@@ -216,7 +217,7 @@ class NovelDetails {
     final json = asMap(raw);
     return NovelDetails(
       path: asString(json['path']) ?? path,
-      name: asString(json['name'])?.trim() ?? 'Tanpa judul',
+      name: asString(json['name'])?.trim() ?? tr('Tanpa judul'),
       cover: _cover(json['cover']),
       author: _blank(asString(json['author'])),
       artist: _blank(asString(json['artist'])),

@@ -5,6 +5,7 @@ import '../../core/utils/json.dart';
 import '../models.dart';
 import '../source.dart';
 import '../source_exception.dart';
+import '../../core/i18n/strings.dart';
 
 /// Shinigami: semua data dari API JSON `api.shngm.io` (bukan scraping HTML),
 /// jadi tidak terpengaruh perubahan tampilan situs.
@@ -66,7 +67,7 @@ class ShinigamiSource extends HttpSource {
         if (asString(asMap(raw)['manga_id']) case final id? when id.isNotEmpty)
           SourceManga(
             url: '$baseUrl/series/$id',
-            title: asString(asMap(raw)['title']) ?? 'Tanpa judul',
+            title: asString(asMap(raw)['title']) ?? tr('Tanpa judul'),
             thumbnailUrl: _cover(asMap(raw)),
           ),
     ];
@@ -89,7 +90,7 @@ class ShinigamiSource extends HttpSource {
   static String _lastSegment(String url) {
     final segments = Uri.parse(url).pathSegments.where((s) => s.isNotEmpty).toList();
     if (segments.isEmpty) {
-      throw const SourceException(SourceErrorKind.parse, detail: 'URL Shinigami tidak valid.');
+      throw SourceException(SourceErrorKind.parse, detail: tr('URL Shinigami tidak valid.'));
     }
     return segments.last;
   }
@@ -114,12 +115,12 @@ class ShinigamiSource extends HttpSource {
     final alt = asString(data['alternative_title']);
     final description = [
       if (asString(data['description']) case final d? when d.trim().isNotEmpty) d.trim(),
-      if (alt != null && alt.trim().isNotEmpty) 'Judul alternatif: ${alt.trim()}',
+      if (alt != null && alt.trim().isNotEmpty) trp('Judul alternatif: {trim}', {'trim': alt.trim()}),
     ].join('\n\n');
 
     return SourceMangaDetails(
       url: mangaUrl,
-      title: asString(data['title']) ?? 'Tanpa judul',
+      title: asString(data['title']) ?? tr('Tanpa judul'),
       thumbnailUrl: _cover(data),
       author: names('Author').join(', ').ifEmpty,
       artist: names('Artist').join(', ').ifEmpty,
@@ -162,7 +163,7 @@ class ShinigamiSource extends HttpSource {
     final path = asString(ch['path']) ?? '';
     final pages = [for (final f in asStringList(ch['data'])) '$base$path$f'];
     if (pages.isEmpty) {
-      throw const SourceException(SourceErrorKind.parse, detail: 'Bab ini belum punya gambar.');
+      throw SourceException(SourceErrorKind.parse, detail: tr('Bab ini belum punya gambar.'));
     }
     return pages;
   }

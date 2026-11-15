@@ -57,9 +57,9 @@ class DownloadsScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(switch (task.status) {
-                      DownloadStatus.queued => '${task.chapter.name} · menunggu',
+                      DownloadStatus.queued => '${task.chapter.name} · ${tr('menunggu')}',
                       DownloadStatus.downloading => '${task.chapter.name} · ${task.done}/${task.total}',
-                      DownloadStatus.failed => '${task.chapter.name} · gagal: ${task.error ?? ''}',
+                      DownloadStatus.failed => '${task.chapter.name} · ${trp('gagal: {err}', {'err': task.error ?? ''})}',
                     }),
                     if (task.status == DownloadStatus.downloading) ...[
                       const SizedBox(height: 4),

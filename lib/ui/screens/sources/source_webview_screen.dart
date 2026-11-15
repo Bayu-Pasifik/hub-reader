@@ -77,14 +77,14 @@ class _SourceWebViewScreenState extends ConsumerState<SourceWebViewScreen> {
     if (_finished || _keepsStorage) return;
     final cookies = await WebViewBridge.cookiesFor(_uri);
     if (cookies == null || !cookies.contains('cf_clearance')) {
-      _setStatus('Belum ada tanda verifikasi. Bila halaman sudah terbuka normal, ketuk Selesai.');
+      _setStatus(tr('Belum ada tanda verifikasi. Bila halaman sudah terbuka normal, ketuk Selesai.'));
       return;
     }
     if (await _stillChallenged()) {
       _setStatus('Verifikasi sedang diproses, tunggu sebentar…');
       return;
     }
-    _setStatus('Verifikasi berhasil terdeteksi.');
+    _setStatus(tr('Verifikasi berhasil terdeteksi.'));
     _complete(cookies, auto: true);
   }
 
@@ -105,10 +105,10 @@ class _SourceWebViewScreenState extends ConsumerState<SourceWebViewScreen> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(tr(
         auto
-            ? 'Verifikasi berhasil, memuat ulang…'
+            ? tr('Verifikasi berhasil, memuat ulang…')
             : copied
-                ? 'Sesi situs disimpan, memuat ulang…'
-                : 'Cookie disimpan, memuat ulang…',
+                ? tr('Sesi situs disimpan, memuat ulang…')
+                : tr('Cookie disimpan, memuat ulang…'),
       )),
       duration: const Duration(seconds: 2),
     ));
@@ -160,7 +160,7 @@ class _SourceWebViewScreenState extends ConsumerState<SourceWebViewScreen> {
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(_keepsStorage ? 'Login / verifikasi situs' : 'Verifikasi situs'),
+              Text(_keepsStorage ? tr('Login / verifikasi situs') : tr('Verifikasi situs')),
               Text(_uri.host, style: Theme.of(context).textTheme.bodySmall),
             ],
           ),
@@ -181,7 +181,7 @@ class _SourceWebViewScreenState extends ConsumerState<SourceWebViewScreen> {
               child: Text(
                 _keepsStorage
                     ? tr('Login di situs bila perlu, lalu ketuk Selesai. Sesi login disalin ke plugin.')
-                    : tr(_status ?? 'Selesaikan verifikasi bila diminta. Layar ini menutup otomatis setelah berhasil.'),
+                    : tr(_status ?? tr('Selesaikan verifikasi bila diminta. Layar ini menutup otomatis setelah berhasil.')),
                 style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant),
               ),
             ),

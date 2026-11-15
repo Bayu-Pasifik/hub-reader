@@ -120,7 +120,7 @@ class _NovelBrowseScreenState extends ConsumerState<NovelBrowseScreen> {
                 onPressed: () => _openFilters(source),
               ),
             IconButton(
-              tooltip: _searching ? 'Tutup pencarian' : 'Cari',
+              tooltip: _searching ? tr('Tutup pencarian') : tr('Cari'),
               icon: Icon(_searching ? Icons.close : Icons.search),
               onPressed: _searching ? _closeSearch : () => setState(() => _searching = true),
             ),
@@ -142,7 +142,7 @@ class _NovelBrowseScreenState extends ConsumerState<NovelBrowseScreen> {
           bottom: showSearch
               ? null
               : TabBar(tabs: [
-                  Tab(text: activeFilters > 0 ? 'Populer · filter' : 'Populer'),
+                  Tab(text: activeFilters > 0 ? tr('Populer · filter') : 'Populer'),
                   const Tab(text: 'Terbaru'),
                 ]),
         ),
@@ -190,7 +190,7 @@ class NovelGrid extends ConsumerWidget {
     if (state.isEmpty) {
       return EmptyView(
         icon: Icons.search_off_rounded,
-        title: listKey.listing == NovelListing.search ? 'Tidak ada hasil untuk "${listKey.query}"' : 'Belum ada judul',
+        title: listKey.listing == NovelListing.search ? trp('Tidak ada hasil untuk "{query}"', {'query': listKey.query}) : tr('Belum ada judul'),
       );
     }
     final showFooter = state.hasNextPage || state.loadMoreError != null;

@@ -12,6 +12,7 @@ import '../html_utils.dart';
 import '../models.dart';
 import '../source.dart';
 import '../source_exception.dart';
+import '../../core/i18n/strings.dart';
 
 class ZeistMangaSource extends HttpSource {
   ZeistMangaSource({
@@ -132,7 +133,7 @@ class ZeistMangaSource extends HttpSource {
       if (url == null) continue;
       items.add(SourceManga(
         url: url,
-        title: clean(titleEl?.text).isEmpty ? 'Tanpa judul' : clean(titleEl!.text),
+        title: clean(titleEl?.text).isEmpty ? tr('Tanpa judul') : clean(titleEl!.text),
         thumbnailUrl: attrAbs(el.querySelector('img'), 'src', res.url),
       ));
     }
@@ -174,7 +175,7 @@ class ZeistMangaSource extends HttpSource {
     final items = <SourceManga>[
       for (final e in _entries(json))
         if (_alternate(e) case final url?)
-          SourceManga(url: url, title: _t(e['title']) ?? 'Tanpa judul', thumbnailUrl: _thumbnail(e)),
+          SourceManga(url: url, title: _t(e['title']) ?? tr('Tanpa judul'), thumbnailUrl: _thumbnail(e)),
     ];
     final hasNext = items.length > _maxResults;
     return MangaPage(hasNext ? items.sublist(0, _maxResults) : items, hasNextPage: hasNext);
@@ -295,7 +296,7 @@ class ZeistMangaSource extends HttpSource {
         ? clean(doc.querySelector('h1')!.text)
         : clean(doc.querySelector('meta[property="og:title"]')?.attributes['content']);
     if (title.isEmpty) {
-      throw const SourceException(SourceErrorKind.parse, detail: 'Judul seri tidak ditemukan.');
+      throw SourceException(SourceErrorKind.parse, detail: tr('Judul seri tidak ditemukan.'));
     }
 
     var author = nonPlaceholder(_first(profile, 'mangaDetailsSelectorAuthor', 'span#author')?.text);
@@ -318,7 +319,7 @@ class ZeistMangaSource extends HttpSource {
     final synopsis =
         clean(_select(profile, 'mangaDetailsSelectorDescription', '#synopsis').map((e) => e.text).join(' '));
     final alt = clean(_first(profile, 'mangaDetailsSelectorAltName', 'header > p')?.text);
-    final description = [if (synopsis.isNotEmpty) synopsis, if (alt.isNotEmpty) 'Judul alternatif: $alt'].join('\n\n');
+    final description = [if (synopsis.isNotEmpty) synopsis, if (alt.isNotEmpty) trp('Judul alternatif: {alt}', {'alt': alt})].join('\n\n');
 
     return SourceMangaDetails(
       url: pageUrl.toString(),
@@ -349,14 +350,14 @@ class ZeistMangaSource extends HttpSource {
       final label = clwd != null
           ? _clwd.firstMatch(clwd.text)?.group(1)
           : _newLabel.firstMatch(doc.querySelector('#latest > script')?.text ?? '')?.group(1);
-      if (label == null) throw const SourceException(SourceErrorKind.parse, detail: 'Feed bab tidak ditemukan.');
+      if (label == null) throw SourceException(SourceErrorKind.parse, detail: tr('Feed bab tidak ditemukan.'));
       return _feedUrl(label).replace(queryParameters: {'alt': 'json'});
     }
 
     Uri oldFeed() {
       final src = doc.querySelector('#myUL > script')?.attributes['src'] ?? '';
       final path = _oldFeed.firstMatch(src)?.group(1);
-      if (path == null) throw const SourceException(SourceErrorKind.parse, detail: 'Feed bab tidak ditemukan.');
+      if (path == null) throw SourceException(SourceErrorKind.parse, detail: tr('Feed bab tidak ditemukan.'));
       return Uri.parse('$baseUrl$path').replace(queryParameters: {'alt': 'json'});
     }
 
@@ -419,7 +420,7 @@ class ZeistMangaSource extends HttpSource {
     final res = await fetchHtml(Uri.parse(chapter.url));
     final pages = parsePages(res.document, res.url);
     if (pages.isEmpty) {
-      throw const SourceException(SourceErrorKind.parse, detail: 'Gambar bab tidak ditemukan.');
+      throw SourceException(SourceErrorKind.parse, detail: tr('Gambar bab tidak ditemukan.'));
     }
     return pages;
   }

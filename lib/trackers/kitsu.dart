@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 
 import '../core/utils/json.dart';
 import 'tracker.dart';
+import '../core/i18n/strings.dart';
 
 /// Kitsu (kitsu.app). Login password grant dengan client publik aplikasi
 /// resmi Kitsu (sama seperti Mihon); API JSON:API di `/api/edge`.
@@ -41,7 +42,7 @@ class KitsuTracker extends Tracker {
     final me = asList(asMap(await _get('/users', {'filter[self]': 'true'}))['data']);
     if (me.isEmpty) {
       await logout();
-      throw const TrackerException('Login Kitsu gagal: profil tidak ditemukan');
+      throw TrackerException(tr('Login Kitsu gagal: profil tidak ditemukan'));
     }
     final user = asMap(me.first);
     await prefs.setString('tracker.kitsu.user_id', '${user['id']}');
@@ -58,14 +59,14 @@ class KitsuTracker extends Tracker {
       );
       final body = _json(res.data);
       final access = asString(body['access_token']);
-      if (access == null) throw const TrackerException('Login Kitsu gagal');
+      if (access == null) throw TrackerException(tr('Login Kitsu gagal'));
       await prefs.setString('tracker.kitsu.token', access);
       final refresh = asString(body['refresh_token']);
       if (refresh != null) await prefs.setString('tracker.kitsu.refresh', refresh);
     } on DioException catch (e) {
       final code = e.response?.statusCode;
       throw TrackerException(
-        code == 400 || code == 401 ? 'Email atau password Kitsu salah' : 'Kitsu tidak bisa dihubungi (${code ?? e.type.name})',
+        code == 400 || code == 401 ? tr('Email atau password Kitsu salah') : trp('Kitsu tidak bisa dihubungi ({name})', {'name': code ?? e.type.name}),
       );
     }
   }
@@ -87,10 +88,10 @@ class KitsuTracker extends Tracker {
           return _json((await send(headers())).data);
         } catch (_) {
           await logout();
-          throw const TrackerException('Sesi Kitsu berakhir, login lagi.');
+          throw TrackerException(tr('Sesi Kitsu berakhir, login lagi.'));
         }
       }
-      throw TrackerException('Kitsu tidak bisa dihubungi (${e.response?.statusCode ?? e.type.name})');
+      throw TrackerException(trp('{name} tidak bisa dihubungi ({code})', {'name': 'Kitsu', 'code': e.response?.statusCode ?? e.type.name}));
     }
   }
 
@@ -165,7 +166,7 @@ class KitsuTracker extends Tracker {
   @override
   Future<void> update(int mediaId, {required int progress, required TrackStatus status}) async {
     final userId = _userId;
-    if (userId == null) throw const TrackerException('Login Kitsu dulu');
+    if (userId == null) throw TrackerException(tr('Login Kitsu dulu'));
     final attributes = {
       'status': _statusWire[status],
       'progress': progress,

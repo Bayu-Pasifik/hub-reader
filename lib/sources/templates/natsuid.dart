@@ -15,6 +15,7 @@ import '../html_utils.dart';
 import '../models.dart';
 import '../source.dart';
 import '../source_exception.dart';
+import '../../core/i18n/strings.dart';
 
 class NatsuIdSource extends HttpSource {
   NatsuIdSource({
@@ -52,7 +53,7 @@ class NatsuIdSource extends HttpSource {
         await fetchText(_ajax.replace(queryParameters: {'type': 'search_form', 'action': 'get_nonce'}), headers: _xhr);
     final value = html_parser.parseFragment(body).querySelector('input[name=search_nonce]')?.attributes['value'];
     if (value == null || value.isEmpty) {
-      throw const SourceException(SourceErrorKind.parse, detail: 'Nonce pencarian tidak ditemukan.');
+      throw SourceException(SourceErrorKind.parse, detail: tr('Nonce pencarian tidak ditemukan.'));
     }
     return _nonce = value;
   }
@@ -150,7 +151,7 @@ class NatsuIdSource extends HttpSource {
 
   static String _unescape(String s) => html_parser.parseFragment(s).text ?? s;
 
-  static String _title(JsonMap m) => _unescape(asString(asMap(m['title'])['rendered']) ?? 'Tanpa judul').trim();
+  static String _title(JsonMap m) => _unescape(asString(asMap(m['title'])['rendered']) ?? tr('Tanpa judul')).trim();
 
   static String? _cover(JsonMap m) {
     final media = asList(asMap(m['_embedded'])['wp:featuredmedia']);
@@ -197,7 +198,7 @@ class NatsuIdSource extends HttpSource {
       artist: terms(m, 'artist').join(', ').trim().isEmpty ? null : terms(m, 'artist').join(', '),
       description: [
         if (description.isNotEmpty) description else if (clean(content.text).isNotEmpty) clean(content.text),
-        if (alts.isNotEmpty) 'Judul alternatif:\n${alts.map((a) => '- $a').join('\n')}',
+        if (alts.isNotEmpty) tr('Judul alternatif:') + '\n${alts.map((a) => '- $a').join('\n')}',
       ].join('\n\n'),
       genres: {...terms(m, 'genre'), ...terms(m, 'type')}.toList(),
       status: status.contains('Ongoing')
@@ -244,7 +245,7 @@ class NatsuIdSource extends HttpSource {
   Future<List<String>> pages(SourceChapter chapter) async {
     final res = await fetchHtml(Uri.parse(chapter.url));
     final pages = parsePages(res.document, res.url);
-    if (pages.isEmpty) throw const SourceException(SourceErrorKind.parse, detail: 'Gambar bab tidak ditemukan.');
+    if (pages.isEmpty) throw SourceException(SourceErrorKind.parse, detail: tr('Gambar bab tidak ditemukan.'));
     return pages;
   }
 

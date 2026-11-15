@@ -30,8 +30,8 @@ Future<void> showUpdateDialog(
           title: Text(trp('Versi {v} tersedia', {'v': release.version})),
           content: Text(
             [
-              if (current != null) 'Terpasang: $current.',
-              'APK diunduh lewat browser, lalu pasang di atas versi lama (data tetap ada).',
+              if (current != null) trp('Terpasang: {v}.', {'v': current}),
+              tr('APK diunduh lewat browser, lalu pasang di atas versi lama (data tetap ada).'),
             ].join('\n'),
           ),
           actions: [
@@ -56,22 +56,22 @@ Future<void> checkForUpdatesNow(BuildContext context, WidgetRef ref) async {
     ..hideCurrentSnackBar()
     ..showSnackBar(SnackBar(content: Text(text)));
 
-  say('Memeriksa pembaruan…');
+  say(tr('Memeriksa pembaruan…'));
   final current = await ref.read(appVersionProvider.future);
   final AppRelease? release;
   try {
     release = await AppUpdate.latest();
   } on Object {
-    say('Gagal memeriksa pembaruan. Periksa koneksi internet.');
+    say(tr('Gagal memeriksa pembaruan. Periksa koneksi internet.'));
     return;
   }
   await ref.read(sharedPreferencesProvider).setInt(UpdatePolicy.lastCheckKey, DateTime.now().millisecondsSinceEpoch);
   if (!context.mounted) return;
   messenger.hideCurrentSnackBar();
   if (release == null) {
-    say('Belum ada rilis di GitHub.');
+    say(tr('Belum ada rilis di GitHub.'));
   } else if (current != null && AppUpdate.compare(release.version, current) <= 0) {
-    say('Sudah versi terbaru ($current).');
+    say(trp('Sudah versi terbaru ({current}).', {'current': current}));
   } else {
     await showUpdateDialog(context, release, current: current);
   }

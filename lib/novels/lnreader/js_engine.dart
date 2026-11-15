@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter_js/flutter_js.dart';
 
 import 'http_bridge.dart';
+import '../../core/i18n/strings.dart';
 
 /// Penyimpanan key-value sinkron untuk `@libs/storage` plugin LNReader.
 abstract class PluginKeyValueStore {
@@ -129,7 +130,7 @@ class LnJsEngine {
     try {
       raw = _load.invoke([key, code]);
     } catch (e) {
-      throw LnPluginException('Plugin gagal dimuat: $e');
+      throw LnPluginException(trp('Plugin gagal dimuat: {err}', {'err': e}));
     }
     _pump();
     return (jsonDecode(raw as String) as Map).cast<String, Object?>();
@@ -143,7 +144,7 @@ class LnJsEngine {
     _call(_invoke, [id, key, method, jsonEncode(args)]);
     return completer.future.timeout(callTimeout, onTimeout: () {
       _calls.remove(id);
-      throw const LnPluginException('Waktu habis menunggu situs sumber.');
+      throw LnPluginException(tr('Waktu habis menunggu situs sumber.'));
     });
   }
 
@@ -154,7 +155,7 @@ class LnJsEngine {
       t.cancel();
     }
     for (final c in _calls.values) {
-      if (!c.isCompleted) c.completeError(const LnPluginException('Engine ditutup.'));
+      if (!c.isCompleted) c.completeError(LnPluginException(tr('Engine ditutup.')));
     }
     _rt.dispose();
   }

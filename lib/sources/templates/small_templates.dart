@@ -9,6 +9,7 @@ import '../html_utils.dart';
 import '../models.dart';
 import '../source.dart';
 import '../source_exception.dart';
+import '../../core/i18n/strings.dart';
 
 /// Basis bersama: identitas sumber dari katalog.
 abstract class _CatalogHttpSource extends HttpSource {
@@ -102,7 +103,7 @@ class ColorlibAnimeSource extends _CatalogHttpSource {
 
   SourceMangaDetails parseDetails(Document doc, Uri pageUrl) {
     final el = doc.querySelector('.anime__details__content');
-    if (el == null) throw const SourceException(SourceErrorKind.parse, detail: 'Detail seri tidak ditemukan.');
+    if (el == null) throw SourceException(SourceErrorKind.parse, detail: tr('Detail seri tidak ditemukan.'));
     final statusText = whereContains(el, 'li', const ['status']).firstOrNull?.text ?? '';
     final chapters = <SourceChapter>[
       for (final a in doc.querySelectorAll('.anime__details__episodes a'))
@@ -142,7 +143,7 @@ class ColorlibAnimeSource extends _CatalogHttpSource {
       for (final img in res.document.querySelectorAll('.container .read-img > img'))
         if (imgAttr(img, res.url) case final url?) url,
     ];
-    if (pages.isEmpty) throw const SourceException(SourceErrorKind.parse, detail: 'Gambar bab tidak ditemukan.');
+    if (pages.isEmpty) throw SourceException(SourceErrorKind.parse, detail: tr('Gambar bab tidak ditemukan.'));
     return pages;
   }
 }
@@ -292,7 +293,7 @@ class HwalumiSource extends _CatalogHttpSource {
       for (final img in res.document.querySelectorAll('img[alt^="Page "]'))
         if (attrAbs(img, 'src', res.url) case final url? when !url.contains('/api/image/p/')) url,
     ];
-    if (pages.isEmpty) throw const SourceException(SourceErrorKind.parse, detail: 'Gambar bab tidak ditemukan.');
+    if (pages.isEmpty) throw SourceException(SourceErrorKind.parse, detail: tr('Gambar bab tidak ditemukan.'));
     return pages;
   }
 }

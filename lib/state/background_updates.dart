@@ -7,6 +7,7 @@ import '../bootstrap.dart';
 import '../data/local/auto_backup.dart';
 import 'core_providers.dart';
 import 'library_updates_provider.dart';
+import '../core/i18n/strings.dart';
 
 /// Jadwal cek bab baru di latar belakang (Android WorkManager).
 class BackgroundUpdateConfig {
@@ -22,9 +23,9 @@ class BackgroundUpdateConfig {
 
   static String label(int hours) => switch (hours) {
         0 => 'Mati',
-        24 => 'Sehari sekali',
-        48 => '2 hari sekali',
-        _ => 'Tiap $hours jam',
+        24 => tr('Sehari sekali'),
+        48 => tr('2 hari sekali'),
+        _ => trp('Tiap {hours} jam', {'hours': hours}),
       };
 
   static const _hoursKey = 'library.updates.bg.hours.v1';

@@ -14,6 +14,7 @@ import '../html_utils.dart';
 import '../models.dart';
 import '../source.dart';
 import '../source_exception.dart';
+import '../../core/i18n/strings.dart';
 
 /// Semua objek JSON di payload RSC Next.js, dicari secara rekursif sampai
 /// [test] cocok. Baris payload berbentuk `<id hex>:<json>`; baris lain
@@ -204,7 +205,7 @@ class VineThemeSource extends HttpSource {
     final url = Uri.parse(mangaUrl);
     Uri pageUrl(int page) => url.replace(queryParameters: {'sort': 'desc', if (page > 1) 'page': '$page'});
     final detail = findInNextRsc(await fetchText(pageUrl(1), headers: _rscHeaders), _isDetail);
-    if (detail == null) throw const SourceException(SourceErrorKind.parse, detail: 'Data seri tidak ditemukan.');
+    if (detail == null) throw SourceException(SourceErrorKind.parse, detail: tr('Data seri tidak ditemukan.'));
 
     final rawChapters = [...asList(detail['chapters'])];
     final totalPages = (asInt(detail['totalPages']) ?? 1).clamp(1, _maxChapterPages);
@@ -312,13 +313,13 @@ class VineThemeSource extends HttpSource {
 
   List<String> parsePages(String payload) {
     final data = findInNextRsc(payload, (m) => m['chapter'] is Map && asMap(m['chapter']).containsKey('pages'));
-    if (data == null) throw const SourceException(SourceErrorKind.parse, detail: 'Gambar bab tidak ditemukan.');
+    if (data == null) throw SourceException(SourceErrorKind.parse, detail: tr('Gambar bab tidak ditemukan.'));
     final pages = [
       for (final p in asList(asMap(data['chapter'])['pages']))
         if (_abs(asMap(p)['imageUrl']) case final url?) url,
     ];
     if (pages.isEmpty) {
-      throw const SourceException(SourceErrorKind.parse, detail: 'Bab terkunci atau tidak berisi gambar.');
+      throw SourceException(SourceErrorKind.parse, detail: tr('Bab terkunci atau tidak berisi gambar.'));
     }
     return pages;
   }

@@ -54,24 +54,24 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
         fileName: name,
         bytes: Uint8List.fromList(utf8.encode(jsonEncode(data))),
         mimeType: 'application/json',
-        dialogTitle: 'Simpan cadangan',
+        dialogTitle: tr('Simpan cadangan'),
       );
-      if (mounted && uri != null) _snack('Cadangan disimpan: $name');
+      if (mounted && uri != null) _snack(trp('Cadangan disimpan: {name}', {'name': name}));
     } catch (e) {
-      if (mounted) _snack('Gagal membuat cadangan: $e');
+      if (mounted) _snack(trp('Gagal membuat cadangan: {e}', {'e': e}));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
   }
 
   Future<void> _restore() async {
-    final files = await FilePicker.pickFiles(dialogTitle: 'Pilih file cadangan');
+    final files = await FilePicker.pickFiles(dialogTitle: tr('Pilih file cadangan'));
     if (files.isEmpty || !mounted) return;
     Object? decoded;
     try {
       decoded = jsonDecode(utf8.decode(await files.first.xFile.readAsBytes()));
     } catch (_) {
-      _snack('File tidak bisa dibaca sebagai cadangan.');
+      _snack(tr('File tidak bisa dibaca sebagai cadangan.'));
       return;
     }
     await _confirmRestore(decoded);
@@ -82,7 +82,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     try {
       decoded = jsonDecode(await entry.file.readAsString());
     } catch (_) {
-      _snack('Cadangan rusak, tidak bisa dibaca.');
+      _snack(tr('Cadangan rusak, tidak bisa dibaca.'));
       return;
     }
     await _confirmRestore(decoded);
@@ -92,10 +92,10 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     setState(() => _busy = true);
     try {
       final file = await AutoBackup.run(ref.read(sharedPreferencesProvider), ref.read(novelRepositoryProvider));
-      if (mounted) _snack('Cadangan dibuat: ${file.uri.pathSegments.last}');
+      if (mounted) _snack(trp('Cadangan dibuat: {name}', {'name': file.uri.pathSegments.last}));
       setState(() => _autoList = AutoBackup.list());
     } catch (e) {
-      if (mounted) _snack('Gagal membuat cadangan: $e');
+      if (mounted) _snack(trp('Gagal membuat cadangan: {e}', {'e': e}));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -109,7 +109,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
   Future<void> _confirmRestore(Object? decoded) async {
     final summary = AppBackup.inspect(decoded);
     if (summary == null) {
-      _snack('Bukan file cadangan Hub Reader.');
+      _snack(tr('Bukan file cadangan Hub Reader.'));
       return;
     }
     if (!mounted) return;
@@ -120,16 +120,17 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
         title: Text(tr('Pulihkan cadangan?')),
         content: Text([
           if (created != null)
-            'Dibuat ${created.day}-${created.month}-${created.year} '
-                '${created.hour.toString().padLeft(2, '0')}:${created.minute.toString().padLeft(2, '0')}.',
-          '${summary.favorites} favorit, ${summary.history} riwayat, ${summary.settings} data/pengaturan.',
+            trp('Dibuat {date} {time}.', {
+              'date': '${created.day}-${created.month}-${created.year}',
+              'time': '${created.hour.toString().padLeft(2, '0')}:${created.minute.toString().padLeft(2, '0')}',
+            }),
+          trp('{favorites} favorit, {history} riwayat, {settings} data/pengaturan.', {'favorites': summary.favorites, 'history': summary.history, 'settings': summary.settings}),
           if (summary.plugins > 0)
-            '${summary.plugins} plugin novel (dipasang bila belum ada di HP ini). Pulihkan hanya file buatan sendiri: '
-                'kode plugin dijalankan aplikasi.',
+            trp('{n} plugin novel (dipasang bila belum ada di HP ini). Pulihkan hanya file buatan sendiri: kode plugin dijalankan aplikasi.', {'n': summary.plugins}),
           summary.secrets
-              ? 'Termasuk cookie login & pengaturan plugin.'
-              : 'Tanpa cookie login (yang di HP ini tetap dipakai).',
-          '\nFavorit, riwayat, progres, dan pengaturan di HP ini akan DIGANTI. Unduhan tidak berubah.',
+              ? tr('Termasuk cookie login & pengaturan plugin.')
+              : tr('Tanpa cookie login (yang di HP ini tetap dipakai).'),
+          tr('\nFavorit, riwayat, progres, dan pengaturan di HP ini akan DIGANTI. Unduhan tidak berubah.'),
         ].join('\n')),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr('Batal'))),
@@ -147,13 +148,13 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
       await BackgroundUpdates.schedule(BackgroundUpdateConfig.read(prefs), replace: true);
       final plugins = await ref.read(novelRepositoryProvider).importPlugins(AppBackup.novelPlugins(decoded));
       if (!mounted) return;
-      _snack(plugins > 0 ? 'Cadangan dipulihkan, $plugins plugin novel dipasang' : 'Cadangan dipulihkan');
+      _snack(plugins > 0 ? trp('Cadangan dipulihkan, {plugins} plugin novel dipasang', {'plugins': plugins}) : tr('Cadangan dipulihkan'));
       // Bangun ulang aplikasi supaya semua data dibaca ulang.
       AppRestart.restart(context);
     } catch (e) {
       if (mounted) {
         setState(() => _busy = false);
-        _snack('Gagal memulihkan: $e');
+        _snack(trp('Gagal memulihkan: {e}', {'e': e}));
       }
     }
   }
@@ -171,8 +172,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
         padding: const EdgeInsets.all(16),
         children: [
           Text(
-            'Cadangan berisi favorit (dengan kategori), riwayat, posisi baca, daftar pembaruan, '
-            'pengaturan (termasuk daftar repo plugin), dan plugin novel terpasang. File unduhan tidak ikut.',
+            tr('Cadangan berisi favorit (dengan kategori), riwayat, posisi baca, daftar pembaruan, pengaturan (termasuk daftar repo plugin), dan plugin novel terpasang. File unduhan tidak ikut.'),
             style: theme.textTheme.bodyMedium,
           ),
           const SizedBox(height: 16),
@@ -215,8 +215,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
           Text(tr('Cadangan otomatis'), style: theme.textTheme.titleMedium),
           const SizedBox(height: 4),
           Text(
-            'Disimpan di folder aplikasi (Android/data/<paket>/files/backups), bisa diambil lewat USB / pengelola file. '
-            'Ikut terhapus bila aplikasi dicopot, jadi sesekali salin atau buat cadangan manual ke Drive.',
+            tr('Disimpan di folder aplikasi (Android/data/<paket>/files/backups), bisa diambil lewat USB / pengelola file. Ikut terhapus bila aplikasi dicopot, jadi sesekali salin atau buat cadangan manual ke Drive.'),
             style: theme.textTheme.bodySmall,
           ),
           const SizedBox(height: 8),
@@ -264,7 +263,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                   title: Text(tr('Cadangkan sekarang')),
                   subtitle: Builder(builder: (_) {
                     final last = AutoBackup.lastRun(ref.read(sharedPreferencesProvider));
-                    return Text(last == null ? 'Belum pernah' : 'Terakhir ${_stamp(last)}');
+                    return Text(last == null ? tr('Belum pernah') : trp('Terakhir {last}', {'last': _stamp(last)}));
                   }),
                   enabled: !_busy,
                   onTap: _autoNow,

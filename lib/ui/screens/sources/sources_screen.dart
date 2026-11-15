@@ -124,7 +124,7 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
             : Text(tr('Sumber')),
         actions: [
           IconButton(
-            tooltip: _searching ? 'Tutup pencarian' : 'Cari sumber',
+            tooltip: _searching ? tr('Tutup pencarian') : tr('Cari sumber'),
             icon: Icon(_searching ? Icons.close : Icons.search),
             onPressed: () => setState(() {
               _searching = !_searching;
@@ -260,7 +260,7 @@ class _SourceTile extends ConsumerWidget {
     final detail = health?.detail;
     final info = [
       if (status != null) status.label + (status != HealthStatus.ok && detail != null ? ' (${tr(detail)})' : ''),
-      host + (overridden ? ' (diubah)' : ''),
+      host + (overridden ? tr(' (diubah)') : ''),
       if (experimental) 'eksperimental',
     ].join(' · ');
 
@@ -335,7 +335,7 @@ class _BaseUrlDialogState extends ConsumerState<_BaseUrlDialog> {
   String? get _error {
     final uri = Uri.tryParse(_controller.text.trim());
     if (uri == null || !uri.hasScheme || !uri.scheme.startsWith('http') || uri.host.isEmpty) {
-      return 'Masukkan URL lengkap, mis. https://domain-baru.com';
+      return tr('Masukkan URL lengkap, mis. https://domain-baru.com');
     }
     return null;
   }
@@ -357,10 +357,10 @@ class _BaseUrlDialogState extends ConsumerState<_BaseUrlDialog> {
       )).get<String>(_controller.text.trim());
       final cf = (res.data ?? '').contains('Just a moment');
       result = res.statusCode == 200
-          ? 'Terhubung (HTTP 200)'
-          : 'HTTP ${res.statusCode}${cf ? ' — perlu verifikasi Cloudflare' : ''}';
+          ? tr('Terhubung (HTTP 200)')
+          : 'HTTP ${res.statusCode}${cf ? ' — ' + tr('perlu verifikasi Cloudflare') : ''}';
     } on DioException catch (e) {
-      result = 'Gagal terhubung: ${e.type.name}';
+      result = trp('Gagal terhubung: {name}', {'name': e.type.name});
     }
     if (mounted) {
       setState(() {

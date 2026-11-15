@@ -69,7 +69,7 @@ class _SourceReaderScreenState extends ConsumerState<SourceReaderScreen> {
     // Daftar situs: terbaru → terlama. "Berikutnya" = indeks lebih kecil.
     final chapters = details.valueOrNull?.chapters ?? const <SourceChapter>[];
     final index = chapters.indexWhere((c) => c.url == _chapterUrl);
-    final chapter = index >= 0 ? chapters[index] : SourceChapter(url: _chapterUrl, name: 'Bab');
+    final chapter = index >= 0 ? chapters[index] : SourceChapter(url: _chapterUrl, name: tr('Bab'));
     final next = index > 0 ? chapters[index - 1] : null;
     final prev = index >= 0 && index < chapters.length - 1 ? chapters[index + 1] : null;
     final manga = details.valueOrNull;
@@ -96,7 +96,7 @@ class _SourceReaderScreenState extends ConsumerState<SourceReaderScreen> {
               final series = (sourceId: widget.sourceId, url: widget.mangaUrl);
               final marked = ref.watch(seriesBookmarksProvider(series)).contains(chapter.url);
               return IconButton(
-                tooltip: marked ? 'Hapus bookmark' : 'Bookmark bab ini',
+                tooltip: marked ? tr('Hapus bookmark') : tr('Bookmark bab ini'),
                 icon: Icon(marked ? Icons.bookmark : Icons.bookmark_border),
                 onPressed: () => ref.read(chapterBookmarksProvider.notifier).toggle(series, chapter.url),
               );
@@ -438,7 +438,7 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
         error: (_) => SizedBox(
           height: 200,
           child: Center(
-              child: Text(local ? 'Halaman ${i + 1} gagal dibaca dari unduhan' : 'Halaman ${i + 1} gagal dimuat')),
+              child: Text(local ? trp('Halaman {i} gagal dibaca dari unduhan', {'i': i + 1}) : trp('Halaman {i} gagal dimuat', {'i': i + 1}))),
         ),
       );
     }

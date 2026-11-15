@@ -102,7 +102,7 @@ class _ComicGlobalSearchScreenState extends ConsumerState<ComicGlobalSearchScree
           final page = await r.source.search(1, query).timeout(_timeout);
           r.items = page.items.toSet().toList();
         } catch (e) {
-          r.error = e is TimeoutException ? 'Waktu habis' : toSourceException(e).title;
+          r.error = e is TimeoutException ? tr('Waktu habis') : toSourceException(e).title;
         }
         if (mounted && run == _run) setState(() {});
       }
@@ -164,7 +164,7 @@ class _ComicGlobalSearchScreenState extends ConsumerState<ComicGlobalSearchScree
         actions: [
           IconButton(tooltip: tr('Cari'), icon: const Icon(Icons.search), onPressed: _search),
           IconButton(
-            tooltip: _onlyWithResults ? 'Tampilkan semua sumber' : 'Hanya sumber dengan hasil',
+            tooltip: _onlyWithResults ? tr('Tampilkan semua sumber') : tr('Hanya sumber dengan hasil'),
             icon: Icon(_onlyWithResults ? Icons.filter_alt : Icons.filter_alt_outlined),
             onPressed: () => setState(() => _onlyWithResults = !_onlyWithResults),
           ),
@@ -214,10 +214,10 @@ class _ComicGlobalSearchScreenState extends ConsumerState<ComicGlobalSearchScree
                 child: Text(
                   switch (scope) {
                     UsedSourcesScope() => usedCount == 0
-                        ? 'Belum ada sumber di favorit atau riwayat. Pilih bahasa di atas untuk mencari di semua sumber bahasa itu.'
-                        : 'Mencari di $usedCount sumber yang ada di favorit atau riwayat. Pilih bahasa di atas untuk mencari lebih luas.',
+                        ? tr('Belum ada sumber di favorit atau riwayat. Pilih bahasa di atas untuk mencari di semua sumber bahasa itu.')
+                        : trp('Mencari di {usedCount} sumber yang ada di favorit atau riwayat. Pilih bahasa di atas untuk mencari lebih luas.', {'usedCount': usedCount}),
                     LanguageScope(:final lang) =>
-                      'Mencari di ${counts[lang] ?? 0} sumber ${languageName(lang)}. Sumber mati atau rusak dilewati.',
+                      trp('Mencari di {lang} sumber {lang2}. Sumber mati atau rusak dilewati.', {'lang': counts[lang] ?? 0, 'lang2': languageName(lang)}),
                   },
                   textAlign: TextAlign.center,
                 ),
@@ -231,8 +231,8 @@ class _ComicGlobalSearchScreenState extends ConsumerState<ComicGlobalSearchScree
                     padding: const EdgeInsets.fromLTRB(16, 10, 16, 2),
                     child: Text(
                       searching
-                          ? 'Mencari… $done/${_results.length} sumber · $found dengan hasil'
-                          : '$found dari ${_results.length} sumber punya hasil',
+                          ? trp('Mencari… {done}/{length} sumber · {found} dengan hasil', {'done': done, 'length': _results.length, 'found': found})
+                          : trp('{found} dari {length} sumber punya hasil', {'found': found, 'length': _results.length}),
                       style: Theme.of(context).textTheme.labelMedium,
                     ),
                   );
@@ -259,8 +259,8 @@ class _SourceRow extends StatelessWidget {
         : result.error != null
             ? '${result.error}'
             : items!.isEmpty
-                ? 'tidak ada hasil'
-                : '${items.length} hasil';
+                ? tr('tidak ada hasil')
+                : trp('{n} hasil', {'n': items.length});
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

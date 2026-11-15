@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:archive/archive.dart';
 import 'package:html/dom.dart' as dom;
 import 'package:html/parser.dart' as html_parser;
+import '../core/i18n/strings.dart';
 
 /// Satu bab untuk diekspor: judul + HTML isi (dari plugin / unduhan).
 class EpubChapter {
@@ -179,7 +180,7 @@ class EpubWriter {
     }
 
     text('OEBPS/nav.xhtml',
-        _page('Daftar isi', '<nav epub:type="toc" id="toc"><h1>Daftar isi</h1><ol>\n$navItems</ol></nav>'));
+        _page(tr('Daftar isi'), '<nav epub:type="toc" id="toc"><h1>${tr('Daftar isi')}</h1><ol>\n$navItems</ol></nav>'));
     text('OEBPS/toc.ncx', '<?xml version="1.0" encoding="utf-8"?>\n'
         '<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">\n'
         '<head><meta name="dtb:uid" content="${escape(identifier)}"/></head>\n'

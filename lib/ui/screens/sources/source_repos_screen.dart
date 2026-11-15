@@ -89,10 +89,7 @@ class SourceReposScreen extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
               child: Text(
-                'Repo berisi daftar sumber (domain, template, opsi) dan bisa memperbarui domain sumber '
-                'tanpa update aplikasi. Repo di atas diutamakan bila id sumber sama. Bila repo utama '
-                'hilang, tambahkan mirror/fork-nya di sini. Sumber yang pernah didapat tetap tersimpan '
-                'di HP walau repo-nya hilang.',
+                tr('Repo berisi daftar sumber (domain, template, opsi) dan bisa memperbarui domain sumber tanpa update aplikasi. Repo di atas diutamakan bila id sumber sama. Bila repo utama hilang, tambahkan mirror/fork-nya di sini. Sumber yang pernah didapat tetap tersimpan di HP walau repo-nya hilang.'),
                 style: theme.textTheme.bodySmall,
               ),
             ),
@@ -108,7 +105,7 @@ class SourceReposScreen extends ConsumerWidget {
                 leading: CircleAvatar(child: Text('${i + 1}')),
                 title: Text(url == SourceCatalogRepository.defaultRepoUrl ? 'hub_reader (resmi)' : Uri.parse(url).host),
                 subtitle: Text(
-                  '${counts[url] == null ? 'belum dimuat' : '${counts[url]} sumber'} · $url',
+                  '${counts[url] == null ? tr('belum dimuat') : trp('{n} sumber', {'n': counts[url]})} · $url',
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -138,8 +135,8 @@ class SourceReposScreen extends ConsumerWidget {
               title: Text(tr('Katalog bawaan aplikasi')),
               subtitle: Text(
                 bundled == 0
-                    ? 'Semua sudah ada di repo · jadi cadangan bila repo hilang'
-                    : '$bundled sumber tambahan · selalu dipakai, prioritas terendah',
+                    ? tr('Semua sudah ada di repo · jadi cadangan bila repo hilang')
+                    : trp('{bundled} sumber tambahan · selalu dipakai, prioritas terendah', {'bundled': bundled}),
               ),
             ),
             if (orphans > 0)
@@ -153,9 +150,8 @@ class SourceReposScreen extends ConsumerWidget {
                       context: context,
                       builder: (context) => AlertDialog(
                         title: Text(tr('Lupakan sumber tanpa repo?')),
-                        content: const Text(
-                          'Sumber ini hilang dari daftar. Favorit dan riwayatnya tidak dihapus, '
-                          'tapi tidak bisa dibuka sampai sumbernya muncul lagi di repo.',
+                        content: Text(
+                          tr('Sumber ini hilang dari daftar. Favorit dan riwayatnya tidak dihapus, tapi tidak bisa dibuka sampai sumbernya muncul lagi di repo.'),
                         ),
                         actions: [
                           TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr('Batal'))),

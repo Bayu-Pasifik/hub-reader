@@ -34,7 +34,7 @@ class _TapZonePreview extends StatelessWidget {
             color: (forward ? scheme.primaryContainer : scheme.tertiaryContainer),
             child: Center(
               child: Text(
-                forward ? 'Maju' : 'Mundur',
+                forward ? tr('Maju') : tr('Mundur'),
                 style: TextStyle(
                   fontSize: 12,
                   color: forward ? scheme.onPrimaryContainer : scheme.onTertiaryContainer,
@@ -118,7 +118,7 @@ class _ReaderSettingsSheet extends ConsumerWidget {
             SwitchListTile(
               title: Text(tr('Khusus seri ini')),
               subtitle: Text(
-                perSeries ? 'Mode & potong tepi disimpan untuk seri ini' : 'Mengikuti pengaturan umum',
+                perSeries ? tr('Mode & potong tepi disimpan untuk seri ini') : tr('Mengikuti pengaturan umum'),
               ),
               value: perSeries,
               onChanged: setPerSeries,
@@ -143,8 +143,8 @@ class _ReaderSettingsSheet extends ConsumerWidget {
               title: Text(tr('Potong tepi kosong')),
               subtitle: Text(
                 effective.mode.isPaged
-                    ? 'Buang margin putih/hitam di sekeliling halaman'
-                    : 'Mode webtoon: hanya margin kiri dan kanan',
+                    ? tr('Buang margin putih/hitam di sekeliling halaman')
+                    : tr('Mode webtoon: hanya margin kiri dan kanan'),
               ),
               value: effective.display.cropBorders,
               onChanged: setCrop,

@@ -3,6 +3,7 @@ import 'dart:isolate';
 
 import 'http_bridge.dart';
 import 'js_engine.dart';
+import '../../core/i18n/strings.dart';
 
 /// Engine plugin LNReader yang berjalan di isolate latar.
 ///
@@ -34,7 +35,7 @@ class LnEngine {
     final ready = Completer<SendPort>();
     engine._receive.listen((msg) => engine._onMessage(msg as List, ready, log));
     engine._errors.listen((e) {
-      final error = LnPluginException('Engine plugin berhenti: ${(e as List).first}');
+      final error = LnPluginException(trp('Engine plugin berhenti: {err}', {'err': (e as List).first}));
       if (!ready.isCompleted) ready.completeError(error);
       engine._failAll(error);
     });
@@ -66,7 +67,7 @@ class LnEngine {
       _request(['invoke', key, method, args]);
 
   Future<Object?> _request(List<Object?> message) {
-    if (_closed) return Future.error(const LnPluginException('Engine ditutup.'));
+    if (_closed) return Future.error(LnPluginException(tr('Engine ditutup.')));
     final id = ++_seq;
     final completer = Completer<Object?>();
     _pending[id] = completer;
@@ -117,7 +118,7 @@ class LnEngine {
     if (_closed) return;
     _closed = true;
     _send.send(['dispose']);
-    _failAll(const LnPluginException('Engine ditutup.'));
+    _failAll(LnPluginException(tr('Engine ditutup.')));
     _receive.close();
     _errors.close();
     _isolate.kill(priority: Isolate.beforeNextEvent);

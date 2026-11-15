@@ -1,5 +1,6 @@
 import '../../core/utils/json.dart';
 import '../../sources/models.dart';
+import '../../core/i18n/strings.dart';
 
 /// Kunci unik satu bab dari satu sumber.
 String chapterKey(String sourceId, String chapterUrl) => '$sourceId|$chapterUrl';
@@ -43,10 +44,10 @@ class DownloadedChapter {
     return DownloadedChapter(
       sourceId: sourceId,
       mangaUrl: asString(json['manga_url']) ?? '',
-      mangaTitle: asString(json['manga_title']) ?? 'Tanpa judul',
+      mangaTitle: asString(json['manga_title']) ?? tr('Tanpa judul'),
       thumbnailUrl: asString(json['thumbnail_url']),
       chapterUrl: chapterUrl,
-      chapterName: asString(json['chapter_name']) ?? 'Bab',
+      chapterName: asString(json['chapter_name']) ?? tr('Bab'),
       relativeDir: dir,
       files: asStringList(json['files']),
       downloadedAt: asDate(json['downloaded_at']) ?? DateTime.now(),
@@ -120,11 +121,11 @@ class DownloadTask {
     return DownloadTask(
       sourceId: sourceId,
       mangaUrl: asString(json['manga_url']) ?? '',
-      mangaTitle: asString(json['manga_title']) ?? 'Tanpa judul',
+      mangaTitle: asString(json['manga_title']) ?? tr('Tanpa judul'),
       thumbnailUrl: asString(json['thumbnail_url']),
       chapter: SourceChapter(
         url: chapterUrl,
-        name: asString(json['chapter_name']) ?? 'Bab',
+        name: asString(json['chapter_name']) ?? tr('Bab'),
         number: asDouble(json['chapter_number']),
         uploadedAt: asDate(json['uploaded_at']),
       ),

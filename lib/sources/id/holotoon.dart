@@ -9,6 +9,7 @@ import '../html_utils.dart';
 import '../models.dart';
 import '../source.dart';
 import '../source_exception.dart';
+import '../../core/i18n/strings.dart';
 
 class HolotoonSource extends HttpSource {
   HolotoonSource({super.dio});
@@ -122,7 +123,7 @@ class HolotoonSource extends HttpSource {
   Future<HtmlResponse> _fetchChecked(Uri url) async {
     final res = await fetchHtml(url);
     if (res.body.contains('Memverifikasi browser')) {
-      throw SourceException(SourceErrorKind.cloudflare, detail: 'Pemeriksaan browser situs', url: url);
+      throw SourceException(SourceErrorKind.cloudflare, detail: tr('Pemeriksaan browser situs'), url: url);
     }
     return res;
   }
@@ -141,7 +142,7 @@ class HolotoonSource extends HttpSource {
   SourceMangaDetails parseDetails(Document doc, Uri pageUrl) {
     final h1 = doc.querySelector('h1');
     final title = clean(h1?.text);
-    if (title.isEmpty) throw const SourceException(SourceErrorKind.parse, detail: 'Judul tidak ditemukan.');
+    if (title.isEmpty) throw SourceException(SourceErrorKind.parse, detail: tr('Judul tidak ditemukan.'));
     // Akar detail: induk h1 terdekat (maks 6 tingkat) yang memuat tautan genre.
     Element? root = h1?.parent;
     for (var i = 0; i < 6 && root != null && root.querySelector('a[href*="genre="]') == null; i++) {
@@ -240,7 +241,7 @@ class HolotoonSource extends HttpSource {
             when !url.contains('/chapter-header/') && !url.contains('/chapter-footer/') && seen.add(url))
           url,
     ];
-    if (pages.isEmpty) throw const SourceException(SourceErrorKind.parse, detail: 'Gambar bab tidak ditemukan.');
+    if (pages.isEmpty) throw SourceException(SourceErrorKind.parse, detail: tr('Gambar bab tidak ditemukan.'));
     return pages;
   }
 }

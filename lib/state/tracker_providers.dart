@@ -9,6 +9,7 @@ import '../trackers/mangaupdates.dart';
 import '../trackers/tracker.dart';
 import 'app_settings_provider.dart';
 import 'core_providers.dart';
+import '../core/i18n/strings.dart';
 
 final trackersProvider = Provider<List<Tracker>>((ref) {
   final prefs = ref.watch(sharedPreferencesProvider);
@@ -119,7 +120,7 @@ class TrackLinksNotifier extends Notifier<Map<String, List<TrackLink>>> {
   /// Kirim progres & status ke tracker lalu simpan lokal.
   Future<void> push(String seriesKey, TrackLink link) async {
     final tracker = trackerById(ref.read(trackersProvider), link.tracker);
-    if (tracker == null || !tracker.loggedIn) throw TrackerException('Belum login ke ${tracker?.name ?? link.tracker}');
+    if (tracker == null || !tracker.loggedIn) throw TrackerException(trp('Belum login ke {name}', {'name': tracker?.name ?? link.tracker}));
     await tracker.update(link.mediaId, progress: link.progress, status: link.status);
     await put(seriesKey, link);
   }

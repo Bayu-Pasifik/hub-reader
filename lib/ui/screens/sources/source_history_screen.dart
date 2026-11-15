@@ -44,7 +44,7 @@ class SourceHistoryScreen extends ConsumerWidget {
             onPressed: () => context.push('/stats'),
           ),
           IconButton(
-            tooltip: incognito ? 'Matikan mode samaran' : 'Mode samaran',
+            tooltip: incognito ? tr('Matikan mode samaran') : tr('Mode samaran'),
             icon: Icon(incognito ? Icons.visibility_off : Icons.visibility_off_outlined),
             color: incognito ? Theme.of(context).colorScheme.primary : null,
             onPressed: () {
@@ -52,7 +52,7 @@ class SourceHistoryScreen extends ConsumerWidget {
               ScaffoldMessenger.of(context)
                 ..hideCurrentSnackBar()
                 ..showSnackBar(SnackBar(
-                  content: Text(incognito ? 'Mode samaran mati' : 'Mode samaran: riwayat & posisi baca tidak dicatat'),
+                  content: Text(incognito ? tr('Mode samaran mati') : tr('Mode samaran: riwayat & posisi baca tidak dicatat')),
                 ));
             },
           ),
@@ -87,7 +87,7 @@ class SourceHistoryScreen extends ConsumerWidget {
                   ),
                   title: Text(item.title, maxLines: 1, overflow: TextOverflow.ellipsis),
                   subtitle: Text(
-                    '${entry.chapterName} · ${source.isNovel ? 'Novel · ' : ''}${source.name} · ${relativeTime(entry.readAt)}',
+                    '${entry.chapterName} · ${source.isNovel ? '${tr('Novel')} · ' : ''}${source.name} · ${relativeTime(entry.readAt)}',
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),

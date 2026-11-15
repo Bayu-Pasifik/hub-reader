@@ -56,12 +56,12 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
             ),
             ListTile(
               leading: Icon(done ? Icons.remove_done : Icons.done_all),
-              title: Text(done ? 'Tandai belum dibaca' : 'Tandai sudah dibaca'),
+              title: Text(done ? tr('Tandai belum dibaca') : tr('Tandai sudah dibaca')),
               onTap: () => Navigator.pop(context, 'read'),
             ),
             ListTile(
               leading: Icon(bookmarked ? Icons.bookmark_remove_outlined : Icons.bookmark_add_outlined),
-              title: Text(bookmarked ? 'Hapus bookmark' : 'Bookmark bab ini'),
+              title: Text(bookmarked ? tr('Hapus bookmark') : tr('Bookmark bab ini')),
               onTap: () => Navigator.pop(context, 'bookmark'),
             ),
           ],
@@ -72,10 +72,10 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
     final String message;
     if (action == 'read') {
       await ref.read(sourceProgressProvider.notifier).setDone(_key, chapter.url, done: !done);
-      message = done ? '${chapter.name} ditandai belum dibaca' : '${chapter.name} ditandai sudah dibaca';
+      message = done ? trp('{name} ditandai belum dibaca', {'name': chapter.name}) : trp('{name} ditandai sudah dibaca', {'name': chapter.name});
     } else {
       final now = await ref.read(chapterBookmarksProvider.notifier).toggle(_key, chapter.url);
-      message = now ? '${chapter.name} di-bookmark' : 'Bookmark ${chapter.name} dihapus';
+      message = now ? trp('{name} di-bookmark', {'name': chapter.name}) : trp('Bookmark {name} dihapus', {'name': chapter.name});
     }
     if (!mounted) return;
     ScaffoldMessenger.of(context)
@@ -128,7 +128,7 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(
-        content: Text(wasFavorite ? 'Dihapus dari favorit' : 'Ditambahkan ke favorit'),
+        content: Text(wasFavorite ? tr('Dihapus dari favorit') : tr('Ditambahkan ke favorit')),
         duration: const Duration(seconds: 4),
         action: wasFavorite ? null : SnackBarAction(label: tr('Kategori'), onPressed: () => showCategorySheet(context, item.key)),
       ));
@@ -178,7 +178,7 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
         actions: [
           if (loaded != null)
             IconButton(
-              tooltip: isFavorite ? 'Hapus dari favorit' : 'Tambah ke favorit',
+              tooltip: isFavorite ? tr('Hapus dari favorit') : tr('Tambah ke favorit'),
               icon: FavoriteIcon(isFavorite: isFavorite),
               onPressed: () => _toggleFavorite(loaded),
             ),
@@ -193,7 +193,7 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
               ],
             ),
           IconButton(
-            tooltip: _oldestFirst ? 'Urutkan terbaru dulu' : 'Urutkan terlama dulu',
+            tooltip: _oldestFirst ? tr('Urutkan terbaru dulu') : tr('Urutkan terlama dulu'),
             icon: Icon(_oldestFirst ? Icons.arrow_upward : Icons.arrow_downward),
             onPressed: () => setState(() => _oldestFirst = !_oldestFirst),
           ),
@@ -270,7 +270,7 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
                   SliverToBoxAdapter(
                     child: EmptyView(
                       compact: true,
-                      title: _onlyBookmarked && ordered.isNotEmpty ? 'Belum ada bab ber-bookmark' : 'Belum ada bab',
+                      title: _onlyBookmarked && ordered.isNotEmpty ? tr('Belum ada bab ber-bookmark') : tr('Belum ada bab'),
                     ),
                   )
                 else
@@ -285,7 +285,7 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
                       final inProgress = p != null && !done && p.total > 0;
                       final subtitle = [
                         if (chapter.uploadedAt != null) relativeTime(chapter.uploadedAt!),
-                        if (inProgress) 'Hal. ${p.page + 1}/${p.total}',
+                        if (inProgress) trp('Hal. {p}/{total}', {'p': p.page + 1, 'total': p.total}),
                       ].join(' · ');
                       // Bab selesai diredupkan, seperti Mihon.
                       final fade = done && !isLastRead;
@@ -366,7 +366,7 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
       if (manga.author != null) manga.author!,
       if (manga.artist != null && manga.artist != manga.author) manga.artist!,
       manga.status.label,
-      '${manga.chapters.length} bab',
+      trp('{length} bab', {'length': manga.chapters.length}),
     ].join(' · ');
 
     return Padding(

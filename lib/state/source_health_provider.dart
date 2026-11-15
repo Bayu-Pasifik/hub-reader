@@ -116,10 +116,10 @@ class SourceHealthNotifier extends Notifier<Map<String, SourceHealth>> {
     try {
       final page = await source.popular(1).timeout(_timeout);
       health = page.items.isEmpty
-          ? SourceHealth(HealthStatus.broken, DateTime.now(), detail: 'Daftar kosong')
+          ? SourceHealth(HealthStatus.broken, DateTime.now(), detail: tr('Daftar kosong'))
           : SourceHealth(HealthStatus.ok, DateTime.now());
     } on TimeoutException {
-      health = SourceHealth(HealthStatus.dead, DateTime.now(), detail: 'Timeout');
+      health = SourceHealth(HealthStatus.dead, DateTime.now(), detail: tr('Timeout'));
     } catch (error) {
       health = SourceHealth.fromError(error);
     }

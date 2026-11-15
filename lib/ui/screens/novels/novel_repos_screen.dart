@@ -87,9 +87,7 @@ class NovelReposScreen extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
               child: Text(
-                'Repo di atas diutamakan bila ada plugin dengan id sama. Bila repo utama dihapus, '
-                'tambahkan mirror/fork-nya di sini. Plugin yang sudah pernah dibuka tetap tersimpan '
-                'di HP walau repo-nya hilang.',
+                tr('Repo di atas diutamakan bila ada plugin dengan id sama. Bila repo utama dihapus, tambahkan mirror/fork-nya di sini. Plugin yang sudah pernah dibuka tetap tersimpan di HP walau repo-nya hilang.'),
                 style: theme.textTheme.bodySmall,
               ),
             ),
@@ -103,10 +101,10 @@ class NovelReposScreen extends ConsumerWidget {
               ListTile(
                 leading: CircleAvatar(child: Text('${i + 1}')),
                 title: Text(
-                  url == NovelPluginRepository.defaultManifestUrl ? 'LNReader (resmi)' : Uri.parse(url).host,
+                  url == NovelPluginRepository.defaultManifestUrl ? tr('LNReader (resmi)') : Uri.parse(url).host,
                 ),
                 subtitle: Text(
-                  '${counts[url] == null ? 'belum dimuat' : '${counts[url]} plugin'} · $url',
+                  '${counts[url] == null ? tr('belum dimuat') : trp('{n} plugin', {'n': counts[url]})} · $url',
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),

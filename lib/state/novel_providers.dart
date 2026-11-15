@@ -20,6 +20,7 @@ import '../sources/source_exception.dart';
 import 'core_providers.dart';
 import 'download_providers.dart';
 import 'novel_health_provider.dart';
+import '../core/i18n/strings.dart';
 
 /// Prefix id sumber novel di favorit/riwayat (berbagi store dengan komik).
 const novelSourcePrefix = 'lnr:';
@@ -115,8 +116,8 @@ class NovelReposNotifier extends Notifier<List<String>> {
   /// Error teks bila gagal, null bila berhasil.
   Future<String?> add(String input) async {
     final url = normalize(input);
-    if (url == null) return 'Bukan URL http(s) yang valid';
-    if (state.contains(url)) return 'Repo sudah ada';
+    if (url == null) return tr('Bukan URL http(s) yang valid');
+    if (state.contains(url)) return tr('Repo sudah ada');
     await _save([...state, url]);
     return null;
   }
@@ -202,7 +203,7 @@ final novelSourceProvider = FutureProvider.family<NovelSource, String>((ref, id)
   final manifest = await ref.watch(novelManifestProvider.future);
   final info = manifest.byId(id);
   if (info == null) {
-    throw SourceException(SourceErrorKind.unknown, detail: 'Plugin novel "$id" tidak ada di daftar.');
+    throw SourceException(SourceErrorKind.unknown, detail: trp('Plugin novel "{id}" tidak ada di daftar.', {'id': id}));
   }
   final code = await ref.watch(novelRepositoryProvider).code(info);
   final engine = await ref.watch(novelEngineProvider.future);
@@ -380,7 +381,7 @@ final novelChapterProvider = FutureProvider.autoDispose.family<String, ({String 
     final source = await ref.watch(novelSourceProvider(key.pluginId).future);
     final html = await source.chapter(key.path);
     if (html.trim().isEmpty) {
-      throw const SourceException(SourceErrorKind.parse, detail: 'Isi bab kosong.');
+      throw SourceException(SourceErrorKind.parse, detail: tr('Isi bab kosong.'));
     }
     return html;
   },
@@ -397,9 +398,11 @@ enum NovelFont {
   condensed('Rapat', 'sans-serif-condensed'),
   mono('Mono', 'monospace');
 
-  const NovelFont(this.label, this.family);
+  const NovelFont(this._label, this.family);
 
-  final String label;
+  final String _label;
+
+  String get label => tr(_label);
   final String? family;
 }
 

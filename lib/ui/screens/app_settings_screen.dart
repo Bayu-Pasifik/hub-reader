@@ -85,13 +85,13 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
   Future<void> _clearImages() async {
     await DefaultCacheManager().emptyCache();
     PaintingBinding.instance.imageCache.clear();
-    _snack('Cache gambar dihapus');
+    _snack(tr('Cache gambar dihapus'));
     await _measure();
   }
 
   Future<void> _clearApi() async {
     await ref.read(jsonCacheProvider).clear();
-    _snack('Cache data dihapus');
+    _snack(tr('Cache data dihapus'));
     await _measure();
   }
 
@@ -103,8 +103,8 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
         builder: (context) => AlertDialog(
           title: Text(tr('Hapus kode plugin?')),
           content: Text(
-            '$orphans plugin sudah hilang dari repo dan tidak bisa diunduh lagi. '
-            'Buat cadangan (dengan plugin) dulu bila masih ingin memakainya.',
+            trp('{n} plugin sudah hilang dari repo dan tidak bisa diunduh lagi. ', {'n': orphans}) +
+                tr('Buat cadangan (dengan plugin) dulu bila masih ingin memakainya.'),
           ),
           actions: [
             TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr('Batal'))),
@@ -117,16 +117,16 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
     final dir = await _pluginsDir();
     if (await dir.exists()) await dir.delete(recursive: true);
     ref.invalidate(novelManifestProvider);
-    _snack('Kode plugin novel dihapus; diunduh lagi saat dibuka');
+    _snack(tr('Kode plugin novel dihapus; diunduh lagi saat dibuka'));
     await _measure();
   }
 
   Future<void> _toggleLock(bool on) async {
     // Pastikan perangkat punya kunci layar & pemiliknya yang menyalakan.
-    final ok = await AppLockGate.authenticate(on ? 'Nyalakan kunci aplikasi' : 'Matikan kunci aplikasi');
+    final ok = await AppLockGate.authenticate(on ? tr('Nyalakan kunci aplikasi') : tr('Matikan kunci aplikasi'));
     if (!mounted) return;
     if (!ok) {
-      _snack(on ? 'Tidak bisa memverifikasi. Pastikan HP punya PIN/pola/sidik jari.' : 'Verifikasi gagal');
+      _snack(on ? tr('Tidak bisa memverifikasi. Pastikan HP punya PIN/pola/sidik jari.') : tr('Verifikasi gagal'));
       return;
     }
     await ref.read(appSettingsProvider.notifier).update((s) => s.copyWith(appLock: on));
@@ -148,7 +148,7 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
       appBar: AppBar(title: Text(tr('Pengaturan'))),
       body: ListView(
         children: [
-          header('Tampilan'),
+          header(tr('Tampilan')),
           ListTile(
             title: Text(tr('Bahasa')),
             subtitle: Text(tr('Bahasa antarmuka aplikasi')),
@@ -247,7 +247,7 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
               if (v) await ref.read(downloadIndexProvider.notifier).purgeRead();
             },
           ),
-          header('Jaringan'),
+          header(tr('Jaringan')),
           ListTile(
             leading: const Icon(Icons.shield_outlined),
             title: Text(tr('DNS over HTTPS (DoH)')),
@@ -258,7 +258,7 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
               onChanged: (v) => ref.read(dohProviderProvider.notifier).set(v ?? DohProvider.none),
             ),
           ),
-          header('Sumber'),
+          header(tr('Sumber')),
           SwitchListTile(
             secondary: const Icon(Icons.eighteen_up_rating_outlined),
             title: Text(tr('Tampilkan sumber NSFW (18+)')),
@@ -272,8 +272,8 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
               leading: const Icon(Icons.collections_bookmark_outlined),
               title: Text(tr('Repo sumber komik')),
               subtitle: Text(
-                '${ref.watch(sourceCatalogReposProvider).length} repo + katalog bawaan'
-                '${orphans > 0 ? ' · $orphans sumber tanpa repo' : ''}',
+                trp('{n} repo + katalog bawaan', {'n': ref.watch(sourceCatalogReposProvider).length}) +
+                (orphans > 0 ? ' · ' + trp('{n} sumber tanpa repo', {'n': orphans}) : ''),
               ),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => context.push('/source-repos'),
@@ -283,8 +283,8 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
             leading: const Icon(Icons.hub_outlined),
             title: Text(tr('Repo plugin novel')),
             subtitle: Text(
-              '${ref.watch(novelReposProvider).length} repo'
-              '${(ref.watch(novelManifestProvider).valueOrNull?.orphans.length ?? 0) > 0 ? ' · ${ref.watch(novelManifestProvider).valueOrNull!.orphans.length} plugin tanpa repo' : ''}',
+              trp('{n} repo', {'n': ref.watch(novelReposProvider).length}) +
+              ((ref.watch(novelManifestProvider).valueOrNull?.orphans.length ?? 0) > 0 ? ' · ' + trp('{n} plugin tanpa repo', {'n': ref.watch(novelManifestProvider).valueOrNull!.orphans.length}) : ''),
             ),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/novel-repos'),
@@ -345,8 +345,8 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
             leading: const Icon(Icons.system_update_outlined),
             title: Text(tr('Periksa pembaruan')),
             subtitle: Text(switch (ref.watch(appVersionProvider)) {
-              AsyncData(:final value) when value != null => 'Versi $value · dari GitHub Releases',
-              _ => 'Dari GitHub Releases',
+              AsyncData(:final value) when value != null => trp('Versi {value} · dari GitHub Releases', {'value': value}),
+              _ => tr('Dari GitHub Releases'),
             }),
             onTap: () => checkForUpdatesNow(context, ref),
           ),

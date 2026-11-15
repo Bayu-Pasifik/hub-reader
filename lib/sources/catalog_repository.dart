@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 
 import '../core/utils/json.dart';
 import 'catalog.dart';
+import '../core/i18n/strings.dart';
 
 /// Hasil memuat katalog: katalog gabungan, umur salinan tertua, dan error
 /// pembaruan (sebagian repo gagal; salinan lama tetap dipakai).
@@ -114,7 +115,7 @@ class SourceCatalogRepository {
     );
     final body = response.data ?? '';
     final list = _parse(body, repo);
-    if (list.isEmpty) throw const FormatException('Katalog sumber kosong');
+    if (list.isEmpty) throw FormatException(tr('Katalog sumber kosong'));
     final file = _repoFile(repo);
     await file.parent.create(recursive: true);
     await file.writeAsString(body, flush: true);

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import '../core/i18n/strings.dart';
 
 enum SourceErrorKind {
   noConnection,
@@ -71,7 +72,7 @@ class SourceException implements Exception {
         }
         return SourceException(SourceErrorKind.unknown, detail: error.message);
       case DioExceptionType.cancel:
-        return const SourceException(SourceErrorKind.unknown, detail: 'Dibatalkan');
+        return SourceException(SourceErrorKind.unknown, detail: tr('Dibatalkan'));
       // Tipe baru di versi Dio lebih baru (mis. transformTimeout).
       default:
         return const SourceException(SourceErrorKind.timeout);
@@ -79,33 +80,33 @@ class SourceException implements Exception {
   }
 
   String get title => switch (kind) {
-        SourceErrorKind.noConnection => 'Tidak dapat terhubung ke situs',
-        SourceErrorKind.timeout => 'Situs terlalu lama merespons',
-        SourceErrorKind.cloudflare => 'Situs diproteksi Cloudflare',
-        SourceErrorKind.notFound => 'Halaman tidak ditemukan',
-        SourceErrorKind.rateLimited => 'Terlalu banyak permintaan',
-        SourceErrorKind.server => 'Situs sedang bermasalah',
-        SourceErrorKind.parse => 'Format situs berubah',
-        SourceErrorKind.unknown => 'Terjadi kesalahan',
+        SourceErrorKind.noConnection => tr('Tidak dapat terhubung ke situs'),
+        SourceErrorKind.timeout => tr('Situs terlalu lama merespons'),
+        SourceErrorKind.cloudflare => tr('Situs diproteksi Cloudflare'),
+        SourceErrorKind.notFound => tr('Halaman tidak ditemukan'),
+        SourceErrorKind.rateLimited => tr('Terlalu banyak permintaan'),
+        SourceErrorKind.server => tr('Situs sedang bermasalah'),
+        SourceErrorKind.parse => tr('Format situs berubah'),
+        SourceErrorKind.unknown => tr('Terjadi kesalahan'),
       };
 
   String get message => switch (kind) {
         SourceErrorKind.noConnection =>
-          'Periksa koneksi internet. Domain situs mungkin juga sudah pindah atau diblokir provider (coba DNS/VPN).',
-        SourceErrorKind.timeout => 'Coba lagi beberapa saat lagi.',
+          tr('Periksa koneksi internet. Domain situs mungkin juga sudah pindah atau diblokir provider (coba DNS/VPN).'),
+        SourceErrorKind.timeout => tr('Coba lagi beberapa saat lagi.'),
         SourceErrorKind.cloudflare =>
-          'Situs meminta verifikasi browser. Ketuk "Buka di WebView", selesaikan verifikasinya, lalu halaman dimuat ulang otomatis.',
+          tr('Situs meminta verifikasi browser. Ketuk "Buka di WebView", selesaikan verifikasinya, lalu halaman dimuat ulang otomatis.'),
         SourceErrorKind.notFound =>
-          'URL mungkin sudah berubah atau seri dihapus dari situs.',
-        SourceErrorKind.rateLimited => 'Tunggu sebentar lalu coba lagi.',
+          tr('URL mungkin sudah berubah atau seri dihapus dari situs.'),
+        SourceErrorKind.rateLimited => tr('Tunggu sebentar lalu coba lagi.'),
         // 520–526: Cloudflare tidak bisa menghubungi server asli situs.
         SourceErrorKind.server when statusCode != null && statusCode! >= 520 && statusCode! <= 526 =>
-          'Server situs tidak merespons ($statusCode dari Cloudflare). Biasanya situsnya sedang down; coba lagi nanti.',
+          trp('Server situs tidak merespons ({code} dari Cloudflare). Biasanya situsnya sedang down; coba lagi nanti.', {'code': statusCode}),
         SourceErrorKind.server =>
-          'Situs mengembalikan error${statusCode != null ? ' ($statusCode)' : ''}.',
+          tr('Situs mengembalikan error') + (statusCode != null ? ' ($statusCode)' : '') + '.',
         SourceErrorKind.parse =>
-          detail ?? 'Data tidak ditemukan di halaman. Extension perlu diperbarui.',
-        SourceErrorKind.unknown => detail ?? 'Kesalahan tak terduga.',
+          detail ?? tr('Data tidak ditemukan di halaman. Extension perlu diperbarui.'),
+        SourceErrorKind.unknown => detail ?? tr('Kesalahan tak terduga.'),
       };
 
   @override

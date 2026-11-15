@@ -10,6 +10,7 @@ import '../novels/novel_source.dart';
 import 'core_providers.dart';
 import 'novel_providers.dart';
 import 'source_health_provider.dart';
+import '../core/i18n/strings.dart';
 
 /// Status plugin novel per id: hasil cek di HP (tombol "Cek semua", atau
 /// saat daftar populer dibuka), ditambah data awal dari cek di PC
@@ -90,7 +91,7 @@ class NovelHealthNotifier extends Notifier<Map<String, SourceHealth>> {
     } else if (error != null) {
       record(pluginId, SourceHealth.fromError(novelError(error)));
     } else {
-      record(pluginId, SourceHealth(HealthStatus.broken, DateTime.now(), detail: 'Daftar kosong'));
+      record(pluginId, SourceHealth(HealthStatus.broken, DateTime.now(), detail: tr('Daftar kosong')));
     }
   }
 
@@ -109,10 +110,10 @@ class NovelHealthNotifier extends Notifier<Map<String, SourceHealth>> {
       final source = await ref.read(novelSourceProvider(info.id).future).timeout(_timeout);
       final items = await source.popular(1).timeout(_timeout);
       health = items.isEmpty
-          ? SourceHealth(HealthStatus.broken, DateTime.now(), detail: 'Daftar kosong')
+          ? SourceHealth(HealthStatus.broken, DateTime.now(), detail: tr('Daftar kosong'))
           : SourceHealth(HealthStatus.ok, DateTime.now());
     } on TimeoutException {
-      health = SourceHealth(HealthStatus.dead, DateTime.now(), detail: 'Timeout');
+      health = SourceHealth(HealthStatus.dead, DateTime.now(), detail: tr('Timeout'));
     } catch (error) {
       health = SourceHealth.fromError(novelError(error, site: info.site));
     }

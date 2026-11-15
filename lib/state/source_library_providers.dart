@@ -8,6 +8,7 @@ import 'core_providers.dart';
 import 'download_providers.dart' show downloadIndexProvider;
 import 'novel_providers.dart' show isNovelSourceId;
 import 'reading_stats_provider.dart';
+import '../core/i18n/strings.dart';
 
 final sourceLibraryStoreProvider = Provider<SourceLibraryStore>(
   (ref) => SourceLibraryStore(ref.watch(sharedPreferencesProvider)),
@@ -134,9 +135,11 @@ enum LibrarySort {
   lastRead('Terakhir dibaca'),
   unread('Bab baru belum dibaca');
 
-  const LibrarySort(this.label);
+  const LibrarySort(this._label);
 
-  final String label;
+  final String _label;
+
+  String get label => tr(_label);
 }
 
 enum LibraryKind {
@@ -144,9 +147,11 @@ enum LibraryKind {
   comic('Komik'),
   novel('Novel');
 
-  const LibraryKind(this.label);
+  const LibraryKind(this._label);
 
-  final String label;
+  final String _label;
+
+  String get label => tr(_label);
 }
 
 typedef LibraryView = ({LibrarySort sort, LibraryKind kind, bool unreadOnly, bool downloadedOnly});
@@ -190,9 +195,11 @@ enum LibraryDisplay {
   coverOnly('Sampul saja'),
   list('Daftar');
 
-  const LibraryDisplay(this.label);
+  const LibraryDisplay(this._label);
 
-  final String label;
+  final String _label;
+
+  String get label => tr(_label);
 }
 
 typedef LibraryLayout = ({LibraryDisplay display, int columns});

@@ -35,8 +35,8 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(
         content: Text([
-          found == 0 ? 'Tidak ada bab baru' : '$found bab baru',
-          if (failed.isNotEmpty) '${failed.length} seri gagal dicek',
+          found == 0 ? tr('Tidak ada bab baru') : trp('{found} bab baru', {'found': found}),
+          if (failed.isNotEmpty) trp('{length} seri gagal dicek', {'length': failed.length}),
         ].join(' · ')),
       ));
     await notifier.markSeen();
@@ -150,8 +150,8 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
     final today = DateTime(now.year, now.month, now.day);
     final day = DateTime(d.year, d.month, d.day);
     final diff = today.difference(day).inDays;
-    if (diff == 0) return 'Hari ini';
-    if (diff == 1) return 'Kemarin';
+    if (diff == 0) return tr('Hari ini');
+    if (diff == 1) return tr('Kemarin');
     return '${day.day.toString().padLeft(2, '0')}-${day.month.toString().padLeft(2, '0')}-${day.year}';
   }
 
@@ -179,7 +179,7 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
         title: Text(tr('Pembaruan')),
         actions: [
           IconButton(
-            tooltip: s.checking ? 'Hentikan' : 'Cek sekarang',
+            tooltip: s.checking ? tr('Hentikan') : tr('Cek sekarang'),
             icon: Icon(s.checking ? Icons.stop : Icons.refresh),
             onPressed: s.checking ? ref.read(libraryUpdatesProvider.notifier).stop : _check,
           ),
@@ -229,12 +229,11 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
                         : favorites.isEmpty
                             ? AppAnimation.empty
                             : AppAnimation.success,
-                    title: s.checking ? 'Mengecek ${s.done}/${s.total} favorit…' : 'Belum ada bab baru',
+                    title: s.checking ? trp('Mengecek {done}/{total} favorit…', {'done': s.done, 'total': s.total}) : tr('Belum ada bab baru'),
                     message: favorites.isEmpty
-                        ? 'Tambahkan komik atau novel ke favorit; bab barunya akan muncul di sini.'
-                        : 'Tarik ke bawah untuk mengecek ${favorites.length} favorit. '
-                            'Pengecekan pertama hanya mencatat bab yang sudah ada.'
-                            '${s.lastCheck != null ? '\nTerakhir dicek ${relativeTime(s.lastCheck!)}.' : ''}',
+                        ? tr('Tambahkan komik atau novel ke favorit; bab barunya akan muncul di sini.')
+                        : trp('Tarik ke bawah untuk mengecek {n} favorit. Pengecekan pertama hanya mencatat bab yang sudah ada.', {'n': favorites.length}) +
+                            (s.lastCheck != null ? '\n' + trp('Terakhir dicek {lastCheck}.', {'lastCheck': relativeTime(s.lastCheck!)}) : ''),
                   ),
                 ],
               )
@@ -246,8 +245,8 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
                       padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                       child: Text(
                         [
-                          if (s.lastCheck != null) 'Terakhir dicek ${relativeTime(s.lastCheck!)}',
-                          if (s.failed.isNotEmpty) '${s.failed.length} gagal: ${s.failed.take(3).join(', ')}',
+                          if (s.lastCheck != null) trp('Terakhir dicek {lastCheck}', {'lastCheck': relativeTime(s.lastCheck!)}),
+                          if (s.failed.isNotEmpty) trp('{n} gagal: {list}', {'n': s.failed.length, 'list': s.failed.take(3).join(', ')}),
                         ].join(' · '),
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
@@ -272,7 +271,7 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
                     title: Text(u.item.title,
                         maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: color)),
                     subtitle: Text(
-                      '${u.chapterName} · ${info.isNovel ? 'Novel · ' : ''}${info.name}',
+                      '${u.chapterName} · ${info.isNovel ? '${tr('Novel')} · ' : ''}${info.name}',
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(color: color),

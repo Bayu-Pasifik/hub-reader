@@ -12,6 +12,7 @@ import '../html_utils.dart';
 import '../models.dart';
 import '../source.dart';
 import '../source_exception.dart';
+import '../../core/i18n/strings.dart';
 
 class IkenSource extends HttpSource {
   IkenSource({
@@ -131,10 +132,10 @@ class IkenSource extends HttpSource {
   Future<SourceMangaDetails> details(String mangaUrl) async {
     final segments = Uri.parse(mangaUrl).pathSegments.where((s) => s.isNotEmpty).toList();
     final slug = segments.length >= 2 ? segments[1] : segments.lastOrNull;
-    if (slug == null) throw const SourceException(SourceErrorKind.parse, detail: 'URL seri tidak dikenali.');
+    if (slug == null) throw SourceException(SourceErrorKind.parse, detail: tr('URL seri tidak dikenali.'));
     final json = asMap(await fetchJson(Uri.parse('$apiUrl/api/post').replace(queryParameters: {'postSlug': slug})));
     final post = asMap(json['post']);
-    if (_isNovel(post)) throw const SourceException(SourceErrorKind.parse, detail: 'Novel tidak didukung.');
+    if (_isNovel(post)) throw SourceException(SourceErrorKind.parse, detail: tr('Novel tidak didukung.'));
 
     // Daftar bab di `post` sering kosong; endpoint chapters berisi semuanya.
     var chapters = asList(post['chapters']);
@@ -233,7 +234,7 @@ class IkenSource extends HttpSource {
   Future<List<String>> pages(SourceChapter chapter) async {
     final chapterId = int.tryParse(Uri.parse(chapter.url).fragment);
     if (chapterId == null) {
-      throw const SourceException(SourceErrorKind.parse, detail: 'Muat ulang daftar bab.');
+      throw SourceException(SourceErrorKind.parse, detail: tr('Muat ulang daftar bab.'));
     }
     final json = asMap(await fetchJson(
         Uri.parse('$apiUrl/api/chapter').replace(queryParameters: {'chapterId': '$chapterId'})));
@@ -244,13 +245,13 @@ class IkenSource extends HttpSource {
 
   List<String> parsePages(JsonMap chapter) {
     if (chapter['isShortLinkLocked'] == true) {
-      throw const SourceException(SourceErrorKind.parse, detail: 'Bab terkunci (short link).');
+      throw SourceException(SourceErrorKind.parse, detail: tr('Bab terkunci (short link).'));
     }
     if (chapter['isLockedByCoins'] == true) {
-      throw const SourceException(SourceErrorKind.parse, detail: 'Bab terkunci (butuh koin).');
+      throw SourceException(SourceErrorKind.parse, detail: tr('Bab terkunci (butuh koin).'));
     }
     if (chapter['isPermanentlyLocked'] == true) {
-      throw const SourceException(SourceErrorKind.parse, detail: 'Bab terkunci permanen.');
+      throw SourceException(SourceErrorKind.parse, detail: tr('Bab terkunci permanen.'));
     }
     final images = [
       for (final img in asList(chapter['images']))

@@ -6,6 +6,7 @@ import '../html_utils.dart';
 import '../models.dart';
 import '../source.dart';
 import '../source_exception.dart';
+import '../../core/i18n/strings.dart';
 
 /// Situs tanpa daftar berhalaman: semua judul diambil sekali dari API lalu
 /// diurutkan/dicari di sisi klien (sama dengan Kotlin).
@@ -88,7 +89,7 @@ class KoronaxScanSource extends HttpSource {
       artist: nonPlaceholder(asString(m['artist'])),
       description: [
         if (desc != null && desc.isNotEmpty) desc,
-        if (alt != null && alt.isNotEmpty) 'Judul alternatif:\n- $alt'
+        if (alt != null && alt.isNotEmpty) trp('Judul alternatif:\n- {alt}', {'alt': alt})
       ].join('\n\n'),
       genres: [
         if (asString(m['type']) case final t?) t,
@@ -128,7 +129,7 @@ class KoronaxScanSource extends HttpSource {
         if (asString(asMap(p)['image_url']) case final u?) image(u),
     ];
     if (pages.isEmpty) {
-      throw const SourceException(SourceErrorKind.parse, detail: 'Gambar tidak ditemukan (bab premium?).');
+      throw SourceException(SourceErrorKind.parse, detail: tr('Gambar tidak ditemukan (bab premium?).'));
     }
     return pages;
   }

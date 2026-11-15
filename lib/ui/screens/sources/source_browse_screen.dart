@@ -92,7 +92,7 @@ class _SourceBrowseScreenState extends ConsumerState<SourceBrowseScreen> {
               onPressed: () => _openFilters(source),
             ),
             IconButton(
-              tooltip: _searching ? 'Tutup pencarian' : 'Cari',
+              tooltip: _searching ? tr('Tutup pencarian') : tr('Cari'),
               icon: Icon(_searching ? Icons.close : Icons.search),
               onPressed: _searching ? _closeSearch : () => setState(() => _searching = true),
             ),
@@ -157,8 +157,8 @@ class _MangaGrid extends ConsumerWidget {
       return EmptyView(
         icon: Icons.search_off_rounded,
         title: listKey.listing == SourceListing.search
-            ? 'Tidak ada hasil untuk "${listKey.query}"'
-            : 'Belum ada judul',
+            ? trp('Tidak ada hasil untuk "{query}"', {'query': listKey.query})
+            : tr('Belum ada judul'),
       );
     }
 
@@ -258,7 +258,7 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
                           for (final def in list) ...[
                             Padding(
                               padding: const EdgeInsets.only(top: 12, bottom: 6),
-                              child: Text(def.label, style: theme.textTheme.titleSmall),
+                              child: Text(tr(def.label), style: theme.textTheme.titleSmall),
                             ),
                             Wrap(
                               spacing: 6,
@@ -267,14 +267,14 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
                                 for (final option in def.options)
                                   switch (def) {
                                     SelectFilterDef() => ChoiceChip(
-                                        label: Text(option.label),
+                                        label: Text(tr(option.label)),
                                         selected: (_values.single(def.key) ?? '') == option.value,
                                         onSelected: (_) => setState(
                                           () => _values = _values.withSingle(def.key, option.value),
                                         ),
                                       ),
                                     MultiSelectFilterDef() => FilterChip(
-                                        label: Text(option.label),
+                                        label: Text(tr(option.label)),
                                         selected: _values.multi(def.key).contains(option.value),
                                         onSelected: (_) => setState(
                                           () => _values = _values.toggleMulti(def.key, option.value),

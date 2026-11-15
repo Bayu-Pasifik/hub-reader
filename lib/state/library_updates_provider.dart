@@ -37,7 +37,7 @@ class LibraryUpdate {
     return LibraryUpdate(
       item: item,
       chapterUrl: url,
-      chapterName: asString(json['chapter_name']) ?? 'Bab',
+      chapterName: asString(json['chapter_name']) ?? tr('Bab'),
       foundAt: asDate(json['found_at']) ?? DateTime.now(),
     );
   }
@@ -415,12 +415,12 @@ class LibraryUpdatesNotifier extends Notifier<LibraryUpdatesState> {
       await _notifications.show(
         id: 1001,
         title: trp('{n} bab baru', {'n': found.length}),
-        body: titles.length <= 3 ? titles.join(', ') : '${titles.take(3).join(', ')} +${titles.length - 3} lagi',
-        notificationDetails: const NotificationDetails(
+        body: titles.length <= 3 ? titles.join(', ') : trp('{list} +{n} lagi', {'list': titles.take(3).join(', '), 'n': titles.length - 3}),
+        notificationDetails: NotificationDetails(
           android: AndroidNotificationDetails(
             'library_updates',
-            'Bab baru',
-            channelDescription: 'Bab baru dari novel & komik favorit',
+            tr('Bab baru'),
+            channelDescription: tr('Bab baru dari novel & komik favorit'),
             importance: Importance.defaultImportance,
           ),
         ),

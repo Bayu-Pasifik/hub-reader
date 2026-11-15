@@ -10,6 +10,7 @@ import 'models.dart';
 
 export 'filters.dart';
 import 'source_exception.dart';
+import '../core/i18n/strings.dart';
 
 /// Kontrak satu extension sumber (padanan `Source`/`KeiSource` di Mihon).
 ///
@@ -207,7 +208,7 @@ abstract class HttpSource extends MangaSource {
       );
       return jsonDecode(response.data ?? 'null');
     } on FormatException {
-      throw const SourceException(SourceErrorKind.parse, detail: 'Respons API bukan JSON.');
+      throw SourceException(SourceErrorKind.parse, detail: tr('Respons API bukan JSON.'));
     } catch (error) {
       throw toSourceException(error);
     }

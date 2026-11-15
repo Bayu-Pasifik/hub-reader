@@ -6,6 +6,7 @@ import 'lnreader/engine_isolate.dart';
 import 'lnreader/http_bridge.dart';
 import 'lnreader/js_engine.dart';
 import 'novel_models.dart';
+import '../core/i18n/strings.dart';
 
 /// Satu plugin LNReader yang sudah dimuat ke [LnEngine].
 class NovelSource {
@@ -39,7 +40,7 @@ class NovelSource {
 
   final NovelPluginInfo info;
   final LnEngine? _engine;
-  LnEngine get engine => _engine ?? (throw StateError('Sumber ${info.id} tidak memakai plugin JS.'));
+  LnEngine get engine => _engine ?? (throw StateError(trp('Sumber {id} tidak memakai plugin JS.', {'id': info.id})));
   final String name;
   final String site;
   final String version;
@@ -182,7 +183,7 @@ SourceException novelError(Object error, {String? site}) {
     return SourceException(SourceErrorKind.server, detail: message);
   }
   if (lower.contains('typeerror') || lower.contains('cannot read') || lower.contains('undefined')) {
-    return SourceException(SourceErrorKind.parse, detail: 'Plugin gagal membaca halaman situs: $message');
+    return SourceException(SourceErrorKind.parse, detail: trp('Plugin gagal membaca halaman situs: {err}', {'err': message}));
   }
   return SourceException(SourceErrorKind.unknown, detail: message);
 }

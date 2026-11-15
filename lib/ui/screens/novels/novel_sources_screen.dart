@@ -61,7 +61,7 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
             : Text(tr('Novel')),
         actions: [
           IconButton(
-            tooltip: _searching ? 'Tutup pencarian' : 'Cari sumber',
+            tooltip: _searching ? tr('Tutup pencarian') : tr('Cari sumber'),
             icon: Icon(_searching ? Icons.close : Icons.search),
             onPressed: () => setState(() {
               _searching = !_searching;
@@ -109,7 +109,7 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
               else
                 PopupMenuItem(
                   value: 'check',
-                  child: Text(selectedLang == null ? 'Cek semua plugin' : 'Cek plugin ${languageName(selectedLang)}'),
+                  child: Text(selectedLang == null ? tr('Cek semua plugin') : trp('Cek plugin {lang}', {'lang': languageName(selectedLang)})),
                 ),
               CheckedPopupMenuItem(
                 value: 'hide',
@@ -214,7 +214,7 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
             child: Text(
-              '$hiddenCount plugin rusak/mati disembunyikan',
+              trp('{n} plugin rusak/mati disembunyikan', {'n': hiddenCount}),
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ),
@@ -244,9 +244,7 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
                         return Padding(
                           padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
                           child: Text(
-                            'Plugin dari ${ref.watch(novelReposProvider).length} repo (atur di Pengaturan › Repo plugin novel), '
-                            'dijalankan langsung di HP. Kode plugin diunduh saat sumber pertama kali dibuka '
-                            'dan tetap bisa dipakai walau repo hilang.',
+                            trp('Plugin dari {n} repo (atur di Pengaturan › Repo plugin novel), dijalankan langsung di HP. Kode plugin diunduh saat sumber pertama kali dibuka dan tetap bisa dipakai walau repo hilang.', {'n': ref.watch(novelReposProvider).length}),
                             style: Theme.of(context).textTheme.bodySmall,
                             textAlign: TextAlign.center,
                           ),
@@ -308,7 +306,7 @@ class _PluginTile extends ConsumerWidget {
     };
     final detail = health?.detail;
     final info = [
-      if (p.orphaned) 'Hilang dari repo, tersimpan di HP',
+      if (p.orphaned) tr('Hilang dari repo, tersimpan di HP'),
       if (status != null) status.label + (status != HealthStatus.ok && detail != null ? ' (${tr(detail)})' : ''),
       if (p.host.isNotEmpty) p.host,
       'v${p.version}',
