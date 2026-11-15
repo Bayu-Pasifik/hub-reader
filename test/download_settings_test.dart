@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hub_reader/core/platform/network_bridge.dart';
 import 'package:hub_reader/data/local/download_store.dart';
-import 'package:hub_reader/data/models/source_library.dart';
 import 'package:hub_reader/sources/models.dart';
 import 'package:hub_reader/state/app_settings_provider.dart';
 import 'package:hub_reader/state/core_providers.dart';

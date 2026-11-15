@@ -295,6 +295,14 @@ belakang. Bawaan: lewati tamat dan belum dibaca. Disimpan di `library.updates.ru
 
 **Cadangan WebDAV** (layar Cadangan): unggah cadangan otomatis/manual ke server WebDAV (Nextcloud, ownCloud, Synology, Koofr), tes koneksi, dan pulihkan dari daftar berkas di server. Kata sandi disimpan di Keystore, bukan di cadangan.
 
+**Enkripsi cadangan** (`lib/data/local/backup_crypto.dart`): cadangan manual menawarkan kata sandi opsional; cadangan otomatis dan unggahan WebDAV dienkripsi bila "Enkripsi cadangan otomatis" aktif (sandi di Keystore, tidak ikut cadangan). Format: amplop JSON `hub_reader-backup-enc` berisi salt, nonce, dan ciphertext AES-256-GCM; kunci dari PBKDF2-HMAC-SHA256 (210.000 iterasi, tercatat di amplop). Mengimpor cadangan terenkripsi meminta sandi; sandi salah atau berkas diubah ditolak oleh tag GCM. Jika enkripsi otomatis aktif tetapi sandi tidak terbaca dari Keystore, cadangan gagal, bukan ditulis polos.
+
+**Unduhan**: Pengaturan → "Unduh hanya lewat Wi-Fi" menahan antrean sampai jaringan tanpa kuota (`NetworkBridge`, channel `hub_reader/network`; bila status tidak terbaca, dianggap bukan Wi-Fi), lalu lanjut sendiri (cek tiap 20 detik). "Lokasi unduhan" memindahkan semua unduhan ke penyimpanan internal, memori bersama, atau kartu SD (`DownloadStore.moveTo`; file asal baru dihapus setelah semua tersalin; pilihan di `downloads.root.v1`, kembali ke folder bawaan bila volume hilang). Jumlah gambar paralel 1-4.
+
+**Log error**: `CrashLog` (`lib/core/crash/crash_log.dart`) mencatat `FlutterError` dan error async yang tidak tertangkap ke `crash.log` (maks. 128 KB). Pengaturan → Log error untuk melihat, membagikan, atau menghapus. Tidak ada pengiriman jaringan.
+
+**Build rilis**: R8 aktif (`isMinifyEnabled`, `isShrinkResources`, aturan di `android/app/proguard-rules.pro`). Cleartext HTTP tetap diizinkan di manifest karena `network_security_config` tidak mendukung CIDR (OPDS/WebDAV di LAN); OPDS dan WebDAV menolak HTTP ke host publik di sisi Dart.
+
 **Ekspor CBZ** (layar Unduhan): ikon arsip per bab menyimpan CBZ lewat dialog sistem; ikon di tingkat seri mengekspor
 semua bab ke folder pilihan. Halaman diberi nomor ulang (`001.ext`) plus `ComicInfo.xml`, jadi terbaca di Komga, Kavita, dan Mihon.
 
