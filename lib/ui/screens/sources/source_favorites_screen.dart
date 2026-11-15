@@ -241,7 +241,7 @@ class _FavoritesGrid extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (entries.isEmpty) {
-      return EmptyView(animation: AppAnimation.search, title: tr('Tidak ada favorit yang cocok'));
+      return EmptyView(animation: AppAnimation.searchFile, title: tr('Tidak ada favorit yang cocok'));
     }
     final layout = ref.watch(libraryLayoutProvider);
 

@@ -137,6 +137,11 @@ Batasan saat ini:
   Progres baca per bab terikat ke URL bab, jadi bab yang dimuat ulang dari domain baru
   dianggap bab berbeda.
 
+**Animasi:** `assets/lottie/*.json` dibuat sendiri (`tool/gen_lottie.mjs`). Empat ilustrasi `*.lottie` diunduh dari
+[LottieFiles](https://lottiefiles.com/) (animasi gratis, Lottie Simple License): `empty_box` (daftar kosong), `no_internet`
+(tidak ada koneksi), `search_file` (hasil pencarian kosong), `no_history` (riwayat kosong). Dibaca lewat decoder dotLottie
+di `state_views.dart`; warnanya tidak mengikuti aksen tema.
+
 **Lisensi:** template dan selector di-port dari
 [keiyoushi/extensions-source](https://github.com/keiyoushi/extensions-source)
 (Apache License 2.0). Atribusi ada di kepala setiap file hasil port. Hak cipta konten

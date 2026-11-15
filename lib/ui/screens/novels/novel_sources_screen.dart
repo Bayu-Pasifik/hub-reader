@@ -234,7 +234,7 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
           ),
         Expanded(
           child: rows.isEmpty
-              ? EmptyView(animation: AppAnimation.search, title: tr('Tidak ada sumber yang cocok'))
+              ? EmptyView(animation: AppAnimation.searchFile, title: tr('Tidak ada sumber yang cocok'))
               : RefreshIndicator(
                   onRefresh: () => ref.read(novelManifestProvider.notifier).refresh(),
                   child: ListView.builder(

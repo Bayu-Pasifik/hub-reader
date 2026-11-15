@@ -9,11 +9,30 @@ enum AppAnimation {
   heart('assets/lottie/heart.json'),
   sync('assets/lottie/sync.json'),
   success('assets/lottie/success.json'),
-  search('assets/lottie/search.json');
+  search('assets/lottie/search.json'),
+  // Ilustrasi dari LottieFiles (Lottie Simple License), berwarna sendiri.
+  emptyBox('assets/lottie/empty_box.lottie', tint: false),
+  noInternet('assets/lottie/no_internet.lottie', tint: false),
+  searchFile('assets/lottie/search_file.lottie', tint: false),
+  noHistory('assets/lottie/no_history.lottie', tint: false);
 
-  const AppAnimation(this.asset);
+  const AppAnimation(this.asset, {this.tint = true});
   final String asset;
+
+  /// Warnai dengan warna aksen tema (hanya animasi buatan sendiri).
+  final bool tint;
+
+  bool get isDotLottie => asset.endsWith('.lottie');
 }
+
+/// Ambil file animasi JSON di dalam arsip .lottie (dotLottie).
+Future<LottieComposition?> _decodeDotLottie(List<int> bytes) =>
+    LottieComposition.decodeZip(bytes, filePicker: (files) {
+      for (final f in files) {
+        if (f.name.startsWith('animations/') && f.name.endsWith('.json')) return f;
+      }
+      return null;
+    });
 
 class AppLottie extends StatelessWidget {
   const AppLottie(this.animation,
@@ -33,10 +52,13 @@ class AppLottie extends StatelessWidget {
       height: size,
       repeat: repeat,
       animate: !reduce,
-      delegates: LottieDelegates(values: [
-        ValueDelegate.color(const ['**', 'Fill 1', '**'], value: color),
-        ValueDelegate.strokeColor(const ['**', 'Stroke 1', '**'], value: color),
-      ]),
+      decoder: animation.isDotLottie ? _decodeDotLottie : null,
+      delegates: animation.tint
+          ? LottieDelegates(values: [
+              ValueDelegate.color(const ['**', 'Fill 1', '**'], value: color),
+              ValueDelegate.strokeColor(const ['**', 'Stroke 1', '**'], value: color),
+            ])
+          : null,
       errorBuilder: (_, __, ___) => Icon(Icons.inbox_outlined, size: size / 2),
     );
   }
@@ -155,7 +177,7 @@ class EmptyView extends StatelessWidget {
   @override
   Widget build(BuildContext context) => _MessageView(
         icon: icon,
-        animation: animation ?? (compact ? null : AppAnimation.empty),
+        animation: animation ?? (compact ? null : AppAnimation.emptyBox),
         title: title,
         message: message,
         compact: compact,

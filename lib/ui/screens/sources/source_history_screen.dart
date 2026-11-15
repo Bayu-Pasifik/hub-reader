@@ -66,6 +66,7 @@ class SourceHistoryScreen extends ConsumerWidget {
       ),
       body: history.isEmpty
           ? EmptyView(
+              animation: AppAnimation.noHistory,
               icon: Icons.history,
               title: tr('Belum ada riwayat'),
               message: tr('Bab yang kamu buka akan muncul di sini.'),

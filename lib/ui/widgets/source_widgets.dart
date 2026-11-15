@@ -116,7 +116,7 @@ class SourceErrorView extends StatelessWidget {
         e.kind == SourceErrorKind.cloudflare ? (e.url?.toString() ?? verifyUrl) : null;
     return EmptyView(
       compact: compact,
-      animation: AppAnimation.error,
+      animation: e.kind == SourceErrorKind.noConnection ? AppAnimation.noInternet : AppAnimation.error,
       icon: switch (e.kind) {
         SourceErrorKind.noConnection => Icons.wifi_off_rounded,
         SourceErrorKind.timeout => Icons.hourglass_bottom_rounded,
