@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/local/source_library_store.dart';
@@ -106,6 +108,7 @@ class LibraryCategoriesNotifier extends Notifier<List<String>> {
     state = [for (final c in state) c == from ? n : c];
     await _save();
     await ref.read(sourceFavoritesProvider.notifier).renameCategory(from, n);
+    await ref.read(libraryCategoryViewsProvider.notifier).rename(from, n);
     return true;
   }
 
@@ -113,6 +116,7 @@ class LibraryCategoriesNotifier extends Notifier<List<String>> {
     state = state.where((c) => c != name).toList();
     await _save();
     await ref.read(sourceFavoritesProvider.notifier).renameCategory(name, null);
+    await ref.read(libraryCategoryViewsProvider.notifier).rename(name, null);
   }
 
   Future<void> move(String name, int delta) async {
@@ -154,7 +158,49 @@ enum LibraryKind {
   String get label => tr(_label);
 }
 
-typedef LibraryView = ({LibrarySort sort, LibraryKind kind, bool unreadOnly, bool downloadedOnly});
+typedef LibraryView = ({
+  LibrarySort sort,
+  bool reversed,
+  LibraryKind kind,
+  bool unreadOnly,
+  bool downloadedOnly,
+  bool startedOnly,
+});
+
+const defaultLibraryView = (
+  sort: LibrarySort.added,
+  reversed: false,
+  kind: LibraryKind.all,
+  unreadOnly: false,
+  downloadedOnly: false,
+  startedOnly: false,
+);
+
+/// Apakah tampilan berbeda dari bawaan (untuk lencana tombol filter).
+bool isLibraryViewFiltered(LibraryView v) => v != defaultLibraryView;
+
+List<String> encodeLibraryView(LibraryView v) => [
+      v.sort.name,
+      v.kind.name,
+      v.unreadOnly ? '1' : '0',
+      v.downloadedOnly ? '1' : '0',
+      v.reversed ? '1' : '0',
+      v.startedOnly ? '1' : '0',
+    ];
+
+LibraryView decodeLibraryView(List<Object?> raw) {
+  T pick<T extends Enum>(List<T> values, int i, T fallback) =>
+      raw.length > i ? values.where((v) => v.name == raw[i]).firstOrNull ?? fallback : fallback;
+  bool flag(int i) => raw.length > i && raw[i] == '1';
+  return (
+    sort: pick(LibrarySort.values, 0, LibrarySort.added),
+    kind: pick(LibraryKind.values, 1, LibraryKind.all),
+    unreadOnly: flag(2),
+    downloadedOnly: flag(3),
+    reversed: flag(4),
+    startedOnly: flag(5),
+  );
+}
 
 final libraryViewProvider = NotifierProvider<LibraryViewNotifier, LibraryView>(LibraryViewNotifier.new);
 
@@ -162,31 +208,69 @@ class LibraryViewNotifier extends Notifier<LibraryView> {
   static const _key = 'library.view.v1';
 
   @override
-  LibraryView build() {
-    final raw = ref.watch(sharedPreferencesProvider).getStringList(_key) ?? const [];
-    T pick<T extends Enum>(List<T> values, int i, T fallback) =>
-        raw.length > i ? values.where((v) => v.name == raw[i]).firstOrNull ?? fallback : fallback;
-    return (
-      sort: pick(LibrarySort.values, 0, LibrarySort.added),
-      kind: pick(LibraryKind.values, 1, LibraryKind.all),
-      unreadOnly: raw.length > 2 && raw[2] == '1',
-      downloadedOnly: raw.length > 3 && raw[3] == '1',
-    );
-  }
+  LibraryView build() => decodeLibraryView(ref.watch(sharedPreferencesProvider).getStringList(_key) ?? const []);
 
-  Future<void> set({LibrarySort? sort, LibraryKind? kind, bool? unreadOnly, bool? downloadedOnly}) async {
+  Future<void> set({
+    LibrarySort? sort,
+    bool? reversed,
+    LibraryKind? kind,
+    bool? unreadOnly,
+    bool? downloadedOnly,
+    bool? startedOnly,
+  }) async {
     state = (
       sort: sort ?? state.sort,
+      reversed: reversed ?? state.reversed,
       kind: kind ?? state.kind,
       unreadOnly: unreadOnly ?? state.unreadOnly,
       downloadedOnly: downloadedOnly ?? state.downloadedOnly,
+      startedOnly: startedOnly ?? state.startedOnly,
     );
-    await ref.read(sharedPreferencesProvider).setStringList(
-      _key,
-      [state.sort.name, state.kind.name, state.unreadOnly ? '1' : '0', state.downloadedOnly ? '1' : '0'],
-    );
+    await ref.read(sharedPreferencesProvider).setStringList(_key, encodeLibraryView(state));
   }
 }
+
+/// Urutan & filter khusus satu kategori; kategori tanpa entri ikut tampilan umum.
+final libraryCategoryViewsProvider =
+    NotifierProvider<LibraryCategoryViewsNotifier, Map<String, LibraryView>>(LibraryCategoryViewsNotifier.new);
+
+class LibraryCategoryViewsNotifier extends Notifier<Map<String, LibraryView>> {
+  static const _key = 'library.view.categories.v1';
+
+  @override
+  Map<String, LibraryView> build() {
+    final raw = ref.watch(sharedPreferencesProvider).getString(_key);
+    if (raw == null) return const {};
+    try {
+      final map = jsonDecode(raw) as Map;
+      return {for (final e in map.entries) '${e.key}': decodeLibraryView((e.value as List).cast<Object?>())};
+    } on Object {
+      return const {};
+    }
+  }
+
+  /// Simpan tampilan kategori; null menghapusnya (kembali ke tampilan umum).
+  Future<void> set(String category, LibraryView? view) async {
+    final next = {...state};
+    view == null ? next.remove(category) : next[category] = view;
+    state = next;
+    await ref
+        .read(sharedPreferencesProvider)
+        .setString(_key, jsonEncode({for (final e in next.entries) e.key: encodeLibraryView(e.value)}));
+  }
+
+  /// Kategori dihapus / diganti nama: pindahkan atau buang pengaturannya.
+  Future<void> rename(String from, String? to) async {
+    final v = state[from];
+    if (v == null) return;
+    await set(from, null);
+    if (to != null) await set(to, v);
+  }
+}
+
+/// Tampilan efektif untuk satu tab: milik kategori bila ada, kalau tidak yang umum.
+LibraryView effectiveLibraryView(LibraryView global, Map<String, LibraryView> perCategory, String? category) =>
+    (category == null ? null : perCategory[category]) ?? global;
 
 /// Cara menampilkan favorit.
 enum LibraryDisplay {

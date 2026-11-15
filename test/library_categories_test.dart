@@ -48,4 +48,48 @@ void main() {
     expect(v.kind, LibraryKind.novel);
     expect(v.sort, LibrarySort.title);
   });
+
+  test('tampilan per kategori tersimpan, diwarisi bila tidak ada, dan ikut rename/hapus kategori', () async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    ProviderContainer make() {
+      final c = ProviderContainer(overrides: [sharedPreferencesProvider.overrideWithValue(prefs)]);
+      addTearDown(c.dispose);
+      return c;
+    }
+
+    final c = make();
+    await c.read(libraryCategoriesProvider.notifier).add('Baca');
+    await c.read(libraryViewProvider.notifier).set(sort: LibrarySort.title);
+    final custom = (
+      sort: LibrarySort.lastRead,
+      reversed: true,
+      kind: LibraryKind.comic,
+      unreadOnly: false,
+      downloadedOnly: true,
+      startedOnly: true,
+    );
+    await c.read(libraryCategoryViewsProvider.notifier).set('Baca', custom);
+
+    final c2 = make();
+    final global = c2.read(libraryViewProvider);
+    final per = c2.read(libraryCategoryViewsProvider);
+    expect(effectiveLibraryView(global, per, 'Baca'), custom);
+    expect(effectiveLibraryView(global, per, 'Lain').sort, LibrarySort.title); // diwarisi
+    expect(effectiveLibraryView(global, per, null).sort, LibrarySort.title); // tab Semua
+
+    await c2.read(libraryCategoriesProvider.notifier).rename('Baca', 'Sedang dibaca');
+    expect(c2.read(libraryCategoryViewsProvider).keys, ['Sedang dibaca']);
+    expect(c2.read(libraryCategoryViewsProvider)['Sedang dibaca'], custom);
+    await c2.read(libraryCategoriesProvider.notifier).remove('Sedang dibaca');
+    expect(c2.read(libraryCategoryViewsProvider), isEmpty);
+  });
+
+  test('tampilan lama (4 kolom) tetap terbaca; balik urutan & sudah dimulai default mati', () {
+    final v = decodeLibraryView(['title', 'novel', '1', '0']);
+    expect([v.reversed, v.startedOnly], [false, false]);
+    expect(isLibraryViewFiltered(defaultLibraryView), isFalse);
+    expect(isLibraryViewFiltered(decodeLibraryView(['added', 'all', '0', '0', '1'])), isTrue);
+    expect(decodeLibraryView(encodeLibraryView(v)), v);
+  });
 }

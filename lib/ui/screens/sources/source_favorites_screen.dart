@@ -61,6 +61,7 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
       if (view.kind == LibraryKind.novel && !novel) return false;
       if (view.unreadOnly && (unread[f.item.key] ?? 0) == 0) return false;
       if (view.downloadedOnly && !downloaded.contains(f.item.key)) return false;
+      if (view.startedOnly && !lastRead.containsKey(f.item.key)) return false;
       if (q.isNotEmpty && !f.item.title.toLowerCase().contains(q)) return false;
       return true;
     }).toList();
@@ -75,7 +76,7 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
       case LibrarySort.unread:
         out.sort((a, b) => (unread[b.item.key] ?? 0).compareTo(unread[a.item.key] ?? 0));
     }
-    return out;
+    return view.reversed ? out.reversed.toList() : out;
   }
 
   /// Buka seri acak dari tab yang sedang tampil (sesuai filter & pencarian).
@@ -88,7 +89,9 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
     Map<String, DateTime> lastRead,
     Set<String> downloaded,
   ) {
-    final pool = _apply(favorites, tabs[tabIndex.clamp(0, tabs.length - 1)], view, unread, lastRead, downloaded);
+    final category = tabs[tabIndex.clamp(0, tabs.length - 1)];
+    final pool = _apply(
+        favorites, category, effectiveLibraryView(view, ref.read(libraryCategoryViewsProvider), category), unread, lastRead, downloaded);
     if (pool.isEmpty) {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
@@ -99,11 +102,12 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
     context.push(librarySourceInfo(ref, pick.item.sourceId).detailLocation(pick.item.url));
   }
 
-  Future<void> _openFilter() => showModalBottomSheet<void>(
+  Future<void> _openFilter(String? category) => showModalBottomSheet<void>(
         context: context,
         useRootNavigator: true,
         showDragHandle: true,
-        builder: (_) => const _ViewSheet(),
+        isScrollControlled: true,
+        builder: (_) => _ViewSheet(category: category),
       );
 
   Future<void> _openActions(SourceFavorite entry) => showModalBottomSheet<void>(
@@ -124,10 +128,8 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
     final unseen = ref.watch(libraryUpdatesProvider.select((s) => s.unseen));
     final checking = ref.watch(libraryUpdatesProvider.select((s) => s.checking));
     final downloaded = {for (final c in ref.watch(downloadIndexProvider).values) c.mangaKey};
-    final filtered = view.kind != LibraryKind.all ||
-        view.unreadOnly ||
-        view.downloadedOnly ||
-        view.sort != LibrarySort.added;
+    final categoryViews = ref.watch(libraryCategoryViewsProvider);
+    final filtered = isLibraryViewFiltered(view) || categoryViews.values.any(isLibraryViewFiltered);
     final tabs = <String?>[null, ...categories];
 
     return DefaultTabController(
@@ -167,10 +169,12 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
                 ),
               ),
             ),
-            IconButton(
-              tooltip: tr('Tampilan, filter & urutan'),
-              icon: Badge(isLabelVisible: filtered, smallSize: 8, child: const Icon(Icons.filter_list)),
-              onPressed: _openFilter,
+            Builder(
+              builder: (context) => IconButton(
+                tooltip: tr('Tampilan, filter & urutan'),
+                icon: Badge(isLabelVisible: filtered, smallSize: 8, child: const Icon(Icons.filter_list)),
+                onPressed: () => _openFilter(tabs[DefaultTabController.of(context).index.clamp(0, tabs.length - 1)]),
+              ),
             ),
             IconButton(
               tooltip: tr('Pembaruan'),
@@ -220,7 +224,7 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
                 children: [
                   for (final c in tabs)
                     _FavoritesGrid(
-                      entries: _apply(favorites, c, view, unread, lastRead, downloaded),
+                      entries: _apply(favorites, c, effectiveLibraryView(view, categoryViews, c), unread, lastRead, downloaded),
                       unread: unread,
                       onLongPress: _openActions,
                     ),
@@ -391,12 +395,48 @@ class _FavoriteTile extends StatelessWidget {
 }
 
 class _ViewSheet extends ConsumerWidget {
-  const _ViewSheet();
+  const _ViewSheet({this.category});
+
+  /// Tab yang sedang dibuka; null = tab "Semua" (selalu memakai tampilan umum).
+  final String? category;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final view = ref.watch(libraryViewProvider);
-    final n = ref.read(libraryViewProvider.notifier);
+    final global = ref.watch(libraryViewProvider);
+    final globalN = ref.read(libraryViewProvider.notifier);
+    final cat = category;
+    final catViews = ref.watch(libraryCategoryViewsProvider);
+    final catN = ref.read(libraryCategoryViewsProvider.notifier);
+    final perCategory = cat != null && catViews.containsKey(cat);
+    final view = perCategory ? catViews[cat]! : global;
+    // Ubah tampilan kategori bila "Khusus kategori ini" aktif, kalau tidak yang umum.
+    Future<void> setView({
+      LibrarySort? sort,
+      bool? reversed,
+      LibraryKind? kind,
+      bool? unreadOnly,
+      bool? downloadedOnly,
+      bool? startedOnly,
+    }) {
+      if (perCategory) {
+        return catN.set(cat, (
+          sort: sort ?? view.sort,
+          reversed: reversed ?? view.reversed,
+          kind: kind ?? view.kind,
+          unreadOnly: unreadOnly ?? view.unreadOnly,
+          downloadedOnly: downloadedOnly ?? view.downloadedOnly,
+          startedOnly: startedOnly ?? view.startedOnly,
+        ));
+      }
+      return globalN.set(
+        sort: sort,
+        reversed: reversed,
+        kind: kind,
+        unreadOnly: unreadOnly,
+        downloadedOnly: downloadedOnly,
+        startedOnly: startedOnly,
+      );
+    }
     final layout = ref.watch(libraryLayoutProvider);
     final layoutNotifier = ref.read(libraryLayoutProvider.notifier);
     final theme = Theme.of(context);
@@ -407,6 +447,15 @@ class _ViewSheet extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (cat != null)
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(trp('Khusus kategori "{c}"', {'c': cat})),
+                subtitle: Text(perCategory ? tr('Urutan & filter disimpan untuk kategori ini') : tr('Mengikuti tampilan umum')),
+                // Mulai dari tampilan yang sedang berlaku, supaya tidak berubah tiba-tiba.
+                value: perCategory,
+                onChanged: (on) => catN.set(cat, on ? global : null),
+              ),
             Text(tr('Mode tampilan'), style: theme.textTheme.titleSmall),
             const SizedBox(height: 6),
             Wrap(spacing: 6, children: [
@@ -437,24 +486,36 @@ class _ViewSheet extends ConsumerWidget {
             const SizedBox(height: 6),
             Wrap(spacing: 6, children: [
               for (final k in LibraryKind.values)
-                ChoiceChip(label: Text(k.label), selected: view.kind == k, onSelected: (_) => n.set(kind: k)),
+                ChoiceChip(label: Text(k.label), selected: view.kind == k, onSelected: (_) => setView(kind: k)),
             ]),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
               title: Text(tr('Hanya yang ada bab baru belum dibaca')),
               value: view.unreadOnly,
-              onChanged: (v) => n.set(unreadOnly: v),
+              onChanged: (v) => setView(unreadOnly: v),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(tr('Hanya yang sudah mulai dibaca')),
+              value: view.startedOnly,
+              onChanged: (v) => setView(startedOnly: v),
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
               title: Text(tr('Hanya yang sudah diunduh')),
               value: view.downloadedOnly,
-              onChanged: (v) => n.set(downloadedOnly: v),
+              onChanged: (v) => setView(downloadedOnly: v),
             ),
             Text(tr('Urutkan'), style: theme.textTheme.titleSmall),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(tr('Balik urutan')),
+              value: view.reversed,
+              onChanged: (v) => setView(reversed: v),
+            ),
             RadioGroup<LibrarySort>(
               groupValue: view.sort,
-              onChanged: (v) => n.set(sort: v),
+              onChanged: (v) => setView(sort: v),
               child: Column(
                 children: [
                   for (final s in LibrarySort.values)
