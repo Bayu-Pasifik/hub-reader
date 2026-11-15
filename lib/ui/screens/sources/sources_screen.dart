@@ -40,7 +40,7 @@ const _languageNames = {
   'zh': '中文 (Tionghoa)',
 };
 
-String languageName(String code) => _languageNames[code] ?? code.toUpperCase();
+String languageName(String code) => tr(_languageNames[code] ?? code.toUpperCase());
 
 /// Urutan bahasa: Indonesia, English, lalu sisanya menurut jumlah sumber.
 List<String> _orderedLanguages(Map<String, int> counts) => counts.keys.toList()
@@ -163,7 +163,7 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
             itemBuilder: (_) => [
               run.running
                   ? PopupMenuItem(value: 'stop', child: Text(tr('Hentikan pengecekan')))
-                  : PopupMenuItem(value: 'check', child: Text('Cek ${filtered.where((s) => s is! LocalSource).length} sumber')),
+                  : PopupMenuItem(value: 'check', child: Text(trp('Cek {n} sumber', {'n': filtered.where((s) => s is! LocalSource).length}))),
               PopupMenuItem(value: 'import', child: Text(tr('Impor file (CBZ/ZIP/EPUB)'))),
               CheckedPopupMenuItem(value: 'dead', checked: hideDead, child: Text(tr('Sembunyikan sumber mati'))),
             ],
@@ -182,7 +182,7 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
                     Padding(
                       padding: const EdgeInsets.only(right: 6),
                       child: ChoiceChip(
-                        label: Text('Semua (${visible.length})'),
+                        label: Text(trp('Semua ({n})', {'n': visible.length})),
                         selected: lang == null,
                         onSelected: (_) => ref.read(sourceLanguageProvider.notifier).set(null),
                       ),
@@ -191,7 +191,7 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
                       Padding(
                         padding: const EdgeInsets.only(right: 6),
                         child: ChoiceChip(
-                          label: Text('${l == 'local' ? 'Lokal' : l.toUpperCase()} (${counts[l]})'),
+                          label: Text('${l == 'local' ? tr('Lokal') : l.toUpperCase()} (${counts[l]})'),
                           selected: lang == l,
                           onSelected: (_) => ref.read(sourceLanguageProvider.notifier).set(l),
                         ),
@@ -259,7 +259,7 @@ class _SourceTile extends ConsumerWidget {
     };
     final detail = health?.detail;
     final info = [
-      if (status != null) status.label + (status != HealthStatus.ok && detail != null ? ' ($detail)' : ''),
+      if (status != null) status.label + (status != HealthStatus.ok && detail != null ? ' (${tr(detail)})' : ''),
       host + (overridden ? ' (diubah)' : ''),
       if (experimental) 'eksperimental',
     ].join(' · ');
@@ -282,12 +282,12 @@ class _SourceTile extends ConsumerWidget {
       // Tekan lama = cek ulang sumber ini saja.
       onLongPress: () async {
         final messenger = ScaffoldMessenger.of(context);
-        messenger.showSnackBar(SnackBar(content: Text('Mengecek ${s.name}…'), duration: const Duration(seconds: 1)));
+        messenger.showSnackBar(SnackBar(content: Text(trp('Mengecek {name}…', {'name': s.name})), duration: const Duration(seconds: 1)));
         final h = await ref.read(sourceHealthProvider.notifier).check(s);
         final d = h.detail;
         messenger
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text('${s.name}: ${h.status.label}${d != null ? ' ($d)' : ''}')));
+          ..showSnackBar(SnackBar(content: Text('${s.name}: ${h.status.label}${d != null ? ' (${tr(d)})' : ''}')));
       },
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
@@ -391,7 +391,7 @@ class _BaseUrlDialogState extends ConsumerState<_BaseUrlDialog> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return AlertDialog(
-      title: Text('Domain ${widget.source.name}'),
+      title: Text(trp('Domain {name}', {'name': widget.source.name})),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -404,7 +404,7 @@ class _BaseUrlDialogState extends ConsumerState<_BaseUrlDialog> {
             onChanged: (_) => setState(() => _testResult = null),
           ),
           const SizedBox(height: 8),
-          Text('Bawaan: ${widget.source.defaultBaseUrl}', style: theme.textTheme.bodySmall),
+          Text(trp('Bawaan: {url}', {'url': widget.source.defaultBaseUrl}), style: theme.textTheme.bodySmall),
           const SizedBox(height: 4),
           Text(
             tr('Favorit & riwayat dari domain lama tetap bisa dibuka (dialihkan otomatis).'),

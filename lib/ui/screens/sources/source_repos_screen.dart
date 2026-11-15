@@ -100,7 +100,7 @@ class SourceReposScreen extends ConsumerWidget {
               ListTile(
                 leading: Icon(Icons.cloud_off_outlined, color: theme.colorScheme.error),
                 title: Text(tr('Gagal memperbarui sebagian repo')),
-                subtitle: Text('Memakai salinan terakhir. ${state.refreshError}',
+                subtitle: Text(trp('Memakai salinan terakhir. {err}', {'err': state.refreshError}),
                     maxLines: 3, overflow: TextOverflow.ellipsis),
               ),
             for (final (i, url) in repos.indexed)
@@ -145,7 +145,7 @@ class SourceReposScreen extends ConsumerWidget {
             if (orphans > 0)
               ListTile(
                 leading: Icon(Icons.history_toggle_off, color: Colors.orange.shade700),
-                title: Text('$orphans sumber tersimpan tanpa repo'),
+                title: Text(trp('{n} sumber tersimpan tanpa repo', {'n': orphans})),
                 subtitle: Text(tr('Sudah hilang dari repo, tapi datanya masih di HP dan tetap bisa dipakai.')),
                 trailing: TextButton(
                   onPressed: () async {

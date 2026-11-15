@@ -449,7 +449,7 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
         fit: fit,
         errorBuilder: (_, __, ___) => SizedBox(
           height: 200,
-          child: Center(child: Text('Halaman ${i + 1} gagal dibaca dari unduhan')),
+          child: Center(child: Text(trp('Halaman {n} gagal dibaca dari unduhan', {'n': i + 1}))),
         ),
       );
     }
@@ -463,7 +463,7 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
       ),
       errorWidget: (_, __, ___) => SizedBox(
         height: 200,
-        child: Center(child: Text('Halaman ${i + 1} gagal dimuat')),
+        child: Center(child: Text(trp('Halaman {n} gagal dimuat', {'n': i + 1}))),
       ),
     );
   }

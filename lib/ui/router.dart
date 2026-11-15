@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../core/i18n/strings.dart';
+
 import 'screens/novels/novel_browse_screen.dart';
 import 'screens/novels/novel_detail_screen.dart';
 import 'screens/novels/novel_global_search_screen.dart';
@@ -231,7 +233,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     ],
     errorBuilder: (context, state) => Scaffold(
       appBar: AppBar(),
-      body: Center(child: Text('Halaman tidak ditemukan: ${state.uri}')),
+      body: Center(child: Text(trp('Halaman tidak ditemukan: {uri}', {'uri': state.uri}))),
     ),
   );
 });

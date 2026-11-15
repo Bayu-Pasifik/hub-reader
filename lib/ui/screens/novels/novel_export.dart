@@ -58,7 +58,7 @@ Future<void> exportNovelEpub(
         SimpleDialogOption(
           onPressed: () => Navigator.pop(context, chapters),
           child: ListTile(
-            title: Text('Semua bab (${chapters.length})'),
+            title: Text(trp('Semua bab ({n})', {'n': chapters.length})),
             subtitle: Text(local || downloaded.length == chapters.length
                 ? 'Tanpa internet'
                 : 'Bab yang belum diunduh diambil dari situs'),
@@ -68,7 +68,7 @@ Future<void> exportNovelEpub(
           SimpleDialogOption(
             onPressed: () => Navigator.pop(context, downloaded),
             child: ListTile(
-              title: Text('Hanya yang sudah diunduh (${downloaded.length})'),
+              title: Text(trp('Hanya yang sudah diunduh ({n})', {'n': downloaded.length})),
               subtitle: Text(tr('Tanpa internet')),
             ),
           ),
@@ -101,7 +101,7 @@ Future<void> exportNovelEpub(
             children: [
               LinearProgressIndicator(value: done / ordered.length),
               const SizedBox(height: 12),
-              Text('Bab $done dari ${ordered.length}'),
+              Text(trp('Bab {done} dari {total}', {'done': done, 'total': ordered.length})),
             ],
           ),
         ),

@@ -102,7 +102,7 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Hapus "${manga.title}"?'),
+        title: Text(trp('Hapus "{name}"?', {'name': manga.title})),
         content: Text(tr('File komik di perangkat ikut dihapus dan tidak bisa dikembalikan.')),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr('Batal'))),
@@ -155,7 +155,7 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
         );
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text('${chapters.length} bab masuk antrean unduhan')));
+      ..showSnackBar(SnackBar(content: Text(trp('{n} bab masuk antrean unduhan', {'n': chapters.length}))));
   }
 
   void _openChapter(String chapterUrl) => context.push(sourceReaderLocation(widget.sourceId, widget.url, chapterUrl));
@@ -347,7 +347,7 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
             ? FloatingActionButton.extended(
                 onPressed: () => _openChapter(lastRead.chapterUrl),
                 icon: const Icon(Icons.play_arrow),
-                label: Text('Lanjutkan · ${lastRead.chapterName}'),
+                label: Text('${tr('Lanjutkan')} · ${lastRead.chapterName}'),
               )
             : FloatingActionButton.extended(
                 // Bab terakhir di list situs = bab pertama.
@@ -522,7 +522,7 @@ class _ChapterDownloadButton extends ConsumerWidget {
           ),
         ),
       DownloadStatus.failed => IconButton(
-          tooltip: 'Gagal: ${task!.error ?? ''}. Coba lagi',
+          tooltip: trp('Gagal: {err}. Coba lagi', {'err': task!.error ?? ''}),
           icon: Icon(Icons.error_outline, color: Theme.of(context).colorScheme.error),
           onPressed: () => queue.retry(key),
         ),

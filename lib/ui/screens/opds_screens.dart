@@ -213,7 +213,7 @@ class _OpdsBrowseScreenState extends ConsumerState<OpdsBrowseScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text('Gagal memuat katalog\n${_describe(_error!)}', textAlign: TextAlign.center),
+                        Text('${tr('Gagal memuat katalog')}\n${_describe(_error!)}', textAlign: TextAlign.center),
                         const SizedBox(height: 12),
                         FilledButton(onPressed: () => _load(widget.url ?? server?.url), child: Text(tr('Coba lagi'))),
                       ],

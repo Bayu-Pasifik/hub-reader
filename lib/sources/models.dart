@@ -5,14 +5,18 @@
 /// Semua URL disimpan ABSOLUT (berbeda dengan Mihon yang menyimpan path).
 library;
 
+import '../core/i18n/strings.dart';
+
 enum ContentWarning {
   safe('Aman'),
   mixed('Campuran'),
   nsfw('18+');
 
-  const ContentWarning(this.label);
+  const ContentWarning(this._label);
 
-  final String label;
+  final String _label;
+
+  String get label => tr(_label);
 }
 
 enum SourceMangaStatus {
@@ -22,9 +26,11 @@ enum SourceMangaStatus {
   hiatus('Hiatus'),
   cancelled('Dihentikan');
 
-  const SourceMangaStatus(this.label);
+  const SourceMangaStatus(this._label);
 
-  final String label;
+  final String _label;
+
+  String get label => tr(_label);
 }
 
 /// Item ringkas di daftar populer / terbaru / pencarian.

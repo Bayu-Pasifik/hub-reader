@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../core/i18n/strings.dart';
 import '../core/utils/json.dart';
 import '../data/models/source_library.dart';
 import 'core_providers.dart';
@@ -413,7 +414,7 @@ class LibraryUpdatesNotifier extends Notifier<LibraryUpdatesState> {
       final titles = {for (final u in found) u.item.title}.toList();
       await _notifications.show(
         id: 1001,
-        title: '${found.length} bab baru',
+        title: trp('{n} bab baru', {'n': found.length}),
         body: titles.length <= 3 ? titles.join(', ') : '${titles.take(3).join(', ')} +${titles.length - 3} lagi',
         notificationDetails: const NotificationDetails(
           android: AndroidNotificationDetails(

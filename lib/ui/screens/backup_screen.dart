@@ -243,7 +243,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                     value: auto.keep,
                     underline: const SizedBox.shrink(),
                     items: [
-                      for (final k in AutoBackupConfig.keepChoices) DropdownMenuItem(value: k, child: Text('$k file')),
+                      for (final k in AutoBackupConfig.keepChoices) DropdownMenuItem(value: k, child: Text('$k ${tr('file')}')),
                     ],
                     onChanged: _busy ? null : (v) => v == null ? null : _setAuto(auto.copyWith(keep: v)),
                   ),

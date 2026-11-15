@@ -171,8 +171,8 @@ class _MigrateScreenState extends ConsumerState<MigrateScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('"${widget.title}" dipindah ke ${target.name}:\n"${pick.title}".\n\n'
-                  'Favorit, kategori, tanda sudah dibaca (dicocokkan lewat nomor bab), dan bab terakhir dibaca ikut dipindah.'),
+              Text(trp('"{title}" dipindah ke {target}:\n"{pick}".\n\n', {'title': widget.title, 'target': target.name, 'pick': pick.title}) +
+                  tr('Favorit, kategori, tanda sudah dibaca (dicocokkan lewat nomor bab), dan bab terakhir dibaca ikut dipindah.')),
               CheckboxListTile(
                 contentPadding: EdgeInsets.zero,
                 title: Text(tr('Simpan juga favorit lama')),
@@ -221,7 +221,7 @@ class _MigrateScreenState extends ConsumerState<MigrateScreen> {
     } catch (e) {
       if (!mounted) return;
       Navigator.of(context).pop();
-      messenger.showSnackBar(SnackBar(content: Text('Gagal memindahkan: ${novelError(e).title}')));
+      messenger.showSnackBar(SnackBar(content: Text('${tr('Gagal memindahkan')}: ${novelError(e).title}')));
     }
   }
 

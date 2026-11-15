@@ -61,7 +61,7 @@ class _TrackerLoginScreenState extends State<TrackerLoginScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
-          title: Text('Login ${widget.tracker.name}'),
+          title: Text(trp('Login {name}', {'name': widget.tracker.name})),
           bottom: _progress < 100
               ? PreferredSize(
                   preferredSize: const Size.fromHeight(2),
@@ -92,14 +92,13 @@ class _TrackerSettingsTileState extends ConsumerState<TrackerSettingsTile> {
     final value = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Client ID ${t.name}'),
+        title: Text(trp('Client ID {name}', {'name': t.name})),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Buat aplikasi di ${t.developerUrl} dengan redirect URL:\n${t.redirectHint}\n'
-                'lalu tempel Client ID-nya di sini.'
-                '${t.defaultClientId.isNotEmpty ? '\nKosongkan untuk memakai Client ID bawaan aplikasi.' : ''}'),
+            Text(trp('Buat aplikasi di {url} dengan redirect URL:\n{hint}\nlalu tempel Client ID-nya di sini.', {'url': t.developerUrl, 'hint': t.redirectHint}) +
+                (t.defaultClientId.isNotEmpty ? '\n' + tr('Kosongkan untuk memakai Client ID bawaan aplikasi.') : '')),
             const SizedBox(height: 12),
             TextField(
               controller: controller,
@@ -148,7 +147,7 @@ class _TrackerSettingsTileState extends ConsumerState<TrackerSettingsTile> {
           }
 
           return AlertDialog(
-            title: Text('Login ${t.name}'),
+            title: Text(trp('Login {name}', {'name': t.name})),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -199,7 +198,7 @@ class _TrackerSettingsTileState extends ConsumerState<TrackerSettingsTile> {
     if (!mounted || ok != true) return;
     setState(() {});
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text('Login ${t.name} berhasil${t.username != null ? ' (${t.username})' : ''}'),
+      content: Text(trp('Login {name} berhasil', {'name': t.name}) + (t.username != null ? ' (${t.username})' : '')),
     ));
   }
 
@@ -407,7 +406,7 @@ class _TrackerRowState extends ConsumerState<_TrackerRow> {
                     ? null
                     : () => _run(() => notifier.push(widget.seriesKey, link.copyWith(progress: link.progress - 1))),
               ),
-              Text('Bab ${link.progress}${link.total != null ? ' / ${link.total}' : ''}'),
+              Text('${tr('Bab')} ${link.progress}${link.total != null ? ' / ${link.total}' : ''}'),
               IconButton(
                 icon: const Icon(Icons.add),
                 onPressed: _busy
@@ -454,7 +453,7 @@ class _TrackSearchDialogState extends State<_TrackSearchDialog> {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
-        title: Text('Cari di ${widget.tracker.name}'),
+        title: Text(trp('Cari di {name}', {'name': widget.tracker.name})),
         contentPadding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
         content: SizedBox(
           width: double.maxFinite,

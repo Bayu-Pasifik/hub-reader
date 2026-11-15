@@ -182,7 +182,7 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
               Padding(
                 padding: const EdgeInsets.only(right: 6),
                 child: ChoiceChip(
-                  label: Text('Semua (${manifest.plugins.length})'),
+                  label: Text(trp('Semua ({n})', {'n': manifest.plugins.length})),
                   selected: lang == null,
                   onSelected: (_) => ref.read(novelLanguageProvider.notifier).set(null),
                 ),
@@ -206,7 +206,7 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
               children: [
                 Expanded(child: LinearProgressIndicator(value: run.total == 0 ? null : run.done / run.total)),
                 const SizedBox(width: 12),
-                Text('Cek ${run.done}/${run.total}', style: Theme.of(context).textTheme.bodySmall),
+                Text(trp('Cek {done}/{total}', {'done': run.done, 'total': run.total}), style: Theme.of(context).textTheme.bodySmall),
               ],
             ),
           ),
@@ -309,7 +309,7 @@ class _PluginTile extends ConsumerWidget {
     final detail = health?.detail;
     final info = [
       if (p.orphaned) 'Hilang dari repo, tersimpan di HP',
-      if (status != null) status.label + (status != HealthStatus.ok && detail != null ? ' ($detail)' : ''),
+      if (status != null) status.label + (status != HealthStatus.ok && detail != null ? ' (${tr(detail)})' : ''),
       if (p.host.isNotEmpty) p.host,
       'v${p.version}',
     ].join(' · ');
@@ -329,12 +329,12 @@ class _PluginTile extends ConsumerWidget {
       // Tekan lama = cek ulang plugin ini saja.
       onLongPress: () async {
         final messenger = ScaffoldMessenger.of(context);
-        messenger.showSnackBar(SnackBar(content: Text('Mengecek ${p.name}…'), duration: const Duration(seconds: 1)));
+        messenger.showSnackBar(SnackBar(content: Text(trp('Mengecek {name}…', {'name': p.name})), duration: const Duration(seconds: 1)));
         final h = await ref.read(novelHealthProvider.notifier).check(p);
         final d = h.detail;
         messenger
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text('${p.name}: ${h.status.label}${d != null ? ' ($d)' : ''}')));
+          ..showSnackBar(SnackBar(content: Text('${p.name}: ${h.status.label}${d != null ? ' (${tr(d)})' : ''}')));
       },
     );
     return status == HealthStatus.dead || status == HealthStatus.broken ? Opacity(opacity: 0.6, child: tile) : tile;

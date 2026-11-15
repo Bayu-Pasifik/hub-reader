@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/i18n/strings.dart';
 import '../core/utils/json.dart';
 import '../sources/source.dart';
 import '../sources/source_exception.dart';
@@ -15,9 +16,11 @@ enum HealthStatus {
   broken('Rusak'),
   dead('Mati');
 
-  const HealthStatus(this.label);
+  const HealthStatus(this._label);
 
-  final String label;
+  final String _label;
+
+  String get label => tr(_label);
 }
 
 class SourceHealth {

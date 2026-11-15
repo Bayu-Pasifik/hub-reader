@@ -22,6 +22,14 @@ AppLanguage currentLanguage = AppLanguage.id;
 /// punya terjemahan tampil apa adanya.
 String tr(String id) => currentLanguage == AppLanguage.id ? id : (stringsEn[id] ?? id);
 
+/// Seperti [tr] untuk teks dengan nilai sisipan. Kunci memakai penampung
+/// `{nama}`, mis. `trp('{n} bab', {'n': 3})`; nilai disisipkan setelah terjemahan.
+String trp(String id, Map<String, Object?> args) {
+  var s = tr(id);
+  args.forEach((k, v) => s = s.replaceAll('{$k}', '$v'));
+  return s;
+}
+
 /// Bangun ulang seluruh pohon widget (tanpa kehilangan state) agar [tr]
 /// dievaluasi lagi setelah bahasa berganti.
 void rebuildAllWidgets() {

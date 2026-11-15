@@ -910,7 +910,7 @@ class _ReaderSettingsSheet extends ConsumerWidget {
       await f.xFile.saveTo(dest);
       await n.update((x) => x.copyWith(customFontPath: dest));
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('Gagal mengimpor font: $e')));
+      messenger.showSnackBar(SnackBar(content: Text(trp('Gagal mengimpor font: {e}', {'e': e}))));
     }
   }
 

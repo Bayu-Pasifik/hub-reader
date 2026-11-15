@@ -251,8 +251,10 @@ cache data, kode plugin novel, dan tautan ke Unduhan & Cadangan.
 
 **Bahasa antarmuka** (Pengaturan → Tampilan): Indonesia atau English. Teks sumber ditulis dalam bahasa
 Indonesia dan dibungkus `tr()` (`lib/core/i18n/strings.dart`); terjemahan Inggris ada di tabel
-`strings_en.dart` (kunci = teks Indonesia, yang belum diterjemahkan tampil apa adanya). Label dinamis
-(status sumber, filter dari sumber) belum diterjemahkan.
+`strings_en.dart` (kunci = teks Indonesia, yang belum diterjemahkan tampil apa adanya). Teks dengan nilai
+sisipan memakai `trp('{n} bab', {'n': 3})` (penampung `{nama}`). Status sumber, peringatan konten, status seri,
+dan nama bahasa ikut diterjemahkan; `test/i18n_test.dart` memastikan setiap kunci punya terjemahan.
+Belum diterjemahkan: filter dan pesan error dari tiap sumber, serta teks widget layar utama.
 
 **Tema & jaringan**: **Warna dari wallpaper** (Material You, Android 12+) di Pengaturan → Tampilan.
 **DNS over HTTPS** (`lib/core/net/doh.dart`) bersifat opsional dan mati secara default; nyalakan di

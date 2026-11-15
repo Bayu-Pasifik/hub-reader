@@ -154,7 +154,7 @@ class _NovelGlobalSearchScreenState extends ConsumerState<NovelGlobalSearchScree
                     Padding(
                       padding: const EdgeInsets.only(right: 6),
                       child: ChoiceChip(
-                        label: Text('Pernah dibuka ($installedCount)'),
+                        label: Text(trp('Pernah dibuka ({n})', {'n': installedCount})),
                         selected: _scope == null,
                         onSelected: (_) => setState(() => _scope = null),
                       ),

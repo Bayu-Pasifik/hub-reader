@@ -119,7 +119,7 @@ class _NovelSettingsSheetState extends State<NovelSettingsSheet> {
             child: Row(
               children: [
                 Expanded(
-                  child: Text('Pengaturan ${widget.source.name}', style: Theme.of(context).textTheme.titleMedium),
+                  child: Text(trp('Pengaturan {name}', {'name': widget.source.name}), style: Theme.of(context).textTheme.titleMedium),
                 ),
                 FilledButton(onPressed: _save, child: Text(tr('Simpan'))),
               ],

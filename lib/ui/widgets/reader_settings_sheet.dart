@@ -181,7 +181,7 @@ class _ReaderSettingsSheet extends ConsumerWidget {
             ),
             ListTile(
               title: Text(tr('Kecepatan')),
-              trailing: Text('${autoSpeed.round()} dp/dtk'),
+              trailing: Text('${autoSpeed.round()} ${tr('dp/dtk')}'),
             ),
             Slider(
               value: autoSpeed,

@@ -13,7 +13,8 @@ class StatsScreen extends ConsumerWidget {
   static String duration(int seconds) {
     final h = seconds ~/ 3600;
     final m = (seconds % 3600) ~/ 60;
-    if (h > 0) return m > 0 ? '$h j $m m' : '$h j';
+    final hr = tr('j');
+    if (h > 0) return m > 0 ? '$h $hr $m m' : '$h $hr';
     if (m > 0) return '$m m';
     return seconds > 0 ? '<1 m' : '0 m';
   }
@@ -161,7 +162,7 @@ class StatsScreen extends ConsumerWidget {
                       leading: CircleAvatar(radius: 14, child: Text('${i + 1}')),
                       title: Text(titles[e.key]!, maxLines: 1, overflow: TextOverflow.ellipsis),
                       subtitle: Text(isNovelSourceId(e.key.split('|').first) ? 'Novel' : 'Komik'),
-                      trailing: Text('${e.value} bab', style: text.labelLarge),
+                      trailing: Text(trp('{n} bab', {'n': e.value}), style: text.labelLarge),
                     ),
                 ],
               ),
@@ -201,7 +202,7 @@ class _DailyChart extends StatelessWidget {
           children: [
             Text(tr('14 hari terakhir'), style: text.labelMedium?.copyWith(color: scheme.onSurfaceVariant)),
             if (max > 0)
-              Text('Terbanyak ${StatsScreen.duration(max)}', style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant)),
+              Text(trp('Terbanyak {x}', {'x': StatsScreen.duration(max)}), style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant)),
             const SizedBox(height: 12),
             SizedBox(
               height: 110,

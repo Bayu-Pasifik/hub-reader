@@ -295,19 +295,19 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
           ListTile(
             leading: const Icon(Icons.image_outlined),
             title: Text(tr('Cache gambar')),
-            subtitle: Text('${sizeOf(sizes?.images)} · sampul & halaman komik yang pernah dibuka'),
+            subtitle: Text('${sizeOf(sizes?.images)} · ${tr('sampul & halaman komik yang pernah dibuka')}'),
             trailing: TextButton(onPressed: _clearImages, child: Text(tr('Hapus'))),
           ),
           ListTile(
             leading: const Icon(Icons.storage_outlined),
             title: Text(tr('Cache data')),
-            subtitle: Text('${sizeOf(sizes?.api)} · detail & daftar bab novel untuk offline'),
+            subtitle: Text('${sizeOf(sizes?.api)} · ${tr('detail & daftar bab novel untuk offline')}'),
             trailing: TextButton(onPressed: _clearApi, child: Text(tr('Hapus'))),
           ),
           ListTile(
             leading: const Icon(Icons.extension_outlined),
             title: Text(tr('Kode plugin novel')),
-            subtitle: Text('${sizeOf(sizes?.plugins)} · diunduh lagi saat plugin dibuka'),
+            subtitle: Text('${sizeOf(sizes?.plugins)} · ${tr('diunduh lagi saat plugin dibuka')}'),
             trailing: TextButton(onPressed: _clearPlugins, child: Text(tr('Hapus'))),
           ),
           ListTile(

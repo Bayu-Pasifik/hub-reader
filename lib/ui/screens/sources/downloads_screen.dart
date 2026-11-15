@@ -48,7 +48,7 @@ class DownloadsScreen extends ConsumerWidget {
           if (queue.isNotEmpty) ...[
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-              child: Text('Antrean (${queue.length})', style: theme.textTheme.titleSmall),
+              child: Text(trp('Antrean ({n})', {'n': queue.length}), style: theme.textTheme.titleSmall),
             ),
             for (final task in queue)
               ListTile(
@@ -106,7 +106,7 @@ class _SeriesDownloads extends ConsumerWidget {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Hapus ${chapters.length} bab "${first.mangaTitle}"?'),
+        title: Text(trp('Hapus {n} bab "{title}"?', {'n': chapters.length, 'title': first.mangaTitle})),
         content: Text(tr('File unduhan akan dihapus dari perangkat.')),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr('Batal'))),
@@ -178,7 +178,7 @@ class _SeriesDownloads extends ConsumerWidget {
 
     return ExpansionTile(
       title: Text(first.mangaTitle, maxLines: 1, overflow: TextOverflow.ellipsis),
-      subtitle: Text('${chapters.length} bab · ${info.name}${info.isNovel ? ' · novel' : ''}'),
+      subtitle: Text('${trp('{n} bab', {'n': chapters.length})} · ${info.name}${info.isNovel ? ' · novel' : ''}'),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -202,7 +202,7 @@ class _SeriesDownloads extends ConsumerWidget {
             dense: true,
             leading: const Icon(Icons.offline_pin, size: 20),
             title: Text(c.chapterName),
-            subtitle: info.isNovel ? null : Text('${c.files.length} halaman'),
+            subtitle: info.isNovel ? null : Text(trp('{n} halaman', {'n': c.files.length})),
             onTap: () => context.push(info.readerLocation(c.mangaUrl, c.chapterUrl)),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,

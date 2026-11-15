@@ -104,7 +104,7 @@ class _NovelBrowseScreenState extends ConsumerState<NovelBrowseScreen> {
                   controller: _searchController,
                   autofocus: true,
                   textInputAction: TextInputAction.search,
-                  decoration: InputDecoration(hintText: 'Cari di ${source.name}…', border: InputBorder.none),
+                  decoration: InputDecoration(hintText: trp('Cari di {name}…', {'name': source.name}), border: InputBorder.none),
                   onSubmitted: (text) => setState(() => _submitted = text.trim()),
                 )
               : Text(source.name),

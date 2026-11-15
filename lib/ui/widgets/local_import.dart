@@ -89,7 +89,7 @@ Future<void> importLocalFiles(BuildContext context, {bool epubOnly = false}) asy
   final series = await showDialog<String>(
     context: context,
     builder: (context) => AlertDialog(
-      title: Text('Impor ${files.length} file'),
+      title: Text(trp('Impor {n} file', {'n': files.length})),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,

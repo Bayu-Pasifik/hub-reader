@@ -1,3 +1,4 @@
+import '../../core/i18n/strings.dart';
 import 'dart:io';
 
 import 'package:archive/archive_io.dart';
@@ -40,7 +41,7 @@ class LocalSource extends MangaSource {
   @override
   String get id => sourceId;
   @override
-  String get name => 'Lokal';
+  String get name => tr('Lokal');
   @override
   String get lang => 'local';
   @override

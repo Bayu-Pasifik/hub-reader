@@ -107,7 +107,7 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
 
   PreferredSizeWidget _selectionBar(NovelDetails? novel) => AppBar(
         leading: IconButton(icon: const Icon(Icons.close), onPressed: () => setState(_selected.clear)),
-        title: Text('${_selected.length} dipilih'),
+        title: Text(trp('{n} dipilih', {'n': _selected.length})),
         actions: [
           IconButton(
             tooltip: tr('Pilih semua'),
@@ -192,7 +192,7 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
     _enqueue(novel, chapters);
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text('${chapters.length} bab masuk antrean unduhan')));
+      ..showSnackBar(SnackBar(content: Text(trp('{n} bab masuk antrean unduhan', {'n': chapters.length}))));
   }
 
   void _enqueue(NovelDetails novel, Iterable<NovelChapter> chapters) {
@@ -251,7 +251,7 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Hapus "${novel.name}"?'),
+        title: Text(trp('Hapus "{name}"?', {'name': novel.name})),
         content: Text(tr('File EPUB di perangkat ikut dihapus dan tidak bisa dikembalikan.')),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr('Batal'))),
@@ -396,7 +396,7 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
         icon: const Icon(Icons.play_arrow),
         label: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 220),
-          child: Text('Lanjutkan · ${lastRead.chapterName}', overflow: TextOverflow.ellipsis),
+          child: Text('${tr('Lanjutkan')} · ${lastRead.chapterName}', overflow: TextOverflow.ellipsis),
         ),
       );
     }
@@ -430,7 +430,7 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
                 value: _page.clamp(1, total),
                 items: [
                   for (var p = 1; p <= total; p++)
-                    DropdownMenuItem(value: p, child: Text('Halaman bab $p dari $total')),
+                    DropdownMenuItem(value: p, child: Text(trp('Halaman bab {p} dari {total}', {'p': p, 'total': total}))),
                 ],
                 onChanged: (p) => setState(() => _page = p ?? 1),
               ),
@@ -622,7 +622,7 @@ class _NovelChapterDownloadButton extends ConsumerWidget {
           icon: const SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2.5)),
         ),
       DownloadStatus.failed => IconButton(
-          tooltip: 'Gagal: ${task!.error ?? ''}. Coba lagi',
+          tooltip: trp('Gagal: {err}. Coba lagi', {'err': task!.error ?? ''}),
           icon: Icon(Icons.error_outline, color: Theme.of(context).colorScheme.error),
           onPressed: () => queue.retry(chapterKey),
         ),

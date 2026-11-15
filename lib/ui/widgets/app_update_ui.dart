@@ -27,7 +27,7 @@ Future<void> showUpdateDialog(
 
         return AlertDialog(
           icon: const Icon(Icons.system_update_outlined),
-          title: Text('Versi ${release.version} tersedia'),
+          title: Text(trp('Versi {v} tersedia', {'v': release.version})),
           content: Text(
             [
               if (current != null) 'Terpasang: $current.',

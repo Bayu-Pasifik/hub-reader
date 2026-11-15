@@ -140,7 +140,7 @@ class NovelReposScreen extends ConsumerWidget {
             if (orphans > 0)
               ListTile(
                 leading: Icon(Icons.inventory_2_outlined, color: Colors.orange.shade700),
-                title: Text('$orphans plugin tersimpan tanpa repo'),
+                title: Text(trp('{n} plugin tersimpan tanpa repo', {'n': orphans})),
                 subtitle: Text(tr('Sudah hilang dari repo, tapi kodenya masih di HP dan tetap bisa dipakai.')),
               ),
           ],

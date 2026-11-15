@@ -182,7 +182,7 @@ class _ComicGlobalSearchScreenState extends ConsumerState<ComicGlobalSearchScree
                     Padding(
                       padding: const EdgeInsets.only(right: 6),
                       child: ChoiceChip(
-                        label: Text('Dipakai ($usedCount)'),
+                        label: Text(trp('Dipakai ({n})', {'n': usedCount})),
                         selected: scope is UsedSourcesScope,
                         onSelected: (_) => _setScope(const UsedSourcesScope()),
                       ),

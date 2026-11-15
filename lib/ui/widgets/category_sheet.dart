@@ -100,7 +100,7 @@ Future<bool> confirmAddDuplicateFavorite(BuildContext context, WidgetRef ref, So
     context: context,
     builder: (ctx) => AlertDialog(
       title: Text(tr('Judul sudah ada di favorit')),
-      content: Text('"${dup.item.title}" sudah ada di favorit dari sumber $source. Tetap tambahkan dari sumber ini?'),
+      content: Text(trp('"{title}" sudah ada di favorit dari sumber {source}. Tetap tambahkan dari sumber ini?', {'title': dup.item.title, 'source': source})),
       actions: [
         TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(tr('Batal'))),
         FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(tr('Tambahkan'))),

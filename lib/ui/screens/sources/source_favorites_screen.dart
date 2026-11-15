@@ -537,7 +537,7 @@ class _FavoriteActionsSheet extends ConsumerWidget {
                 messenger
                   ..hideCurrentSnackBar()
                   ..showSnackBar(SnackBar(
-                    content: Text('"${entry.item.title}" dihapus dari favorit'),
+                    content: Text(trp('"{title}" dihapus dari favorit', {'title': entry.item.title})),
                     action: SnackBarAction(label: tr('Urungkan'), onPressed: () => favorites.restore(entry)),
                   ));
               },
