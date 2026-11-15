@@ -100,6 +100,41 @@ void main() {
     expect(await repo.code(cat.plugins.single), 'var one = 1;');
   });
 
+  test('parseRegistry: hanya URL http(s) unik', () {
+    expect(
+      NovelPluginRepository.parseRegistry('{"manifests":["https://x/a.json","ftp://x/b","https://x/a.json",5,"http://y/c.json"]}'),
+      ['https://x/a.json', 'http://y/c.json'],
+    );
+    expect(NovelPluginRepository.parseRegistry('{"foo":1}'), isEmpty);
+  });
+
+  test('registry: daftar default diganti dari repos.json, repo pengguna tidak', () async {
+    const def = NovelPluginRepository.defaultManifestUrl;
+    final moved = 'https://moved.example/plugins.min.json';
+    // Tanpa jaringan & salinan: pakai daftar default bawaan.
+    expect(await repo.resolveRepos(const [def]), [def]);
+
+    routes[NovelPluginRepository.registryUrl] = jsonEncode({'manifests': [moved, def]});
+    expect(await repo.resolveRepos(const [def]), [moved, def]);
+
+    // Offline sesudahnya: salinan tersimpan dipakai (juga oleh cachedRepos).
+    routes.clear();
+    expect(await repo.resolveRepos(const [def]), [moved, def]);
+    expect(await repo.cachedRepos(const [def]), [moved, def]);
+
+    // Pengguna sudah mengubah daftar: tidak disentuh.
+    expect(await repo.resolveRepos(const [def, a]), [def, a]);
+    expect(await repo.cachedRepos(const [a]), [a]);
+  });
+
+  test('registry rusak/kosong diabaikan', () async {
+    const def = NovelPluginRepository.defaultManifestUrl;
+    routes[NovelPluginRepository.registryUrl] = '{"manifests":[]}';
+    expect(await repo.resolveRepos(const [def]), [def]);
+    routes[NovelPluginRepository.registryUrl] = 'bukan json';
+    expect(await repo.resolveRepos(const [def]), [def]);
+  });
+
   test('semua repo gagal tanpa cache: melempar', () async {
     expect(repo.fetchManifest([a]), throwsA(anything));
   });

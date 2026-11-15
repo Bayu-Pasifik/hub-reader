@@ -32,6 +32,11 @@ class NovelPluginRepository {
   static const defaultManifestUrl =
       'https://raw.githubusercontent.com/lnreader/lnreader-plugins/plugins/v3.0.0/.dist/plugins.min.json';
 
+  /// Daftar repo default yang bisa diubah tanpa rilis aplikasi:
+  /// `{"manifests": ["https://.../plugins.min.json", ...]}`. Dipakai hanya bila
+  /// pengguna belum mengubah daftar repo-nya (masih default).
+  static const registryUrl = 'https://raw.githubusercontent.com/Bayu-Pasifik/hub-reader/main/assets/novels/repos.json';
+
   /// Manifest dianggap segar selama ini; setelahnya diperbarui di latar.
   static const manifestMaxAge = Duration(hours: 12);
 
@@ -58,6 +63,52 @@ class NovelPluginRepository {
       h = ((h ^ b) * 0x01000193) & 0xffffffff;
     }
     return h.toRadixString(16).padLeft(8, '0');
+  }
+
+  File get _registryFile => File('${_dir.path}/registry.json');
+
+  static bool isDefaultList(List<String> repos) => repos.length == 1 && repos.first == defaultManifestUrl;
+
+  /// Isi `repos.json`: URL http(s) unik, urut. Kosong bila bentuknya salah.
+  static List<String> parseRegistry(String body) {
+    final raw = asMap(jsonDecode(body))['manifests'];
+    final seen = <String>{};
+    return [
+      for (final e in asList(raw))
+        if (e is String && (e.startsWith('https://') || e.startsWith('http://')) && seen.add(e.trim())) e.trim(),
+    ];
+  }
+
+  Future<List<String>?> _readRegistry() async {
+    try {
+      if (!await _registryFile.exists()) return null;
+      final list = parseRegistry(await _registryFile.readAsString());
+      return list.isEmpty ? null : list;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Daftar repo yang dipakai dari salinan lokal saja (cepat, offline).
+  /// Daftar buatan pengguna dipakai apa adanya; yang masih default diganti
+  /// daftar dari `repos.json` terakhir yang tersimpan.
+  Future<List<String>> cachedRepos(List<String> userRepos) async =>
+      isDefaultList(userRepos) ? await _readRegistry() ?? userRepos : userRepos;
+
+  /// Seperti [cachedRepos], tapi mencoba mengunduh `repos.json` dulu (singkat;
+  /// gagal → salinan lokal → daftar default bawaan).
+  Future<List<String>> resolveRepos(List<String> userRepos) async {
+    if (!isDefaultList(userRepos)) return userRepos;
+    try {
+      final body = await _getText(registryUrl).timeout(const Duration(seconds: 10));
+      final list = parseRegistry(body);
+      if (list.isEmpty) throw FormatException(tr('Respons kosong'));
+      await _registryFile.parent.create(recursive: true);
+      await _registryFile.writeAsString(body, flush: true);
+      return list;
+    } catch (_) {
+      return await _readRegistry() ?? userRepos;
+    }
   }
 
   /// Katalog dari salinan lokal saja. Null bila belum ada apa pun.

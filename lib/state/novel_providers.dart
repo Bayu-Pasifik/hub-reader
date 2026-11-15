@@ -150,9 +150,9 @@ class NovelManifestNotifier extends AsyncNotifier<NovelManifest> {
   @override
   Future<NovelManifest> build() async {
     ref.watch(novelReposProvider);
-    final cached = await _repo.cachedManifest(_repos);
+    final cached = await _repo.cachedManifest(await _repo.cachedRepos(_repos));
     if (cached == null) {
-      final fresh = await _repo.fetchManifest(_repos);
+      final fresh = await _repo.fetchManifest(await _repo.resolveRepos(_repos));
       return NovelManifest(fresh.plugins, savedAt: fresh.savedAt, refreshError: fresh.error);
     }
     if (DateTime.now().difference(cached.savedAt) > NovelPluginRepository.manifestMaxAge) {
@@ -165,7 +165,7 @@ class NovelManifestNotifier extends AsyncNotifier<NovelManifest> {
     final old = state.valueOrNull;
     if (!silent && old == null) state = const AsyncLoading();
     try {
-      final fresh = await _repo.fetchManifest(_repos);
+      final fresh = await _repo.fetchManifest(await _repo.resolveRepos(_repos));
       state = AsyncData(NovelManifest(fresh.plugins, savedAt: fresh.savedAt, refreshError: fresh.error));
     } catch (e, st) {
       state = old == null
