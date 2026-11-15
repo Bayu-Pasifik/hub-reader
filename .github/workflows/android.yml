@@ -76,21 +76,38 @@ jobs:
           ANILIST_CLIENT_ID: ${{ secrets.ANILIST_CLIENT_ID }}
           MAL_CLIENT_ID: ${{ secrets.MAL_CLIENT_ID }}
         run: >-
-          flutter build apk --release
+          flutter build apk --release --split-per-abi
           --obfuscate --split-debug-info=build/symbols
           --dart-define=ANILIST_CLIENT_ID="$ANILIST_CLIENT_ID"
           --dart-define=MAL_CLIENT_ID="$MAL_CLIENT_ID"
 
       - name: Ganti nama APK
+        # Satu APK per ABI (jauh lebih kecil dari APK universal). Nama berkas
+        # dibaca pembaruan dalam aplikasi: hub-reader-<versi>-<abi>.apk.
         run: |
           VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}' | cut -d+ -f1)
-          mv build/app/outputs/flutter-apk/app-release.apk "hub-reader-${VERSION}.apk"
-          echo "APK=hub-reader-${VERSION}.apk" >> "$GITHUB_ENV"
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          mkdir -p dist
+          for abi in arm64-v8a armeabi-v7a x86_64; do
+            mv "build/app/outputs/flutter-apk/app-$abi-release.apk" "dist/hub-reader-$VERSION-$abi.apk"
+          done
+          ls -lh dist
+
+      - name: Build APK universal (hanya rilis)
+        # Pembaruan dalam aplikasi versi lama mengunduh hub-reader-<versi>.apk.
+        # Tanpa berkas ini, tautan unduhnya 404 untuk pengguna versi lama.
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          ANILIST_CLIENT_ID: ${{ secrets.ANILIST_CLIENT_ID }}
+          MAL_CLIENT_ID: ${{ secrets.MAL_CLIENT_ID }}
+        run: |
+          flutter build apk --release             --obfuscate --split-debug-info=build/symbols-universal             --dart-define=ANILIST_CLIENT_ID="$ANILIST_CLIENT_ID"             --dart-define=MAL_CLIENT_ID="$MAL_CLIENT_ID"
+          mv build/app/outputs/flutter-apk/app-release.apk "dist/hub-reader-$VERSION.apk"
 
       - uses: actions/upload-artifact@v4
         with:
           name: hub-reader-apk
-          path: ${{ env.APK }}
+          path: dist/*.apk
           retention-days: 30
 
       - name: Simpan simbol debug (baca stack trace APK obfuscate)
@@ -99,14 +116,16 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: hub-reader-symbols-${{ github.sha }}
-          path: build/symbols
+          path: |
+            build/symbols
+            build/symbols-universal
           retention-days: 90
 
       - name: Lampirkan ke GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ env.APK }}
+          files: dist/*.apk
           body_path: RELEASE_NOTES.md
           generate_release_notes: true
 

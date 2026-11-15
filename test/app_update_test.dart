@@ -21,6 +21,16 @@ void main() {
     expect(r.page.toString(), 'https://github.com/Bayu-Pasifik/hub-reader/releases/tag/v1.2.0');
   });
 
+  test('rilis setelah 1.3.0 memakai APK per ABI, rilis lama tetap universal', () {
+    String name(String tag, String? abi) => AppUpdate.releaseFor(tag, abi: abi).apk.pathSegments.last;
+    expect(name('v1.3.1', 'arm64-v8a'), 'hub-reader-1.3.1-arm64-v8a.apk');
+    expect(name('v1.4.0', 'armeabi-v7a'), 'hub-reader-1.4.0-armeabi-v7a.apk');
+    expect(name('v1.3.1', 'x86_64'), 'hub-reader-1.3.1-x86_64.apk');
+    expect(name('v1.3.0', 'arm64-v8a'), 'hub-reader-1.3.0.apk'); // rilis universal lama
+    expect(name('v1.3.1', null), 'hub-reader-1.3.1.apk'); // ABI tak terbaca
+    expect(name('v1.3.1', 'riscv64'), 'hub-reader-1.3.1.apk'); // ABI tanpa APK sendiri
+  });
+
   test('version compare', () {
     expect(AppUpdate.compare('1.0.1', '1.0.0'), greaterThan(0));
     expect(AppUpdate.compare('1.10.0', '1.9.9'), greaterThan(0));

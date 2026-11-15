@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.WindowManager
@@ -62,6 +63,7 @@ class MainActivity : FlutterFragmentActivity() {
                         result.success(initialLink)
                         initialLink = null
                     }
+                    "abi" -> result.success(Build.SUPPORTED_ABIS.firstOrNull())
                     "appVersion" -> result.success(packageManager.getPackageInfo(packageName, 0).versionName)
                     // Hanya https (halaman rilis / APK di GitHub), dibuka di browser.
                     "openUrl" -> {

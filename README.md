@@ -397,7 +397,7 @@ Kompatibilitas runtime:
    flutter pub get
    ```
 3. Jalankan: `flutter run` (emulator atau HP).
-4. Build APK: `flutter build apk --release --obfuscate --split-debug-info=build/symbols` → `build/app/outputs/flutter-apk/app-release.apk`.
+4. Build APK: `flutter build apk --release --split-per-abi --obfuscate --split-debug-info=build/symbols` → `build/app/outputs/flutter-apk/app-<abi>-release.apk` (arm64-v8a ±26 MB, armeabi-v7a ±24 MB, x86_64 ±28 MB; tanpa `--split-per-abi` satu APK universal ±73 MB).
 5. Tes: `flutter test`.
 
 ## Rilis & CI
@@ -414,7 +414,8 @@ Kompatibilitas runtime:
 - **GitHub Actions** (`.github/workflows/android.yml`): setiap push atau PR menjalankan
   `analyze`, `test`, dan build APK release, lalu APK diunggah sebagai artifact
   *hub-reader-apk*. Push tag `v*` (mis. `git tag v1.0.0 && git push --tags`) juga
-  melampirkan APK ke GitHub Release. Simbol debug build obfuscate diunggah sebagai artifact
+  melampirkan APK ke GitHub Release.
+  CI membangun satu APK per ABI (`hub-reader-<versi>-<abi>.apk`); pembaruan dalam aplikasi memilih APK sesuai ABI perangkat (channel `hub_reader/links`, `abi`). Rilis memuat juga `hub-reader-<versi>.apk` universal, hanya agar tautan unduh di aplikasi versi ≤1.3.0 tidak 404. **Jangan mencampur:** `versionCode` APK per ABI memakai offset (arm64 +2000, armeabi-v7a +1000, x86_64 +4000), jadi APK universal tidak bisa dipasang menimpa APK per ABI yang lebih baru. Pasang selalu APK yang sesuai ABI HP. Simbol debug build obfuscate diunggah sebagai artifact
   *hub-reader-symbols-<sha commit>* (90 hari); pakai `flutter symbolize -i stack.txt -d <folder simbol>`
   untuk membaca stack trace dari APK rilis.
 - **Secrets CI** (Settings → Secrets and variables → Actions):
