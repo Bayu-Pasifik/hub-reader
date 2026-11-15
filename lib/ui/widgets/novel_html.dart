@@ -196,6 +196,75 @@ List<NovelBlock> parseNovelHtml(String html, {Uri? baseUrl}) {
   return blocks;
 }
 
+/// Satu hasil pencarian di dalam bab: posisi di teks polos ([TextBlock.plain])
+/// blok ke-[block], `start` inklusif dan `end` eksklusif.
+typedef ChapterMatch = ({int block, int start, int end});
+
+/// Tanda pencarian di dalam satu blok; [current] = hasil yang sedang dipilih.
+typedef SearchMark = ({int start, int end, bool current});
+
+/// Batas hasil agar kata yang sangat umum tidak membekukan layar.
+const maxChapterMatches = 500;
+
+/// Cari [query] (tanpa membedakan huruf besar/kecil) di semua blok teks,
+/// berurutan dari awal bab. Query kosong atau hanya spasi = tidak ada hasil.
+List<ChapterMatch> searchBlocks(List<NovelBlock> blocks, String query) {
+  final q = query.trim();
+  if (q.isEmpty) return const [];
+  final re = RegExp(RegExp.escape(q), caseSensitive: false, unicode: true);
+  final out = <ChapterMatch>[];
+  for (var i = 0; i < blocks.length; i++) {
+    final b = blocks[i];
+    if (b is! TextBlock) continue;
+    for (final m in re.allMatches(b.plain)) {
+      out.add((block: i, start: m.start, end: m.end));
+      if (out.length >= maxChapterMatches) return out;
+    }
+  }
+  return out;
+}
+
+/// Beri latar pada bagian [spans] yang tumpang tindih dengan [marks].
+/// [offset] = posisi awal [spans] di teks polos blok. Hasil yang sedang
+/// dipilih berwarna jingga, lainnya kuning.
+List<TextSpan> applySearchMarks(List<TextSpan> spans, int offset, List<SearchMark> marks) {
+  if (marks.isEmpty) return spans;
+  final out = <TextSpan>[];
+  var pos = offset;
+  for (final s in spans) {
+    final text = s.text ?? '';
+    final from = pos, to = pos + text.length;
+    pos = to;
+    // Titik potong: batas span ini dan batas tiap tanda yang beririsan.
+    final cuts = <int>{from, to};
+    for (final m in marks) {
+      if (m.end <= from || m.start >= to) continue;
+      cuts
+        ..add(m.start.clamp(from, to))
+        ..add(m.end.clamp(from, to));
+    }
+    final sorted = cuts.toList()..sort();
+    for (var i = 0; i + 1 < sorted.length; i++) {
+      final a = sorted[i], b = sorted[i + 1];
+      if (a == b) continue;
+      SearchMark? hit;
+      for (final m in marks) {
+        if (m.start <= a && m.end >= b) {
+          if (hit == null || m.current) hit = m;
+        }
+      }
+      final style = s.style ?? const TextStyle();
+      out.add(TextSpan(
+        text: text.substring(a - from, b - from),
+        style: hit == null
+            ? s.style
+            : style.copyWith(backgroundColor: hit.current ? const Color(0xAAFF9800) : const Color(0x66FFEB3B)),
+      ));
+    }
+  }
+  return out;
+}
+
 /// Tampilan satu blok dengan gaya pembaca.
 class NovelBlockView extends StatelessWidget {
   const NovelBlockView({
@@ -206,9 +275,13 @@ class NovelBlockView extends StatelessWidget {
     this.paragraphSpacing = 0.9,
     this.imageHeaders = const {},
     this.highlights = const [],
+    this.searchMarks = const [],
   });
 
   final NovelBlock block;
+
+  /// Hasil pencarian di dalam bab yang jatuh di blok ini.
+  final List<SearchMark> searchMarks;
 
   /// Teks yang disorot pembaca (latar kuning) di blok ini.
   final List<String> highlights;
@@ -253,22 +326,27 @@ class NovelBlockView extends StatelessWidget {
           fontWeight: b.heading > 0 ? FontWeight.w700 : style.fontWeight,
           fontStyle: b.quote ? FontStyle.italic : null,
         );
+        // Posisi tiap run di teks polos blok, untuk tanda pencarian.
+        var offset = 0;
+        final children = <TextSpan>[];
+        for (final r in b.spans) {
+          final runSpans = highlightRuns(
+            r.text,
+            highlights,
+            TextStyle(
+              fontWeight: r.bold ? FontWeight.w700 : null,
+              fontStyle: r.italic ? FontStyle.italic : null,
+              decoration: TextDecoration.combine([
+                if (r.underline) TextDecoration.underline,
+                if (r.strike) TextDecoration.lineThrough,
+              ]),
+            ),
+          );
+          children.addAll(applySearchMarks(runSpans, offset, searchMarks));
+          offset += r.text.length;
+        }
         Widget text = Text.rich(
-          TextSpan(children: [
-            for (final r in b.spans)
-              ...highlightRuns(
-                r.text,
-                highlights,
-                TextStyle(
-                  fontWeight: r.bold ? FontWeight.w700 : null,
-                  fontStyle: r.italic ? FontStyle.italic : null,
-                  decoration: TextDecoration.combine([
-                    if (r.underline) TextDecoration.underline,
-                    if (r.strike) TextDecoration.lineThrough,
-                  ]),
-                ),
-              ),
-          ]),
+          TextSpan(children: children),
           style: base,
           textAlign: b.center || b.heading > 0 ? TextAlign.center : align,
         );

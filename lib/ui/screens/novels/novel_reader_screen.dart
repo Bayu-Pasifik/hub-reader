@@ -71,6 +71,12 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
 
   /// Teks yang sedang dipilih pembaca (untuk sorot / kamus).
   String _selected = '';
+
+  // ---- cari di dalam bab
+  bool _searching = false;
+  final _searchField = TextEditingController();
+  List<ChapterMatch> _matches = const [];
+  int _matchIndex = 0;
   List<GlobalKey> _blockKeys = const [];
   List<NovelBlock> _blocks = const [];
   String? _blocksFor;
@@ -177,6 +183,7 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
     ReaderBridge.setVolumeKeys(null);
     ReaderBridge.setKeepScreenOn(false);
     _scroll.dispose();
+    _searchField.dispose();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     final index = ref.read(downloadIndexProvider.notifier);
     Future<void>.delayed(const Duration(seconds: 1), index.purgeRead);
@@ -299,7 +306,112 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
     }
   }
 
+  // ------------------------------------------------ cari di dalam bab
+
+  void _openSearch() {
+    setState(() => _searching = true);
+  }
+
+  void _closeSearch() {
+    if (!_searching && _matches.isEmpty && _searchField.text.isEmpty) return;
+    _searchField.clear();
+    if (mounted) {
+      setState(() {
+        _searching = false;
+        _matches = const [];
+        _matchIndex = 0;
+      });
+    }
+  }
+
+  void _runSearch(String query) {
+    final found = searchBlocks(_blocks, query);
+    setState(() {
+      _matches = found;
+      _matchIndex = 0;
+    });
+    if (found.isNotEmpty) _scrollToMatch();
+  }
+
+  /// Pindah ke hasil berikutnya (+1) / sebelumnya (-1), berputar di ujung.
+  void _stepMatch(int delta) {
+    if (_matches.isEmpty) return;
+    // % di Dart selalu non-negatif, jadi mundur dari hasil pertama berputar ke terakhir.
+    setState(() => _matchIndex = (_matchIndex + delta) % _matches.length);
+    _scrollToMatch();
+  }
+
+  void _scrollToMatch() {
+    if (_matches.isEmpty) return;
+    final block = _matches[_matchIndex.clamp(0, _matches.length - 1)].block;
+    if (block < 0 || block >= _blockKeys.length) return;
+    // Ditunda ke setelah frame: tanda baru harus sudah tergambar.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ctx = _blockKeys[block].currentContext;
+      if (!mounted || ctx == null) return;
+      Scrollable.ensureVisible(ctx, alignment: 0.3, duration: const Duration(milliseconds: 250), curve: Curves.easeOut);
+    });
+  }
+
+  /// Tanda pencarian untuk blok ke-[block].
+  List<SearchMark> _marksFor(int block) {
+    if (_matches.isEmpty) return const [];
+    final marks = <SearchMark>[];
+    for (var i = 0; i < _matches.length; i++) {
+      final m = _matches[i];
+      if (m.block == block) marks.add((start: m.start, end: m.end, current: i == _matchIndex));
+    }
+    return marks;
+  }
+
+  Widget _searchBar(BuildContext context, ColorScheme scheme) {
+    final hasQuery = _searchField.text.trim().isNotEmpty;
+    final count = _matches.isEmpty
+        ? (hasQuery ? tr('Tidak ada') : '')
+        : '${_matchIndex + 1}/${_matches.length}${_matches.length >= maxChapterMatches ? '+' : ''}';
+    return Material(
+      color: scheme.surfaceContainer,
+      elevation: 3,
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
+          child: Row(
+            children: [
+              IconButton(tooltip: tr('Tutup pencarian'), icon: const Icon(Icons.close), onPressed: _closeSearch),
+              Expanded(
+                child: TextField(
+                  controller: _searchField,
+                  autofocus: true,
+                  textInputAction: TextInputAction.search,
+                  decoration: InputDecoration(
+                    hintText: tr('Cari di bab ini'),
+                    border: InputBorder.none,
+                    suffixText: count,
+                  ),
+                  onChanged: _runSearch,
+                  onSubmitted: (_) => _stepMatch(1),
+                ),
+              ),
+              IconButton(
+                tooltip: tr('Hasil sebelumnya'),
+                icon: const Icon(Icons.keyboard_arrow_up),
+                onPressed: _matches.length > 1 ? () => _stepMatch(-1) : null,
+              ),
+              IconButton(
+                tooltip: tr('Hasil berikutnya'),
+                icon: const Icon(Icons.keyboard_arrow_down),
+                onPressed: _matches.length > 1 ? () => _stepMatch(1) : null,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _goTo(NovelChapter chapter, int page) {
+    _closeSearch();
     if (!_ttsContinue) _tts.stop();
     _saveProgress();
     saveNovelLastPage(ref, widget.pluginId, widget.novelPath, page);
@@ -564,6 +676,7 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
                                     imageHeaders: source?.imageHeaders ?? const {},
                                     highlights: ref.watch(novelHighlightsProvider)[highlightKey(widget.pluginId, _chapterPath)] ??
                                         const [],
+                                    searchMarks: _marksFor(i),
                                   ),
                                 ),
                             const SizedBox(height: 24),
@@ -655,6 +768,11 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
                           onPressed: () => ref.read(chapterBookmarksProvider.notifier).toggle(_libKey, _chapterPath),
                         ),
                         IconButton(
+                          tooltip: tr('Cari di bab'),
+                          icon: const Icon(Icons.search),
+                          onPressed: content.hasValue && _blocks.isNotEmpty ? _openSearch : null,
+                        ),
+                        IconButton(
                           tooltip: tr('Bacakan (TTS)'),
                           icon: Icon(_tts.active ? Icons.stop_circle_outlined : Icons.headphones),
                           onPressed: content.hasValue ? () => _tts.active ? _tts.stop() : _startTts() : null,
@@ -680,6 +798,8 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
                 ),
               ),
             ),
+            // Bilah pencarian: di atas bilah atas, dan tetap tampil walau bilah lain disembunyikan.
+            if (_searching) Positioned(top: 0, left: 0, right: 0, child: _searchBar(context, scheme)),
             // Bilah bawah
             AnimatedPositioned(
               duration: const Duration(milliseconds: 180),

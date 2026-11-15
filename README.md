@@ -279,6 +279,8 @@ utama menampilkan seri terakhir dibaca dari riwayat dan membukanya langsung. **A
 (`lib/ui/app_shortcuts.dart`) membuka tab langsung dari ikon aplikasi. Detail seri punya **Mirip ini**
 (karya penulis sama dan seri sejudul), dan menambah favorit yang judulnya sudah ada memunculkan peringatan.
 
+**Cari di dalam bab** (ikon kaca pembesar di bilah atas pembaca novel, `searchBlocks` di `lib/ui/widgets/novel_html.dart`): ketik kata untuk menyorot semua kemunculannya di bab yang sedang dibuka (tanpa membedakan huruf besar/kecil; kuning untuk semua hasil, jingga untuk yang aktif). Penghitung "2/20", tombol sebelumnya/berikutnya (berputar di ujung), dan Enter untuk lanjut. Pencarian dibatasi 500 hasil, berjalan di perangkat tanpa jaringan, dan ditutup saat pindah bab. Hanya untuk pembaca novel; komik berupa gambar.
+
 **Pembaca novel (tambahan)**: pilih teks untuk **Sorot** (highlight) atau **Kamus**/terjemah (Indonesia ↔
 Inggris; teks dikirim ke layanan web MyMemory dan dictionaryapi.dev hanya setelah kamu setuju di dialog pertama, bisa dicabut di Pengaturan → Kamus & terjemah online) dan **timer tidur**
 untuk TTS (15/30/45/60 menit atau akhir bab).
