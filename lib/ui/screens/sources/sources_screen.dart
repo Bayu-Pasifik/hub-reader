@@ -12,6 +12,7 @@ import '../../../state/source_health_provider.dart';
 import '../../../state/source_settings_provider.dart';
 import '../../../state/source_providers.dart';
 import '../../router.dart';
+import '../../widgets/layout.dart';
 import '../../widgets/local_import.dart';
 import '../../widgets/source_widgets.dart';
 import '../../../core/i18n/strings.dart';
@@ -171,11 +172,11 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
           ),
         ],
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(56),
+          preferredSize: Size.fromHeight(chipRowHeight(context) + 4),
           child: Column(
             children: [
               SizedBox(
-                height: 52,
+                height: chipRowHeight(context),
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),

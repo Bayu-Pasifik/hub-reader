@@ -401,6 +401,7 @@ class _TrackerRowState extends ConsumerState<_TrackerRow> {
           Row(
             children: [
               IconButton(
+                tooltip: tr('Kurangi progres'),
                 icon: const Icon(Icons.remove),
                 onPressed: _busy || link.progress <= 0
                     ? null
@@ -408,6 +409,7 @@ class _TrackerRowState extends ConsumerState<_TrackerRow> {
               ),
               Text('${tr('Bab')} ${link.progress}${link.total != null ? ' / ${link.total}' : ''}'),
               IconButton(
+                tooltip: tr('Tambah progres'),
                 icon: const Icon(Icons.add),
                 onPressed: _busy
                     ? null
@@ -467,7 +469,7 @@ class _TrackSearchDialogState extends State<_TrackSearchDialog> {
                 decoration: InputDecoration(
                   border: const OutlineInputBorder(),
                   isDense: true,
-                  suffixIcon: IconButton(icon: const Icon(Icons.search), onPressed: _search),
+                  suffixIcon: IconButton(tooltip: tr('Cari'), icon: const Icon(Icons.search), onPressed: _search),
                 ),
               ),
               const SizedBox(height: 8),

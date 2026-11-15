@@ -97,7 +97,10 @@ class _MainShellState extends ConsumerState<MainShell> with WidgetsBindingObserv
           children: [
             SafeArea(
               right: false,
-              child: NavigationRail(
+              // Label tab tidak ikut membesar tanpa batas (kata terpotong di skala font besar).
+              child: MediaQuery.withClampedTextScaling(
+                maxScaleFactor: 1.1,
+                child: NavigationRail(
                 selectedIndex: shell.currentIndex,
                 onDestinationSelected: select,
                 labelType: NavigationRailLabelType.all,
@@ -110,6 +113,7 @@ class _MainShellState extends ConsumerState<MainShell> with WidgetsBindingObserv
                       label: Text(tr(tab.label)),
                     ),
                 ],
+                ),
               ),
             ),
             const VerticalDivider(width: 1),
@@ -132,13 +136,17 @@ class _MainShellState extends ConsumerState<MainShell> with WidgetsBindingObserv
         mainAxisSize: MainAxisSize.min,
         children: [
           if (banner != null) banner,
-          NavigationBar(
-            selectedIndex: shell.currentIndex,
-            onDestinationSelected: select,
-            destinations: [
-              for (final tab in widget.tabs)
-                NavigationDestination(icon: icon(tab), selectedIcon: Icon(tab.selectedIcon), label: tr(tab.label)),
-            ],
+          // Label tab dibatasi 1.1x: lima tab tidak muat bila ikut skala font 2x.
+          MediaQuery.withClampedTextScaling(
+            maxScaleFactor: 1.1,
+            child: NavigationBar(
+              selectedIndex: shell.currentIndex,
+              onDestinationSelected: select,
+              destinations: [
+                for (final tab in widget.tabs)
+                  NavigationDestination(icon: icon(tab), selectedIcon: Icon(tab.selectedIcon), label: tr(tab.label)),
+              ],
+            ),
           ),
         ],
       ),

@@ -4,6 +4,7 @@ import '../../../core/i18n/strings.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart' show Ticker;
+import 'package:flutter/semantics.dart' show CustomSemanticsAction;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
@@ -381,7 +382,8 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
   /// (0 = di layar, ±1 = tepat di luar layar).
   Widget _transitioned(PageController controller, int index, Widget child) {
     final style = widget.display.transition;
-    if (style == PageTransitionStyle.slide) return child;
+    // "Hapus animasi" di pengaturan aksesibilitas: tanpa efek perpindahan.
+    if (style == PageTransitionStyle.slide || MediaQuery.disableAnimationsOf(context)) return child;
     return AnimatedBuilder(
       animation: controller,
       child: child,
@@ -459,7 +461,13 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
         .read(tapZonesProvider)
         .resolve(details.localPosition.dx, width, rtl: widget.mode == ReaderMode.pagedRtl);
     if (forward == null) return;
-    const duration = Duration(milliseconds: 200);
+    _turnPage(controller, forward);
+  }
+
+  /// Pindah satu halaman (mode per halaman); tanpa animasi bila "Hapus animasi" aktif.
+  void _turnPage(PageController controller, bool forward) {
+    if (!controller.hasClients) return;
+    final duration = MediaQuery.disableAnimationsOf(context) ? Duration.zero : const Duration(milliseconds: 200);
     forward
         ? controller.nextPage(duration: duration, curve: Curves.easeOut)
         : controller.previousPage(duration: duration, curve: Curves.easeOut);
@@ -501,7 +509,14 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
     });
   }
 
-  Widget _image(String url, int i, Map<String, String> headers, BoxFit fit) {
+  /// Tiap gambar halaman diberi label untuk pembaca layar ("Halaman 3 dari 8").
+  Widget _image(String url, int i, Map<String, String> headers, BoxFit fit) => Semantics(
+        label: trp('Halaman {i} dari {n}', {'i': i + 1, 'n': _total}),
+        image: true,
+        child: _imageBody(url, i, headers, fit),
+      );
+
+  Widget _imageBody(String url, int i, Map<String, String> headers, BoxFit fit) {
     if (widget.display.cropBorders) {
       final local = !url.startsWith('http');
       return CroppedPageImage(
@@ -579,7 +594,13 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
           final units = spread ? spreadCount(urls.length) : urls.length;
           body = LayoutBuilder(
             builder: (context, constraints) {
-              return GestureDetector(
+              return Semantics(
+                // Pembaca layar: ganti halaman tanpa harus menggeser atau mengetuk pinggir.
+                customSemanticsActions: {
+                  CustomSemanticsAction(label: tr('Halaman berikutnya')): () => _turnPage(controller, widget.mode != ReaderMode.pagedRtl),
+                  CustomSemanticsAction(label: tr('Halaman sebelumnya')): () => _turnPage(controller, widget.mode == ReaderMode.pagedRtl),
+                },
+                child: GestureDetector(
                 onTapUp: (d) => _onTapPaged(d, constraints.maxWidth),
                 child: PageView.builder(
                   key: ValueKey(spread),
@@ -600,6 +621,7 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
                                   child: Center(child: _image(urls[i], i, headers, BoxFit.contain)),
                                 ),
                         ),
+                ),
                 ),
               );
             },
@@ -645,7 +667,13 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
             Positioned(
               right: 12,
               bottom: 12,
-              child: IgnorePointer(
+              // Label di luar IgnorePointer (yang membuang semantik anaknya); liveRegion:
+              // pembaca layar mengumumkan halaman baru setiap ganti halaman.
+              child: Semantics(
+                liveRegion: true,
+                label: trp('Halaman {c}', {'c': _counter(urls.length)}),
+                child: IgnorePointer(
+                child: ExcludeSemantics(
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.6),
@@ -659,6 +687,8 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
                     ),
                   ),
                 ),
+                ),
+              ),
               ),
             ),
           ],

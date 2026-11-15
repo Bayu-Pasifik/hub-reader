@@ -731,17 +731,8 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
                 elevation: 2,
                 child: SafeArea(
                   bottom: false,
-                  child: ListTile(
-                    leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.pop()),
-                    title: Text(chapter.name, maxLines: 1, overflow: TextOverflow.ellipsis),
-                    subtitle: Text(
-                      details.valueOrNull?.name ?? source?.name ?? '',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
+                  child: Builder(builder: (context) {
+                    final actions = <Widget>[
                         if (widget.pluginId != LocalNovelSource.pluginId)
                         IconButton(
                           tooltip: tr('Buka di WebView'),
@@ -792,9 +783,30 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
                             builder: (_) => const _ReaderSettingsSheet(),
                           ),
                         ),
-                      ],
+                      ];
+                    // Font sistem besar: tombol aksi pindah ke baris sendiri supaya judul tidak terpotong.
+                    final large = MediaQuery.textScalerOf(context).scale(1) > 1.3;
+                    final tile = ListTile(
+                    leading: IconButton(
+                      tooltip: tr('Kembali'),
+                      icon: const Icon(Icons.arrow_back),
+                      onPressed: () => context.pop(),
                     ),
-                  ),
+                    title: Text(chapter.name, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    subtitle: Text(
+                      details.valueOrNull?.name ?? source?.name ?? '',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    trailing: large ? null : Row(mainAxisSize: MainAxisSize.min, children: actions),
+                    );
+                    return large
+                        ? Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [tile, Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: actions)],
+                          )
+                        : tile;
+                  }),
                 ),
               ),
             ),

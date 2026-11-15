@@ -193,6 +193,8 @@ class _DailyChart extends StatelessWidget {
     final days = [for (var i = _days - 1; i >= 0; i--) today.subtract(Duration(days: i))];
     final values = [for (final d in days) stats.secondsOn(d)];
     final max = values.fold(0, (a, b) => a > b ? a : b);
+    // Label hari ikut skala font sistem, jadi tinggi grafik harus ikut (bar 86 + jarak 6 + label).
+    final labelHeight = MediaQuery.textScalerOf(context).scale(18);
 
     return Card.outlined(
       margin: EdgeInsets.zero,
@@ -206,7 +208,7 @@ class _DailyChart extends StatelessWidget {
               Text(trp('Terbanyak {x}', {'x': StatsScreen.duration(max)}), style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant)),
             const SizedBox(height: 12),
             SizedBox(
-              height: 110,
+              height: 96 + labelHeight,
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [

@@ -11,6 +11,7 @@ import '../../../state/novel_health_provider.dart';
 import '../../../state/novel_providers.dart';
 import '../../../state/source_health_provider.dart';
 import '../../router.dart';
+import '../../widgets/layout.dart';
 import '../../widgets/local_import.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/state_views.dart';
@@ -174,7 +175,7 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
     return Column(
       children: [
         SizedBox(
-          height: 52,
+          height: chipRowHeight(context),
           child: ListView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),

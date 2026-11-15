@@ -9,6 +9,7 @@ import '../../../novels/novel_models.dart';
 import '../../../novels/novel_source.dart';
 import '../../../state/novel_providers.dart';
 import '../../router.dart';
+import '../../widgets/layout.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/state_views.dart';
 import 'novel_settings_sheet.dart';
@@ -208,12 +209,7 @@ class NovelGrid extends ConsumerWidget {
             SliverPadding(
               padding: const EdgeInsets.all(12),
               sliver: SliverGrid.builder(
-                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 160,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: 0.56,
-                ),
+                gridDelegate: TextScaledGridDelegate(textScale: MediaQuery.textScalerOf(context).scale(1)),
                 itemCount: state.items.length,
                 itemBuilder: (context, i) {
                   final novel = state.items[i];

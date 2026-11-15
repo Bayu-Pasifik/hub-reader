@@ -106,7 +106,11 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
     ..showSnackBar(SnackBar(content: Text(text), duration: const Duration(seconds: 2)));
 
   PreferredSizeWidget _selectionBar(NovelDetails? novel) => AppBar(
-        leading: IconButton(icon: const Icon(Icons.close), onPressed: () => setState(_selected.clear)),
+        leading: IconButton(
+          tooltip: tr('Batalkan pilihan'),
+          icon: const Icon(Icons.close),
+          onPressed: () => setState(_selected.clear),
+        ),
         title: Text(trp('{n} dipilih', {'n': _selected.length})),
         actions: [
           IconButton(
@@ -421,6 +425,7 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
         child: Row(
           children: [
             IconButton(
+              tooltip: tr('Halaman sebelumnya'),
               onPressed: _page > 1 ? () => setState(() => _page--) : null,
               icon: const Icon(Icons.chevron_left),
             ),
@@ -436,6 +441,7 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
               ),
             ),
             IconButton(
+              tooltip: tr('Halaman berikutnya'),
               onPressed: _page < total ? () => setState(() => _page++) : null,
               icon: const Icon(Icons.chevron_right),
             ),

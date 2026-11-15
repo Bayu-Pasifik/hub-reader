@@ -1,4 +1,4 @@
-import 'dart:math' show Random;
+import 'dart:math' show Random, max;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -235,6 +235,10 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
   }
 }
 
+/// Tinggi kira-kira blok teks di bawah sampul grid (2 baris judul + 1 baris
+/// sumber) pada skala font 1x; dipakai untuk menambah tinggi sel di font besar.
+const favoriteTextBlockHeight = 62.0;
+
 class _FavoritesGrid extends ConsumerWidget {
   const _FavoritesGrid({required this.entries, required this.unread, required this.onLongPress});
 
@@ -272,30 +276,30 @@ class _FavoritesGrid extends ConsumerWidget {
     }
 
     // Tinggi sel: sampul 3:4 + (mode grid) dua baris judul dan satu baris sumber.
-    final ratio = switch (layout.display) {
-      LibraryDisplay.grid => 0.5,
-      _ => 3 / 4,
-    };
-    final delegate = layout.columns == 0
-        ? SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: layout.display == LibraryDisplay.grid ? 160 : 120,
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            childAspectRatio: ratio,
-          )
-        : SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: layout.columns,
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            childAspectRatio: layout.display == LibraryDisplay.grid ? (layout.columns >= 4 ? 0.45 : 0.5) : ratio,
-          );
-    return GridView.builder(
-      key: const PageStorageKey('library-grid'),
-      padding: const EdgeInsets.all(12),
-      gridDelegate: delegate,
-      itemCount: entries.length,
-      itemBuilder: (context, i) => tile(entries[i]),
-    );
+    // Tinggi bagian teks ikut skala font sistem; tanpa itu judul meluap di font besar.
+    final isGrid = layout.display == LibraryDisplay.grid;
+    return LayoutBuilder(builder: (context, constraints) {
+      const pad = 12.0, gap = 12.0;
+      final maxExtent = isGrid ? 160.0 : 120.0;
+      final usable = constraints.maxWidth - pad * 2;
+      final columns = layout.columns == 0 ? max(1, (usable / (maxExtent + gap)).ceil()) : layout.columns;
+      final cellWidth = (usable - gap * (columns - 1)) / columns;
+      final ratio = !isGrid ? 3 / 4 : (layout.columns >= 4 ? 0.45 : 0.5);
+      final textScale = MediaQuery.textScalerOf(context).scale(1.0).clamp(1.0, 3.0);
+      final extra = isGrid ? favoriteTextBlockHeight * (textScale - 1) : 0.0;
+      return GridView.builder(
+        key: const PageStorageKey('library-grid'),
+        padding: const EdgeInsets.all(pad),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: columns,
+          mainAxisSpacing: gap,
+          crossAxisSpacing: gap,
+          mainAxisExtent: cellWidth / ratio + extra,
+        ),
+        itemCount: entries.length,
+        itemBuilder: (context, i) => tile(entries[i]),
+      );
+    });
   }
 }
 

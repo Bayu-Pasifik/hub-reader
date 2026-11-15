@@ -46,6 +46,8 @@ class _ZoomablePageState extends State<ZoomablePage> with SingleTickerProviderSt
   void _toggleZoom() {
     final end = zoomTarget(_controller.value, _tap, widget.doubleTapScale.clamp(1.0, widget.maxScale));
     final tween = Matrix4Tween(begin: _controller.value, end: end);
+    // "Hapus animasi" di pengaturan aksesibilitas: lompat langsung.
+    _anim.duration = MediaQuery.disableAnimationsOf(context) ? Duration.zero : const Duration(milliseconds: 220);
     final curved = CurvedAnimation(parent: _anim, curve: Curves.easeOut);
     void tick() => _controller.value = tween.evaluate(curved);
     _anim
