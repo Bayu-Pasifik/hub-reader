@@ -22,7 +22,7 @@ class BackgroundUpdateConfig {
   static const choices = [0, 6, 12, 24, 48];
 
   static String label(int hours) => switch (hours) {
-        0 => 'Mati',
+        0 => tr('Nonaktif'),
         24 => tr('Sehari sekali'),
         48 => tr('2 hari sekali'),
         _ => trp('Tiap {hours} jam', {'hours': hours}),

@@ -291,6 +291,8 @@ acak dari tab yang sedang tampil (mengikuti filter & pencarian).
 belum dibaca, dan kategori tertentu (seri dilewati bila semua kategorinya dikecualikan). Berlaku juga untuk cek di latar
 belakang. Bawaan: lewati tamat dan belum dibaca. Disimpan di `library.updates.rules.v1`.
 
+**Cadangan WebDAV** (layar Cadangan): unggah cadangan otomatis/manual ke server WebDAV (Nextcloud, ownCloud, Synology, Koofr), tes koneksi, dan pulihkan dari daftar berkas di server. Kata sandi disimpan di Keystore, bukan di cadangan.
+
 **Ekspor CBZ** (layar Unduhan): ikon arsip per bab menyimpan CBZ lewat dialog sistem; ikon di tingkat seri mengekspor
 semua bab ke folder pilihan. Halaman diberi nomor ulang (`001.ext`) plus `ComicInfo.xml`, jadi terbaca di Komga, Kavita, dan Mihon.
 

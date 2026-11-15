@@ -18,7 +18,7 @@ void main() {
   });
 
   test('background update labels', () {
-    expect(BackgroundUpdateConfig.label(0), 'Mati');
+    expect(BackgroundUpdateConfig.label(0), 'Nonaktif');
     expect(BackgroundUpdateConfig.label(6), 'Tiap 6 jam');
     expect(BackgroundUpdateConfig.label(24), 'Sehari sekali');
   });

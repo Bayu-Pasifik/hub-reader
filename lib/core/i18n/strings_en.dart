@@ -826,7 +826,40 @@ const Map<String, String> stringsEn = {
   '18+': '18+',
   'Hiatus': 'Hiatus',
   '1 hari': '1 day',
+  'Nonaktif': 'Off',
   'Unduh otomatis bab baru': 'Auto-download new chapters',
   'Bab baru dari favorit diunduh otomatis saat cek pembaruan (maks. 20 per cek)':
       'New chapters from favorites download automatically on update checks (max 20 per check)',
+  'Alamat folder':
+      'Folder address',
+  'Nama pengguna':
+      'Username',
+  'Kata sandi':
+      'Password',
+  'Terhubung ke WebDAV':
+      'Connected to WebDAV',
+  'Gagal: {e}':
+      'Failed: {e}',
+  'Cadangan diunggah: {name}':
+      'Backup uploaded: {name}',
+  'Belum ada cadangan di server':
+      'No backups on the server yet',
+  'Cadangan WebDAV':
+      'WebDAV backup',
+  'Unggah cadangan ke server WebDAV (Nextcloud, ownCloud, Synology, Koofr, dll) supaya aman walau aplikasi dicopot atau HP diganti.':
+      'Upload backups to a WebDAV server (Nextcloud, ownCloud, Synology, Koofr, etc.) so they survive uninstalling the app or switching phones.',
+  'Server WebDAV':
+      'WebDAV server',
+  'Belum diatur':
+      'Not set up',
+  'Unggah cadangan otomatis':
+      'Upload automatic backups',
+  'Setiap cadangan otomatis ikut diunggah ke server':
+      'Every automatic backup is also uploaded to the server',
+  'Tes koneksi':
+      'Test connection',
+  'Unggah sekarang':
+      'Upload now',
+  'Pulihkan dari WebDAV':
+      'Restore from WebDAV',
 };

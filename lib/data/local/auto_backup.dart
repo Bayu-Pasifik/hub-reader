@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../novels/plugin_repository.dart';
 import 'backup.dart';
+import 'webdav_backup.dart';
 import '../../core/i18n/strings.dart';
 
 /// Pengaturan cadangan otomatis.
@@ -31,7 +32,7 @@ class AutoBackupConfig {
   static const keepChoices = [3, 5, 10];
 
   static String label(int hours) => switch (hours) {
-        0 => 'Mati',
+        0 => tr('Nonaktif'),
         24 => tr('Tiap hari'),
         72 => tr('Tiap 3 hari'),
         168 => tr('Tiap minggu'),
@@ -82,6 +83,38 @@ class AutoBackupEntry {
 abstract final class AutoBackup {
   static const _lastKey = 'backup.auto.last.v1';
   static const _prefix = 'hub_reader_auto_';
+
+  static const webDavStatusKey = 'backup.webdav.status.v1';
+
+  /// Hanya untuk test: ganti klien WebDAV.
+  static WebDavClient? webDavClient;
+
+  /// Unggah cadangan ke WebDAV bila diaktifkan. Gagal tidak membatalkan
+  /// cadangan lokal; hasilnya dicatat di [webDavStatusKey] (`ok|<ms>` atau
+  /// `error|<pesan>`).
+  static Future<void> uploadToWebDav(
+    SharedPreferences prefs,
+    String name,
+    List<int> bytes, {
+    required int keep,
+    WebDavClient? client,
+    bool force = false,
+  }) async {
+    final cfg = await WebDavConfig.read(prefs);
+    if (!force && !cfg.enabled) return;
+    try {
+      if (!cfg.configured) throw const WebDavException('Alamat WebDAV belum diisi');
+      final c = client ?? WebDavClient(cfg);
+      await c.upload(name, bytes);
+      await prefs.setString(webDavStatusKey, 'ok|${DateTime.now().millisecondsSinceEpoch}');
+      try {
+        await c.prune(keep);
+      } catch (_) {}
+    } catch (e) {
+      await prefs.setString(webDavStatusKey, 'error|$e');
+      if (force) rethrow;
+    }
+  }
 
   /// Hanya untuk test: ganti folder tujuan.
   static Directory? directoryOverride;
@@ -138,10 +171,12 @@ abstract final class AutoBackup {
     final dir = await directory();
     final target = File('${dir.path}${Platform.pathSeparator}$name');
     final temp = File('${target.path}.tmp');
-    await temp.writeAsString(jsonEncode(data), flush: true);
+    final json = jsonEncode(data);
+    await temp.writeAsString(json, flush: true);
     await temp.rename(target.path);
     await prefs.setInt(_lastKey, stamp.millisecondsSinceEpoch);
     await prune(cfg.keep);
+    await uploadToWebDav(prefs, name, utf8.encode(json), keep: cfg.keep, client: webDavClient);
     return target;
   }
 

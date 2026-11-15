@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app_restart.dart';
 import '../../data/local/auto_backup.dart';
 import '../../data/local/backup.dart';
+import '../../data/local/webdav_backup.dart';
 import '../../state/background_updates.dart';
 import '../../state/core_providers.dart';
 import '../../state/novel_providers.dart';
@@ -26,6 +27,153 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
   bool _plugins = true;
   bool _busy = false;
   late Future<List<AutoBackupEntry>> _autoList = AutoBackup.list();
+  WebDavConfig _dav = const WebDavConfig();
+
+  @override
+  void initState() {
+    super.initState();
+    WebDavConfig.read(ref.read(sharedPreferencesProvider)).then((c) {
+      if (mounted) setState(() => _dav = c);
+    });
+  }
+
+  Future<void> _saveDav(WebDavConfig config) async {
+    setState(() => _dav = config);
+    await config.write(ref.read(sharedPreferencesProvider));
+  }
+
+  Future<void> _davDialog() async {
+    final url = TextEditingController(text: _dav.url);
+    final user = TextEditingController(text: _dav.username);
+    final pass = TextEditingController(text: _dav.password);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('WebDAV'),
+        content: SingleChildScrollView(
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            TextField(
+              controller: url,
+              keyboardType: TextInputType.url,
+              decoration: InputDecoration(
+                labelText: tr('Alamat folder'),
+                hintText: 'https://cloud.example.com/remote.php/dav/files/me/HubReader',
+              ),
+            ),
+            TextField(controller: user, decoration: InputDecoration(labelText: tr('Nama pengguna'))),
+            TextField(
+              controller: pass,
+              obscureText: true,
+              decoration: InputDecoration(labelText: tr('Kata sandi')),
+            ),
+          ]),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr('Batal'))),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(tr('Simpan'))),
+        ],
+      ),
+    );
+    if (ok == true) {
+      await _saveDav(_dav.copyWith(url: url.text.trim(), username: user.text.trim(), password: pass.text));
+    }
+  }
+
+  Future<void> _davTest() async {
+    setState(() => _busy = true);
+    try {
+      await WebDavClient(_dav).test();
+      if (mounted) _snack(tr('Terhubung ke WebDAV'));
+    } catch (e) {
+      if (mounted) _snack(trp('Gagal: {e}', {'e': e}));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _davUploadNow() async {
+    setState(() => _busy = true);
+    try {
+      final prefs = ref.read(sharedPreferencesProvider);
+      final cfg = AutoBackupConfig.read(prefs);
+      final data = await AppBackup.create(
+        prefs,
+        includeSecrets: cfg.secrets,
+        plugins: cfg.plugins ? await ref.read(novelRepositoryProvider).exportInstalled() : null,
+      );
+      final now = DateTime.now();
+      String two(int v) => v.toString().padLeft(2, '0');
+      final name = 'hub_reader_auto_${now.year}${two(now.month)}${two(now.day)}_${two(now.hour)}${two(now.minute)}${two(now.second)}.json';
+      await AutoBackup.uploadToWebDav(prefs, name, utf8.encode(jsonEncode(data)), keep: cfg.keep, force: true);
+      if (mounted) _snack(trp('Cadangan diunggah: {name}', {'name': name}));
+    } catch (e) {
+      if (mounted) _snack(trp('Gagal: {e}', {'e': e}));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _davRestore() async {
+    setState(() => _busy = true);
+    List<WebDavFile> files;
+    try {
+      files = await WebDavClient(_dav).list();
+    } catch (e) {
+      if (mounted) {
+        setState(() => _busy = false);
+        _snack(trp('Gagal: {e}', {'e': e}));
+      }
+      return;
+    }
+    if (!mounted) return;
+    setState(() => _busy = false);
+    if (files.isEmpty) {
+      _snack(tr('Belum ada cadangan di server'));
+      return;
+    }
+    final picked = await showModalBottomSheet<WebDavFile>(
+      context: context,
+      builder: (context) => ListView(
+        shrinkWrap: true,
+        children: [
+          for (final f in files)
+            ListTile(
+              leading: const Icon(Icons.cloud_download_outlined),
+              title: Text(_stamp(f.modified)),
+              subtitle: Text('${f.name} · ${_size(f.size)}'),
+              onTap: () => Navigator.pop(context, f),
+            ),
+        ],
+      ),
+    );
+    if (picked == null || !mounted) return;
+    setState(() => _busy = true);
+    Object? decoded;
+    try {
+      decoded = jsonDecode(await WebDavClient(_dav).download(picked.name));
+    } catch (e) {
+      if (mounted) {
+        setState(() => _busy = false);
+        _snack(trp('Gagal: {e}', {'e': e}));
+      }
+      return;
+    }
+    if (mounted) setState(() => _busy = false);
+    await _confirmRestore(decoded);
+  }
+
+  String _davStatus() {
+    final raw = ref.read(sharedPreferencesProvider).getString(AutoBackup.webDavStatusKey);
+    if (raw == null) return tr('Belum pernah');
+    final i = raw.indexOf('|');
+    final kind = raw.substring(0, i);
+    final rest = raw.substring(i + 1);
+    if (kind == 'ok') {
+      final ms = int.tryParse(rest);
+      return ms == null ? tr('Belum pernah') : trp('Terakhir {last}', {'last': _stamp(DateTime.fromMillisecondsSinceEpoch(ms))});
+    }
+    return trp('Gagal: {e}', {'e': rest});
+  }
 
   static String _stamp(DateTime d) {
     String two(int v) => v.toString().padLeft(2, '0');
@@ -267,6 +415,52 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                   }),
                   enabled: !_busy,
                   onTap: _autoNow,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(tr('Cadangan WebDAV'), style: theme.textTheme.titleMedium),
+          const SizedBox(height: 4),
+          Text(
+            tr('Unggah cadangan ke server WebDAV (Nextcloud, ownCloud, Synology, Koofr, dll) supaya aman walau aplikasi dicopot atau HP diganti.'),
+            style: theme.textTheme.bodySmall,
+          ),
+          const SizedBox(height: 8),
+          Card(
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.cloud_outlined),
+                  title: Text(tr('Server WebDAV')),
+                  subtitle: Text(_dav.configured ? _dav.url : tr('Belum diatur')),
+                  enabled: !_busy,
+                  onTap: _davDialog,
+                ),
+                SwitchListTile(
+                  title: Text(tr('Unggah cadangan otomatis')),
+                  subtitle: Text(tr('Setiap cadangan otomatis ikut diunggah ke server')),
+                  value: _dav.enabled,
+                  onChanged: _busy || !_dav.configured ? null : (v) => _saveDav(_dav.copyWith(enabled: v)),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.wifi_tethering),
+                  title: Text(tr('Tes koneksi')),
+                  enabled: !_busy && _dav.configured,
+                  onTap: _davTest,
+                ),
+                ListTile(
+                  leading: const Icon(Icons.cloud_upload_outlined),
+                  title: Text(tr('Unggah sekarang')),
+                  subtitle: Text(_davStatus()),
+                  enabled: !_busy && _dav.configured,
+                  onTap: _davUploadNow,
+                ),
+                ListTile(
+                  leading: const Icon(Icons.cloud_download_outlined),
+                  title: Text(tr('Pulihkan dari WebDAV')),
+                  enabled: !_busy && _dav.configured,
+                  onTap: _davRestore,
                 ),
               ],
             ),
