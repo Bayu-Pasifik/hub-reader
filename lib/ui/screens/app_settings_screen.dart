@@ -247,6 +247,13 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
               if (v) await ref.read(downloadIndexProvider.notifier).purgeRead();
             },
           ),
+          SwitchListTile(
+            secondary: const Icon(Icons.download_for_offline_outlined),
+            title: Text(tr('Unduh otomatis bab baru')),
+            subtitle: Text(tr('Bab baru dari favorit diunduh otomatis saat cek pembaruan (maks. 20 per cek)')),
+            value: s.autoDownloadNew,
+            onChanged: (v) => n.update((x) => x.copyWith(autoDownloadNew: v)),
+          ),
           header(tr('Jaringan')),
           ListTile(
             leading: const Icon(Icons.shield_outlined),

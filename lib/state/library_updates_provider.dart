@@ -11,7 +11,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../core/i18n/strings.dart';
 import '../core/utils/json.dart';
 import '../data/models/source_library.dart';
+import '../sources/models.dart';
+import 'app_settings_provider.dart';
 import 'core_providers.dart';
+import 'download_providers.dart';
 import 'library_chapters.dart';
 import 'source_library_providers.dart';
 
@@ -387,8 +390,39 @@ class LibraryUpdatesNotifier extends Notifier<LibraryUpdatesState> {
       failed: failed,
     );
     await _save();
+    if (found.isNotEmpty) autoDownload(found);
     if (notify && found.isNotEmpty) await _notify(found);
     return found.length;
+  }
+
+  /// Batas bab yang diantre otomatis per pengecekan.
+  static const maxAutoDownload = 20;
+
+  /// Antrekan unduhan bab baru bila "Unduh otomatis" aktif. Bab terlama dulu.
+  void autoDownload(List<LibraryUpdate> found) {
+    try {
+      if (!ref.read(appSettingsProvider).autoDownloadNew) return;
+      final queue = ref.read(downloadQueueProvider.notifier);
+      var budget = maxAutoDownload;
+      final byItem = <String, List<LibraryUpdate>>{};
+      for (final u in found) {
+        (byItem[u.item.key] ??= []).add(u);
+      }
+      for (final list in byItem.values) {
+        if (budget <= 0) break;
+        final chapters = list.reversed.take(budget).toList();
+        budget -= chapters.length;
+        final item = list.first.item;
+        queue.enqueue(
+          sourceId: item.sourceId,
+          mangaUrl: item.url,
+          manga: SourceMangaDetails(url: item.url, title: item.title, thumbnailUrl: item.thumbnailUrl),
+          chapters: [for (final c in chapters) SourceChapter(url: c.chapterUrl, name: c.chapterName)],
+        );
+      }
+    } catch (e) {
+      debugPrint('autoDownload: $e');
+    }
   }
 
   // ------------------------------------------------------------ notifikasi

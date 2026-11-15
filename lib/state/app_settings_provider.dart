@@ -35,6 +35,7 @@ class AppSettings {
     this.lockAfter = const Duration(minutes: 1),
     this.incognito = false,
     this.autoDeleteRead = false,
+    this.autoDownloadNew = false,
     this.language = AppLanguage.id,
   });
 
@@ -59,6 +60,9 @@ class AppSettings {
   /// Hapus unduhan bab yang sudah selesai dibaca agar penyimpanan tidak penuh.
   final bool autoDeleteRead;
 
+  /// Unduh otomatis bab baru yang ditemukan saat cek pembaruan.
+  final bool autoDownloadNew;
+
   /// Bahasa antarmuka.
   final AppLanguage language;
 
@@ -71,6 +75,7 @@ class AppSettings {
     Duration? lockAfter,
     bool? incognito,
     bool? autoDeleteRead,
+    bool? autoDownloadNew,
     AppLanguage? language,
   }) =>
       AppSettings(
@@ -82,6 +87,7 @@ class AppSettings {
         lockAfter: lockAfter ?? this.lockAfter,
         incognito: incognito ?? this.incognito,
         autoDeleteRead: autoDeleteRead ?? this.autoDeleteRead,
+        autoDownloadNew: autoDownloadNew ?? this.autoDownloadNew,
         language: language ?? this.language,
       );
 }
@@ -97,6 +103,7 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
   static const _lockAfter = 'app.lock_after_seconds.v1';
   static const _incognito = 'app.incognito.v1';
   static const _autoDeleteRead = 'app.auto_delete_read.v1';
+  static const _autoDownloadNew = 'app.auto_download_new.v1';
   static const _language = 'app.language.v1';
 
   @override
@@ -112,6 +119,7 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
       lockAfter: Duration(seconds: p.getInt(_lockAfter) ?? 60),
       incognito: p.getBool(_incognito) ?? false,
       autoDeleteRead: p.getBool(_autoDeleteRead) ?? false,
+      autoDownloadNew: p.getBool(_autoDownloadNew) ?? false,
       language: currentLanguage,
     );
   }
@@ -134,6 +142,7 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
     await p.setInt(_lockAfter, state.lockAfter.inSeconds);
     await p.setBool(_incognito, state.incognito);
     await p.setBool(_autoDeleteRead, state.autoDeleteRead);
+    await p.setBool(_autoDownloadNew, state.autoDownloadNew);
     await p.setString(_language, state.language.name);
   }
 }
