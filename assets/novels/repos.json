@@ -1,5 +1,6 @@
 {
   "manifests": [
-    "https://raw.githubusercontent.com/lnreader/lnreader-plugins/plugins/v3.0.0/.dist/plugins.min.json"
+    "https://raw.githubusercontent.com/lnreader/lnreader-plugins/plugins/v3.0.0/.dist/plugins.min.json",
+    "https://raw.githubusercontent.com/Bayu-Pasifik/lnreader-plugins-mirror/plugins/v3.0.0/.dist/plugins.min.json"
   ]
 }
