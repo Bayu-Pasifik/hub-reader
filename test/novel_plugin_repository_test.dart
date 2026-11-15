@@ -73,6 +73,33 @@ void main() {
     expect(after.plugins.map((p) => p.id), containsAll(['one', 'three']));
   });
 
+  test('mirrorUrls: raw GitHub → jsDelivr, branch bergaris miring & kurung siku', () {
+    expect(
+      NovelPluginRepository.mirrorUrls(NovelPluginRepository.defaultManifestUrl).first,
+      'https://cdn.jsdelivr.net/gh/lnreader/lnreader-plugins@plugins%2Fv3.0.0/.dist/plugins.min.json',
+    );
+    expect(
+      NovelPluginRepository.mirrorUrls(
+        'https://raw.githubusercontent.com/lnreader/lnreader-plugins/plugins/v3.0.0/.js/src/plugins/arabic/ArNovel[madara].js',
+      ).first,
+      'https://cdn.jsdelivr.net/gh/lnreader/lnreader-plugins@plugins%2Fv3.0.0/.js/src/plugins/arabic/ArNovel%5Bmadara%5D.js',
+    );
+    expect(NovelPluginRepository.mirrorUrls('https://raw.githubusercontent.com/u/r/main/x/p.json').first,
+        'https://cdn.jsdelivr.net/gh/u/r@main/x/p.json');
+    expect(NovelPluginRepository.mirrorUrls('https://a.example/plugins.min.json'), isEmpty);
+  });
+
+  test('raw GitHub mati: manifest & kode plugin diambil dari mirror', () async {
+    const raw = NovelPluginRepository.defaultManifestUrl;
+    const code = 'https://raw.githubusercontent.com/u/r/main/p/one.js';
+    final mirror = NovelPluginRepository.mirrorUrls(raw).first;
+    routes[mirror] = _manifest([('one', code)]);
+    routes[NovelPluginRepository.mirrorUrls(code).first] = 'var one = 1;';
+    final cat = await repo.fetchManifest([raw]);
+    expect(cat.error, isNull);
+    expect(await repo.code(cat.plugins.single), 'var one = 1;');
+  });
+
   test('semua repo gagal tanpa cache: melempar', () async {
     expect(repo.fetchManifest([a]), throwsA(anything));
   });

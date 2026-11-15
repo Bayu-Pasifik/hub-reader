@@ -104,12 +104,45 @@ class NovelPluginRepository {
     return (plugins: [...merged, ...orphans], savedAt: DateTime.now(), error: firstError);
   }
 
+  /// Alamat cadangan untuk file di raw.githubusercontent.com (lewat jsDelivr),
+  /// dicoba berurutan bila alamat asli gagal. Selain GitHub raw: kosong.
+  /// Branch beraksara garis miring (`plugins/v3.0.0`) dikenali dari awalan `plugins/`.
+  static List<String> mirrorUrls(String url) {
+    final uri = Uri.tryParse(url);
+    if (uri == null || uri.host != 'raw.githubusercontent.com') return const [];
+    final seg = uri.pathSegments;
+    if (seg.length < 4) return const [];
+    final refLen = seg[2] == 'plugins' && seg[3].startsWith('v') ? 2 : 1;
+    if (seg.length <= 2 + refLen) return const [];
+    final ref = seg.sublist(2, 2 + refLen).map(Uri.encodeComponent).join('%2F');
+    final path = seg.sublist(2 + refLen).map(Uri.encodeComponent).join('/');
+    final tail = '/gh/${seg[0]}/${seg[1]}@$ref/$path';
+    return ['https://cdn.jsdelivr.net$tail', 'https://fastly.jsdelivr.net$tail'];
+  }
+
+  /// GET teks dari [url]; gagal → coba tiap mirror. Error asli dilempar bila semua gagal.
+  Future<String> _getText(String url) async {
+    Object? firstError;
+    StackTrace? firstStack;
+    for (final candidate in [url, ...mirrorUrls(url)]) {
+      try {
+        final response = await _dio.get<String>(
+          candidate,
+          options: Options(headers: {'Cache-Control': 'no-cache', 'Pragma': 'no-cache'}),
+        );
+        final data = response.data;
+        if (data == null || data.trim().isEmpty) throw FormatException(tr('Respons kosong'));
+        return data;
+      } catch (e, st) {
+        firstError ??= e;
+        firstStack ??= st;
+      }
+    }
+    Error.throwWithStackTrace(firstError!, firstStack!);
+  }
+
   Future<List<NovelPluginInfo>> _download(String repo) async {
-    final response = await _dio.get<String>(
-      repo,
-      options: Options(headers: {'Cache-Control': 'no-cache', 'Pragma': 'no-cache'}),
-    );
-    final body = response.data ?? '[]';
+    final body = await _getText(repo);
     final list = _parseManifest(body, repo);
     if (list.isEmpty) throw FormatException(tr('Manifest plugin kosong'));
     final file = _manifestFile(repo);
@@ -268,11 +301,7 @@ class NovelPluginRepository {
     }
     try {
       if (info.url.isEmpty) throw StateError(trp('Plugin "{id}" tidak punya URL kode', {'id': info.id}));
-      final response = await _dio.get<String>(
-        info.url,
-        options: Options(headers: {'Cache-Control': 'no-cache', 'Pragma': 'no-cache'}),
-      );
-      final code = response.data ?? '';
+      final code = await _getText(info.url);
       if (code.trim().isEmpty) throw FormatException(tr('Kode plugin kosong'));
       await file.parent.create(recursive: true);
       await file.writeAsString(code, flush: true);

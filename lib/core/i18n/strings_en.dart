@@ -508,6 +508,7 @@ const Map<String, String> stringsEn = {
   'Katalog sumber kosong': 'Source catalog is empty',
   'Kesalahan tak terduga.': 'Unexpected error.',
   'Kode plugin kosong': 'Plugin code is empty',
+  'Respons kosong': 'Empty response',
   'Login Kitsu dulu': 'Log in to Kitsu first',
   'Login Kitsu gagal': 'Kitsu login failed',
   'Login Kitsu gagal: profil tidak ditemukan': 'Kitsu login failed: profile not found',
