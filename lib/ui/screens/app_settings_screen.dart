@@ -302,6 +302,13 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
             onChanged: (v) => n.update((x) => x.copyWith(secureScreen: v)),
           ),
           SwitchListTile(
+            secondary: const Icon(Icons.translate),
+            title: Text(tr('Kamus & terjemah online')),
+            subtitle: Text(tr('Teks pilihan di pembaca novel dikirim ke MyMemory dan dictionaryapi.dev')),
+            value: s.lookupConsent,
+            onChanged: (v) => n.update((x) => x.copyWith(lookupConsent: v)),
+          ),
+          SwitchListTile(
             secondary: const Icon(Icons.visibility_off_outlined),
             title: Text(tr('Mode samaran')),
             subtitle: Text(tr('Riwayat & posisi baca tidak dicatat')),

@@ -401,7 +401,24 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
     );
   }
 
-  void _showLookup(String text) {
+  Future<void> _showLookup(String text) async {
+    if (!ref.read(appSettingsProvider).lookupConsent) {
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(tr('Kirim teks ke layanan online?')),
+          content: Text(tr(
+              'Kamus & terjemah mengirim teks yang kamu pilih ke layanan web pihak ketiga (MyMemory dan dictionaryapi.dev). Teks bab itu keluar dari perangkat. Bisa dicabut kapan saja di Pengaturan.')),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(tr('Batal'))),
+            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(tr('Izinkan'))),
+          ],
+        ),
+      );
+      if (ok != true || !mounted) return;
+      await ref.read(appSettingsProvider.notifier).update((s) => s.copyWith(lookupConsent: true));
+      if (!mounted) return;
+    }
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,

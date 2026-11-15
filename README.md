@@ -275,7 +275,7 @@ utama menampilkan seri terakhir dibaca dari riwayat dan membukanya langsung. **A
 (karya penulis sama dan seri sejudul), dan menambah favorit yang judulnya sudah ada memunculkan peringatan.
 
 **Pembaca novel (tambahan)**: pilih teks untuk **Sorot** (highlight) atau **Kamus**/terjemah (Indonesia ↔
-Inggris; teks dikirim ke layanan web MyMemory dan dictionaryapi.dev) dan **timer tidur**
+Inggris; teks dikirim ke layanan web MyMemory dan dictionaryapi.dev hanya setelah kamu setuju di dialog pertama, bisa dicabut di Pengaturan → Kamus & terjemah online) dan **timer tidur**
 untuk TTS (15/30/45/60 menit atau akhir bab).
 
 **Pindah sumber** (menu ⋮ di detail seri, atau tekan lama sampul favorit): judul dicari di sumber lain
