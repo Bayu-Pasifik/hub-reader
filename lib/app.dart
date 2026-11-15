@@ -6,12 +6,14 @@ import 'core/platform/reader_bridge.dart';
 import 'data/models/source_library.dart';
 import 'state/app_settings_provider.dart';
 import 'state/home_widget_sync.dart';
+import 'state/onboarding_provider.dart';
 import 'state/source_library_providers.dart';
 import 'ui/widgets/library_routing.dart';
 import 'state/download_providers.dart';
 import 'ui/app_shortcuts.dart';
 import 'ui/deep_links.dart';
 import 'ui/router.dart';
+import 'ui/screens/onboarding_screen.dart';
 import 'ui/widgets/app_update_ui.dart';
 import 'ui/widgets/app_lock.dart';
 
@@ -89,7 +91,15 @@ class _HubReaderAppState extends ConsumerState<HubReaderApp> {
               : dark,
           themeMode: s.themeMode,
           routerConfig: ref.watch(routerProvider),
-          builder: (context, child) => AppLockGate(child: child ?? const SizedBox.shrink()),
+          builder: (context, child) => AppLockGate(
+            child: Stack(
+              children: [
+                // Router tetap hidup di bawah sambutan, jadi tautan dalam & pintasan tidak hilang.
+                Positioned.fill(child: child ?? const SizedBox.shrink()),
+                if (!ref.watch(onboardingDoneProvider)) const Positioned.fill(child: OnboardingScreen()),
+              ],
+            ),
+          ),
         );
       },
     );
