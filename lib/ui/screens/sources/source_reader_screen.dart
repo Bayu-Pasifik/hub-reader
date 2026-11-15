@@ -267,6 +267,7 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
     _lifecycle = AppLifecycleListener(onPause: _session.pause, onResume: _session.activity);
     ReaderBridge.setKeepScreenOn(widget.display.keepScreenOn);
     ReaderBridge.setBrightness(widget.display.brightness);
+    ReaderBridge.setOrientation(widget.display.orientation);
   }
 
   @override
@@ -277,6 +278,9 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
     }
     if (old.display.brightness != widget.display.brightness) {
       ReaderBridge.setBrightness(widget.display.brightness);
+    }
+    if (old.display.orientation != widget.display.orientation) {
+      ReaderBridge.setOrientation(widget.display.orientation);
     }
   }
 
@@ -312,6 +316,7 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
   void dispose() {
     ReaderBridge.setKeepScreenOn(false);
     ReaderBridge.setBrightness(null);
+    ReaderBridge.setOrientation(ReaderOrientation.auto);
     _ticker.dispose();
     _lifecycle.dispose();
     _session.pause();

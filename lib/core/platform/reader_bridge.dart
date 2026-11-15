@@ -2,6 +2,24 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 
+import '../i18n/strings.dart';
+
+/// Orientasi layar saat membaca.
+enum ReaderOrientation {
+  auto('Otomatis'),
+  portrait('Potret'),
+  landscape('Lanskap');
+
+  const ReaderOrientation(this._label);
+
+  final String _label;
+
+  String get label => tr(_label);
+
+  static ReaderOrientation byName(Object? name) =>
+      ReaderOrientation.values.where((o) => o.name == name).firstOrNull ?? ReaderOrientation.auto;
+}
+
 /// Fitur pembaca yang butuh kode Android (lihat MainActivity.kt):
 /// layar tetap menyala dan tombol volume untuk menggulir.
 class ReaderBridge {
@@ -33,6 +51,16 @@ class ReaderBridge {
   static Future<void> setBrightness(double? value) async {
     if (!Platform.isAndroid) return;
     await _invoke('brightness', (value == null || value <= 0) ? -1.0 : value.clamp(0.05, 1.0));
+  }
+
+  /// Kunci orientasi selama membaca; [ReaderOrientation.auto] mengembalikan ke pengaturan sistem.
+  static Future<void> setOrientation(ReaderOrientation o) async {
+    if (!Platform.isAndroid) return;
+    await SystemChrome.setPreferredOrientations(switch (o) {
+      ReaderOrientation.auto => const [],
+      ReaderOrientation.portrait => const [DeviceOrientation.portraitUp],
+      ReaderOrientation.landscape => const [DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight],
+    });
   }
 
   static Future<void> setKeepScreenOn(bool on) async {

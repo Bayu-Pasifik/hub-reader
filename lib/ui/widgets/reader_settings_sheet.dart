@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../state/reader_settings_provider.dart';
 import '../../core/i18n/strings.dart';
+import '../../core/platform/reader_bridge.dart' show ReaderOrientation;
 
 /// Lembar pengaturan reader komik: mode, potong tepi, filter warna.
 ///
@@ -184,6 +185,16 @@ class _ReaderSettingsSheet extends ConsumerWidget {
                 },
                 items: [
                   for (final n in const [0, 1, 2, 3, 4, 6]) DropdownMenuItem(value: n, child: Text('$n')),
+                ],
+              ),
+            ),
+            ListTile(
+              title: Text(tr('Orientasi layar')),
+              trailing: DropdownButton<ReaderOrientation>(
+                value: global.orientation,
+                onChanged: (v) => setDisplay(global.copyWith(orientation: v)),
+                items: [
+                  for (final o in ReaderOrientation.values) DropdownMenuItem(value: o, child: Text(o.label)),
                 ],
               ),
             ),

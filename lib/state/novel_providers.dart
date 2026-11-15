@@ -18,6 +18,7 @@ import '../novels/plugin_repository.dart';
 import '../sources/source.dart';
 import '../sources/source_exception.dart';
 import 'core_providers.dart';
+import '../core/platform/reader_bridge.dart' show ReaderOrientation;
 import 'download_providers.dart';
 import 'novel_health_provider.dart';
 import '../core/i18n/strings.dart';
@@ -431,7 +432,11 @@ class NovelReaderSettings {
     this.volumeKeys = false,
     this.keepScreenOn = true,
     this.autoScrollSpeed = 40,
+    this.orientation = ReaderOrientation.auto,
   });
+
+  /// Kunci orientasi layar saat membaca.
+  final ReaderOrientation orientation;
 
   final double fontSize;
   final double lineHeight;
@@ -486,6 +491,7 @@ class NovelReaderSettings {
     bool? volumeKeys,
     bool? keepScreenOn,
     double? autoScrollSpeed,
+    ReaderOrientation? orientation,
   }) =>
       NovelReaderSettings(
         fontSize: fontSize ?? this.fontSize,
@@ -506,6 +512,7 @@ class NovelReaderSettings {
         volumeKeys: volumeKeys ?? this.volumeKeys,
         keepScreenOn: keepScreenOn ?? this.keepScreenOn,
         autoScrollSpeed: autoScrollSpeed ?? this.autoScrollSpeed,
+        orientation: orientation ?? this.orientation,
       );
 
   Map<String, Object> toJson() => {
@@ -527,6 +534,7 @@ class NovelReaderSettings {
         'volume_keys': volumeKeys,
         'keep_screen_on': keepScreenOn,
         'auto_scroll_speed': autoScrollSpeed,
+        'orientation': orientation.name,
       };
 
   static NovelReaderSettings fromJson(Map<String, Object?> json) => NovelReaderSettings(
@@ -550,6 +558,7 @@ class NovelReaderSettings {
         volumeKeys: json['volume_keys'] == true,
         keepScreenOn: json['keep_screen_on'] != false,
         autoScrollSpeed: (json['auto_scroll_speed'] as num?)?.toDouble() ?? 40,
+        orientation: ReaderOrientation.byName(json['orientation']),
       );
 }
 

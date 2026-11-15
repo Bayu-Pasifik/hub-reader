@@ -974,4 +974,7 @@ const Map<String, String> stringsEn = {
   'Disimpan di Pictures/Hub Reader': 'Saved to Pictures/Hub Reader',
   'Gambar disimpan': 'Image saved',
   'Sampul seri diganti': 'Series cover changed',
+  'Orientasi layar': 'Screen orientation',
+  'Potret': 'Portrait',
+  'Lanskap': 'Landscape',
 };

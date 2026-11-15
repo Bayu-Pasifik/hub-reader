@@ -125,6 +125,7 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
   /// Layar tetap menyala & tombol volume sesuai pengaturan.
   void _applyPlatform(NovelReaderSettings s) {
     ReaderBridge.setKeepScreenOn(s.keepScreenOn);
+    ReaderBridge.setOrientation(s.orientation);
     ReaderBridge.setVolumeKeys(s.volumeKeys ? _onVolumeKey : null);
   }
 
@@ -182,6 +183,7 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
     _ticker.dispose();
     ReaderBridge.setVolumeKeys(null);
     ReaderBridge.setKeepScreenOn(false);
+    ReaderBridge.setOrientation(ReaderOrientation.auto);
     _scroll.dispose();
     _searchField.dispose();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
@@ -543,7 +545,7 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
   Widget build(BuildContext context) {
     final settings = ref.watch(novelReaderSettingsProvider);
     ref.listen(novelReaderSettingsProvider, (prev, next) {
-      if (prev?.volumeKeys != next.volumeKeys || prev?.keepScreenOn != next.keepScreenOn) _applyPlatform(next);
+      if (prev?.volumeKeys != next.volumeKeys || prev?.keepScreenOn != next.keepScreenOn || prev?.orientation != next.orientation) _applyPlatform(next);
     });
     final source = ref.watch(novelSourceProvider(widget.pluginId)).valueOrNull;
     final details = ref.watch(novelDetailsProvider((pluginId: widget.pluginId, path: widget.novelPath)));
@@ -1007,6 +1009,17 @@ class _ReaderSettingsSheet extends ConsumerWidget {
               subtitle: Text(tr('Volume turun = halaman berikutnya')),
               value: s.volumeKeys,
               onChanged: (v) => n.update((x) => x.copyWith(volumeKeys: v)),
+            ),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(tr('Orientasi layar')),
+              trailing: DropdownButton<ReaderOrientation>(
+                value: s.orientation,
+                onChanged: (v) => n.update((x) => x.copyWith(orientation: v)),
+                items: [
+                  for (final o in ReaderOrientation.values) DropdownMenuItem(value: o, child: Text(o.label)),
+                ],
+              ),
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
