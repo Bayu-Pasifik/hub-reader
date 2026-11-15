@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/i18n/strings.dart';
 import '../core/net/doh.dart';
+import '../core/net/proxy.dart';
 import 'core_providers.dart';
 import '../ui/app_shortcuts.dart';
 import 'home_widget_sync.dart';
@@ -190,6 +191,20 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
     await p.setInt(_downloadParallel, state.downloadParallel);
     await p.setInt(_downloadAhead, state.downloadAhead);
     await p.setString(_language, state.language.name);
+  }
+}
+
+/// Proxy HTTP untuk semua koneksi aplikasi (null = langsung).
+final proxyConfigProvider = NotifierProvider<ProxyNotifier, ProxyConfig?>(ProxyNotifier.new);
+
+class ProxyNotifier extends Notifier<ProxyConfig?> {
+  @override
+  ProxyConfig? build() => ProxyConfig.read(ref.watch(sharedPreferencesProvider));
+
+  Future<void> set(ProxyConfig? v) async {
+    state = v;
+    applyProxy(v);
+    await ProxyConfig.write(ref.read(sharedPreferencesProvider), v);
   }
 }
 

@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'proxy.dart';
+
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../i18n/strings.dart';
@@ -114,6 +116,7 @@ class DohHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
     final client = _previous?.createHttpClient(context) ?? super.createHttpClient(context);
+    client.findProxy = ProxyRoute.find;
     client.connectionFactory = (url, proxyHost, proxyPort) async {
       final viaProxy = proxyHost != null;
       final host = proxyHost ?? url.host;
@@ -169,10 +172,20 @@ Future<ConnectionTask<Socket>> secureTask(
   return ConnectionTask.fromSocket(secured, task.cancel);
 }
 
-/// Pasang / ganti / lepas DoH sesuai pilihan. Aman dipanggil berulang.
-void applyDoh(DohProvider provider) {
+void _ensureInstalled() {
   if (HttpOverrides.current is! DohHttpOverrides) {
     HttpOverrides.global = DohHttpOverrides(HttpOverrides.current);
   }
+}
+
+/// Pasang / ganti / lepas DoH sesuai pilihan. Aman dipanggil berulang.
+void applyDoh(DohProvider provider) {
+  _ensureInstalled();
   DohHttpOverrides.active = provider == DohProvider.none ? null : DohResolver(provider);
+}
+
+/// Pasang / lepas proxy HTTP ([config] null = langsung). Aman dipanggil berulang.
+void applyProxy(ProxyConfig? config) {
+  _ensureInstalled();
+  ProxyRoute.active = config;
 }

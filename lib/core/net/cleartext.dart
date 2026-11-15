@@ -3,9 +3,12 @@ import 'dart:io';
 /// HTTP polos hanya aman untuk jaringan lokal (localhost, IP privat, `.local`,
 /// nama host tanpa titik). Ke host publik, isi dan cookie bisa dibaca/diubah
 /// siapa pun di jalur jaringan.
-bool isCleartextAllowed(Uri uri) {
-  if (uri.scheme != 'http') return true;
-  final h = uri.host.toLowerCase();
+bool isCleartextAllowed(Uri uri) => uri.scheme != 'http' || isLocalHost(uri.host);
+
+/// Host jaringan lokal: localhost, `.local`, nama tanpa titik, IP loopback /
+/// link-local / privat (RFC 1918, fc00::/7).
+bool isLocalHost(String host) {
+  final h = host.toLowerCase();
   if (h == 'localhost' || h.endsWith('.local')) return true;
   final ip = InternetAddress.tryParse(h);
   if (ip == null) return !h.contains('.'); // nama host tanpa titik = LAN

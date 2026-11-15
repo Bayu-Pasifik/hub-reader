@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../core/net/doh.dart';
+import '../../core/net/proxy.dart';
 import '../../data/local/download_store.dart';
 import '../../state/app_settings_provider.dart';
 import '../../state/app_update_provider.dart';
@@ -184,6 +185,16 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
     ref.invalidate(novelManifestProvider);
     _snack(tr('Kode plugin novel dihapus; diunduh lagi saat dibuka'));
     await _measure();
+  }
+
+  /// Atur proxy HTTP ("host:port"); "Matikan" = koneksi langsung.
+  Future<void> _proxyDialog() async {
+    final result = await showDialog<ProxyConfig?>(
+      context: context,
+      builder: (_) => _ProxyDialog(current: ref.read(proxyConfigProvider)),
+    );
+    if (result == null) return;
+    await ref.read(proxyConfigProvider.notifier).set(result.host.isEmpty ? null : result);
   }
 
   Future<void> _toggleLock(bool on) async {
@@ -376,6 +387,12 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
               onChanged: (v) => ref.read(dohProviderProvider.notifier).set(v ?? DohProvider.none),
             ),
           ),
+          ListTile(
+            leading: const Icon(Icons.vpn_lock_outlined),
+            title: Text(tr('Proxy HTTP')),
+            subtitle: Text(ref.watch(proxyConfigProvider)?.toString() ?? tr('Mati (koneksi langsung)')),
+            onTap: _proxyDialog,
+          ),
           header(tr('Sumber')),
           SwitchListTile(
             secondary: const Icon(Icons.eighteen_up_rating_outlined),
@@ -491,6 +508,71 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
           const SizedBox(height: 24),
         ],
       ),
+    );
+  }
+}
+
+/// Dialog proxy. Controller dibuang di [State.dispose] (setelah animasi tutup
+/// selesai), bukan segera setelah dialog ditutup.
+class _ProxyDialog extends StatefulWidget {
+  const _ProxyDialog({required this.current});
+
+  final ProxyConfig? current;
+
+  @override
+  State<_ProxyDialog> createState() => _ProxyDialogState();
+}
+
+class _ProxyDialogState extends State<_ProxyDialog> {
+  late final _controller = TextEditingController(text: widget.current?.toString() ?? '');
+  String? _error;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    final parsed = ProxyConfig.tryParse(_controller.text);
+    if (parsed == null) {
+      setState(() => _error = tr('Tulis seperti 192.168.1.5:8080'));
+    } else {
+      Navigator.pop(context, parsed);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(tr('Proxy HTTP')),
+      content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+        TextField(
+          controller: _controller,
+          autofocus: true,
+          keyboardType: TextInputType.url,
+          onSubmitted: (_) => _save(),
+          decoration: InputDecoration(
+            labelText: tr('Alamat proxy (host:port)'),
+            hintText: '192.168.1.5:8080',
+            errorText: _error,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          tr('Berlaku untuk sumber, gambar, plugin novel, dan tracker. Tidak mendukung SOCKS maupun login proxy. Jaringan lokal (LAN) tetap langsung; WebView tidak lewat proxy.'),
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+      ]),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(tr('Batal'))),
+        if (widget.current != null)
+          TextButton(
+            onPressed: () => Navigator.pop(context, const ProxyConfig(host: '', port: 0)),
+            child: Text(tr('Matikan')),
+          ),
+        FilledButton(onPressed: _save, child: Text(tr('Simpan'))),
+      ],
     );
   }
 }

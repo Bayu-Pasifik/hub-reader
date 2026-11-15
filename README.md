@@ -261,6 +261,8 @@ sisipan memakai `trp('{n} bab', {'n': 3})` (penampung `{nama}`). Status sumber, 
 dan nama bahasa ikut diterjemahkan; `test/i18n_test.dart` memastikan setiap kunci punya terjemahan.
 Pesan error sumber, label filter bawaan, widget layar utama, dan pintasan ikon ikut berganti bahasa. Yang tetap apa adanya hanya konten dari situs (judul, genre, filter dan pesan error dari plugin novel).
 
+**Proxy HTTP** (Pengaturan → Jaringan, `lib/core/net/proxy.dart`, `net.proxy.v1`): satu alamat `host:port` untuk semua koneksi aplikasi (sumber komik, gambar, plugin novel, tracker) lewat `HttpClient.findProxy` (CONNECT untuk HTTPS). Host jaringan lokal (localhost, IP privat, `.local`) tetap langsung, jadi OPDS/WebDAV di LAN tidak terpengaruh. Tidak mendukung SOCKS maupun login proxy, dan WebView (verifikasi Cloudflare) tidak lewat proxy. Berlaku juga di cek latar belakang. Uji manual: proxy CONNECT sederhana di PC (`10.0.2.2:<port>` dari emulator) mencatat tujuan tiap koneksi.
+
 **Tema & jaringan**: **Warna dari wallpaper** (Material You, Android 12+) di Pengaturan → Tampilan.
 **DNS over HTTPS** (`lib/core/net/doh.dart`) bersifat opsional dan mati secara default; nyalakan di
 Pengaturan → Jaringan bila situs diblokir ISP, lalu pilih penyedia (mis. AliDNS) tanpa perlu VPN.
