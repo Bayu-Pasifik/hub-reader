@@ -1,3 +1,5 @@
+import 'dart:math' show Random;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -76,6 +78,27 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
     return out;
   }
 
+  /// Buka seri acak dari tab yang sedang tampil (sesuai filter & pencarian).
+  void _openRandom(
+    List<SourceFavorite> favorites,
+    List<String?> tabs,
+    int tabIndex,
+    LibraryView view,
+    Map<String, int> unread,
+    Map<String, DateTime> lastRead,
+    Set<String> downloaded,
+  ) {
+    final pool = _apply(favorites, tabs[tabIndex.clamp(0, tabs.length - 1)], view, unread, lastRead, downloaded);
+    if (pool.isEmpty) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(tr('Tidak ada favorit yang cocok'))));
+      return;
+    }
+    final pick = pool[Random().nextInt(pool.length)];
+    context.push(librarySourceInfo(ref, pick.item.sourceId).detailLocation(pick.item.url));
+  }
+
   Future<void> _openFilter() => showModalBottomSheet<void>(
         context: context,
         useRootNavigator: true,
@@ -129,8 +152,23 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
                 if (!_searching) _search.clear();
               }),
             ),
+            Builder(
+              builder: (context) => IconButton(
+                tooltip: tr('Baca acak'),
+                icon: const Icon(Icons.casino_outlined),
+                onPressed: () => _openRandom(
+                  favorites,
+                  tabs,
+                  DefaultTabController.of(context).index,
+                  view,
+                  unread,
+                  lastRead,
+                  downloaded,
+                ),
+              ),
+            ),
             IconButton(
-              tooltip: tr('Filter & urutan'),
+              tooltip: tr('Tampilan, filter & urutan'),
               icon: Badge(isLabelVisible: filtered, smallSize: 8, child: const Icon(Icons.filter_list)),
               onPressed: _openFilter,
             ),
@@ -205,67 +243,149 @@ class _FavoritesGrid extends ConsumerWidget {
     if (entries.isEmpty) {
       return EmptyView(animation: AppAnimation.search, title: tr('Tidak ada favorit yang cocok'));
     }
-    final theme = Theme.of(context);
+    final layout = ref.watch(libraryLayoutProvider);
+
+    Widget tile(SourceFavorite entry) {
+      final item = entry.item;
+      final source = librarySourceInfo(ref, item.sourceId);
+      return _FavoriteTile(
+        entry: entry,
+        source: source,
+        count: unread[item.key] ?? 0,
+        display: layout.display,
+        onTap: () => context.push(source.detailLocation(item.url)),
+        onLongPress: () => onLongPress(entry),
+      );
+    }
+
+    if (layout.display == LibraryDisplay.list) {
+      return ListView.builder(
+        key: const PageStorageKey('library-list'),
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        itemCount: entries.length,
+        itemBuilder: (context, i) => tile(entries[i]),
+      );
+    }
+
+    // Tinggi sel: sampul 3:4 + (mode grid) dua baris judul dan satu baris sumber.
+    final ratio = switch (layout.display) {
+      LibraryDisplay.grid => 0.5,
+      _ => 3 / 4,
+    };
+    final delegate = layout.columns == 0
+        ? SliverGridDelegateWithMaxCrossAxisExtent(
+            maxCrossAxisExtent: layout.display == LibraryDisplay.grid ? 160 : 120,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: ratio,
+          )
+        : SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: layout.columns,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: layout.display == LibraryDisplay.grid ? (layout.columns >= 4 ? 0.45 : 0.5) : ratio,
+          );
     return GridView.builder(
+      key: const PageStorageKey('library-grid'),
       padding: const EdgeInsets.all(12),
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 160,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-        childAspectRatio: 0.5,
-      ),
+      gridDelegate: delegate,
       itemCount: entries.length,
-      itemBuilder: (context, i) {
-        final entry = entries[i];
-        final item = entry.item;
-        final source = librarySourceInfo(ref, item.sourceId);
-        final count = unread[item.key] ?? 0;
-        return InkWell(
-          borderRadius: BorderRadius.circular(8),
-          onTap: () => context.push(source.detailLocation(item.url)),
-          onLongPress: () => onLongPress(entry),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Stack(
-                children: [
-                  SourceCover(url: item.thumbnailUrl, headers: source.imageHeaders),
-                  if (count > 0)
-                    Positioned(
-                      top: 4,
-                      left: 4,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primary,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          '$count',
-                          style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.onPrimary),
-                        ),
-                      ),
-                    ),
-                ],
+      itemBuilder: (context, i) => tile(entries[i]),
+    );
+  }
+}
+
+class _FavoriteTile extends StatelessWidget {
+  const _FavoriteTile({
+    required this.entry,
+    required this.source,
+    required this.count,
+    required this.display,
+    required this.onTap,
+    required this.onLongPress,
+  });
+
+  final SourceFavorite entry;
+  final LibrarySourceInfo source;
+  final int count;
+  final LibraryDisplay display;
+  final VoidCallback onTap;
+  final VoidCallback onLongPress;
+
+  Widget _badge(ThemeData theme) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        decoration: BoxDecoration(color: theme.colorScheme.primary, borderRadius: BorderRadius.circular(6)),
+        child: Text('$count', style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.onPrimary)),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final item = entry.item;
+    final subtitle = source.isNovel ? 'Novel · ${source.name}' : source.name;
+
+    if (display == LibraryDisplay.list) {
+      return ListTile(
+        onTap: onTap,
+        onLongPress: onLongPress,
+        leading: SourceCover(url: item.thumbnailUrl, headers: source.imageHeaders, width: 48),
+        title: Text(item.title, maxLines: 2, overflow: TextOverflow.ellipsis),
+        subtitle: Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+        trailing: count > 0 ? _badge(theme) : null,
+      );
+    }
+
+    final cover = Stack(
+      children: [
+        SourceCover(url: item.thumbnailUrl, headers: source.imageHeaders),
+        if (count > 0) Positioned(top: 4, left: 4, child: _badge(theme)),
+        if (display == LibraryDisplay.compact)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(6, 18, 6, 6),
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.transparent, Colors.black.withValues(alpha: 0.8)],
+                ),
               ),
-              const SizedBox(height: 6),
-              Text(
+              child: Text(
                 item.title,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                style: theme.textTheme.labelMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.w600),
               ),
-              Text(
-                source.isNovel ? 'Novel · ${source.name}' : source.name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodySmall,
-              ),
-            ],
+            ),
           ),
-        );
-      },
+      ],
+    );
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(8),
+      onTap: onTap,
+      onLongPress: onLongPress,
+      child: display == LibraryDisplay.grid
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                cover,
+                const SizedBox(height: 6),
+                Text(
+                  item.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                ),
+                Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: theme.textTheme.bodySmall),
+              ],
+            )
+          : cover,
     );
   }
 }
@@ -277,6 +397,8 @@ class _ViewSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final view = ref.watch(libraryViewProvider);
     final n = ref.read(libraryViewProvider.notifier);
+    final layout = ref.watch(libraryLayoutProvider);
+    final layoutNotifier = ref.read(libraryLayoutProvider.notifier);
     final theme = Theme.of(context);
     return SafeArea(
       child: SingleChildScrollView(
@@ -285,6 +407,32 @@ class _ViewSheet extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
+            Text(tr('Mode tampilan'), style: theme.textTheme.titleSmall),
+            const SizedBox(height: 6),
+            Wrap(spacing: 6, children: [
+              for (final d in LibraryDisplay.values)
+                ChoiceChip(
+                  label: Text(tr(d.label)),
+                  selected: layout.display == d,
+                  onSelected: (_) => layoutNotifier.set(display: d),
+                ),
+            ]),
+            if (layout.display != LibraryDisplay.list) ...[
+              const SizedBox(height: 8),
+              Text(
+                layout.columns == 0 ? tr('Kolom: otomatis') : '${tr('Kolom')}: ${layout.columns}',
+                style: theme.textTheme.bodyMedium,
+              ),
+              Slider(
+                value: layout.columns.toDouble(),
+                min: 0,
+                max: LibraryLayoutNotifier.maxColumns.toDouble(),
+                divisions: LibraryLayoutNotifier.maxColumns,
+                label: layout.columns == 0 ? tr('Otomatis') : '${layout.columns}',
+                onChanged: (v) => layoutNotifier.set(columns: v.round()),
+              ),
+            ],
+            const SizedBox(height: 8),
             Text(tr('Jenis'), style: theme.textTheme.titleSmall),
             const SizedBox(height: 6),
             Wrap(spacing: 6, children: [

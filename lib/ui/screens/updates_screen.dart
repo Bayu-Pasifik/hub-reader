@@ -84,6 +84,67 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
     if (result != null) await ref.read(backgroundUpdatesProvider.notifier).set(result);
   }
 
+  Future<void> _rulesDialog() async {
+    var rules = ref.read(libraryUpdateRulesProvider);
+    final categories = ref.read(libraryCategoriesProvider);
+    final result = await showDialog<LibraryUpdateRules>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text(tr('Aturan pembaruan')),
+          contentPadding: const EdgeInsets.only(top: 12),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SwitchListTile(
+                  value: rules.skipCompleted,
+                  onChanged: (v) => setState(() => rules = rules.copyWith(skipCompleted: v)),
+                  title: Text(tr('Lewati seri yang sudah tamat')),
+                ),
+                SwitchListTile(
+                  value: rules.skipUnstarted,
+                  onChanged: (v) => setState(() => rules = rules.copyWith(skipUnstarted: v)),
+                  title: Text(tr('Lewati seri yang belum dibaca')),
+                ),
+                SwitchListTile(
+                  value: rules.skipUnread,
+                  onChanged: (v) => setState(() => rules = rules.copyWith(skipUnread: v)),
+                  title: Text(tr('Lewati seri yang masih punya bab baru belum dibaca')),
+                ),
+                if (categories.isNotEmpty) ...[
+                  const Divider(),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(tr('Jangan cek kategori'), style: Theme.of(context).textTheme.titleSmall),
+                    ),
+                  ),
+                  for (final c in categories)
+                    CheckboxListTile(
+                      value: rules.excludedCategories.contains(c),
+                      onChanged: (v) => setState(() => rules = rules.copyWith(
+                            excludedCategories: v == true
+                                ? [...rules.excludedCategories, c]
+                                : rules.excludedCategories.where((x) => x != c).toList(),
+                          )),
+                      title: Text(c),
+                    ),
+                ],
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: Text(tr('Batal'))),
+            FilledButton(onPressed: () => Navigator.pop(context, rules), child: Text(tr('Simpan'))),
+          ],
+        ),
+      ),
+    );
+    if (result != null) await ref.read(libraryUpdateRulesProvider.notifier).set(result);
+  }
+
   static String _day(DateTime d) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -127,6 +188,7 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
               if (v == 'auto') ref.read(libraryAutoCheckProvider.notifier).set(!auto);
               if (v == 'clear') ref.read(libraryUpdatesProvider.notifier).clear();
               if (v == 'background') _backgroundDialog();
+              if (v == 'rules') _rulesDialog();
             },
             itemBuilder: (_) => [
               CheckedPopupMenuItem(
@@ -143,6 +205,7 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
                       (background.enabled && background.wifiOnly ? ' · Wi-Fi' : '')),
                 ),
               ),
+              PopupMenuItem(value: 'rules', child: Text(tr('Aturan pembaruan'))),
               PopupMenuItem(value: 'clear', child: Text(tr('Hapus daftar pembaruan'))),
             ],
           ),

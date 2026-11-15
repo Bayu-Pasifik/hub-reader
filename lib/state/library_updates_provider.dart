@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/utils/json.dart';
 import '../data/models/source_library.dart';
@@ -113,6 +114,80 @@ class LibraryAutoCheckNotifier extends Notifier<bool> {
   }
 }
 
+/// Aturan seri mana yang ikut dicek saat memperbarui perpustakaan.
+class LibraryUpdateRules {
+  const LibraryUpdateRules({
+    this.skipCompleted = true,
+    this.skipUnstarted = true,
+    this.skipUnread = false,
+    this.excludedCategories = const [],
+  });
+
+  /// Lewati seri yang terdeteksi tamat.
+  final bool skipCompleted;
+
+  /// Lewati seri yang belum pernah dibuka/dibaca.
+  final bool skipUnstarted;
+
+  /// Lewati seri yang masih punya bab baru belum dibaca.
+  final bool skipUnread;
+
+  /// Seri yang semua kategorinya ada di daftar ini tidak dicek.
+  final List<String> excludedCategories;
+
+  LibraryUpdateRules copyWith({
+    bool? skipCompleted,
+    bool? skipUnstarted,
+    bool? skipUnread,
+    List<String>? excludedCategories,
+  }) =>
+      LibraryUpdateRules(
+        skipCompleted: skipCompleted ?? this.skipCompleted,
+        skipUnstarted: skipUnstarted ?? this.skipUnstarted,
+        skipUnread: skipUnread ?? this.skipUnread,
+        excludedCategories: excludedCategories ?? this.excludedCategories,
+      );
+
+  static const _key = 'library.updates.rules.v1';
+
+  static LibraryUpdateRules read(SharedPreferences prefs) {
+    try {
+      final json = asMap(jsonDecode(prefs.getString(_key) ?? '{}'));
+      return LibraryUpdateRules(
+        skipCompleted: json['skip_completed'] as bool? ?? true,
+        skipUnstarted: json['skip_unstarted'] as bool? ?? true,
+        skipUnread: json['skip_unread'] as bool? ?? false,
+        excludedCategories: asStringList(json['excluded_categories']),
+      );
+    } catch (_) {
+      return const LibraryUpdateRules();
+    }
+  }
+
+  Future<void> write(SharedPreferences prefs) => prefs.setString(
+        _key,
+        jsonEncode({
+          'skip_completed': skipCompleted,
+          'skip_unstarted': skipUnstarted,
+          'skip_unread': skipUnread,
+          'excluded_categories': excludedCategories,
+        }),
+      );
+}
+
+final libraryUpdateRulesProvider =
+    NotifierProvider<LibraryUpdateRulesNotifier, LibraryUpdateRules>(LibraryUpdateRulesNotifier.new);
+
+class LibraryUpdateRulesNotifier extends Notifier<LibraryUpdateRules> {
+  @override
+  LibraryUpdateRules build() => LibraryUpdateRules.read(ref.watch(sharedPreferencesProvider));
+
+  Future<void> set(LibraryUpdateRules rules) async {
+    state = rules;
+    await rules.write(ref.read(sharedPreferencesProvider));
+  }
+}
+
 final libraryUpdatesProvider =
     NotifierProvider<LibraryUpdatesNotifier, LibraryUpdatesState>(LibraryUpdatesNotifier.new);
 
@@ -214,10 +289,22 @@ class LibraryUpdatesNotifier extends Notifier<LibraryUpdatesState> {
     await checkAll(notify: true);
   }
 
-  /// Hemat cek latar: lewati seri tamat dan seri yang belum pernah dibaca.
-  /// Seri tamat dicek lagi hanya bila statusnya berubah (tidak dicek, jadi
-  /// tetap dilewati); seri yang belum dibaca otomatis ikut lagi setelah dibuka.
-  static bool shouldCheck({required bool completed, required bool started}) => started && !completed;
+  /// Apakah seri ikut dicek, menurut [rules]. Bawaan: lewati seri tamat dan
+  /// seri yang belum pernah dibaca. Seri tamat tidak dicek lagi, dan seri yang
+  /// belum dibaca otomatis ikut lagi setelah dibuka.
+  static bool shouldCheck({
+    required bool completed,
+    required bool started,
+    bool hasUnread = false,
+    List<String> categories = const [],
+    LibraryUpdateRules rules = const LibraryUpdateRules(),
+  }) {
+    if (rules.skipCompleted && completed) return false;
+    if (rules.skipUnstarted && !started) return false;
+    if (rules.skipUnread && hasUnread) return false;
+    if (categories.isNotEmpty && categories.every(rules.excludedCategories.contains)) return false;
+    return true;
+  }
 
   /// Bandingkan bab terbaru dengan yang sudah diketahui.
   static List<({String url, String name, double? number})> newChapters(
@@ -237,11 +324,21 @@ class LibraryUpdatesNotifier extends Notifier<LibraryUpdatesState> {
     final favorites = ref.read(sourceFavoritesProvider).map((f) => f.item).toList();
     final progress = ref.read(sourceProgressProvider);
     final started = {for (final h in ref.read(sourceHistoryProvider)) h.item.key};
+    final rules = ref.read(libraryUpdateRulesProvider);
+    final categoriesOf = {for (final f in ref.read(sourceFavoritesProvider)) f.item.key: f.categories};
+    // Seri yang masih punya bab baru belum dibaca.
+    final withUnread = {
+      for (final u in state.updates)
+        if (!(progress[u.item.key]?[u.chapterUrl]?.done ?? false)) u.item.key,
+    };
     final toCheck = [
       for (final f in favorites)
         if (shouldCheck(
           completed: _completed.contains(f.key),
           started: started.contains(f.key) || (progress[f.key]?.isNotEmpty ?? false),
+          hasUnread: withUnread.contains(f.key),
+          categories: categoriesOf[f.key] ?? const [],
+          rules: rules,
         ))
           f,
     ];

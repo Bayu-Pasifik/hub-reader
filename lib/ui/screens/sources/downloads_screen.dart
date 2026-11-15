@@ -1,8 +1,12 @@
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import '../../../core/i18n/strings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../data/local/cbz_export.dart';
 import '../../../data/models/download.dart';
 import '../../../state/download_providers.dart';
 import '../../widgets/library_routing.dart';
@@ -116,6 +120,56 @@ class _SeriesDownloads extends ConsumerWidget {
     }
   }
 
+  void _snack(BuildContext context, String message) => ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(SnackBar(content: Text(message)));
+
+  Future<void> _exportChapter(BuildContext context, WidgetRef ref, DownloadedChapter c) async {
+    _snack(context, tr('Membuat CBZ…'));
+    try {
+      final bytes = await CbzExport.forChapter(ref.read(downloadStoreProvider), c);
+      if (bytes == null) {
+        if (context.mounted) _snack(context, tr('File unduhan tidak lengkap'));
+        return;
+      }
+      final saved = await FilePicker.saveFile(
+        fileName: CbzExport.fileName(c),
+        bytes: bytes,
+        mimeType: 'application/vnd.comicbook+zip',
+        dialogTitle: tr('Simpan CBZ'),
+      );
+      if (context.mounted) _snack(context, saved == null ? tr('Dibatalkan') : '${tr('CBZ disimpan')}: ${CbzExport.fileName(c)}');
+    } catch (e) {
+      if (context.mounted) _snack(context, '${tr('Gagal membuat CBZ')}: $e');
+    }
+  }
+
+  Future<void> _exportSeries(BuildContext context, WidgetRef ref, List<DownloadedChapter> list) async {
+    final dir = await FilePicker.getDirectoryPath(dialogTitle: tr('Pilih folder untuk CBZ'));
+    if (dir == null || !context.mounted) return;
+    var ok = 0;
+    var failed = 0;
+    final store = ref.read(downloadStoreProvider);
+    for (var i = 0; i < list.length; i++) {
+      if (!context.mounted) return;
+      _snack(context, '${tr('Membuat CBZ')} ${i + 1}/${list.length}…');
+      try {
+        final bytes = await CbzExport.forChapter(store, list[i]);
+        if (bytes == null) {
+          failed++;
+          continue;
+        }
+        await File('$dir${Platform.pathSeparator}${CbzExport.fileName(list[i])}').writeAsBytes(bytes);
+        ok++;
+      } catch (_) {
+        failed++;
+      }
+    }
+    if (context.mounted) {
+      _snack(context, '$ok CBZ ${tr('disimpan')}${failed == 0 ? '' : ', $failed ${tr('gagal')}'}');
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final first = chapters.first;
@@ -125,10 +179,22 @@ class _SeriesDownloads extends ConsumerWidget {
     return ExpansionTile(
       title: Text(first.mangaTitle, maxLines: 1, overflow: TextOverflow.ellipsis),
       subtitle: Text('${chapters.length} bab · ${info.name}${info.isNovel ? ' · novel' : ''}'),
-      trailing: IconButton(
-        tooltip: tr('Hapus semua bab seri ini'),
-        icon: const Icon(Icons.delete_outline),
-        onPressed: () => _confirmDeleteAll(context, ref),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (!info.isNovel)
+            IconButton(
+              tooltip: tr('Ekspor semua bab ke CBZ'),
+              icon: const Icon(Icons.archive_outlined),
+              onPressed: () => _exportSeries(context, ref, sorted),
+            ),
+          IconButton(
+            tooltip: tr('Hapus semua bab seri ini'),
+            icon: const Icon(Icons.delete_outline),
+            onPressed: () => _confirmDeleteAll(context, ref),
+          ),
+          const Icon(Icons.expand_more),
+        ],
       ),
       children: [
         for (final c in sorted)
@@ -138,10 +204,21 @@ class _SeriesDownloads extends ConsumerWidget {
             title: Text(c.chapterName),
             subtitle: info.isNovel ? null : Text('${c.files.length} halaman'),
             onTap: () => context.push(info.readerLocation(c.mangaUrl, c.chapterUrl)),
-            trailing: IconButton(
-              tooltip: tr('Hapus'),
-              icon: const Icon(Icons.close),
-              onPressed: () => ref.read(downloadIndexProvider.notifier).remove(c.key),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (!info.isNovel)
+                  IconButton(
+                    tooltip: tr('Ekspor ke CBZ'),
+                    icon: const Icon(Icons.archive_outlined),
+                    onPressed: () => _exportChapter(context, ref, c),
+                  ),
+                IconButton(
+                  tooltip: tr('Hapus'),
+                  icon: const Icon(Icons.close),
+                  onPressed: () => ref.read(downloadIndexProvider.notifier).remove(c.key),
+                ),
+              ],
             ),
           ),
       ],

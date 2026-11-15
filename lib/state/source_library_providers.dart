@@ -183,7 +183,45 @@ class LibraryViewNotifier extends Notifier<LibraryView> {
   }
 }
 
-typedef SourceItemKey = ({String sourceId, String url});
+/// Cara menampilkan favorit.
+enum LibraryDisplay {
+  grid('Grid'),
+  compact('Grid ringkas'),
+  coverOnly('Sampul saja'),
+  list('Daftar');
+
+  const LibraryDisplay(this.label);
+
+  final String label;
+}
+
+typedef LibraryLayout = ({LibraryDisplay display, int columns});
+
+/// Mode tampilan + jumlah kolom grid (0 = otomatis menurut lebar layar).
+final libraryLayoutProvider = NotifierProvider<LibraryLayoutNotifier, LibraryLayout>(LibraryLayoutNotifier.new);
+
+class LibraryLayoutNotifier extends Notifier<LibraryLayout> {
+  static const _key = 'library.layout.v1';
+  static const maxColumns = 6;
+
+  @override
+  LibraryLayout build() {
+    final raw = ref.watch(sharedPreferencesProvider).getStringList(_key) ?? const [];
+    return (
+      display: raw.isNotEmpty
+          ? LibraryDisplay.values.where((v) => v.name == raw[0]).firstOrNull ?? LibraryDisplay.grid
+          : LibraryDisplay.grid,
+      columns: raw.length > 1 ? (int.tryParse(raw[1]) ?? 0).clamp(0, maxColumns) : 0,
+    );
+  }
+
+  Future<void> set({LibraryDisplay? display, int? columns}) async {
+    state = (display: display ?? state.display, columns: (columns ?? state.columns).clamp(0, maxColumns));
+    await ref.read(sharedPreferencesProvider).setStringList(_key, [state.display.name, '${state.columns}']);
+  }
+}
+
+typedef SourceItemKey =({String sourceId, String url});
 
 String _key(SourceItemKey k) => '${k.sourceId}|${k.url}';
 

@@ -276,6 +276,17 @@ riwayat, posisi baca, pengaturan) dan daftar pembaruan disimpan ke satu file `.j
 Android (`file_picker`). Cookie login & penyimpanan plugin novel hanya ikut bila diaktifkan; unduhan
 tidak ikut. Memulihkan mengganti data di HP lalu membangun ulang aplikasi (`AppRestart`).
 
+**Tampilan favorit** (ikon filter di Favorit): mode Grid, Grid ringkas (judul di atas sampul), Sampul saja, dan Daftar,
+plus slider jumlah kolom (otomatis atau 1–6). Disimpan di `library.layout.v1`. Ikon dadu **Baca acak** membuka seri
+acak dari tab yang sedang tampil (mengikuti filter & pencarian).
+
+**Aturan pembaruan** (menu ⋮ di Pembaruan): lewati seri tamat, seri yang belum dibaca, seri yang masih punya bab baru
+belum dibaca, dan kategori tertentu (seri dilewati bila semua kategorinya dikecualikan). Berlaku juga untuk cek di latar
+belakang. Bawaan: lewati tamat dan belum dibaca. Disimpan di `library.updates.rules.v1`.
+
+**Ekspor CBZ** (layar Unduhan): ikon arsip per bab menyimpan CBZ lewat dialog sistem; ikon di tingkat seri mengekspor
+semua bab ke folder pilihan. Halaman diberi nomor ulang (`001.ext`) plus `ComicInfo.xml`, jadi terbaca di Komga, Kavita, dan Mihon.
+
 **Favorit** bisa dikelompokkan ke kategori (tab; menu ⋮ → Kelola kategori untuk tambah, ganti nama,
 urutkan, hapus). Tekan lama sampul untuk memilih kategori atau menghapus dari favorit. Ikon filter:
 jenis (komik/novel), hanya yang ada bab baru belum dibaca, dan urutan (ditambahkan, judul, terakhir
