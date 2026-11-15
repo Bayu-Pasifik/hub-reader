@@ -100,6 +100,14 @@ void main() {
     expect(await client.download('hub_reader_auto_1.json'), '{"a":1}');
   });
 
+  test('plain HTTP to a public host is refused before any request is sent', () async {
+    const cfg = WebDavConfig(url: 'http://cloud.example.com/dav', username: 'me', password: 'pw');
+    await expectLater(
+      WebDavClient(cfg).test(),
+      throwsA(isA<WebDavException>().having((e) => e.message, 'message', contains('HTTPS'))),
+    );
+  });
+
   test('wrong password reports a readable login error', () async {
     await expectLater(
       WebDavClient(config(pass: 'nope')).test(),

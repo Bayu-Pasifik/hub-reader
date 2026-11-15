@@ -4,6 +4,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../opds/opds_client.dart';
+
 /// Tujuan cadangan di server WebDAV (Nextcloud, ownCloud, Synology, Koofr, dll).
 class WebDavConfig {
   const WebDavConfig({this.url = '', this.username = '', this.password = '', this.enabled = false});
@@ -93,7 +95,15 @@ class WebDavClient {
   final WebDavConfig config;
   final Dio _dio;
 
-  String get _base => config.url.endsWith('/') ? config.url : '${config.url}/';
+  /// Login Basic lewat HTTP polos ke host publik terkirim tanpa enkripsi,
+  /// jadi hanya HTTPS atau jaringan lokal yang diterima.
+  String get _base {
+    final uri = Uri.tryParse(config.url);
+    if (uri == null || !OpdsServer.isCleartextAllowed(uri)) {
+      throw const WebDavException('WebDAV ke host publik wajib memakai HTTPS (http:// hanya untuk jaringan lokal).');
+    }
+    return config.url.endsWith('/') ? config.url : '${config.url}/';
+  }
 
   Map<String, String> get _headers => {
         if (config.username.isNotEmpty || config.password.isNotEmpty)
