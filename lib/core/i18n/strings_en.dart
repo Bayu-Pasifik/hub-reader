@@ -967,4 +967,11 @@ const Map<String, String> stringsEn = {
   'Gambar terlalu besar (maks. 8 MB)': 'Image too large (max 8 MB)',
   'Pakai sampul situs': 'Use site cover',
   'Setel ulang': 'Reset',
+  'Halaman {n}': 'Page {n}',
+  'Simpan ke galeri': 'Save to gallery',
+  'Bagikan halaman': 'Share page',
+  'Jadikan sampul seri': 'Set as series cover',
+  'Disimpan di Pictures/Hub Reader': 'Saved to Pictures/Hub Reader',
+  'Gambar disimpan': 'Image saved',
+  'Sampul seri diganti': 'Series cover changed',
 };

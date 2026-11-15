@@ -29,6 +29,7 @@ import '../../widgets/cropped_page_image.dart';
 import '../../widgets/reader_settings_sheet.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/state_views.dart';
+import '../../widgets/page_actions.dart';
 import '../../widgets/zoomable_page.dart';
 
 /// Pembaca komik untuk sumber on-device: mode webtoon (vertikal) atau per
@@ -513,7 +514,19 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
   Widget _image(String url, int i, Map<String, String> headers, BoxFit fit) => Semantics(
         label: trp('Halaman {i} dari {n}', {'i': i + 1, 'n': _total}),
         image: true,
-        child: _imageBody(url, i, headers, fit),
+        child: GestureDetector(
+          // Tekan lama: simpan, bagikan, atau jadikan sampul.
+          onLongPress: () => showPageActions(
+            context,
+            ref,
+            url: url,
+            headers: headers,
+            page: i,
+            chapterName: widget.chapter.name,
+            series: widget.series,
+          ),
+          child: _imageBody(url, i, headers, fit),
+        ),
       );
 
   Widget _imageBody(String url, int i, Map<String, String> headers, BoxFit fit) {

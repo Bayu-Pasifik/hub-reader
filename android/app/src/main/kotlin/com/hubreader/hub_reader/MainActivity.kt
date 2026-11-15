@@ -1,12 +1,15 @@
 package com.hubreader.hub_reader
 
 import android.content.ActivityNotFoundException
+import android.content.ContentValues
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
 import android.view.KeyEvent
 import android.view.WindowManager
 import android.webkit.CookieManager
@@ -119,6 +122,47 @@ class MainActivity : FlutterFragmentActivity() {
                 }
             }
         }
+
+        // Simpan gambar ke galeri (Pictures/Hub Reader) lewat MediaStore; tanpa izin penyimpanan (API 29+).
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "hub_reader/media")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "saveImage" -> {
+                        val bytes = call.argument<ByteArray>("bytes")
+                        val name = call.argument<String>("name")
+                        val mime = call.argument<String>("mime") ?: "image/jpeg"
+                        if (bytes == null || name == null) {
+                            result.error("ARG", "bytes dan name wajib diisi", null)
+                        } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                            // Android 9 ke bawah butuh izin tulis; Dart memakai dialog simpan sistem.
+                            result.success(null)
+                        } else {
+                            try {
+                                val values = ContentValues().apply {
+                                    put(MediaStore.Images.Media.DISPLAY_NAME, name)
+                                    put(MediaStore.Images.Media.MIME_TYPE, mime)
+                                    put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/Hub Reader")
+                                    put(MediaStore.Images.Media.IS_PENDING, 1)
+                                }
+                                val resolver = contentResolver
+                                val uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+                                if (uri == null) {
+                                    result.error("IO", "Tidak bisa membuat berkas di galeri", null)
+                                } else {
+                                    resolver.openOutputStream(uri)?.use { it.write(bytes) }
+                                    values.clear()
+                                    values.put(MediaStore.Images.Media.IS_PENDING, 0)
+                                    resolver.update(uri, values, null, null)
+                                    result.success(uri.toString())
+                                }
+                            } catch (e: Exception) {
+                                result.error("IO", e.message, null)
+                            }
+                        }
+                    }
+                    else -> result.notImplemented()
+                }
+            }
 
         // Jaringan tanpa kuota (Wi-Fi/ethernet) untuk opsi "unduh hanya lewat Wi-Fi".
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "hub_reader/network")
