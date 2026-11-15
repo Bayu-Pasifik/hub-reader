@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../sources/models.dart';
+import '../../core/update/app_update.dart';
 import '../../sources/source_exception.dart';
+import '../../sources/source_report.dart';
 import '../router.dart';
 import 'state_views.dart';
 
@@ -95,6 +97,7 @@ class SourceErrorView extends StatelessWidget {
     this.onRetry,
     this.compact = false,
     this.verifyUrl,
+    this.reportSource,
   });
 
   final Object error;
@@ -103,6 +106,19 @@ class SourceErrorView extends StatelessWidget {
 
   /// Halaman yang dibuka di WebView bila situs diblokir Cloudflare.
   final String? verifyUrl;
+
+  /// Sumber yang bisa dilaporkan bila errornya bukan masalah jaringan pengguna.
+  final SourceReportTarget? reportSource;
+
+  Future<void> _report(BuildContext context, SourceReportTarget source, SourceException e) async {
+    final uri = buildSourceReportUri(source, e, appVersion: await AppUpdate.currentVersion());
+    final ok = await AppUpdate.open(uri);
+    if (!ok && context.mounted) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(tr('Tidak ada browser untuk membuka laporan'))));
+    }
+  }
 
   Future<void> _verify(BuildContext context, String url) async {
     final ok = await context.push<bool>(sourceWebViewLocation(url));
@@ -144,6 +160,12 @@ class SourceErrorView extends StatelessWidget {
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
               label: Text(tr('Coba lagi')),
+            ),
+          if (reportSource != null && isReportable(e.kind))
+            TextButton.icon(
+              onPressed: () => _report(context, reportSource!, e),
+              icon: const Icon(Icons.bug_report_outlined),
+              label: Text(tr('Laporkan sumber ini')),
             ),
         ],
       ),

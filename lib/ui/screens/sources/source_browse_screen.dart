@@ -148,6 +148,7 @@ class _MangaGrid extends ConsumerWidget {
         error: state.error!,
         onRetry: notifier.refresh,
         verifyUrl: source.baseUrl,
+        reportSource: (name: source.name, id: source.id, baseUrl: source.baseUrl),
       );
     }
     if (state.isLoading && state.items.isEmpty) {
@@ -205,6 +206,7 @@ class _MangaGrid extends ConsumerWidget {
                           error: state.loadMoreError!,
                           onRetry: () => notifier.loadMore(retry: true),
                           verifyUrl: source.baseUrl,
+                          reportSource: (name: source.name, id: source.id, baseUrl: source.baseUrl),
                         )
                       : LoadMoreFooter(onShown: notifier.loadMore),
                 ),

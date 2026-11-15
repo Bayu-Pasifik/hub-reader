@@ -556,6 +556,7 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
         error: error,
         onRetry: () => ref.invalidate(sourcePagesProvider(key)),
         verifyUrl: widget.chapter.url,
+        reportSource: (name: widget.source.name, id: widget.source.id, baseUrl: widget.source.baseUrl),
       ),
       data: (urls) {
         _total = urls.length;

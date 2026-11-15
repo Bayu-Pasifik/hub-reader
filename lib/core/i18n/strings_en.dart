@@ -214,6 +214,8 @@ const Map<String, String> stringsEn = {
   'Cari novel di semua sumber…': 'Search novels in all sources…',
   'Kamus': 'Dictionary',
   'Proxy HTTP': 'HTTP proxy',
+  'Laporkan sumber ini': 'Report this source',
+  'Tidak ada browser untuk membuka laporan': 'No browser available to open the report',
   'Matikan': 'Turn off',
   'Mati (koneksi langsung)': 'Off (direct connection)',
   'Alamat proxy (host:port)': 'Proxy address (host:port)',
