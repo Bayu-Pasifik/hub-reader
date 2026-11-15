@@ -311,6 +311,8 @@ belakang. Bawaan: lewati tamat dan belum dibaca. Disimpan di `library.updates.ru
 **Ekspor CBZ** (layar Unduhan): ikon arsip per bab menyimpan CBZ lewat dialog sistem; ikon di tingkat seri mengekspor
 semua bab ke folder pilihan. Halaman diberi nomor ulang (`001.ext`) plus `ComicInfo.xml`, jadi terbaca di Komga, Kavita, dan Mihon.
 
+**Urutan & filter per kategori**: di sheet filter Favorit, saklar "Khusus kategori" menyimpan urutan, balik urutan, jenis, dan filter (belum dibaca, sudah mulai dibaca, sudah diunduh) khusus tab kategori yang sedang dibuka (`library.view.categories.v1`); kategori tanpa pengaturan sendiri dan tab Semua memakai tampilan umum. Pengaturan ikut berganti nama/terhapus bersama kategorinya. Mode tampilan (grid/daftar, kolom) tetap satu untuk semua.
+
 **Favorit** bisa dikelompokkan ke kategori (tab; menu ⋮ → Kelola kategori untuk tambah, ganti nama,
 urutkan, hapus). Tekan lama sampul untuk memilih kategori atau menghapus dari favorit. Ikon filter:
 jenis (komik/novel), hanya yang ada bab baru belum dibaca, dan urutan (ditambahkan, judul, terakhir
