@@ -19,6 +19,7 @@ const Map<String, String> stringsEn = {
   // Umum
   'Batal': 'Cancel',
   'Izinkan': 'Allow',
+  'Hanya disertakan bila enkripsi cadangan otomatis aktif.': 'Only included when automatic backup encryption is on.',
   'Kirim teks ke layanan online?': 'Send text to an online service?',
   'Kamus & terjemah mengirim teks yang kamu pilih ke layanan web pihak ketiga (MyMemory dan dictionaryapi.dev). Teks bab itu keluar dari perangkat. Bisa dicabut kapan saja di Pengaturan.': 'Dictionary & translate send the text you select to third-party web services (MyMemory and dictionaryapi.dev). That chapter text leaves your device. You can revoke this anytime in Settings.',
   'Kamus & terjemah online': 'Online dictionary & translate',
@@ -160,7 +161,6 @@ const Map<String, String> stringsEn = {
   'Simpan cadangan terbaru': 'Keep latest backup',
   'Sertakan plugin novel': 'Include novel plugins',
   'Sertakan cookie login': 'Include login cookies',
-  'Disimpan tanpa enkripsi di folder aplikasi.': 'Stored unencrypted in the app folder.',
   'Cadangkan sekarang': 'Back up now',
   'Pindah sumber?': 'Switch source?',
   'Simpan juga favorit lama': 'Also keep the old favorite',

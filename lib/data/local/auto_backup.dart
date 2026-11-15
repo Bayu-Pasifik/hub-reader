@@ -178,9 +178,12 @@ abstract final class AutoBackup {
     DateTime? now,
   }) async {
     final cfg = config ?? AutoBackupConfig.read(prefs);
+    final password = await autoPassword(prefs);
     final data = await AppBackup.create(
       prefs,
-      includeSecrets: cfg.secrets,
+      // Cookie login & token tidak pernah ditulis polos: tanpa enkripsi aktif
+      // cadangan otomatis dibuat tanpa rahasia.
+      includeSecrets: cfg.secrets && password != null,
       plugins: cfg.plugins ? await plugins.exportInstalled() : null,
     );
     final stamp = now ?? DateTime.now();
@@ -190,7 +193,7 @@ abstract final class AutoBackup {
     final dir = await directory();
     final target = File('${dir.path}${Platform.pathSeparator}$name');
     final temp = File('${target.path}.tmp');
-    final json = await BackupCrypto.encode(data, password: await autoPassword(prefs));
+    final json = await BackupCrypto.encode(data, password: password);
     await temp.writeAsString(json, flush: true);
     await temp.rename(target.path);
     await prefs.setInt(_lastKey, stamp.millisecondsSinceEpoch);

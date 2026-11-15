@@ -521,9 +521,21 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                   title: Text(tr('Sertakan cookie login')),
                   subtitle: Text(ref.read(sharedPreferencesProvider).getBool(AutoBackup.encryptedKey) == true
                       ? tr('Dienkripsi dengan kata sandi cadangan.')
-                      : tr('Disimpan tanpa enkripsi di folder aplikasi.')),
+                      : tr('Hanya disertakan bila enkripsi cadangan otomatis aktif.')),
                   value: auto.secrets,
-                  onChanged: _busy ? null : (v) => _setAuto(auto.copyWith(secrets: v)),
+                  onChanged: _busy
+                      ? null
+                      : (v) async {
+                          // Cookie & token tidak boleh tersimpan polos: minta sandi dulu.
+                          if (v && ref.read(sharedPreferencesProvider).getBool(AutoBackup.encryptedKey) != true) {
+                            await _autoPasswordDialog();
+                            if (!mounted ||
+                                ref.read(sharedPreferencesProvider).getBool(AutoBackup.encryptedKey) != true) {
+                              return;
+                            }
+                          }
+                          await _setAuto(auto.copyWith(secrets: v));
+                        },
                 ),
                 ListTile(
                   leading: const Icon(Icons.lock_outline),

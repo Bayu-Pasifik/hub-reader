@@ -66,6 +66,21 @@ void main() {
     expect(AutoBackup.lastRun(prefs), base.add(const Duration(days: 3)));
   });
 
+
+  test('run tidak menulis cookie login polos bila enkripsi otomatis mati', () async {
+    SharedPreferences.setMockInitialValues({
+      'source_library.favorites.v1': '[]',
+      'sources.cookies.v1': '{"a.com":"x=1"}',
+    });
+    final prefs = await SharedPreferences.getInstance();
+    const config = AutoBackupConfig(hours: 24, keep: 2, plugins: false, secrets: true);
+
+    final file = await AutoBackup.run(prefs, plugins, config: config, now: DateTime(2026, 11, 10, 8));
+    final raw = await file.readAsString();
+    expect(raw, isNot(contains('a.com')));
+    expect(raw, isNot(contains('x=1')));
+    expect(jsonDecode(raw)['secrets'], isNot(true));
+  });
   test('restore keeps the device-local last-run marker', () async {
     SharedPreferences.setMockInitialValues({'source_library.favorites.v1': '[]'});
     final prefs = await SharedPreferences.getInstance();
