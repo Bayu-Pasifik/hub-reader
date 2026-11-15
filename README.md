@@ -440,3 +440,5 @@ Kompatibilitas runtime:
   - `KEYSTORE_PASSWORD`: password keystore (store dan key memakai password yang sama)
   - `ANILIST_CLIENT_ID`, `MAL_CLIENT_ID` (opsional): Client ID OAuth bawaan untuk tracker, agar
     pengguna APK rilis bisa langsung login tanpa membuat aplikasi OAuth sendiri
+
+**Kembali prediktif (Android 13+)**: `android:enableOnBackInvokedCallback="true"` di manifest dan `PredictiveBackPageTransitionsBuilder` di tema (`lib/app.dart`). Menggeser dari tepi layar menampilkan pratinjau layar sebelumnya dan animasi penutupan. Di Android lama tombol kembali berjalan seperti biasa. Uji emulator API 37: geser dari tepi di jelajah sumber, dan kembali di onboarding.

@@ -70,12 +70,18 @@ class _HubReaderAppState extends ConsumerState<HubReaderApp> {
       builder: (lightDynamic, darkDynamic) {
         // Material You: pakai warna utama wallpaper sebagai seed tema.
         final useDynamic = s.dynamicColor && lightDynamic != null && darkDynamic != null;
+        // Android 13+: gestur kembali prediktif (pratinjau layar sebelumnya saat menggeser).
+        const transitions = PageTransitionsTheme(builders: {
+          TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
+        });
         final light = ThemeData(
           useMaterial3: true,
+          pageTransitionsTheme: transitions,
           colorSchemeSeed: useDynamic ? lightDynamic.primary : s.accent.color,
         );
         final dark = ThemeData(
           useMaterial3: true,
+          pageTransitionsTheme: transitions,
           colorSchemeSeed: useDynamic ? darkDynamic.primary : s.accent.color,
           brightness: Brightness.dark,
         );
