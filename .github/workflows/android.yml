@@ -93,6 +93,15 @@ jobs:
           path: ${{ env.APK }}
           retention-days: 30
 
+      - name: Simpan simbol debug (baca stack trace APK obfuscate)
+        # Tanpa ini stack trace dari APK rilis tidak bisa dibaca. Pakai:
+        # flutter symbolize -i <stack.txt> -d <folder simbol>
+        uses: actions/upload-artifact@v4
+        with:
+          name: hub-reader-symbols-${{ github.sha }}
+          path: build/symbols
+          retention-days: 90
+
       - name: Lampirkan ke GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2

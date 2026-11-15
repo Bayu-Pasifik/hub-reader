@@ -410,7 +410,9 @@ Kompatibilitas runtime:
 - **GitHub Actions** (`.github/workflows/android.yml`): setiap push atau PR menjalankan
   `analyze`, `test`, dan build APK release, lalu APK diunggah sebagai artifact
   *hub-reader-apk*. Push tag `v*` (mis. `git tag v1.0.0 && git push --tags`) juga
-  melampirkan APK ke GitHub Release.
+  melampirkan APK ke GitHub Release. Simbol debug build obfuscate diunggah sebagai artifact
+  *hub-reader-symbols-<sha commit>* (90 hari); pakai `flutter symbolize -i stack.txt -d <folder simbol>`
+  untuk membaca stack trace dari APK rilis.
 - **Secrets CI** (Settings → Secrets and variables → Actions):
   - `KEYSTORE_BASE64`: isi file `.jks` dalam base64 (`base64 -w0 hub-reader-release.jks`)
   - `KEYSTORE_PASSWORD`: password keystore (store dan key memakai password yang sama)
