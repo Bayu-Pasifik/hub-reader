@@ -20,6 +20,7 @@ import 'tracker_screens.dart';
 import '../widgets/app_update_ui.dart';
 import '../widgets/app_lock.dart';
 import '../../core/i18n/strings.dart';
+import '../../state/download_ahead.dart';
 
 /// Ukuran folder (byte), 0 bila tidak ada.
 Future<int> _dirSize(Directory dir) async {
@@ -331,6 +332,20 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
             subtitle: Text(tr('Bab baru dari favorit diunduh otomatis saat cek pembaruan (maks. 20 per cek)')),
             value: s.autoDownloadNew,
             onChanged: (v) => n.update((x) => x.copyWith(autoDownloadNew: v)),
+          ),
+          ListTile(
+            leading: const Icon(Icons.download_for_offline),
+            title: Text(tr('Unduh bab berikutnya saat membaca')),
+            subtitle: Text(tr('Komik favorit: bab di depan bab yang dibuka diunduh otomatis')),
+            trailing: DropdownButton<int>(
+              value: downloadAheadChoices.contains(s.downloadAhead) ? s.downloadAhead : 0,
+              underline: const SizedBox.shrink(),
+              onChanged: (v) => n.update((x) => x.copyWith(downloadAhead: v ?? 0)),
+              items: [
+                for (final c in downloadAheadChoices)
+                  DropdownMenuItem(value: c, child: Text(c == 0 ? tr('Nonaktif') : '$c')),
+              ],
+            ),
           ),
           SwitchListTile(
             secondary: const Icon(Icons.wifi),

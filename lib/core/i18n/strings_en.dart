@@ -213,6 +213,9 @@ const Map<String, String> stringsEn = {
   'Mengekspor…': 'Exporting…',
   'Cari novel di semua sumber…': 'Search novels in all sources…',
   'Kamus': 'Dictionary',
+  'Nonaktif': 'Off',
+  'Unduh bab berikutnya saat membaca': 'Download next chapters while reading',
+  'Komik favorit: bab di depan bab yang dibuka diunduh otomatis': 'Favorite comics: chapters after the one you open are downloaded automatically',
   'Khusus kategori "{c}"': 'Only for category "{c}"',
   'Urutan & filter disimpan untuk kategori ini': 'Sort & filters are saved for this category',
   'Mengikuti tampilan umum': 'Follows the general view',
@@ -844,7 +847,6 @@ const Map<String, String> stringsEn = {
   '18+': '18+',
   'Hiatus': 'Hiatus',
   '1 hari': '1 day',
-  'Nonaktif': 'Off',
   'Unduh otomatis bab baru': 'Auto-download new chapters',
   'Bab baru dari favorit diunduh otomatis saat cek pembaruan (maks. 20 per cek)':
       'New chapters from favorites download automatically on update checks (max 20 per check)',

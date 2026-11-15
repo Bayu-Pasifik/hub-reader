@@ -12,7 +12,13 @@ import '../../../data/models/source_library.dart';
 import '../../../sources/models.dart';
 import '../../../sources/source.dart';
 import '../../../state/bookmarks_provider.dart';
-import '../../../state/download_providers.dart' show downloadIndexProvider;
+import '../../../state/app_settings_provider.dart';
+import '../../../state/core_providers.dart';
+import '../../../state/download_ahead.dart';
+import '../../../state/download_providers.dart' show downloadIndexProvider, downloadQueueProvider;
+import '../../../data/models/download.dart' show chapterKey;
+import '../../../sources/scanlator.dart';
+import '../../../sources/local/local_source.dart';
 import '../../../state/reader_settings_provider.dart';
 import '../../../state/reading_stats_provider.dart';
 import '../../../state/source_library_providers.dart';
@@ -57,6 +63,44 @@ class _SourceReaderScreenState extends ConsumerState<SourceReaderScreen> {
     });
   }
 
+  String? _aheadFor;
+
+  /// "Unduh di depan": saat membaca komik favorit, antrekan bab berikutnya
+  /// (sekali per bab yang dibuka). Mengikuti filter scanlator dan aturan Wi-Fi
+  /// antrean unduhan.
+  void _downloadAhead(MangaSource source, SourceMangaDetails manga, List<SourceChapter> chapters, int index) {
+    if (_aheadFor == _chapterUrl || source is LocalSource) return;
+    _aheadFor = _chapterUrl;
+    final count = ref.read(appSettingsProvider).downloadAhead;
+    if (count <= 0) return;
+    final seriesKey = seriesReaderKey(widget.sourceId, widget.mangaUrl);
+    if (!ref.read(sourceFavoritesProvider).any((f) => f.item.key == seriesKey)) return;
+    final hidden = ScanlatorFilter.read(ref.read(sharedPreferencesProvider), seriesKey);
+    final have = ref.read(downloadIndexProvider);
+    final queued = ref.read(downloadQueueProvider).map((t) => t.key).toSet();
+    final next = chaptersToDownloadAhead(
+      chapters,
+      index,
+      count: count,
+      hiddenGroups: hidden,
+      alreadyHave: (c) {
+        final key = chapterKey(widget.sourceId, c.url);
+        return have.containsKey(key) || queued.contains(key);
+      },
+    );
+    if (next.isEmpty) return;
+    // Ditunda ke setelah frame: provider tidak boleh diubah saat build.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(downloadQueueProvider.notifier).enqueue(
+            sourceId: widget.sourceId,
+            mangaUrl: widget.mangaUrl,
+            manga: manga,
+            chapters: next,
+          );
+    });
+  }
+
   void _goTo(SourceChapter chapter) => setState(() => _chapterUrl = chapter.url);
 
   @override
@@ -74,7 +118,10 @@ class _SourceReaderScreenState extends ConsumerState<SourceReaderScreen> {
     final next = index > 0 ? chapters[index - 1] : null;
     final prev = index >= 0 && index < chapters.length - 1 ? chapters[index + 1] : null;
     final manga = details.valueOrNull;
-    if (manga != null && index >= 0) _recordHistory(manga, chapter);
+    if (manga != null && index >= 0) {
+      _recordHistory(manga, chapter);
+      if (source != null) _downloadAhead(source, manga, chapters, index);
+    }
 
     return Scaffold(
       appBar: AppBar(

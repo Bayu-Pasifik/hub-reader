@@ -40,6 +40,7 @@ class AppSettings {
     this.autoDownloadNew = false,
     this.downloadWifiOnly = false,
     this.downloadParallel = 2,
+    this.downloadAhead = 0,
     this.language = AppLanguage.id,
   });
 
@@ -80,6 +81,9 @@ class AppSettings {
   /// Gambar yang diunduh bersamaan dalam satu bab (1-4).
   final int downloadParallel;
 
+  /// Saat membaca komik favorit, unduh sekian bab berikutnya (0 = mati).
+  final int downloadAhead;
+
   /// Bahasa antarmuka.
   final AppLanguage language;
 
@@ -97,6 +101,7 @@ class AppSettings {
     bool? autoDownloadNew,
     bool? downloadWifiOnly,
     int? downloadParallel,
+    int? downloadAhead,
     AppLanguage? language,
   }) =>
       AppSettings(
@@ -113,6 +118,7 @@ class AppSettings {
         autoDownloadNew: autoDownloadNew ?? this.autoDownloadNew,
         downloadWifiOnly: downloadWifiOnly ?? this.downloadWifiOnly,
         downloadParallel: downloadParallel ?? this.downloadParallel,
+        downloadAhead: downloadAhead ?? this.downloadAhead,
         language: language ?? this.language,
       );
 }
@@ -133,6 +139,7 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
   static const _autoDownloadNew = 'app.auto_download_new.v1';
   static const _downloadWifiOnly = 'app.download_wifi_only.v1';
   static const _downloadParallel = 'app.download_parallel.v1';
+  static const _downloadAhead = 'app.download_ahead.v1';
   static const _language = 'app.language.v1';
 
   @override
@@ -153,6 +160,7 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
       autoDownloadNew: p.getBool(_autoDownloadNew) ?? false,
       downloadWifiOnly: p.getBool(_downloadWifiOnly) ?? false,
       downloadParallel: (p.getInt(_downloadParallel) ?? 2).clamp(1, 4),
+      downloadAhead: (p.getInt(_downloadAhead) ?? 0).clamp(0, 10),
       language: currentLanguage,
     );
   }
@@ -180,6 +188,7 @@ class AppSettingsNotifier extends Notifier<AppSettings> {
     await p.setBool(_autoDownloadNew, state.autoDownloadNew);
     await p.setBool(_downloadWifiOnly, state.downloadWifiOnly);
     await p.setInt(_downloadParallel, state.downloadParallel);
+    await p.setInt(_downloadAhead, state.downloadAhead);
     await p.setString(_language, state.language.name);
   }
 }
