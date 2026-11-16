@@ -95,6 +95,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
         ref.read(sharedPreferencesProvider),
         backup,
         ref.read(sourceRegistryProvider).sources,
+        library: ref.read(sourceLibraryStoreProvider),
       );
       ref
         ..invalidate(sourceFavoritesProvider)
@@ -118,7 +119,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
   Future<void> _davSync() async {
     setState(() => _busy = true);
     try {
-      final merged = await ProgressSync.run(ref.read(sharedPreferencesProvider));
+      final merged = await ProgressSync.run(ref.read(sharedPreferencesProvider), library: ref.read(sourceLibraryStoreProvider));
       ref
         ..invalidate(sourceFavoritesProvider)
         ..invalidate(sourceHistoryProvider)
@@ -152,6 +153,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
       final cfg = AutoBackupConfig.read(prefs);
       final data = await AppBackup.create(
         prefs,
+        library: ref.read(sourceLibraryStoreProvider),
         includeSecrets: cfg.secrets,
         plugins: cfg.plugins ? await ref.read(novelRepositoryProvider).exportInstalled() : null,
       );
@@ -251,6 +253,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
       }
       final data = await AppBackup.create(
         ref.read(sharedPreferencesProvider),
+        library: ref.read(sourceLibraryStoreProvider),
         includeSecrets: _secrets,
         plugins: _plugins ? await ref.read(novelRepositoryProvider).exportInstalled() : null,
       );
@@ -407,7 +410,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
   Future<void> _autoNow() async {
     setState(() => _busy = true);
     try {
-      final file = await AutoBackup.run(ref.read(sharedPreferencesProvider), ref.read(novelRepositoryProvider));
+      final file = await AutoBackup.run(ref.read(sharedPreferencesProvider), ref.read(novelRepositoryProvider), library: ref.read(sourceLibraryStoreProvider));
       if (mounted) _snack(trp('Cadangan dibuat: {name}', {'name': file.uri.pathSegments.last}));
       setState(() => _autoList = AutoBackup.list());
     } catch (e) {
@@ -457,7 +460,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     if (ok != true || !mounted) return;
     setState(() => _busy = true);
     try {
-      await AppBackup.restore(ref.read(sharedPreferencesProvider), decoded);
+      await AppBackup.restore(ref.read(sharedPreferencesProvider), decoded, library: ref.read(sourceLibraryStoreProvider));
       // Jadwal cadangan/cek bab ikut isi cadangan: pasang ulang job-nya.
       final prefs = ref.read(sharedPreferencesProvider);
       await BackgroundUpdates.scheduleBackup(AutoBackupConfig.read(prefs), replace: true);

@@ -27,7 +27,7 @@ Future<void> main() async {
   if (AutoBackup.isDue(deps.prefs, backupConfig)) {
     () async {
       try {
-        await AutoBackup.run(deps.prefs, deps.novelPlugins, config: backupConfig);
+        await AutoBackup.run(deps.prefs, deps.novelPlugins, config: backupConfig, library: deps.library);
       } catch (e) {
         debugPrint('Auto backup on start failed: $e');
       }

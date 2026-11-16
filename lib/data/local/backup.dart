@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/utils/json.dart';
 import '../../core/i18n/strings.dart';
+import 'source_library_store.dart';
 
 /// Cadangan data aplikasi: semua SharedPreferences (favorit, riwayat,
 /// progres baca, kategori, pengaturan) + daftar pembaruan favorit.
@@ -51,6 +52,7 @@ class AppBackup {
     SharedPreferences prefs, {
     required bool includeSecrets,
     List<Map<String, Object?>>? plugins,
+    SourceLibraryStore? library,
   }) async {
     final values = <String, Object?>{};
     for (final key in prefs.getKeys()) {
@@ -64,6 +66,13 @@ class AppBackup {
         final List<dynamic> l => {'t': 'l', 'v': l.map((e) => '$e').toList()},
         _ => null,
       };
+    }
+    // Pustaka ada di database, bukan prefs: tulis isinya dengan kunci prefs
+    // lama supaya format cadangan tetap sama (dan cadangan lama tetap terbaca).
+    if (library != null && library.usesDatabase) {
+      for (final e in library.exportLegacy().entries) {
+        values[e.key] = {'t': 's', 'v': e.value};
+      }
     }
     values.removeWhere((_, v) => v == null);
     Object? updates;
@@ -114,7 +123,7 @@ class AppBackup {
 
   /// Ganti data aplikasi dengan isi cadangan. Cookie/penyimpanan plugin di
   /// perangkat tetap dipakai bila cadangan tidak menyertakannya.
-  static Future<void> restore(SharedPreferences prefs, Object? decoded) async {
+  static Future<void> restore(SharedPreferences prefs, Object? decoded, {SourceLibraryStore? library}) async {
     final json = asMap(decoded);
     if (json['format'] != format) throw FormatException(tr('Bukan file cadangan Hub Reader'));
     final withSecrets = json['secrets'] == true;
@@ -139,6 +148,8 @@ class AppBackup {
           await prefs.setStringList(e.key, asStringList(v));
       }
     }
+    // Pindahkan pustaka hasil pemulihan (kunci prefs lama) ke database.
+    await library?.reloadFromPrefs();
     try {
       final file = await _updatesFile();
       final updates = json['library_updates'];

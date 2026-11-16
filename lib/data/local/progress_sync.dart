@@ -115,11 +115,11 @@ abstract final class ProgressSync {
 
   /// Tarik berkas sinkron, gabungkan dengan data lokal, tulis hasilnya ke
   /// penyimpanan lokal lalu unggah. Mengembalikan hasil gabungan.
-  static Future<SyncSnapshot> run(SharedPreferences prefs, {WebDavClient? client}) async {
+  static Future<SyncSnapshot> run(SharedPreferences prefs, {WebDavClient? client, SourceLibraryStore? library}) async {
     final cfg = await WebDavConfig.read(prefs);
     if (!cfg.configured) throw const WebDavException('Alamat WebDAV belum diisi');
     final dav = client ?? WebDavClient(cfg);
-    final store = SourceLibraryStore(prefs);
+    final store = library ?? SourceLibraryStore(prefs);
     final local = SyncSnapshot(
       favorites: store.readFavorites(),
       history: store.readHistory(),

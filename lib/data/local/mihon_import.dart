@@ -229,10 +229,11 @@ abstract final class MihonImport {
   static Future<MihonImportResult> apply(
     SharedPreferences prefs,
     MihonBackup backup,
-    List<MangaSource> sources,
-  ) async {
+    List<MangaSource> sources, {
+    SourceLibraryStore? library,
+  }) async {
     final byName = {for (final s in sources) _norm(s.name): s};
-    final store = SourceLibraryStore(prefs);
+    final store = library ?? SourceLibraryStore(prefs);
     final favorites = {for (final f in store.readFavorites()) f.item.key: f};
     final history = {for (final h in store.readHistory()) h.item.key: h};
     final progress = store.readProgress();

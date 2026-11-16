@@ -115,7 +115,7 @@ abstract final class BackgroundUpdates {
     final deps = await AppDependencies.open(background: true);
     // Job lama bisa tersisa setelah jadwal dimatikan (mis. lewat restore).
     if (!AutoBackupConfig.read(deps.prefs).enabled) return;
-    await AutoBackup.run(deps.prefs, deps.novelPlugins);
+    await AutoBackup.run(deps.prefs, deps.novelPlugins, library: deps.library);
   }
 
   /// Dipanggil sekali dari `main()`. [replace] dipakai saat pengguna

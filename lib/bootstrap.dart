@@ -10,6 +10,8 @@ import 'core/net/proxy.dart';
 import 'core/platform/webview_bridge.dart';
 import 'core/storage/json_cache.dart';
 import 'data/local/download_store.dart';
+import 'data/local/library_db.dart';
+import 'data/local/source_library_store.dart';
 import 'novels/local_epub.dart';
 import 'novels/plugin_repository.dart';
 import 'sources/catalog.dart';
@@ -20,6 +22,7 @@ import 'sources/source.dart';
 import 'state/core_providers.dart';
 import 'state/download_providers.dart';
 import 'state/novel_providers.dart';
+import 'state/source_library_providers.dart' show sourceLibraryStoreProvider;
 import 'state/source_providers.dart';
 
 const _cookiesKey = 'sources.cookies.v1';
@@ -33,6 +36,7 @@ class AppDependencies {
   AppDependencies._({
     required this.prefs,
     required this.cache,
+    required this.library,
     required this.downloads,
     required this.novelPlugins,
     required this.catalog,
@@ -40,6 +44,7 @@ class AppDependencies {
   });
 
   final SharedPreferences prefs;
+  final SourceLibraryStore library;
   final JsonCache cache;
   final DownloadStore downloads;
   final NovelPluginRepository novelPlugins;
@@ -53,6 +58,7 @@ class AppDependencies {
     applyDoh(DohProvider.read(prefs));
     applyProxy(ProxyConfig.read(prefs));
     final cache = await JsonCache.open();
+    final library = await SourceLibraryStore.openOrFallback(prefs, LibraryDb.open);
     final downloads = await DownloadStore.open(prefs);
     final supportDir = await getApplicationSupportDirectory();
     final novelPlugins = NovelPluginRepository(Directory('${supportDir.path}/lnreader'));
@@ -94,6 +100,7 @@ class AppDependencies {
 
     final deps = AppDependencies._(
       prefs: prefs,
+      library: library,
       cache: cache,
       downloads: downloads,
       novelPlugins: novelPlugins,
@@ -112,6 +119,7 @@ class AppDependencies {
 
   List<Override> get overrides => [
         sharedPreferencesProvider.overrideWithValue(prefs),
+        sourceLibraryStoreProvider.overrideWithValue(library),
         jsonCacheProvider.overrideWithValue(cache),
         downloadStoreProvider.overrideWithValue(downloads),
         initialSourceCatalogProvider.overrideWithValue(catalog),

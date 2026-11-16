@@ -45,11 +45,16 @@ dependencies:
   quick_actions: ^1.1.1
   home_widget: ^0.10.0
   flutter_secure_storage: ^11.2.0
+  drift: ^2.35.4
+  sqlite3_flutter_libs: ^0.6.0+eol
+  path: ^1.9.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  drift_dev: ^2.35.3
+  build_runner: ^2.17.1
 
 flutter:
   uses-material-design: true

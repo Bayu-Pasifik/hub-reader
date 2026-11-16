@@ -49,7 +49,7 @@ class AutoSync {
     try {
       final cfg = await WebDavConfig.read(prefs);
       if (!cfg.configured) return false;
-      await ProgressSync.run(prefs);
+      await ProgressSync.run(prefs, library: _ref.read(sourceLibraryStoreProvider));
       await prefs.setInt(lastKey, DateTime.now().millisecondsSinceEpoch);
       _ref
         ..invalidate(sourceFavoritesProvider)

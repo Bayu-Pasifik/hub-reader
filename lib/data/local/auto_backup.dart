@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../novels/plugin_repository.dart';
 import 'backup.dart';
 import 'backup_crypto.dart';
+import 'source_library_store.dart';
 import 'webdav_backup.dart';
 import '../../core/i18n/strings.dart';
 
@@ -176,11 +177,13 @@ abstract final class AutoBackup {
     NovelPluginRepository plugins, {
     AutoBackupConfig? config,
     DateTime? now,
+    SourceLibraryStore? library,
   }) async {
     final cfg = config ?? AutoBackupConfig.read(prefs);
     final password = await autoPassword(prefs);
     final data = await AppBackup.create(
       prefs,
+      library: library,
       // Cookie login & token tidak pernah ditulis polos: tanpa enkripsi aktif
       // cadangan otomatis dibuat tanpa rahasia.
       includeSecrets: cfg.secrets && password != null,
