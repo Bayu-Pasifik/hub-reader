@@ -111,7 +111,7 @@ class NovelReposScreen extends ConsumerWidget {
                 ),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
- spacing: 6,
+                spacing: 6,
                   children: [
                     if (i > 0)
                       IconButton(

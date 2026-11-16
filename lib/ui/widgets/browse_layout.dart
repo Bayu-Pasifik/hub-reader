@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/i18n/strings.dart';
 import '../../state/browse_layout_provider.dart';
 import '../../state/source_library_providers.dart' show LibraryDisplay, LibraryLayout;
+import '../theme/neo_brutal.dart';
 import 'layout.dart';
 import 'source_widgets.dart';
 
@@ -34,6 +35,7 @@ class BrowseSliver extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     if (layout.display == LibraryDisplay.list) {
       return SliverPadding(
         padding: const EdgeInsets.symmetric(vertical: 8),
@@ -41,11 +43,22 @@ class BrowseSliver extends StatelessWidget {
           itemCount: itemCount,
           itemBuilder: (context, i) {
             final item = itemAt(i);
-            return ListTile(
-              onTap: item.onTap,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              leading: SourceCover(url: item.cover, headers: headers, width: 56, heroTag: item.heroTag),
-              title: Text(item.title, maxLines: 2, overflow: TextOverflow.ellipsis),
+            // Kartu bergaris + bayangan, sama seperti daftar sumber.
+            return NeoBox(
+              margin: const EdgeInsets.fromLTRB(16, 6, 19, 8),
+              color: theme.colorScheme.surfaceContainerLowest,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(NeoBrutal.radius),
+                child: Material(
+                  type: MaterialType.transparency,
+                  child: ListTile(
+                    onTap: item.onTap,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    leading: SourceCover(url: item.cover, headers: headers, width: 56, heroTag: item.heroTag),
+                    title: Text(item.title, maxLines: 2, overflow: TextOverflow.ellipsis),
+                  ),
+                ),
+              ),
             );
           },
         ),

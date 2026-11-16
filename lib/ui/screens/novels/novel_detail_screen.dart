@@ -542,7 +542,7 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
               subtitle: subtitle.isEmpty ? null : Text(subtitle),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
- spacing: 6,
+                spacing: 6,
                 children: [
                   if (bookmarks.contains(c.path)) const ChapterBookmarkIcon(),
                   if (done) const Icon(Icons.done_all, size: 18),

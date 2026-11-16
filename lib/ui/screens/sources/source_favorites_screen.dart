@@ -695,7 +695,7 @@ class _CategoriesDialog extends ConsumerWidget {
                       title: Text(categories[i]),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
- spacing: 6,
+                spacing: 6,
                         children: [
                           IconButton(
                             tooltip: tr('Naik'),
