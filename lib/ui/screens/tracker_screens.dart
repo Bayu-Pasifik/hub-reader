@@ -414,6 +414,7 @@ class _TrackerRowState extends ConsumerState<_TrackerRow> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            spacing: 8,
             children: [
               Expanded(
                 child: Text('${t.name} · ${link.title}', style: theme.textTheme.titleSmall, maxLines: 2),

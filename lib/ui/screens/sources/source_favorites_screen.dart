@@ -504,7 +504,7 @@ class _ViewSheet extends ConsumerWidget {
               ),
             Text(tr('Mode tampilan'), style: theme.textTheme.titleSmall),
             const SizedBox(height: 6),
-            Wrap(spacing: 6, children: [
+            Wrap(spacing: 6, runSpacing: 6, children: [
               for (final d in LibraryDisplay.values)
                 ChoiceChip(
                   label: Text(tr(d.label)),
@@ -530,7 +530,7 @@ class _ViewSheet extends ConsumerWidget {
             const SizedBox(height: 8),
             Text(tr('Jenis'), style: theme.textTheme.titleSmall),
             const SizedBox(height: 6),
-            Wrap(spacing: 6, children: [
+            Wrap(spacing: 6, runSpacing: 6, children: [
               for (final k in LibraryKind.values)
                 ChoiceChip(label: Text(k.label), selected: view.kind == k, onSelected: (_) => setView(kind: k)),
             ]),
@@ -695,6 +695,7 @@ class _CategoriesDialog extends ConsumerWidget {
                       title: Text(categories[i]),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
+ spacing: 6,
                         children: [
                           IconButton(
                             tooltip: tr('Naik'),

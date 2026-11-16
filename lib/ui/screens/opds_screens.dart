@@ -74,6 +74,7 @@ class OpdsServersScreen extends ConsumerWidget {
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            spacing: 12,
             children: [
               TextField(controller: name, decoration: InputDecoration(labelText: tr('Nama'))),
               TextField(

@@ -56,7 +56,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
       builder: (context) => AlertDialog(
         title: const Text('WebDAV'),
         content: SingleChildScrollView(
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
+          child: Column(mainAxisSize: MainAxisSize.min, spacing: 12, children: [
             TextField(
               controller: url,
               keyboardType: TextInputType.url,
@@ -281,7 +281,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
         builder: (context, setLocal) => AlertDialog(
           title: Text(tr('Enkripsi cadangan?')),
           content: SingleChildScrollView(
-            child: Column(mainAxisSize: MainAxisSize.min, children: [
+            child: Column(mainAxisSize: MainAxisSize.min, spacing: 12, children: [
               Text(_secrets
                   ? tr('Cadangan ini berisi cookie login & token. Sebaiknya diberi kata sandi. Kosongkan untuk tanpa enkripsi.')
                   : tr('Isi kata sandi untuk mengenkripsi file. Kosongkan untuk tanpa enkripsi.')),
@@ -291,7 +291,6 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                 obscureText: true,
                 decoration: InputDecoration(labelText: tr('Ulangi kata sandi'), errorText: error),
               ),
-              const SizedBox(height: 8),
               Text(tr('Kata sandi yang hilang tidak bisa dipulihkan: cadangan tidak akan terbuka.'),
                   style: Theme.of(context).textTheme.bodySmall),
             ]),
@@ -358,10 +357,9 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(tr('Enkripsi cadangan otomatis')),
-        content: Column(mainAxisSize: MainAxisSize.min, children: [
+        content: Column(mainAxisSize: MainAxisSize.min, spacing: 12, children: [
           Text(tr('Cadangan otomatis dan unggahan WebDAV dienkripsi dengan kata sandi ini. Kosongkan untuk mematikan.')),
           TextField(controller: pass, obscureText: true, decoration: InputDecoration(labelText: tr('Kata sandi'))),
-          const SizedBox(height: 8),
           Text(tr('Kata sandi yang hilang tidak bisa dipulihkan: cadangan tidak akan terbuka.'),
               style: Theme.of(context).textTheme.bodySmall),
         ]),

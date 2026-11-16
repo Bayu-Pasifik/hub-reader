@@ -122,6 +122,7 @@ class DownloadsScreen extends ConsumerWidget {
                 ),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
+ spacing: 6,
                   children: [
                     if (task.status == DownloadStatus.failed)
                       IconButton(
@@ -250,6 +251,7 @@ class _SeriesDownloads extends ConsumerWidget {
       ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
+ spacing: 6,
         children: [
           if (!info.isNovel)
             IconButton(
@@ -275,6 +277,7 @@ class _SeriesDownloads extends ConsumerWidget {
             onTap: () => context.push(info.readerLocation(c.mangaUrl, c.chapterUrl)),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
+ spacing: 6,
               children: [
                 if (!info.isNovel)
                   IconButton(

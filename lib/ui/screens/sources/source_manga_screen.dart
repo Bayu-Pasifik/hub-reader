@@ -393,6 +393,7 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
                               ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
+ spacing: 6,
                           children: [
                             if (bookmarked) const ChapterBookmarkIcon(),
                             if (done) const Icon(Icons.done_all, size: 18),

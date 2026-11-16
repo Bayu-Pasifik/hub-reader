@@ -172,6 +172,7 @@ class _SeriesInfoDialogState extends State<_SeriesInfoDialog> {
                 Expanded(
                   child: Wrap(
                     spacing: 8,
+                    runSpacing: 8,
                     children: [
                       OutlinedButton.icon(
                         icon: const Icon(Icons.photo_library_outlined),

@@ -801,7 +801,7 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    trailing: large ? null : Row(mainAxisSize: MainAxisSize.min, children: actions),
+                    trailing: large ? null : Row(mainAxisSize: MainAxisSize.min, spacing: 6, children: actions),
                     );
                     return large
                         ? Column(

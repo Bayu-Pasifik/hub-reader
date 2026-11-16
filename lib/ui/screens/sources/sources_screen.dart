@@ -295,6 +295,7 @@ class _SourceTile extends ConsumerWidget {
       },
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
+ spacing: 6,
         children: [
           ContentWarningChip(warning: s.contentWarning),
           if (s is HttpSource)
