@@ -82,33 +82,31 @@ class _ReaderSettingsSheet extends ConsumerWidget {
 
     void setMode(ReaderMode mode) {
       if (perSeries) {
-        ref.read(seriesReaderOverridesProvider.notifier).set(
-              seriesKey,
-              SeriesReaderOverride(mode: mode, cropBorders: override.cropBorders),
-            );
+        ref.read(seriesReaderOverridesProvider.notifier).set(seriesKey, override.withMode(mode));
       } else {
         ref.read(readerModeProvider.notifier).set(mode);
       }
     }
 
-    void setCrop(bool crop) {
+    // Tampilan yang bisa per seri (potong tepi, orientasi, filter warna, efek pindah):
+    // disimpan ke seri ini bila "Khusus seri ini" aktif, kalau tidak ke pengaturan umum.
+    void editDisplay(ReaderDisplay Function(ReaderDisplay d) change) {
       if (perSeries) {
-        ref.read(seriesReaderOverridesProvider.notifier).set(
-              seriesKey,
-              SeriesReaderOverride(mode: override.mode, cropBorders: crop),
-            );
+        ref.read(seriesReaderOverridesProvider.notifier).set(seriesKey, override.withDisplay(change(effective.display)));
       } else {
-        ref.read(readerDisplayProvider.notifier).set(global.copyWith(cropBorders: crop));
+        ref.read(readerDisplayProvider.notifier).set(change(global));
       }
     }
 
     void setPerSeries(bool on) => ref.read(seriesReaderOverridesProvider.notifier).set(
           seriesKey,
           // Mulai dari pengaturan yang sedang berlaku, supaya tidak berubah tiba-tiba.
-          on ? SeriesReaderOverride(mode: effective.mode, cropBorders: effective.display.cropBorders) : null,
+          on ? SeriesReaderOverride.snapshot(effective.mode, effective.display) : null,
         );
 
+    // Pengaturan yang selalu berlaku umum.
     void setDisplay(ReaderDisplay value) => ref.read(readerDisplayProvider.notifier).set(value);
+    final shown = effective.display;
 
     return SafeArea(
       child: SingleChildScrollView(
@@ -120,7 +118,9 @@ class _ReaderSettingsSheet extends ConsumerWidget {
             SwitchListTile(
               title: Text(tr('Khusus seri ini')),
               subtitle: Text(
-                perSeries ? tr('Mode & potong tepi disimpan untuk seri ini') : tr('Mengikuti pengaturan umum'),
+                perSeries
+                    ? tr('Mode, potong tepi, orientasi, efek pindah & filter warna disimpan untuk seri ini')
+                    : tr('Mengikuti pengaturan umum'),
               ),
               value: perSeries,
               onChanged: setPerSeries,
@@ -148,8 +148,8 @@ class _ReaderSettingsSheet extends ConsumerWidget {
                     ? tr('Buang margin putih/hitam di sekeliling halaman')
                     : tr('Mode webtoon: hanya margin kiri dan kanan'),
               ),
-              value: effective.display.cropBorders,
-              onChanged: setCrop,
+              value: shown.cropBorders,
+              onChanged: (v) => editDisplay((d) => d.copyWith(cropBorders: v)),
             ),
             SwitchListTile(
               title: Text(tr('Dua halaman (tablet landscape)')),
@@ -161,9 +161,9 @@ class _ReaderSettingsSheet extends ConsumerWidget {
               title: Text(tr('Efek pindah halaman')),
               subtitle: Text(tr('Mode per halaman')),
               trailing: DropdownButton<PageTransitionStyle>(
-                value: global.transition,
+                value: shown.transition,
                 onChanged: (v) {
-                  if (v != null) setDisplay(global.copyWith(transition: v));
+                  if (v != null) editDisplay((d) => d.copyWith(transition: v));
                 },
                 items: [
                   for (final t in PageTransitionStyle.values) DropdownMenuItem(value: t, child: Text(tr(t.label))),
@@ -192,8 +192,10 @@ class _ReaderSettingsSheet extends ConsumerWidget {
             ListTile(
               title: Text(tr('Orientasi layar')),
               trailing: DropdownButton<ReaderOrientation>(
-                value: global.orientation,
-                onChanged: (v) => setDisplay(global.copyWith(orientation: v)),
+                value: shown.orientation,
+                onChanged: (v) {
+                  if (v != null) editDisplay((d) => d.copyWith(orientation: v));
+                },
                 items: [
                   for (final o in ReaderOrientation.values) DropdownMenuItem(value: o, child: Text(o.label)),
                 ],
@@ -267,14 +269,14 @@ class _ReaderSettingsSheet extends ConsumerWidget {
             ),
             SwitchListTile(
               title: Text(tr('Hitam putih')),
-              value: global.grayscale,
-              onChanged: (v) => setDisplay(global.copyWith(grayscale: v)),
+              value: shown.grayscale,
+              onChanged: (v) => editDisplay((d) => d.copyWith(grayscale: v)),
             ),
             SwitchListTile(
               title: Text(tr('Balik warna')),
               subtitle: Text(tr('Halaman putih jadi gelap untuk baca malam')),
-              value: global.invert,
-              onChanged: (v) => setDisplay(global.copyWith(invert: v)),
+              value: shown.invert,
+              onChanged: (v) => editDisplay((d) => d.copyWith(invert: v)),
             ),
             ListTile(
               title: Text(tr('Kecerahan layar')),
@@ -295,14 +297,14 @@ class _ReaderSettingsSheet extends ConsumerWidget {
             ),
             ListTile(
               title: Text(tr('Redupkan')),
-              trailing: Text('${(global.dim * 100).round()}%'),
+              trailing: Text('${(shown.dim * 100).round()}%'),
             ),
             Slider(
-              value: global.dim,
+              value: shown.dim,
               max: 0.8,
               divisions: 16,
-              label: '${(global.dim * 100).round()}%',
-              onChanged: (v) => setDisplay(global.copyWith(dim: v)),
+              label: '${(shown.dim * 100).round()}%',
+              onChanged: (v) => editDisplay((d) => d.copyWith(dim: v)),
             ),
           ],
         ),

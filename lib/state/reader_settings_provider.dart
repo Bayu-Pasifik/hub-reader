@@ -319,20 +319,88 @@ class ReaderDisplayNotifier extends Notifier<ReaderDisplay> {
 }
 
 /// Pengaturan khusus satu seri; null = ikut pengaturan umum.
+///
+/// Selain mode baca, tampilan yang bisa diatur per seri: potong tepi, orientasi,
+/// filter warna (hitam putih, balik warna, redup), dan efek pindah halaman.
 class SeriesReaderOverride {
-  const SeriesReaderOverride({this.mode, this.cropBorders});
+  const SeriesReaderOverride({
+    this.mode,
+    this.cropBorders,
+    this.orientation,
+    this.grayscale,
+    this.invert,
+    this.dim,
+    this.transition,
+  });
 
   final ReaderMode? mode;
   final bool? cropBorders;
+  final ReaderOrientation? orientation;
+  final bool? grayscale;
+  final bool? invert;
+  final double? dim;
+  final PageTransitionStyle? transition;
+
+  /// Override lengkap dari [mode] dan [display] (semua kolom terisi).
+  factory SeriesReaderOverride.snapshot(ReaderMode mode, ReaderDisplay display) => SeriesReaderOverride(
+        mode: mode,
+        cropBorders: display.cropBorders,
+        orientation: display.orientation,
+        grayscale: display.grayscale,
+        invert: display.invert,
+        dim: display.dim,
+        transition: display.transition,
+      );
+
+  SeriesReaderOverride withMode(ReaderMode value) => SeriesReaderOverride(
+        mode: value,
+        cropBorders: cropBorders,
+        orientation: orientation,
+        grayscale: grayscale,
+        invert: invert,
+        dim: dim,
+        transition: transition,
+      );
+
+  /// Ganti kolom tampilan dengan nilai dari [d]; mode tidak berubah.
+  SeriesReaderOverride withDisplay(ReaderDisplay d) => SeriesReaderOverride(
+        mode: mode,
+        cropBorders: d.cropBorders,
+        orientation: d.orientation,
+        grayscale: d.grayscale,
+        invert: d.invert,
+        dim: d.dim,
+        transition: d.transition,
+      );
+
+  /// [base] dengan kolom yang diisi override.
+  ReaderDisplay applyTo(ReaderDisplay base) => base.copyWith(
+        cropBorders: cropBorders,
+        orientation: orientation,
+        grayscale: grayscale,
+        invert: invert,
+        dim: dim,
+        transition: transition,
+      );
 
   Map<String, Object> toJson() => {
         if (mode != null) 'mode': mode!.name,
         if (cropBorders != null) 'crop': cropBorders!,
+        if (orientation != null) 'orient': orientation!.name,
+        if (grayscale != null) 'gray': grayscale!,
+        if (invert != null) 'invert': invert!,
+        if (dim != null) 'dim': dim!,
+        if (transition != null) 'transition': transition!.name,
       };
 
   factory SeriesReaderOverride.fromJson(Map<String, Object?> json) => SeriesReaderOverride(
         mode: ReaderMode.byName(json['mode'] as String?),
         cropBorders: json['crop'] as bool?,
+        orientation: json['orient'] == null ? null : ReaderOrientation.byName(json['orient']),
+        grayscale: json['gray'] as bool?,
+        invert: json['invert'] as bool?,
+        dim: (json['dim'] as num?)?.toDouble().clamp(0.0, 0.8),
+        transition: PageTransitionStyle.byName(json['transition'] as String?),
       );
 }
 
@@ -387,7 +455,7 @@ final effectiveReaderProvider = Provider.family<EffectiveReader, String>((ref, s
   final display = ref.watch(readerDisplayProvider);
   return (
     mode: mode,
-    display: override?.cropBorders == null ? display : display.copyWith(cropBorders: override!.cropBorders),
+    display: override == null ? display : override.applyTo(display),
     perSeries: override != null,
   );
 });

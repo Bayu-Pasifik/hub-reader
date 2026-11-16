@@ -683,7 +683,7 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
                 child: BrightnessStrip(
                   brightness: widget.display.brightness,
                   onChanged: ReaderBridge.setBrightness,
-                  onCommit: (v) => ref.read(readerDisplayProvider.notifier).set(widget.display.copyWith(brightness: v)),
+                  onCommit: (v) => ref.read(readerDisplayProvider.notifier).set(ref.read(readerDisplayProvider).copyWith(brightness: v)),
                 ),
               ),
             if (!widget.mode.isPaged)

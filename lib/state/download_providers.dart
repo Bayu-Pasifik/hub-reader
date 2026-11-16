@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/platform/network_bridge.dart';
+import 'core_providers.dart';
 import '../data/local/download_store.dart';
 import '../data/models/download.dart';
 import '../sources/models.dart';
@@ -81,6 +82,24 @@ final localPagesProvider = Provider.family<List<String>?, String>((ref, key) {
 final downloadQueueProvider =
     NotifierProvider<DownloadQueueNotifier, List<DownloadTask>>(DownloadQueueNotifier.new);
 
+/// Antrean dijeda pengguna: bab yang sedang diunduh diselesaikan, lalu tidak ada yang baru dimulai.
+/// Tersimpan, jadi tetap dijeda setelah aplikasi dibuka lagi.
+final downloadPausedProvider = NotifierProvider<DownloadPausedNotifier, bool>(DownloadPausedNotifier.new);
+
+class DownloadPausedNotifier extends Notifier<bool> {
+  static const _key = 'download.paused.v1';
+
+  @override
+  bool build() => ref.watch(sharedPreferencesProvider).getBool(_key) ?? false;
+
+  /// Jeda atau lanjutkan. Melanjutkan langsung menjalankan antrean lagi.
+  Future<void> set(bool paused) async {
+    state = paused;
+    await ref.read(sharedPreferencesProvider).setBool(_key, paused);
+    if (!paused) ref.read(downloadQueueProvider.notifier).resume();
+  }
+}
+
 /// True selama antrean menunggu Wi-Fi karena "Unduh hanya lewat Wi-Fi" aktif.
 final downloadWaitingForWifiProvider = StateProvider<bool>((ref) => false);
 
@@ -108,7 +127,9 @@ class DownloadQueueNotifier extends Notifier<List<DownloadTask>> {
     listenSelf((_, next) => _persist(next));
     ref.onDispose(() => _wifiTimer?.cancel());
     _savedSignature = _signature(restored);
-    if (restored.any((t) => t.status == DownloadStatus.queued)) Future.microtask(_run);
+    if (restored.any((t) => t.status == DownloadStatus.queued) && !ref.read(downloadPausedProvider)) {
+      Future.microtask(_run);
+    }
     return restored;
   }
 
@@ -160,6 +181,31 @@ class DownloadQueueNotifier extends Notifier<List<DownloadTask>> {
     if (next != null) state = next;
   }
 
+  /// Batalkan semua tugas (antre, berjalan, dan gagal).
+  void cancelAll() {
+    for (final t in state) {
+      _cancelled.add(t.key);
+    }
+    state = const [];
+  }
+
+  /// Buang tugas yang gagal dari antrean.
+  void clearFailed() {
+    state = state.where((t) => t.status != DownloadStatus.failed).toList();
+  }
+
+  /// Coba lagi semua tugas yang gagal.
+  void retryAllFailed() {
+    if (!state.any((t) => t.status == DownloadStatus.failed)) return;
+    state = [
+      for (final t in state) t.status == DownloadStatus.failed ? t.copyWith(status: DownloadStatus.queued, done: 0) : t,
+    ];
+    _run();
+  }
+
+  /// Dipanggil saat jeda dicabut.
+  void resume() => _run();
+
   void retry(String key) {
     state = [
       for (final t in state) t.key == key ? t.copyWith(status: DownloadStatus.queued, done: 0) : t,
@@ -176,6 +222,7 @@ class DownloadQueueNotifier extends Notifier<List<DownloadTask>> {
     _running = true;
     try {
       while (true) {
+        if (ref.read(downloadPausedProvider)) break;
         final task = state.where((t) => t.status == DownloadStatus.queued).firstOrNull;
         if (task == null) break;
         if (ref.read(appSettingsProvider).downloadWifiOnly && !await NetworkBridge.isUnmetered()) {
@@ -293,6 +340,38 @@ class DownloadQueueNotifier extends Notifier<List<DownloadTask>> {
 
 class _Cancelled implements Exception {
   const _Cancelled();
+}
+
+/// Ukuran file unduhan: total dan per seri (`mangaKey`), dihitung dari file di disk.
+typedef DownloadSizes = ({int total, Map<String, int> bySeries});
+
+final downloadSizesProvider = FutureProvider<DownloadSizes>((ref) async {
+  final index = ref.watch(downloadIndexProvider);
+  final store = ref.watch(downloadStoreProvider);
+  final bySeries = <String, int>{};
+  var total = 0;
+  for (final c in index.values) {
+    final dir = store.dirOf(c.relativeDir).path;
+    var size = 0;
+    for (final f in c.files) {
+      try {
+        size += await File('$dir${Platform.pathSeparator}$f').length();
+      } on Object {
+        // File hilang: abaikan, ukuran dihitung dari yang ada.
+      }
+    }
+    bySeries[c.mangaKey] = (bySeries[c.mangaKey] ?? 0) + size;
+    total += size;
+  }
+  return (total: total, bySeries: bySeries);
+});
+
+/// "1,4 MB", "820 KB", dst.
+String formatBytes(int bytes) {
+  if (bytes < 1024) return '$bytes B';
+  if (bytes < 1024 * 1024) return '${(bytes / 1024).round()} KB';
+  if (bytes < 1024 * 1024 * 1024) return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+  return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(2)} GB';
 }
 
 /// Tugas antrean untuk satu bab (untuk tombol unduh di daftar bab).

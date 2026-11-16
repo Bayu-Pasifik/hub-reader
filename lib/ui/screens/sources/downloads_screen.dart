@@ -21,6 +21,9 @@ class DownloadsScreen extends ConsumerWidget {
     final queue = ref.watch(downloadQueueProvider);
     final index = ref.watch(downloadIndexProvider);
     final theme = Theme.of(context);
+    final paused = ref.watch(downloadPausedProvider);
+    final sizes = ref.watch(downloadSizesProvider).valueOrNull;
+    final hasFailed = queue.any((t) => t.status == DownloadStatus.failed);
 
     // Kelompokkan bab terunduh per seri, seri terbaru diunduh di atas.
     final bySeries = <String, List<DownloadedChapter>>{};
@@ -42,13 +45,55 @@ class DownloadsScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(tr('Unduhan'))),
+      appBar: AppBar(
+        title: Text(tr('Unduhan')),
+        actions: [
+          if (queue.isNotEmpty)
+            IconButton(
+              tooltip: paused ? tr('Lanjutkan antrean') : tr('Jeda antrean'),
+              icon: Icon(paused ? Icons.play_arrow : Icons.pause),
+              onPressed: () => ref.read(downloadPausedProvider.notifier).set(!paused),
+            ),
+          if (queue.isNotEmpty)
+            PopupMenuButton<String>(
+              onSelected: (v) {
+                final q = ref.read(downloadQueueProvider.notifier);
+                switch (v) {
+                  case 'retry':
+                    q.retryAllFailed();
+                  case 'clear':
+                    q.clearFailed();
+                  case 'cancel':
+                    q.cancelAll();
+                }
+              },
+              itemBuilder: (_) => [
+                if (hasFailed) PopupMenuItem(value: 'retry', child: Text(tr('Coba lagi semua yang gagal'))),
+                if (hasFailed) PopupMenuItem(value: 'clear', child: Text(tr('Buang yang gagal'))),
+                PopupMenuItem(value: 'cancel', child: Text(tr('Batalkan semua'))),
+              ],
+            ),
+        ],
+      ),
       body: ListView(
         children: [
+          if (sizes != null && sizes.total > 0)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              child: Text(
+                trp('Ruang terpakai: {size} · {n} bab', {'size': formatBytes(sizes.total), 'n': index.length}),
+                style: theme.textTheme.bodyMedium,
+              ),
+            ),
           if (queue.isNotEmpty) ...[
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-              child: Text(trp('Antrean ({n})', {'n': queue.length}), style: theme.textTheme.titleSmall),
+              child: Text(
+                paused
+                    ? trp('Antrean ({n}) · dijeda', {'n': queue.length})
+                    : trp('Antrean ({n})', {'n': queue.length}),
+                style: theme.textTheme.titleSmall,
+              ),
             ),
             ReorderableListView.builder(
               shrinkWrap: true,
@@ -104,7 +149,8 @@ class DownloadsScreen extends ConsumerWidget {
             ),
             const Divider(),
           ],
-          for (final chapters in series) _SeriesDownloads(chapters: chapters),
+          for (final chapters in series)
+            _SeriesDownloads(chapters: chapters, size: sizes?.bySeries[chapters.first.mangaKey]),
         ],
       ),
     );
@@ -115,9 +161,12 @@ class DownloadsScreen extends ConsumerWidget {
 }
 
 class _SeriesDownloads extends ConsumerWidget {
-  const _SeriesDownloads({required this.chapters});
+  const _SeriesDownloads({required this.chapters, this.size});
 
   final List<DownloadedChapter> chapters;
+
+  /// Ukuran file seri ini (byte); null selama masih dihitung.
+  final int? size;
 
   Future<void> _confirmDeleteAll(BuildContext context, WidgetRef ref) async {
     final first = chapters.first;
@@ -196,7 +245,9 @@ class _SeriesDownloads extends ConsumerWidget {
 
     return ExpansionTile(
       title: Text(first.mangaTitle, maxLines: 1, overflow: TextOverflow.ellipsis),
-      subtitle: Text('${trp('{n} bab', {'n': chapters.length})} · ${info.name}${info.isNovel ? ' · novel' : ''}'),
+      subtitle: Text(
+        '${trp('{n} bab', {'n': chapters.length})}${size == null ? '' : ' · ${formatBytes(size!)}'} · ${info.name}${info.isNovel ? ' · novel' : ''}',
+      ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
