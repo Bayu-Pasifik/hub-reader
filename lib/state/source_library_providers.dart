@@ -137,7 +137,9 @@ enum LibrarySort {
   added('Terakhir ditambahkan'),
   title('Judul A–Z'),
   lastRead('Terakhir dibaca'),
-  unread('Bab baru belum dibaca');
+  unread('Bab baru belum dibaca'),
+  updated('Pembaruan terbaru'),
+  source('Sumber A–Z');
 
   const LibrarySort(this._label);
 
@@ -165,6 +167,8 @@ typedef LibraryView = ({
   bool unreadOnly,
   bool downloadedOnly,
   bool startedOnly,
+  bool unstartedOnly,
+  bool trackedOnly,
 });
 
 const defaultLibraryView = (
@@ -174,6 +178,8 @@ const defaultLibraryView = (
   unreadOnly: false,
   downloadedOnly: false,
   startedOnly: false,
+  unstartedOnly: false,
+  trackedOnly: false,
 );
 
 /// Apakah tampilan berbeda dari bawaan (untuk lencana tombol filter).
@@ -186,6 +192,8 @@ List<String> encodeLibraryView(LibraryView v) => [
       v.downloadedOnly ? '1' : '0',
       v.reversed ? '1' : '0',
       v.startedOnly ? '1' : '0',
+      v.unstartedOnly ? '1' : '0',
+      v.trackedOnly ? '1' : '0',
     ];
 
 LibraryView decodeLibraryView(List<Object?> raw) {
@@ -199,6 +207,8 @@ LibraryView decodeLibraryView(List<Object?> raw) {
     downloadedOnly: flag(3),
     reversed: flag(4),
     startedOnly: flag(5),
+    unstartedOnly: flag(6),
+    trackedOnly: flag(7),
   );
 }
 
@@ -217,6 +227,8 @@ class LibraryViewNotifier extends Notifier<LibraryView> {
     bool? unreadOnly,
     bool? downloadedOnly,
     bool? startedOnly,
+    bool? unstartedOnly,
+    bool? trackedOnly,
   }) async {
     state = (
       sort: sort ?? state.sort,
@@ -225,6 +237,8 @@ class LibraryViewNotifier extends Notifier<LibraryView> {
       unreadOnly: unreadOnly ?? state.unreadOnly,
       downloadedOnly: downloadedOnly ?? state.downloadedOnly,
       startedOnly: startedOnly ?? state.startedOnly,
+      unstartedOnly: unstartedOnly ?? state.unstartedOnly,
+      trackedOnly: trackedOnly ?? state.trackedOnly,
     );
     await ref.read(sharedPreferencesProvider).setStringList(_key, encodeLibraryView(state));
   }

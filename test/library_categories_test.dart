@@ -68,6 +68,8 @@ void main() {
       unreadOnly: false,
       downloadedOnly: true,
       startedOnly: true,
+      unstartedOnly: false,
+      trackedOnly: true,
     );
     await c.read(libraryCategoryViewsProvider.notifier).set('Baca', custom);
 
@@ -91,5 +93,15 @@ void main() {
     expect(isLibraryViewFiltered(defaultLibraryView), isFalse);
     expect(isLibraryViewFiltered(decodeLibraryView(['added', 'all', '0', '0', '1'])), isTrue);
     expect(decodeLibraryView(encodeLibraryView(v)), v);
+  });
+
+  test('filter belum-dibaca & dilacak serta urutan baru tersimpan; tampilan 6 kolom lama default mati', () {
+    final old = decodeLibraryView(['title', 'all', '0', '0', '0', '1']);
+    expect([old.unstartedOnly, old.trackedOnly], [false, false]);
+    final v = decodeLibraryView(['source', 'all', '0', '0', '0', '0', '1', '1']);
+    expect([v.sort, v.unstartedOnly, v.trackedOnly], [LibrarySort.source, true, true]);
+    expect(decodeLibraryView(encodeLibraryView(v)), v);
+    expect(isLibraryViewFiltered(v), isTrue);
+    expect(decodeLibraryView(['updated']).sort, LibrarySort.updated);
   });
 }

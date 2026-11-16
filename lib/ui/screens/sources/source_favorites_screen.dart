@@ -9,12 +9,15 @@ import '../../../state/download_providers.dart' show downloadIndexProvider;
 import '../../../state/library_updates_provider.dart';
 import '../../../state/novel_providers.dart';
 import '../../../state/source_library_providers.dart';
+import '../../../state/tracker_providers.dart' show trackLinksProvider;
 import '../../router.dart';
 import '../../widgets/category_sheet.dart' show askCategoryName;
 import '../../widgets/library_routing.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/state_views.dart';
 import '../../../core/i18n/strings.dart';
+
+typedef LibraryExtras = ({Set<String> tracked, Map<String, DateTime> updatedAt, Map<String, String> sourceNames});
 
 /// Favorit komik & novel, per kategori (tab), dengan filter dan urutan.
 class SourceFavoritesScreen extends ConsumerStatefulWidget {
@@ -45,6 +48,24 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
     return counts;
   }
 
+  /// Data tambahan untuk filter "dilacak" dan urutan "pembaruan"/"sumber".
+  LibraryExtras _extras() {
+    final updatedAt = <String, DateTime>{};
+    for (final u in ref.watch(libraryUpdatesProvider.select((s) => s.updates))) {
+      final cur = updatedAt[u.item.key];
+      if (cur == null || u.foundAt.isAfter(cur)) updatedAt[u.item.key] = u.foundAt;
+    }
+    final tracked = {
+      for (final e in ref.watch(trackLinksProvider).entries)
+        if (e.value.isNotEmpty) e.key,
+    };
+    final names = <String, String>{};
+    for (final f in ref.watch(sourceFavoritesProvider)) {
+      names.putIfAbsent(f.item.sourceId, () => librarySourceInfo(ref, f.item.sourceId).name);
+    }
+    return (tracked: tracked, updatedAt: updatedAt, sourceNames: names);
+  }
+
   List<SourceFavorite> _apply(
     List<SourceFavorite> list,
     String? category,
@@ -52,6 +73,7 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
     Map<String, int> unread,
     Map<String, DateTime> lastRead,
     Set<String> downloaded,
+    LibraryExtras extras,
   ) {
     final q = _search.text.trim().toLowerCase();
     final out = list.where((f) {
@@ -62,6 +84,8 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
       if (view.unreadOnly && (unread[f.item.key] ?? 0) == 0) return false;
       if (view.downloadedOnly && !downloaded.contains(f.item.key)) return false;
       if (view.startedOnly && !lastRead.containsKey(f.item.key)) return false;
+      if (view.unstartedOnly && lastRead.containsKey(f.item.key)) return false;
+      if (view.trackedOnly && !extras.tracked.contains(f.item.key)) return false;
       if (q.isNotEmpty && !f.item.title.toLowerCase().contains(q)) return false;
       return true;
     }).toList();
@@ -75,6 +99,15 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
         out.sort((a, b) => (lastRead[b.item.key] ?? epoch).compareTo(lastRead[a.item.key] ?? epoch));
       case LibrarySort.unread:
         out.sort((a, b) => (unread[b.item.key] ?? 0).compareTo(unread[a.item.key] ?? 0));
+      case LibrarySort.updated:
+        out.sort((a, b) => (extras.updatedAt[b.item.key] ?? epoch).compareTo(extras.updatedAt[a.item.key] ?? epoch));
+      case LibrarySort.source:
+        out.sort((a, b) {
+          final byName = (extras.sourceNames[a.item.sourceId] ?? a.item.sourceId)
+              .toLowerCase()
+              .compareTo((extras.sourceNames[b.item.sourceId] ?? b.item.sourceId).toLowerCase());
+          return byName != 0 ? byName : a.item.title.toLowerCase().compareTo(b.item.title.toLowerCase());
+        });
     }
     return view.reversed ? out.reversed.toList() : out;
   }
@@ -88,10 +121,11 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
     Map<String, int> unread,
     Map<String, DateTime> lastRead,
     Set<String> downloaded,
+    LibraryExtras extras,
   ) {
     final category = tabs[tabIndex.clamp(0, tabs.length - 1)];
     final pool = _apply(
-        favorites, category, effectiveLibraryView(view, ref.read(libraryCategoryViewsProvider), category), unread, lastRead, downloaded);
+        favorites, category, effectiveLibraryView(view, ref.read(libraryCategoryViewsProvider), category), unread, lastRead, downloaded, extras);
     if (pool.isEmpty) {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
@@ -128,6 +162,7 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
     final unseen = ref.watch(libraryUpdatesProvider.select((s) => s.unseen));
     final checking = ref.watch(libraryUpdatesProvider.select((s) => s.checking));
     final downloaded = {for (final c in ref.watch(downloadIndexProvider).values) c.mangaKey};
+    final extras = _extras();
     final categoryViews = ref.watch(libraryCategoryViewsProvider);
     final filtered = isLibraryViewFiltered(view) || categoryViews.values.any(isLibraryViewFiltered);
     final tabs = <String?>[null, ...categories];
@@ -166,6 +201,7 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
                   unread,
                   lastRead,
                   downloaded,
+                  extras,
                 ),
               ),
             ),
@@ -224,7 +260,7 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
                 children: [
                   for (final c in tabs)
                     _FavoritesGrid(
-                      entries: _apply(favorites, c, effectiveLibraryView(view, categoryViews, c), unread, lastRead, downloaded),
+                      entries: _apply(favorites, c, effectiveLibraryView(view, categoryViews, c), unread, lastRead, downloaded, extras),
                       unread: unread,
                       onLongPress: _openActions,
                     ),
@@ -421,6 +457,8 @@ class _ViewSheet extends ConsumerWidget {
       bool? unreadOnly,
       bool? downloadedOnly,
       bool? startedOnly,
+      bool? unstartedOnly,
+      bool? trackedOnly,
     }) {
       if (perCategory) {
         return catN.set(cat, (
@@ -430,6 +468,8 @@ class _ViewSheet extends ConsumerWidget {
           unreadOnly: unreadOnly ?? view.unreadOnly,
           downloadedOnly: downloadedOnly ?? view.downloadedOnly,
           startedOnly: startedOnly ?? view.startedOnly,
+          unstartedOnly: unstartedOnly ?? view.unstartedOnly,
+          trackedOnly: trackedOnly ?? view.trackedOnly,
         ));
       }
       return globalN.set(
@@ -439,6 +479,8 @@ class _ViewSheet extends ConsumerWidget {
         unreadOnly: unreadOnly,
         downloadedOnly: downloadedOnly,
         startedOnly: startedOnly,
+        unstartedOnly: unstartedOnly,
+        trackedOnly: trackedOnly,
       );
     }
     final layout = ref.watch(libraryLayoutProvider);
@@ -502,7 +544,20 @@ class _ViewSheet extends ConsumerWidget {
               contentPadding: EdgeInsets.zero,
               title: Text(tr('Hanya yang sudah mulai dibaca')),
               value: view.startedOnly,
-              onChanged: (v) => setView(startedOnly: v),
+              // Saling meniadakan dengan "belum mulai dibaca".
+              onChanged: (v) => setView(startedOnly: v, unstartedOnly: v ? false : null),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(tr('Hanya yang belum mulai dibaca')),
+              value: view.unstartedOnly,
+              onChanged: (v) => setView(unstartedOnly: v, startedOnly: v ? false : null),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(tr('Hanya yang terhubung tracker')),
+              value: view.trackedOnly,
+              onChanged: (v) => setView(trackedOnly: v),
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
