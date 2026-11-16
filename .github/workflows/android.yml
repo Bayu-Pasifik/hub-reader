@@ -67,6 +67,11 @@ jobs:
               echo "storeFile=release.jks"
             } > android/key.properties
             echo "Keystore rilis dipakai."
+          elif [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            # Rilis bertag yang ditandatangani debug key tidak bisa dipakai untuk
+            # memperbarui APK rilis sebelumnya (signature beda), jadi gagalkan.
+            echo "::error::Rilis bertag butuh secrets KEYSTORE_BASE64 dan KEYSTORE_PASSWORD."
+            exit 1
           else
             echo "::warning::Secrets keystore belum diatur; APK memakai debug key."
           fi
