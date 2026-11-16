@@ -155,6 +155,20 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
     return '${day.day.toString().padLeft(2, '0')}-${day.month.toString().padLeft(2, '0')}-${day.year}';
   }
 
+  Future<void> _markAllRead() async {
+    final byItem = <String, ({SourceItemKey key, List<String> urls})>{};
+    for (final u in ref.read(libraryUpdatesProvider).updates) {
+      byItem
+          .putIfAbsent(u.item.key, () => (key: (sourceId: u.item.sourceId, url: u.item.url), urls: <String>[]))
+          .urls
+          .add(u.chapterUrl);
+    }
+    final notifier = ref.read(sourceProgressProvider.notifier);
+    for (final e in byItem.values) {
+      await notifier.setDoneMany(e.key, e.urls, done: true);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = ref.watch(libraryUpdatesProvider);
@@ -186,6 +200,7 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
           PopupMenuButton<String>(
             onSelected: (v) {
               if (v == 'auto') ref.read(libraryAutoCheckProvider.notifier).set(!auto);
+              if (v == 'markall') _markAllRead();
               if (v == 'clear') ref.read(libraryUpdatesProvider.notifier).clear();
               if (v == 'background') _backgroundDialog();
               if (v == 'rules') _rulesDialog();
@@ -206,6 +221,7 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
                 ),
               ),
               PopupMenuItem(value: 'rules', child: Text(tr('Aturan pembaruan'))),
+              PopupMenuItem(value: 'markall', child: Text(tr('Tandai semua dibaca'))),
               PopupMenuItem(value: 'clear', child: Text(tr('Hapus daftar pembaruan'))),
             ],
           ),
@@ -263,7 +279,22 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
                   final info = librarySourceInfo(ref, u.item.sourceId);
                   final read = progress[u.item.key]?[u.chapterUrl]?.done ?? false;
                   final color = read ? Theme.of(context).disabledColor : null;
-                  return ListTile(
+                  return Dismissible(
+                    key: ValueKey('${u.item.key}|${u.chapterUrl}'),
+                    direction: read ? DismissDirection.none : DismissDirection.startToEnd,
+                    background: Container(
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                      alignment: Alignment.centerLeft,
+                      padding: const EdgeInsets.only(left: 20),
+                      child: const Icon(Icons.done_all),
+                    ),
+                    confirmDismiss: (_) async {
+                      await ref
+                          .read(sourceProgressProvider.notifier)
+                          .setDone((sourceId: u.item.sourceId, url: u.item.url), u.chapterUrl, done: true);
+                      return false;
+                    },
+                    child: ListTile(
                     leading: SizedBox(
                       width: 40,
                       child: SourceCover(url: u.item.thumbnailUrl, headers: info.imageHeaders, width: 40),
@@ -279,6 +310,7 @@ class _UpdatesScreenState extends ConsumerState<UpdatesScreen> {
                     trailing: read ? const Icon(Icons.done_all, size: 18) : null,
                     onTap: () => context.push(info.readerLocation(u.item.url, u.chapterUrl)),
                     onLongPress: () => context.push(info.detailLocation(u.item.url)),
+                  ),
                   );
                 },
               ),

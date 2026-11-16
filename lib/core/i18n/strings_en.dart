@@ -943,6 +943,7 @@ const Map<String, String> stringsEn = {
   ' Sumber tidak tersedia: {s}': ' Sources not available: {s}',
   '{n} seri diimpor, {m} dilewati.': '{n} series imported, {m} skipped.',
   'File bukan cadangan Mihon/Tachiyomi yang valid.': 'Not a valid Mihon/Tachiyomi backup file.',
+  'Tandai semua dibaca': 'Mark all as read',
   'Pulihkan dari WebDAV':
       'Restore from WebDAV',
   'Filter scanlator': 'Scanlator filter',
