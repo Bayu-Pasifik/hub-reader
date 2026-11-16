@@ -15,6 +15,8 @@ import '../../../state/source_library_providers.dart';
 import '../../../state/source_providers.dart';
 import '../../../state/source_settings_provider.dart';
 import '../../router.dart';
+import '../../../state/browse_layout_provider.dart';
+import '../../widgets/browse_layout.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/cover_hero.dart';
 import 'sources_screen.dart' show languageName;
@@ -163,6 +165,15 @@ class _ComicGlobalSearchScreenState extends ConsumerState<ComicGlobalSearchScree
           onSubmitted: (_) => _search(),
         ),
         actions: [
+          IconButton(
+            tooltip: tr('Tampilan'),
+            icon: const Icon(Icons.grid_view_outlined),
+            onPressed: () => showBrowseLayoutSheet(
+              context,
+              provider: comicBrowseLayoutProvider,
+              title: tr('Tampilan hasil pencarian komik'),
+            ),
+          ),
           IconButton(tooltip: tr('Cari'), icon: const Icon(Icons.search), onPressed: _search),
           IconButton(
             tooltip: _onlyWithResults ? tr('Tampilkan semua sumber') : tr('Hanya sumber dengan hasil'),
@@ -245,14 +256,15 @@ class _ComicGlobalSearchScreenState extends ConsumerState<ComicGlobalSearchScree
   }
 }
 
-class _SourceRow extends StatelessWidget {
+class _SourceRow extends ConsumerWidget {
   const _SourceRow({required this.result});
 
   final _SourceResult result;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final layout = ref.watch(comicBrowseLayoutProvider);
     final source = result.source;
     final items = result.items;
     final status = result.loading
@@ -279,39 +291,21 @@ class _SourceRow extends StatelessWidget {
           onTap: () => context.push(sourceBrowseLocation(source.id)),
         ),
         if (items != null && items.isNotEmpty)
-          SizedBox(
-            height: 210,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: items.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 10),
-              itemBuilder: (context, i) {
-                final m = items[i];
-                return InkWell(
+          BrowseInline(
+            layout: layout,
+            headers: source.imageHeaders(),
+            items: [
+              for (var i = 0; i < items.length; i++)
+                BrowseItem(
+                  title: items[i].title,
+                  cover: items[i].thumbnailUrl,
+                  heroTag: coverHeroTagAt(items, i, source.id, (x) => x.url),
                   onTap: () => context.push(
-                    sourceMangaLocation(source.id, m.url),
-                    extra: SeriesPreview(title: m.title, coverUrl: m.thumbnailUrl),
+                    sourceMangaLocation(source.id, items[i].url),
+                    extra: SeriesPreview(title: items[i].title, coverUrl: items[i].thumbnailUrl),
                   ),
-                  child: SizedBox(
-                    width: 104,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SourceCover(
-                          url: m.thumbnailUrl,
-                          headers: source.imageHeaders(),
-                          width: 104,
-                          heroTag: coverHeroTagAt(items, i, source.id, (x) => x.url),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(m.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: theme.textTheme.bodySmall),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
+                ),
+            ],
           ),
         const Divider(height: 1),
       ],

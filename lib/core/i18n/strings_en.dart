@@ -8,6 +8,8 @@ const Map<String, String> stringsEn = {
   'Tampilan': 'Appearance',
   'Tampilan jelajah komik': 'Comic browse layout',
   'Tampilan jelajah novel': 'Novel browse layout',
+  'Tampilan hasil pencarian komik': 'Comic search results layout',
+  'Tampilan hasil pencarian novel': 'Novel search results layout',
   'kolom': 'columns',
   'Tentang': 'About',
   'Tracker': 'Trackers',

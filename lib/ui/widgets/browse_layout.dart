@@ -17,7 +17,59 @@ class BrowseItem {
   final String? heroTag;
 }
 
-/// Daftar judul jelajah sebagai sliver: grid, grid ringkas, sampul saja, atau daftar.
+/// Satu baris untuk mode satu kolom (daftar, daftar ringkas, kartu lebar).
+Widget _singleColumnRow(BuildContext context, BrowseDisplay display, BrowseItem item, Map<String, String> headers) {
+  final theme = Theme.of(context);
+  switch (display) {
+    case BrowseDisplay.denseList:
+      return ListTile(
+        onTap: item.onTap,
+        dense: true,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+        leading: SourceCover(url: item.cover, headers: headers, width: 40, heroTag: item.heroTag),
+        title: Text(item.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+      );
+    case BrowseDisplay.wideCard:
+      return _card(
+        context,
+        child: InkWell(
+          onTap: item.onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              spacing: 16,
+              children: [
+                SourceCover(url: item.cover, headers: headers, width: 96, heroTag: item.heroTag),
+                Expanded(
+                  child: Text(
+                    item.title,
+                    maxLines: 4,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+                  ),
+                ),
+                const Icon(Icons.chevron_right),
+              ],
+            ),
+          ),
+        ),
+      );
+    default:
+      // Kartu bergaris + bayangan, sama seperti daftar sumber.
+      return _card(
+        context,
+        child: ListTile(
+          onTap: item.onTap,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          leading: SourceCover(url: item.cover, headers: headers, width: 56, heroTag: item.heroTag),
+          title: Text(item.title, maxLines: 2, overflow: TextOverflow.ellipsis),
+        ),
+      );
+  }
+}
+
+/// Daftar judul jelajah sebagai sliver: grid, grid ringkas, sampul saja, atau mode satu kolom.
 class BrowseSliver extends StatelessWidget {
   const BrowseSliver({
     super.key,
@@ -34,87 +86,26 @@ class BrowseSliver extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    switch (layout.display) {
-      case BrowseDisplay.list:
-        return SliverPadding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          sliver: SliverList.builder(
-            itemCount: itemCount,
-            itemBuilder: (context, i) {
-              final item = itemAt(i);
-              // Kartu bergaris + bayangan, sama seperti daftar sumber.
-              return _card(
-                context,
-                child: ListTile(
-                  onTap: item.onTap,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  leading: SourceCover(url: item.cover, headers: headers, width: 56, heroTag: item.heroTag),
-                  title: Text(item.title, maxLines: 2, overflow: TextOverflow.ellipsis),
-                ),
-              );
-            },
-          ),
-        );
-      case BrowseDisplay.denseList:
-        return SliverPadding(
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          sliver: SliverList.separated(
-            itemCount: itemCount,
-            separatorBuilder: (_, __) => const Divider(height: 1, thickness: 1, indent: 16, endIndent: 16),
-            itemBuilder: (context, i) {
-              final item = itemAt(i);
-              return ListTile(
-                onTap: item.onTap,
-                dense: true,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-                leading: SourceCover(url: item.cover, headers: headers, width: 40, heroTag: item.heroTag),
-                title: Text(item.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-              );
-            },
-          ),
-        );
-      case BrowseDisplay.wideCard:
-        return SliverPadding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          sliver: SliverList.builder(
-            itemCount: itemCount,
-            itemBuilder: (context, i) {
-              final item = itemAt(i);
-              return _card(
-                context,
-                child: InkWell(
-                  onTap: item.onTap,
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      spacing: 16,
-                      children: [
-                        SourceCover(url: item.cover, headers: headers, width: 96, heroTag: item.heroTag),
-                        Expanded(
-                          child: Text(
-                            item.title,
-                            maxLines: 4,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
-                          ),
-                        ),
-                        const Icon(Icons.chevron_right),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        );
-      case BrowseDisplay.grid || BrowseDisplay.compact || BrowseDisplay.coverOnly:
-        break;
+    final display = layout.display;
+    if (display.isSingleColumn) {
+      final dense = display == BrowseDisplay.denseList;
+      return SliverPadding(
+        padding: EdgeInsets.symmetric(vertical: dense ? 4 : 8),
+        sliver: dense
+            ? SliverList.separated(
+                itemCount: itemCount,
+                separatorBuilder: (_, __) => const Divider(height: 1, thickness: 1, indent: 16, endIndent: 16),
+                itemBuilder: (context, i) => _singleColumnRow(context, display, itemAt(i), headers),
+              )
+            : SliverList.builder(
+                itemCount: itemCount,
+                itemBuilder: (context, i) => _singleColumnRow(context, display, itemAt(i), headers),
+              ),
+      );
     }
 
     final scale = MediaQuery.textScalerOf(context).scale(1);
-    final isGrid = layout.display == BrowseDisplay.grid;
+    final isGrid = display == BrowseDisplay.grid;
     return SliverPadding(
       padding: const EdgeInsets.all(12),
       sliver: SliverGrid.builder(
@@ -128,9 +119,59 @@ class BrowseSliver extends StatelessWidget {
                 columns: layout.columns,
               ),
         itemCount: itemCount,
-        itemBuilder: (context, i) => _BrowseTile(item: itemAt(i), headers: headers, display: layout.display),
+        itemBuilder: (context, i) => _BrowseTile(item: itemAt(i), headers: headers, display: display),
       ),
     );
+  }
+}
+
+/// Hasil satu sumber di pencarian global, mengikuti tampilan pilihan pengguna.
+///
+/// Mode grid jadi baris horizontal (jumlah kolom = jumlah sampul yang terlihat);
+/// mode satu kolom jadi daftar ke bawah.
+class BrowseInline extends StatelessWidget {
+  const BrowseInline({super.key, required this.layout, required this.items, required this.headers});
+
+  final BrowseLayout layout;
+  final List<BrowseItem> items;
+  final Map<String, String> headers;
+
+  @override
+  Widget build(BuildContext context) {
+    final display = layout.display;
+    if (display.isSingleColumn) {
+      return Column(
+        children: [
+          for (var i = 0; i < items.length; i++) ...[
+            _singleColumnRow(context, display, items[i], headers),
+            if (display == BrowseDisplay.denseList && i < items.length - 1)
+              const Divider(height: 1, thickness: 1, indent: 16, endIndent: 16),
+          ],
+        ],
+      );
+    }
+
+    const gap = 10.0, pad = 16.0;
+    final scale = MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 3.0);
+    return LayoutBuilder(builder: (context, constraints) {
+      final w = layout.columns > 0
+          ? (constraints.maxWidth - pad * 2 - gap * (layout.columns - 1)) / layout.columns
+          : 104.0;
+      final textBlock = display == BrowseDisplay.grid ? 52.0 * scale : 0.0;
+      return SizedBox(
+        height: w * 4 / 3 + textBlock + 8,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: pad),
+          itemCount: items.length,
+          separatorBuilder: (_, __) => const SizedBox(width: gap),
+          itemBuilder: (context, i) => SizedBox(
+            width: w,
+            child: _BrowseTile(item: items[i], headers: headers, display: display),
+          ),
+        ),
+      );
+    });
   }
 }
 

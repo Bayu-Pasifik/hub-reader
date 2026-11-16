@@ -10,6 +10,8 @@ import '../../../novels/novel_source.dart';
 import '../../../state/novel_health_provider.dart';
 import '../../../state/novel_providers.dart';
 import '../../router.dart';
+import '../../../state/browse_layout_provider.dart';
+import '../../widgets/browse_layout.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/cover_hero.dart';
 import '../sources/sources_screen.dart' show languageName;
@@ -135,6 +137,15 @@ class _NovelGlobalSearchScreenState extends ConsumerState<NovelGlobalSearchScree
           onSubmitted: (_) => _search(),
         ),
         actions: [
+          IconButton(
+            tooltip: tr('Tampilan'),
+            icon: const Icon(Icons.grid_view_outlined),
+            onPressed: () => showBrowseLayoutSheet(
+              context,
+              provider: novelBrowseLayoutProvider,
+              title: tr('Tampilan hasil pencarian novel'),
+            ),
+          ),
           IconButton(tooltip: tr('Cari'), icon: const Icon(Icons.search), onPressed: _search),
           IconButton(
             tooltip: _onlyWithResults ? tr('Tampilkan semua sumber') : tr('Hanya sumber dengan hasil'),
@@ -208,6 +219,7 @@ class _PluginRow extends ConsumerWidget {
     final theme = Theme.of(context);
     final info = result.info;
     final headers = ref.watch(loadedNovelSourceProvider(info.id))?.imageHeaders ?? const <String, String>{};
+    final layout = ref.watch(novelBrowseLayoutProvider);
     final items = result.items;
     final status = result.loading
         ? 'mencari…'
@@ -228,39 +240,21 @@ class _PluginRow extends ConsumerWidget {
           onTap: () => context.push(novelBrowseLocation(info.id)),
         ),
         if (items != null && items.isNotEmpty)
-          SizedBox(
-            height: 210,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: items.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 10),
-              itemBuilder: (context, i) {
-                final n = items[i];
-                return InkWell(
+          BrowseInline(
+            layout: layout,
+            headers: headers,
+            items: [
+              for (var i = 0; i < items.length; i++)
+                BrowseItem(
+                  title: items[i].name,
+                  cover: items[i].cover,
+                  heroTag: coverHeroTagAt(items, i, info.id, (x) => x.path),
                   onTap: () => context.push(
-                    novelDetailLocation(info.id, n.path),
-                    extra: SeriesPreview(title: n.name, coverUrl: n.cover),
+                    novelDetailLocation(info.id, items[i].path),
+                    extra: SeriesPreview(title: items[i].name, coverUrl: items[i].cover),
                   ),
-                  child: SizedBox(
-                    width: 104,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SourceCover(
-                          url: n.cover,
-                          headers: headers,
-                          width: 104,
-                          heroTag: coverHeroTagAt(items, i, info.id, (x) => x.path),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(n.name, maxLines: 2, overflow: TextOverflow.ellipsis, style: theme.textTheme.bodySmall),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
+                ),
+            ],
           ),
         const Divider(height: 1),
       ],
