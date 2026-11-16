@@ -1,16 +1,15 @@
-## Hub Reader v2.3.0
+## Hub Reader v2.4.0
 
-### Sinkron & impor
-- Sinkron progres baca antar perangkat lewat WebDAV: favorit, riwayat, dan posisi baca digabung per item (cap waktu terbaru menang). Menu: Cadangkan & pulihkan, bagian Cadangan WebDAV, Sinkronkan progres baca.
-- Impor cadangan Mihon/Tachiyomi (.tachibk): favorit, kategori, status baca, dan riwayat. Sumber dicocokkan lewat nama; seri dari sumber yang tidak ada dilewati dan namanya ditampilkan.
+### Tampilan jelajah & pencarian
+- Halaman jelajah komik dan novel bisa ditampilkan dalam enam mode: Grid, Grid ringkas, Sampul saja, Daftar, Daftar ringkas, dan Kartu lebar. Jumlah kolom bisa diatur (1-6 atau otomatis) untuk mode grid.
+- Tombol tampilan ada di AppBar jelajah dan pencarian global; pilihannya juga ada di Pengaturan > Tampilan. Komik dan novel disimpan terpisah, tampilan Favorit tidak berubah.
+- Hasil pencarian global mengikuti pilihan itu: mode grid jadi baris yang bisa digeser, mode satu kolom jadi daftar ke bawah.
 
-### Pembaruan & verifikasi
-- Layar Pembaruan: geser baris ke kanan untuk menandai dibaca, dan menu "Tandai semua dibaca".
-- Verifikasi Cloudflare di WebView mengenali judul halaman tantangan dalam beberapa bahasa.
-
-### Privasi & rilis
-- Log error disamarkan sebelum dibagikan (email, token di URL, header Cookie/Authorization, nama pengguna di path).
-- Build rilis bertag di CI gagal bila keystore tidak diatur, agar APK tidak pernah ditandatangani debug key.
+### Perapian UI
+- Dialog (server OPDS, WebDAV, enkripsi cadangan) kini punya jarak antar kolom isian.
+- Chip di sheet Favorit dan editor info seri tidak lagi menempel saat turun baris.
+- Ikon di baris bab, unduhan, repo, dan kategori punya jarak.
+- Label bottom nav tidak lagi menempel ke tepi layar, dan aksi AppBar punya margin kanan.
 
 ### Catatan
 - Penghapusan favorit belum ikut tersinkron antar perangkat (favorit hanya digabung).
