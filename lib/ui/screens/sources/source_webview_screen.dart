@@ -65,7 +65,7 @@ class _SourceWebViewScreenState extends ConsumerState<SourceWebViewScreen> {
   Future<bool> _stillChallenged() async {
     try {
       final title = (await _controller.getTitle()) ?? '';
-      return title.contains('Just a moment') || title.contains('Attention Required');
+      return isCloudflareChallengeTitle(title);
     } catch (_) {
       return true;
     }
@@ -81,7 +81,7 @@ class _SourceWebViewScreenState extends ConsumerState<SourceWebViewScreen> {
       return;
     }
     if (await _stillChallenged()) {
-      _setStatus('Verifikasi sedang diproses, tunggu sebentar…');
+      _setStatus(tr('Verifikasi sedang diproses, tunggu sebentar…'));
       return;
     }
     _setStatus(tr('Verifikasi berhasil terdeteksi.'));
@@ -103,13 +103,13 @@ class _SourceWebViewScreenState extends ConsumerState<SourceWebViewScreen> {
     final copied = await _copyWebStorage();
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(tr(
+      content: Text(
         auto
             ? tr('Verifikasi berhasil, memuat ulang…')
             : copied
                 ? tr('Sesi situs disimpan, memuat ulang…')
                 : tr('Cookie disimpan, memuat ulang…'),
-      )),
+      ),
       duration: const Duration(seconds: 2),
     ));
     Navigator.of(context).pop(true);
@@ -191,4 +191,22 @@ class _SourceWebViewScreenState extends ConsumerState<SourceWebViewScreen> {
       ),
     );
   }
+}
+
+/// Judul halaman tantangan Cloudflare. Judulnya mengikuti bahasa browser,
+/// jadi beberapa terjemahan umum ikut dikenali.
+bool isCloudflareChallengeTitle(String title) {
+  final t = title.toLowerCase();
+  return const [
+    'just a moment',
+    'attention required',
+    'checking your browser',
+    'verifying you are human',
+    'un instant',
+    'einen moment',
+    'un momento',
+    'um momento',
+    'bir dakika',
+    'один момент',
+  ].any(t.contains);
 }
