@@ -416,3 +416,21 @@ class NeoAvatar extends StatelessWidget {
     );
   }
 }
+
+/// Bayangan keras di belakang widget Material (tombol, kolom isian, chip) tanpa mengubah ukurannya.
+class NeoShadow extends StatelessWidget {
+  const NeoShadow({super.key, required this.child, this.radius = NeoBrutal.radius, this.offset = const Offset(3, 3)});
+
+  final Widget child;
+  final double radius;
+  final Offset offset;
+
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(radius),
+          boxShadow: [BoxShadow(color: NeoBrutal.shadowColor(Theme.of(context).brightness), offset: offset)],
+        ),
+        child: child,
+      );
+}

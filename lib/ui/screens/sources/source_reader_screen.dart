@@ -1,3 +1,4 @@
+import '../../theme/neo_brutal.dart';
 import 'dart:io';
 import '../../../core/i18n/strings.dart';
 
@@ -706,15 +707,12 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
                 child: IgnorePointer(
                 child: ExcludeSemantics(
                 child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.6),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  decoration: NeoBrutal.box(context, color: Theme.of(context).colorScheme.secondary, r: 4, offset: const Offset(2, 2)),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     child: Text(
                       _counter(urls.length),
-                      style: const TextStyle(color: Colors.white, fontSize: 12.5),
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSecondary, fontSize: 12.5, fontWeight: FontWeight.w800),
                     ),
                   ),
                 ),

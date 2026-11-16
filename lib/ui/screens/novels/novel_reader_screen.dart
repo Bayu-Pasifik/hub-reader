@@ -1087,25 +1087,31 @@ class _ReaderSettingsSheet extends ConsumerWidget {
               child: Wrap(spacing: 8, runSpacing: 8, children: [
                 GestureDetector(
                   onTap: () => onPick(null),
-                  child: CircleAvatar(
-                    radius: 14,
-                    backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  child: Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(color: Theme.of(context).colorScheme.outline, width: 2),
+                    ),
                     child: Icon(current == null ? Icons.check : Icons.auto_awesome, size: 14),
                   ),
                 ),
                 for (final c in swatches)
                   GestureDetector(
                     onTap: () => onPick(c),
-                    child: CircleAvatar(
-                      radius: 14,
-                      backgroundColor: Theme.of(context).colorScheme.outline,
-                      child: CircleAvatar(
-                        radius: 12,
-                        backgroundColor: Color(c),
-                        child: current == c
-                            ? Icon(Icons.check, size: 14, color: ThemeData.estimateBrightnessForColor(Color(c)) == Brightness.dark ? Colors.white : Colors.black)
-                            : null,
+                    child: Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: Color(c),
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(color: Theme.of(context).colorScheme.outline, width: current == c ? 4 : 2),
                       ),
+                      child: current == c
+                          ? Icon(Icons.check, size: 14, color: ThemeData.estimateBrightnessForColor(Color(c)) == Brightness.dark ? Colors.white : Colors.black)
+                          : null,
                     ),
                   ),
               ]),

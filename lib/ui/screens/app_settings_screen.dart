@@ -282,7 +282,7 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
                           borderRadius: BorderRadius.circular(6),
                           border: Border.all(color: theme.colorScheme.outline, width: s.accent == a ? 4 : 2.5),
                         ),
-                        child: s.accent == a ? const Icon(Icons.check, color: Colors.white, size: 22) : null,
+                        child: s.accent == a ? Icon(Icons.check, color: ThemeData.estimateBrightnessForColor(a.color) == Brightness.dark ? Colors.white : Colors.black, size: 22) : null,
                       ),
                     ),
                   ),

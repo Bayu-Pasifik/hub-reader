@@ -178,7 +178,7 @@ class EmptyView extends StatelessWidget {
   @override
   Widget build(BuildContext context) => _MessageView(
         icon: icon,
-        animation: animation ?? (compact ? null : AppAnimation.emptyBox),
+        animation: animation ?? (compact ? null : AppAnimation.empty),
         title: title,
         message: message,
         compact: compact,
@@ -245,7 +245,7 @@ class _MessageView extends StatelessWidget {
                   spacing: 8,
                   runSpacing: 8,
                   alignment: WrapAlignment.center,
-                  children: actions),
+                  children: [for (final a in actions) NeoShadow(child: a)]),
             ],
           ],
         ),

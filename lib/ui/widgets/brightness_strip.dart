@@ -1,3 +1,4 @@
+import '../theme/neo_brutal.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/i18n/strings.dart';
@@ -83,20 +84,17 @@ class _BrightnessStripState extends State<BrightnessStrip> {
                 top: height / 2 - 20,
                 child: IgnorePointer(
                   child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.7),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
+                    decoration: NeoBrutal.box(context, color: Theme.of(context).colorScheme.secondary, r: 4, offset: const Offset(2, 2)),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.brightness_6, color: Colors.white, size: 18),
+                          Icon(Icons.brightness_6, color: Theme.of(context).colorScheme.onSecondary, size: 18),
                           const SizedBox(width: 6),
                           Text(
                             '${(live * 100).round()}%',
-                            style: const TextStyle(color: Colors.white, fontSize: 14),
+                            style: TextStyle(color: Theme.of(context).colorScheme.onSecondary, fontSize: 14, fontWeight: FontWeight.w800),
                           ),
                         ],
                       ),

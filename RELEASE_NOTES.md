@@ -1,10 +1,11 @@
-## Hub Reader v2.0.1
+## Hub Reader v2.0.2
 
 ### Penyempurnaan tampilan neo-brutalism
-- Baris daftar sumber kini berupa kotak bergaris tebal dengan bayangan keras.
-- Avatar bulat diganti kotak bergaris tebal berwarna blok (daftar sumber, repo, statistik).
-- Ilustrasi layar kosong dibungkus kotak bergaris dengan bayangan keras agar serasi dengan tema.
-- Tab aktif berupa blok kuning bergaris tebal, bukan garis tipis.
+- Layar kosong kini menampilkan ilustrasi buku berwarna aksen di dalam kotak bergaris (sebelumnya kotak tampak kosong).
+- Tombol aksi di layar kosong dan layar error mendapat bayangan keras.
+- Label halaman komik dan indikator kecerahan berupa kotak kuning bergaris, bukan overlay hitam transparan.
+- Pilihan warna di pengaturan pembaca novel berupa kotak bergaris, bukan lingkaran.
+- Ikon centang pada warna aksen mengikuti kontras warnanya.
 
 ### Catatan
 - Pasang APK yang sesuai ABI HP (arm64-v8a untuk kebanyakan HP).
