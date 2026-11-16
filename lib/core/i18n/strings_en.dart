@@ -936,6 +936,13 @@ const Map<String, String> stringsEn = {
   'Gabungkan favorit, riwayat, dan posisi baca dengan perangkat lain':
       'Merge favorites, history and reading position with your other devices',
   'Tersinkron: {f} favorit, {h} riwayat': 'Synced: {f} favorites, {h} history entries',
+  'Impor dari Mihon / Tachiyomi': 'Import from Mihon / Tachiyomi',
+  'Pilih file .tachibk; favorit, kategori, dan progres digabung ke library':
+      'Pick a .tachibk file; favorites, categories and progress are merged into the library',
+  'Pilih cadangan Mihon (.tachibk)': 'Choose a Mihon backup (.tachibk)',
+  ' Sumber tidak tersedia: {s}': ' Sources not available: {s}',
+  '{n} seri diimpor, {m} dilewati.': '{n} series imported, {m} skipped.',
+  'File bukan cadangan Mihon/Tachiyomi yang valid.': 'Not a valid Mihon/Tachiyomi backup file.',
   'Pulihkan dari WebDAV':
       'Restore from WebDAV',
   'Filter scanlator': 'Scanlator filter',

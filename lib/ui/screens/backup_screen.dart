@@ -10,7 +10,9 @@ import '../../app_restart.dart';
 import '../../data/local/auto_backup.dart';
 import '../../data/local/backup.dart';
 import '../../data/local/backup_crypto.dart';
+import '../../data/local/mihon_import.dart';
 import '../../data/local/progress_sync.dart';
+import '../../state/source_providers.dart' show sourceRegistryProvider;
 import '../../data/local/webdav_backup.dart';
 import '../../state/source_library_providers.dart';
 import '../../state/background_updates.dart';
@@ -79,6 +81,36 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     );
     if (ok == true) {
       await _saveDav(_dav.copyWith(url: url.text.trim(), username: user.text.trim(), password: pass.text));
+    }
+  }
+
+  Future<void> _importMihon() async {
+    final files = await FilePicker.pickFiles(dialogTitle: tr('Pilih cadangan Mihon (.tachibk)'));
+    if (files.isEmpty || !mounted) return;
+    setState(() => _busy = true);
+    try {
+      final backup = MihonBackup.parse(await files.first.xFile.readAsBytes());
+      final result = await MihonImport.apply(
+        ref.read(sharedPreferencesProvider),
+        backup,
+        ref.read(sourceRegistryProvider).sources,
+      );
+      ref
+        ..invalidate(sourceFavoritesProvider)
+        ..invalidate(sourceHistoryProvider)
+        ..invalidate(sourceProgressProvider)
+        ..invalidate(libraryCategoriesProvider);
+      if (!mounted) return;
+      final extra = result.unmatchedSources.isEmpty
+          ? ''
+          : trp(' Sumber tidak tersedia: {s}', {'s': result.unmatchedSources.take(5).join(', ')});
+      _snack(trp('{n} seri diimpor, {m} dilewati.', {'n': result.imported, 'm': result.skipped}) + extra);
+    } on FormatException {
+      if (mounted) _snack(tr('File bukan cadangan Mihon/Tachiyomi yang valid.'));
+    } catch (e) {
+      if (mounted) _snack(trp('Gagal: {e}', {'e': e}));
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
   }
 
@@ -494,6 +526,16 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
               subtitle: Text(tr('Mengganti data di HP ini dengan isi cadangan')),
               enabled: !_busy,
               onTap: _restore,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.move_to_inbox_outlined),
+              title: Text(tr('Impor dari Mihon / Tachiyomi')),
+              subtitle: Text(tr('Pilih file .tachibk; favorit, kategori, dan progres digabung ke library')),
+              enabled: !_busy,
+              onTap: _importMihon,
             ),
           ),
           const SizedBox(height: 24),
