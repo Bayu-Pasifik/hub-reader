@@ -6,7 +6,8 @@ import 'package:go_router/go_router.dart';
 import '../../../sources/source.dart';
 import '../../../state/source_providers.dart';
 import '../../router.dart';
-import '../../widgets/layout.dart';
+import '../../../state/browse_layout_provider.dart';
+import '../../widgets/browse_layout.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/cover_hero.dart';
 import '../../widgets/state_views.dart';
@@ -84,6 +85,15 @@ class _SourceBrowseScreenState extends ConsumerState<SourceBrowseScreen> {
                 )
               : Text(source.name),
           actions: [
+            IconButton(
+              tooltip: tr('Tampilan'),
+              icon: const Icon(Icons.grid_view_outlined),
+              onPressed: () => showBrowseLayoutSheet(
+                context,
+                provider: comicBrowseLayoutProvider,
+                title: tr('Tampilan jelajah komik'),
+              ),
+            ),
             IconButton(
               tooltip: tr('Filter'),
               icon: Badge(
@@ -178,24 +188,22 @@ class _MangaGrid extends ConsumerWidget {
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
-            SliverPadding(
-              padding: const EdgeInsets.all(12),
-              sliver: SliverGrid.builder(
-                gridDelegate: TextScaledGridDelegate(textScale: MediaQuery.textScalerOf(context).scale(1)),
-                itemCount: state.items.length,
-                itemBuilder: (context, i) {
-                  final manga = state.items[i];
-                  return SourceMangaCard(
-                    manga: manga,
-                    headers: headers,
-                    heroTag: coverHeroTagAt(state.items, i, source.id, (m) => m.url),
-                    onTap: () => context.push(
-                      sourceMangaLocation(source.id, manga.url),
-                      extra: SeriesPreview(title: manga.title, coverUrl: manga.thumbnailUrl),
-                    ),
-                  );
-                },
-              ),
+            BrowseSliver(
+              layout: ref.watch(comicBrowseLayoutProvider),
+              headers: headers,
+              itemCount: state.items.length,
+              itemAt: (i) {
+                final manga = state.items[i];
+                return BrowseItem(
+                  title: manga.title,
+                  cover: manga.thumbnailUrl,
+                  heroTag: coverHeroTagAt(state.items, i, source.id, (m) => m.url),
+                  onTap: () => context.push(
+                    sourceMangaLocation(source.id, manga.url),
+                    extra: SeriesPreview(title: manga.title, coverUrl: manga.thumbnailUrl),
+                  ),
+                );
+              },
             ),
             if (showFooter)
               SliverToBoxAdapter(

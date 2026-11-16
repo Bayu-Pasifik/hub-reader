@@ -10,16 +10,19 @@ import '../../core/net/doh.dart';
 import '../../core/net/proxy.dart';
 import '../../data/local/download_store.dart';
 import '../../state/app_settings_provider.dart';
+import '../../state/browse_layout_provider.dart';
 import '../../state/app_update_provider.dart';
 import '../../state/core_providers.dart';
 import '../../state/download_providers.dart';
 import '../../state/novel_providers.dart';
 import '../../state/source_providers.dart';
+import '../../state/source_library_providers.dart' show LibraryDisplay, LibraryLayout;
 import '../../state/source_settings_provider.dart';
 import '../../state/tracker_providers.dart';
 import 'tracker_screens.dart';
 import '../widgets/app_update_ui.dart';
 import '../widgets/app_lock.dart';
+import '../widgets/browse_layout.dart';
 import '../../core/i18n/strings.dart';
 import '../../state/download_ahead.dart';
 
@@ -55,6 +58,9 @@ class AppSettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
+  static String _layoutSummary(LibraryLayout l) =>
+      l.display == LibraryDisplay.list || l.columns == 0 ? l.display.label : '${l.display.label} · ${l.columns} ${tr('kolom')}';
+
   _CacheSizes? _sizes;
 
   @override
@@ -287,6 +293,28 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
                     ),
                   ),
               ],
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.grid_view_outlined),
+            title: Text(tr('Tampilan jelajah komik')),
+            subtitle: Text(_layoutSummary(ref.watch(comicBrowseLayoutProvider))),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => showBrowseLayoutSheet(
+              context,
+              provider: comicBrowseLayoutProvider,
+              title: tr('Tampilan jelajah komik'),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.view_list_outlined),
+            title: Text(tr('Tampilan jelajah novel')),
+            subtitle: Text(_layoutSummary(ref.watch(novelBrowseLayoutProvider))),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => showBrowseLayoutSheet(
+              context,
+              provider: novelBrowseLayoutProvider,
+              title: tr('Tampilan jelajah novel'),
             ),
           ),
           header('Privasi & keamanan'),

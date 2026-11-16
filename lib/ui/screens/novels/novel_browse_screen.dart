@@ -9,7 +9,8 @@ import '../../../novels/novel_models.dart';
 import '../../../novels/novel_source.dart';
 import '../../../state/novel_providers.dart';
 import '../../router.dart';
-import '../../widgets/layout.dart';
+import '../../../state/browse_layout_provider.dart';
+import '../../widgets/browse_layout.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/cover_hero.dart';
 import '../../widgets/state_views.dart';
@@ -112,6 +113,15 @@ class _NovelBrowseScreenState extends ConsumerState<NovelBrowseScreen> {
                 )
               : Text(source.name),
           actions: [
+            IconButton(
+              tooltip: tr('Tampilan'),
+              icon: const Icon(Icons.grid_view_outlined),
+              onPressed: () => showBrowseLayoutSheet(
+                context,
+                provider: novelBrowseLayoutProvider,
+                title: tr('Tampilan jelajah novel'),
+              ),
+            ),
             if (source.filters.isNotEmpty && !showSearch)
               IconButton(
                 tooltip: tr('Filter'),
@@ -213,40 +223,22 @@ class NovelGrid extends ConsumerWidget {
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
-            SliverPadding(
-              padding: const EdgeInsets.all(12),
-              sliver: SliverGrid.builder(
-                gridDelegate: TextScaledGridDelegate(textScale: MediaQuery.textScalerOf(context).scale(1)),
-                itemCount: state.items.length,
-                itemBuilder: (context, i) {
-                  final novel = state.items[i];
-                  return InkWell(
-                    borderRadius: BorderRadius.circular(8),
-                    onTap: () => context.push(
-                      novelDetailLocation(source.id, novel.path),
-                      extra: SeriesPreview(title: novel.name, coverUrl: novel.cover),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SourceCover(
-                          url: novel.cover,
-                          headers: source.imageHeaders,
-                          heroTag: coverHeroTagAt(state.items, i, source.id, (n) => n.path),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          novel.name,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
+            BrowseSliver(
+              layout: ref.watch(novelBrowseLayoutProvider),
+              headers: source.imageHeaders,
+              itemCount: state.items.length,
+              itemAt: (i) {
+                final novel = state.items[i];
+                return BrowseItem(
+                  title: novel.name,
+                  cover: novel.cover,
+                  heroTag: coverHeroTagAt(state.items, i, source.id, (n) => n.path),
+                  onTap: () => context.push(
+                    novelDetailLocation(source.id, novel.path),
+                    extra: SeriesPreview(title: novel.name, coverUrl: novel.cover),
+                  ),
+                );
+              },
             ),
             if (showFooter)
               SliverToBoxAdapter(

@@ -26,6 +26,7 @@ class TextScaledGridDelegate extends SliverGridDelegate {
     this.spacing = 12,
     this.textBlockHeight = 62,
     this.textScale = 1,
+    this.columns = 0,
   });
 
   final double maxCrossAxisExtent;
@@ -34,13 +35,16 @@ class TextScaledGridDelegate extends SliverGridDelegate {
   final double textBlockHeight;
   final double textScale;
 
+  /// Jumlah kolom tetap; 0 = otomatis menurut lebar layar ([maxCrossAxisExtent]).
+  final int columns;
+
   @override
   SliverGridLayout getLayout(SliverConstraints constraints) {
-    final columns = math.max(1, (constraints.crossAxisExtent / (maxCrossAxisExtent + spacing)).ceil());
-    final cellWidth = (constraints.crossAxisExtent - spacing * (columns - 1)) / columns;
+    final cols = columns > 0 ? columns : math.max(1, (constraints.crossAxisExtent / (maxCrossAxisExtent + spacing)).ceil());
+    final cellWidth = (constraints.crossAxisExtent - spacing * (cols - 1)) / cols;
     final extra = textBlockHeight * (textScale.clamp(1.0, 3.0) - 1);
     return SliverGridDelegateWithFixedCrossAxisCount(
-      crossAxisCount: columns,
+      crossAxisCount: cols,
       mainAxisSpacing: spacing,
       crossAxisSpacing: spacing,
       mainAxisExtent: cellWidth / aspectRatio + extra,
@@ -53,5 +57,6 @@ class TextScaledGridDelegate extends SliverGridDelegate {
       old.aspectRatio != aspectRatio ||
       old.spacing != spacing ||
       old.textBlockHeight != textBlockHeight ||
-      old.textScale != textScale;
+      old.textScale != textScale ||
+      old.columns != columns;
 }
