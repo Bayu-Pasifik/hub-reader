@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../state/app_settings_provider.dart';
+import '../../state/auto_sync.dart';
 import '../../state/library_updates_provider.dart';
 
 /// Satu tab di bottom navigation.
@@ -37,6 +38,10 @@ class _MainShellState extends ConsumerState<MainShell> with WidgetsBindingObserv
     Future.delayed(const Duration(seconds: 5), () {
       if (mounted) ref.read(libraryUpdatesProvider.notifier).maybeAutoCheck();
     });
+    // Sinkron favorit/progres antar perangkat (bila diaktifkan di Cadangan).
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) ref.read(autoSyncProvider).maybeRun();
+    });
   }
 
   @override
@@ -47,7 +52,13 @@ class _MainShellState extends ConsumerState<MainShell> with WidgetsBindingObserv
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) ref.read(libraryUpdatesProvider.notifier).reload();
+    if (state == AppLifecycleState.resumed) {
+      ref.read(libraryUpdatesProvider.notifier).reload();
+      ref.read(autoSyncProvider).maybeRun();
+    } else if (state == AppLifecycleState.paused) {
+      // Dorong perubahan sebelum aplikasi ke latar belakang.
+      ref.read(autoSyncProvider).maybeRun();
+    }
   }
 
   /// Lebar minimum (dp) untuk rail navigasi di samping (tablet / lipat / landscape).

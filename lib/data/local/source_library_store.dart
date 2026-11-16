@@ -22,6 +22,27 @@ class SourceLibraryStore {
 
   Future<void> writeHistory(List<SourceHistoryEntry> entries) => _write(_historyKey, entries.map((e) => e.toJson()));
 
+  static const _removedKey = 'source_library.removed.v1';
+
+  /// Penanda hapus favorit (tombstone): `{kunci seri: waktu dihapus}`.
+  Map<String, DateTime> readRemoved() {
+    final raw = _prefs.getString(_removedKey);
+    if (raw == null) return {};
+    try {
+      return {
+        for (final e in asMap(jsonDecode(raw)).entries)
+          if (asDate(e.value) case final d?) e.key: d,
+      };
+    } catch (_) {
+      return {};
+    }
+  }
+
+  Future<void> writeRemoved(Map<String, DateTime> removed) => _prefs.setString(
+        _removedKey,
+        jsonEncode({for (final e in removed.entries) e.key: e.value.toIso8601String()}),
+      );
+
   static const _progressKey = 'source_library.progress.v1';
 
   /// `{kunci seri: {URL bab: progres}}`

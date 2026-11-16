@@ -15,6 +15,7 @@ import '../../data/local/progress_sync.dart';
 import '../../state/source_providers.dart' show sourceRegistryProvider;
 import '../../data/local/webdav_backup.dart';
 import '../../state/source_library_providers.dart';
+import '../../state/auto_sync.dart';
 import '../../state/background_updates.dart';
 import '../../state/core_providers.dart';
 import '../../state/novel_providers.dart';
@@ -662,6 +663,18 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                   subtitle: Text(tr('Gabungkan favorit, riwayat, dan posisi baca dengan perangkat lain')),
                   enabled: !_busy && _dav.configured,
                   onTap: _davSync,
+                ),
+                SwitchListTile(
+                  title: Text(tr('Sinkron otomatis')),
+                  subtitle: Text(tr('Sinkronkan favorit dan progres saat aplikasi dibuka atau kembali aktif')),
+                  value: AutoSync.isEnabled(ref.read(sharedPreferencesProvider)),
+                  onChanged: _busy || !_dav.configured
+                      ? null
+                      : (v) async {
+                          await ref.read(sharedPreferencesProvider).setBool(AutoSync.enabledKey, v);
+                          if (v) await ref.read(autoSyncProvider).maybeRun(force: true);
+                          if (mounted) setState(() {});
+                        },
                 ),
                 ListTile(
                   leading: const Icon(Icons.cloud_download_outlined),

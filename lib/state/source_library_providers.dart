@@ -29,23 +29,37 @@ class SourceFavoritesNotifier extends Notifier<List<SourceFavorite>> {
   List<SourceFavorite> build() => ref.watch(sourceLibraryStoreProvider).readFavorites();
 
   Future<void> toggle(SourceLibraryItem item) async {
-    final exists = state.any((e) => e.item.key == item.key);
-    state = exists
-        ? state.where((e) => e.item.key != item.key).toList()
-        : [SourceFavorite(item: item, addedAt: DateTime.now()), ...state];
+    if (state.any((e) => e.item.key == item.key)) return remove(item.key);
+    final now = DateTime.now();
+    state = [SourceFavorite(item: item, addedAt: now), ...state];
     await _store.writeFavorites(state);
+    await _setRemoved(item.key, null);
   }
 
   Future<void> remove(String key) async {
     state = state.where((e) => e.item.key != key).toList();
     await _store.writeFavorites(state);
+    await _setRemoved(key, DateTime.now());
   }
 
   /// Untuk tombol "Urungkan".
   Future<void> restore(SourceFavorite entry) async {
     if (state.any((e) => e.item.key == entry.item.key)) return;
-    state = [...state, entry]..sort((a, b) => b.addedAt.compareTo(a.addedAt));
+    final revived = entry.copyWith(updatedAt: DateTime.now());
+    state = [...state, revived]..sort((a, b) => b.addedAt.compareTo(a.addedAt));
     await _store.writeFavorites(state);
+    await _setRemoved(entry.item.key, null);
+  }
+
+  /// Catat/hapus tombstone agar penghapusan ikut tersinkron antar perangkat.
+  Future<void> _setRemoved(String key, DateTime? at) async {
+    final removed = _store.readRemoved();
+    if (at == null) {
+      if (removed.remove(key) == null) return;
+    } else {
+      removed[key] = at;
+    }
+    await _store.writeRemoved(removed);
   }
 
   /// Perbarui judul/sampul tersimpan dengan data terbaru dari situs.

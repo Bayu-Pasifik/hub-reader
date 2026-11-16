@@ -50,7 +50,7 @@ class SourceLibraryItem {
 }
 
 class SourceFavorite {
-  const SourceFavorite({required this.item, required this.addedAt, this.categories = const []});
+  const SourceFavorite({required this.item, required this.addedAt, this.categories = const [], this.updatedAt});
 
   final SourceLibraryItem item;
   final DateTime addedAt;
@@ -58,8 +58,18 @@ class SourceFavorite {
   /// Nama kategori (rak) tempat favorit ini; kosong = tanpa kategori.
   final List<String> categories;
 
-  SourceFavorite copyWith({SourceLibraryItem? item, List<String>? categories}) =>
-      SourceFavorite(item: item ?? this.item, addedAt: addedAt, categories: categories ?? this.categories);
+  /// Terakhir difavoritkan/dipulihkan. Dipakai sync untuk membandingkan dengan
+  /// waktu penghapusan; null = pakai [addedAt].
+  final DateTime? updatedAt;
+
+  DateTime get aliveSince => updatedAt != null && updatedAt!.isAfter(addedAt) ? updatedAt! : addedAt;
+
+  SourceFavorite copyWith({SourceLibraryItem? item, List<String>? categories, DateTime? updatedAt}) => SourceFavorite(
+        item: item ?? this.item,
+        addedAt: addedAt,
+        categories: categories ?? this.categories,
+        updatedAt: updatedAt ?? this.updatedAt,
+      );
 
   static SourceFavorite? tryParse(JsonMap json) {
     final item = SourceLibraryItem.tryParse(asMap(json['item']));
@@ -68,12 +78,14 @@ class SourceFavorite {
       item: item,
       addedAt: asDate(json['added_at']) ?? DateTime.now(),
       categories: asStringList(json['categories']),
+      updatedAt: asDate(json['updated_at']),
     );
   }
 
   JsonMap toJson() => {
         'item': item.toJson(),
         'added_at': addedAt.toIso8601String(),
+        if (updatedAt != null) 'updated_at': updatedAt!.toIso8601String(),
         if (categories.isNotEmpty) 'categories': categories,
       };
 }
