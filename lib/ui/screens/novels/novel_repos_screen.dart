@@ -1,3 +1,4 @@
+import '../../theme/neo_brutal.dart';
 import 'package:flutter/material.dart';
 import '../../../core/i18n/strings.dart';
 import 'package:flutter/services.dart';
@@ -99,7 +100,7 @@ class NovelReposScreen extends ConsumerWidget {
               ),
             for (final (i, url) in repos.indexed)
               ListTile(
-                leading: CircleAvatar(child: Text('${i + 1}')),
+                leading: NeoAvatar(child: Text('${i + 1}')),
                 title: Text(
                   url == NovelPluginRepository.defaultManifestUrl ? tr('LNReader (resmi)') : Uri.parse(url).host,
                 ),

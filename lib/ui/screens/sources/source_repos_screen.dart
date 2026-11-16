@@ -1,3 +1,4 @@
+import '../../theme/neo_brutal.dart';
 import 'package:flutter/material.dart';
 import '../../../core/i18n/strings.dart';
 import 'package:flutter/services.dart';
@@ -102,7 +103,7 @@ class SourceReposScreen extends ConsumerWidget {
               ),
             for (final (i, url) in repos.indexed)
               ListTile(
-                leading: CircleAvatar(child: Text('${i + 1}')),
+                leading: NeoAvatar(child: Text('${i + 1}')),
                 title: Text(url == SourceCatalogRepository.defaultRepoUrl ? 'hub_reader (resmi)' : Uri.parse(url).host),
                 subtitle: Text(
                   '${counts[url] == null ? tr('belum dimuat') : trp('{n} sumber', {'n': counts[url]})} · $url',
@@ -131,7 +132,7 @@ class SourceReposScreen extends ConsumerWidget {
                 },
               ),
             ListTile(
-              leading: const CircleAvatar(child: Icon(Icons.inventory_2_outlined, size: 20)),
+              leading: const NeoAvatar(child: Icon(Icons.inventory_2_outlined, size: 20)),
               title: Text(tr('Katalog bawaan aplikasi')),
               subtitle: Text(
                 bundled == 0

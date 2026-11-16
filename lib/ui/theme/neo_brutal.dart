@@ -27,12 +27,13 @@ class NeoBrutal {
     Color? color,
     double r = radius,
     Offset offset = shadowOffset,
+    Color? borderColor,
   }) {
     final b = Theme.of(context).brightness;
     return BoxDecoration(
       color: color ?? Theme.of(context).colorScheme.surface,
       borderRadius: BorderRadius.circular(r),
-      border: Border.all(color: ink(b), width: border),
+      border: Border.all(color: borderColor ?? ink(b), width: border),
       boxShadow: [BoxShadow(color: shadowColor(b), offset: offset)],
     );
   }
@@ -299,14 +300,22 @@ class NeoBrutal {
         shape: rect,
       ),
       tabBarTheme: TabBarThemeData(
-        labelColor: line,
-        unselectedLabelColor: line.withValues(alpha: 0.65),
+        labelColor: _ink,
+        unselectedLabelColor: line,
         labelStyle: const TextStyle(fontWeight: FontWeight.w900),
-        indicatorColor: primary,
+        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w700),
         indicatorSize: TabBarIndicatorSize.tab,
         dividerColor: line,
         dividerHeight: 2.5,
-        indicator: UnderlineTabIndicator(borderSide: BorderSide(color: primary, width: 5)),
+        indicator: BoxDecoration(
+          color: secondary,
+          border: Border(
+            top: BorderSide(color: line, width: 2.5),
+            bottom: BorderSide(color: line, width: 2.5),
+            left: BorderSide(color: line, width: 2.5),
+            right: BorderSide(color: line, width: 2.5),
+          ),
+        ),
       ),
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStatePropertyAll(line),
@@ -346,6 +355,63 @@ class NeoBrutal {
           border: Border.all(color: line, width: 2),
         ),
         textStyle: const TextStyle(color: _ink, fontWeight: FontWeight.w800),
+      ),
+    );
+  }
+}
+
+/// Kotak bergaris tebal dengan bayangan keras; pembungkus umum untuk kartu & baris.
+class NeoBox extends StatelessWidget {
+  const NeoBox({
+    super.key,
+    required this.child,
+    this.color,
+    this.padding,
+    this.margin,
+    this.radius = NeoBrutal.radius,
+    this.offset = const Offset(3, 3),
+    this.borderColor,
+  });
+
+  final Widget child;
+  final Color? color;
+  final EdgeInsetsGeometry? padding;
+  final EdgeInsetsGeometry? margin;
+  final double radius;
+  final Offset offset;
+  final Color? borderColor;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        margin: margin,
+        padding: padding,
+        decoration: NeoBrutal.box(context, color: color, r: radius, offset: offset, borderColor: borderColor),
+        child: child,
+      );
+}
+
+/// Pengganti CircleAvatar: kotak bergaris tebal berwarna blok.
+class NeoAvatar extends StatelessWidget {
+  const NeoAvatar({super.key, required this.child, this.size = 40});
+
+  final Widget child;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      width: size,
+      height: size,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: scheme.secondary,
+        borderRadius: BorderRadius.circular(NeoBrutal.radius - 2),
+        border: Border.all(color: scheme.outline, width: 2),
+      ),
+      child: DefaultTextStyle.merge(
+        style: TextStyle(color: scheme.onSecondary, fontWeight: FontWeight.w900),
+        child: IconTheme.merge(data: IconThemeData(color: scheme.onSecondary), child: child),
       ),
     );
   }

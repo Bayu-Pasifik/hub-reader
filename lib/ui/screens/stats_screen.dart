@@ -1,3 +1,4 @@
+import '../theme/neo_brutal.dart';
 import 'package:flutter/material.dart';
 import '../../core/i18n/strings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -159,7 +160,7 @@ class StatsScreen extends ConsumerWidget {
                   for (final (i, e) in top.indexed)
                     ListTile(
                       dense: true,
-                      leading: CircleAvatar(radius: 14, child: Text('${i + 1}')),
+                      leading: NeoAvatar(size: 28, child: Text('${i + 1}')),
                       title: Text(titles[e.key]!, maxLines: 1, overflow: TextOverflow.ellipsis),
                       subtitle: Text(isNovelSourceId(e.key.split('|').first) ? 'Novel' : tr('Komik')),
                       trailing: Text(trp('{n} bab', {'n': e.value}), style: text.labelLarge),

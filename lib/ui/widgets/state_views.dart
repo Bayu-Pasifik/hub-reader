@@ -1,3 +1,4 @@
+import '../theme/neo_brutal.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
@@ -212,7 +213,15 @@ class _MessageView extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (animation != null)
-              AppLottie(animation!, size: compact ? 80 : 140)
+              NeoBox(
+                // Ilustrasi berwarna sendiri digambar untuk latar terang, jadi kotaknya tetap krem.
+                color: animation!.tint ? theme.colorScheme.primaryContainer : const Color(0xFFFFF4D6),
+                padding: EdgeInsets.all(compact ? 8 : 16),
+                radius: 10,
+                offset: const Offset(5, 5),
+                borderColor: animation!.tint ? null : const Color(0xFF111111),
+                child: AppLottie(animation!, size: compact ? 80 : 140),
+              )
             else
               Icon(icon,
                   size: compact ? 32 : 56, color: theme.colorScheme.outline),

@@ -1,3 +1,4 @@
+import '../../theme/neo_brutal.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -267,12 +268,13 @@ class _SourceTile extends ConsumerWidget {
     ].join(' · ');
 
     final tile = ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12),
       leading: Badge(
         isLabelVisible: icon != null,
         backgroundColor: Colors.transparent,
         offset: const Offset(4, 26),
         label: icon == null ? null : Icon(icon, size: 16, color: color),
-        child: CircleAvatar(child: Text(s.name.characters.first.toUpperCase())),
+        child: NeoAvatar(child: Text(s.name.characters.first.toUpperCase())),
       ),
       title: Text(s.name, maxLines: 1, overflow: TextOverflow.ellipsis),
       subtitle: Text(
@@ -308,8 +310,13 @@ class _SourceTile extends ConsumerWidget {
       ),
       onTap: () => context.push(sourceBrowseLocation(s.id)),
     );
+    final boxed = NeoBox(
+      margin: const EdgeInsets.fromLTRB(16, 6, 19, 8),
+      color: scheme.surfaceContainerLowest,
+      child: ClipRRect(borderRadius: BorderRadius.circular(NeoBrutal.radius), child: Material(type: MaterialType.transparency, child: tile)),
+    );
     // Sumber mati diredupkan, tapi tetap bisa dibuka (mis. setelah ganti domain).
-    return status == HealthStatus.dead ? Opacity(opacity: 0.55, child: tile) : tile;
+    return status == HealthStatus.dead ? Opacity(opacity: 0.55, child: boxed) : boxed;
   }
 }
 

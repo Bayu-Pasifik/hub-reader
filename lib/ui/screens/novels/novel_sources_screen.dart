@@ -1,3 +1,4 @@
+import '../../theme/neo_brutal.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/net/image_cache.dart';
 import 'package:flutter/material.dart';
@@ -267,7 +268,7 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
                       final p = row as NovelPluginInfo;
                       if (p.id == LocalNovelSource.pluginId) {
                         return ListTile(
-                          leading: const CircleAvatar(child: Icon(Icons.folder_outlined)),
+                          leading: const NeoAvatar(child: Icon(Icons.folder_outlined)),
                           title: Text(p.name),
                           subtitle: Text(tr('File EPUB di perangkat')),
                           trailing: IconButton(
