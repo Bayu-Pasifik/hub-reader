@@ -16,7 +16,6 @@ import '../../state/core_providers.dart';
 import '../../state/download_providers.dart';
 import '../../state/novel_providers.dart';
 import '../../state/source_providers.dart';
-import '../../state/source_library_providers.dart' show LibraryDisplay, LibraryLayout;
 import '../../state/source_settings_provider.dart';
 import '../../state/tracker_providers.dart';
 import 'tracker_screens.dart';
@@ -58,8 +57,8 @@ class AppSettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
-  static String _layoutSummary(LibraryLayout l) =>
-      l.display == LibraryDisplay.list || l.columns == 0 ? l.display.label : '${l.display.label} · ${l.columns} ${tr('kolom')}';
+  static String _layoutSummary(BrowseLayout l) =>
+      l.display.isSingleColumn || l.columns == 0 ? l.display.label : '${l.display.label} · ${l.columns} ${tr('kolom')}';
 
   _CacheSizes? _sizes;
 

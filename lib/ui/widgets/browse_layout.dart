@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/i18n/strings.dart';
 import '../../state/browse_layout_provider.dart';
-import '../../state/source_library_providers.dart' show LibraryDisplay, LibraryLayout;
 import '../theme/neo_brutal.dart';
 import 'layout.dart';
 import 'source_widgets.dart';
@@ -28,7 +27,7 @@ class BrowseSliver extends StatelessWidget {
     required this.headers,
   });
 
-  final LibraryLayout layout;
+  final BrowseLayout layout;
   final int itemCount;
   final BrowseItem Function(int index) itemAt;
   final Map<String, String> headers;
@@ -36,37 +35,86 @@ class BrowseSliver extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    if (layout.display == LibraryDisplay.list) {
-      return SliverPadding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        sliver: SliverList.builder(
-          itemCount: itemCount,
-          itemBuilder: (context, i) {
-            final item = itemAt(i);
-            // Kartu bergaris + bayangan, sama seperti daftar sumber.
-            return NeoBox(
-              margin: const EdgeInsets.fromLTRB(16, 6, 19, 8),
-              color: theme.colorScheme.surfaceContainerLowest,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(NeoBrutal.radius),
-                child: Material(
-                  type: MaterialType.transparency,
-                  child: ListTile(
-                    onTap: item.onTap,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    leading: SourceCover(url: item.cover, headers: headers, width: 56, heroTag: item.heroTag),
-                    title: Text(item.title, maxLines: 2, overflow: TextOverflow.ellipsis),
+    switch (layout.display) {
+      case BrowseDisplay.list:
+        return SliverPadding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          sliver: SliverList.builder(
+            itemCount: itemCount,
+            itemBuilder: (context, i) {
+              final item = itemAt(i);
+              // Kartu bergaris + bayangan, sama seperti daftar sumber.
+              return _card(
+                context,
+                child: ListTile(
+                  onTap: item.onTap,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  leading: SourceCover(url: item.cover, headers: headers, width: 56, heroTag: item.heroTag),
+                  title: Text(item.title, maxLines: 2, overflow: TextOverflow.ellipsis),
+                ),
+              );
+            },
+          ),
+        );
+      case BrowseDisplay.denseList:
+        return SliverPadding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          sliver: SliverList.separated(
+            itemCount: itemCount,
+            separatorBuilder: (_, __) => const Divider(height: 1, thickness: 1, indent: 16, endIndent: 16),
+            itemBuilder: (context, i) {
+              final item = itemAt(i);
+              return ListTile(
+                onTap: item.onTap,
+                dense: true,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                leading: SourceCover(url: item.cover, headers: headers, width: 40, heroTag: item.heroTag),
+                title: Text(item.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+              );
+            },
+          ),
+        );
+      case BrowseDisplay.wideCard:
+        return SliverPadding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          sliver: SliverList.builder(
+            itemCount: itemCount,
+            itemBuilder: (context, i) {
+              final item = itemAt(i);
+              return _card(
+                context,
+                child: InkWell(
+                  onTap: item.onTap,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      spacing: 16,
+                      children: [
+                        SourceCover(url: item.cover, headers: headers, width: 96, heroTag: item.heroTag),
+                        Expanded(
+                          child: Text(
+                            item.title,
+                            maxLines: 4,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+                          ),
+                        ),
+                        const Icon(Icons.chevron_right),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            );
-          },
-        ),
-      );
+              );
+            },
+          ),
+        );
+      case BrowseDisplay.grid || BrowseDisplay.compact || BrowseDisplay.coverOnly:
+        break;
     }
 
     final scale = MediaQuery.textScalerOf(context).scale(1);
-    final isGrid = layout.display == LibraryDisplay.grid;
+    final isGrid = layout.display == BrowseDisplay.grid;
     return SliverPadding(
       padding: const EdgeInsets.all(12),
       sliver: SliverGrid.builder(
@@ -86,12 +134,22 @@ class BrowseSliver extends StatelessWidget {
   }
 }
 
+/// Kartu bergaris + bayangan keras (gaya daftar sumber) untuk mode satu kolom.
+Widget _card(BuildContext context, {required Widget child}) => NeoBox(
+      margin: const EdgeInsets.fromLTRB(16, 6, 19, 8),
+      color: Theme.of(context).colorScheme.surfaceContainerLowest,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(NeoBrutal.radius),
+        child: Material(type: MaterialType.transparency, child: child),
+      ),
+    );
+
 class _BrowseTile extends StatelessWidget {
   const _BrowseTile({required this.item, required this.headers, required this.display});
 
   final BrowseItem item;
   final Map<String, String> headers;
-  final LibraryDisplay display;
+  final BrowseDisplay display;
 
   @override
   Widget build(BuildContext context) {
@@ -102,7 +160,7 @@ class _BrowseTile extends StatelessWidget {
       borderRadius: BorderRadius.circular(8),
       onTap: item.onTap,
       child: switch (display) {
-        LibraryDisplay.grid => Column(
+        BrowseDisplay.grid => Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -116,7 +174,7 @@ class _BrowseTile extends StatelessWidget {
               ),
             ],
           ),
-        LibraryDisplay.compact => Stack(
+        BrowseDisplay.compact => Stack(
             children: [
               cover,
               Positioned(
@@ -152,7 +210,7 @@ class _BrowseTile extends StatelessWidget {
 /// Lembar pilihan tampilan jelajah: mode + jumlah kolom.
 Future<void> showBrowseLayoutSheet(
   BuildContext context, {
-  required NotifierProvider<BrowseLayoutNotifier, LibraryLayout> provider,
+  required NotifierProvider<BrowseLayoutNotifier, BrowseLayout> provider,
   required String title,
 }) {
   return showModalBottomSheet<void>(
@@ -166,7 +224,7 @@ Future<void> showBrowseLayoutSheet(
 class _BrowseLayoutSheet extends ConsumerWidget {
   const _BrowseLayoutSheet({required this.provider, required this.title});
 
-  final NotifierProvider<BrowseLayoutNotifier, LibraryLayout> provider;
+  final NotifierProvider<BrowseLayoutNotifier, BrowseLayout> provider;
   final String title;
 
   @override
@@ -187,7 +245,7 @@ class _BrowseLayoutSheet extends ConsumerWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                for (final d in LibraryDisplay.values)
+                for (final d in BrowseDisplay.values)
                   ChoiceChip(
                     label: Text(d.label),
                     selected: layout.display == d,
@@ -195,7 +253,7 @@ class _BrowseLayoutSheet extends ConsumerWidget {
                   ),
               ],
             ),
-            if (layout.display != LibraryDisplay.list) ...[
+            if (!layout.display.isSingleColumn) ...[
               Text(
                 layout.columns == 0 ? tr('Kolom: otomatis') : '${tr('Kolom')}: ${layout.columns}',
                 style: theme.textTheme.bodyMedium,

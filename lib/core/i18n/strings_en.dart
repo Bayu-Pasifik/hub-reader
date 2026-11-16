@@ -384,6 +384,8 @@ const Map<String, String> stringsEn = {
   'menit': 'min',
   'Grid': 'Grid',
   'Grid ringkas': 'Compact grid',
+  'Daftar ringkas': 'Compact list',
+  'Kartu lebar': 'Wide cards',
   'Sampul saja': 'Cover only',
   'Daftar': 'List',
   'Mode tampilan': 'Display mode',
