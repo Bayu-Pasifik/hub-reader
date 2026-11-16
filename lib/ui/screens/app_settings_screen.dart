@@ -271,12 +271,18 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
                   Tooltip(
                     message: a.label,
                     child: InkWell(
-                      customBorder: const CircleBorder(),
+                      borderRadius: BorderRadius.circular(6),
                       onTap: () => n.update((x) => x.copyWith(accent: a)),
-                      child: CircleAvatar(
-                        radius: 18,
-                        backgroundColor: a.color,
-                        child: s.accent == a ? const Icon(Icons.check, color: Colors.white, size: 20) : null,
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: a.color,
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: theme.colorScheme.outline, width: s.accent == a ? 4 : 2.5),
+                        ),
+                        child: s.accent == a ? const Icon(Icons.check, color: Colors.white, size: 22) : null,
                       ),
                     ),
                   ),

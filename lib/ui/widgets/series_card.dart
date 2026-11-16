@@ -40,7 +40,7 @@ class SeriesCard extends StatelessWidget {
               title,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+              style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w800),
             ),
             if (subtitle != null)
               Text(

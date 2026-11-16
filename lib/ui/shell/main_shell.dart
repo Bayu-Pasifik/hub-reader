@@ -139,13 +139,16 @@ class _MainShellState extends ConsumerState<MainShell> with WidgetsBindingObserv
           // Label tab dibatasi 1.1x: lima tab tidak muat bila ikut skala font 2x.
           MediaQuery.withClampedTextScaling(
             maxScaleFactor: 1.1,
-            child: NavigationBar(
+            child: DecoratedBox(
+              decoration: BoxDecoration(border: Border(top: BorderSide(color: scheme.outline, width: 2.5))),
+              child: NavigationBar(
               selectedIndex: shell.currentIndex,
               onDestinationSelected: select,
               destinations: [
                 for (final tab in widget.tabs)
                   NavigationDestination(icon: icon(tab), selectedIcon: Icon(tab.selectedIcon), label: tr(tab.label)),
               ],
+            ),
             ),
           ),
         ],

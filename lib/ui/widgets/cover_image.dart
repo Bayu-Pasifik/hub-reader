@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../core/net/image_cache.dart';
+import '../theme/neo_brutal.dart';
 import 'package:flutter/material.dart';
 
 /// Sampul rasio 3:4.
@@ -24,21 +25,24 @@ class CoverImage extends StatelessWidget {
       width: width,
       child: AspectRatio(
         aspectRatio: 3 / 4,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(borderRadius),
-          child: resolved == null
-              ? placeholder
-              : CachedNetworkImage(cacheManager: AppImageCache.instance, 
-                  imageUrl: resolved,
-                  fit: BoxFit.cover,
-                  fadeInDuration: const Duration(milliseconds: 150),
-                  placeholder: (_, __) => placeholder,
-                  errorWidget: (_, __, ___) => Container(
-                    color: scheme.surfaceContainerHighest,
-                    alignment: Alignment.center,
-                    child: Icon(Icons.broken_image_outlined, color: scheme.onSurfaceVariant),
+        child: DecoratedBox(
+          decoration: NeoBrutal.box(context, r: borderRadius, offset: const Offset(3, 3)),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(borderRadius > 2 ? borderRadius - 2 : 0),
+            child: resolved == null
+                ? placeholder
+                : CachedNetworkImage(cacheManager: AppImageCache.instance,
+                    imageUrl: resolved,
+                    fit: BoxFit.cover,
+                    fadeInDuration: const Duration(milliseconds: 150),
+                    placeholder: (_, __) => placeholder,
+                    errorWidget: (_, __, ___) => Container(
+                      color: scheme.surfaceContainerHighest,
+                      alignment: Alignment.center,
+                      child: Icon(Icons.broken_image_outlined, color: scheme.onSurfaceVariant),
+                    ),
                   ),
-                ),
+          ),
         ),
       ),
     );

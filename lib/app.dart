@@ -14,6 +14,7 @@ import 'state/download_providers.dart';
 import 'ui/app_shortcuts.dart';
 import 'ui/deep_links.dart';
 import 'ui/router.dart';
+import 'ui/theme/neo_brutal.dart';
 import 'ui/screens/onboarding_screen.dart';
 import 'ui/widgets/app_update_ui.dart';
 import 'ui/widgets/app_lock.dart';
@@ -92,27 +93,22 @@ class _HubReaderAppState extends ConsumerState<HubReaderApp> {
         const transitions = PageTransitionsTheme(builders: {
           TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
         });
-        final light = ThemeData(
-          useMaterial3: true,
-          pageTransitionsTheme: transitions,
-          colorSchemeSeed: useDynamic ? lightDynamic.primary : s.accent.color,
+        final light = NeoBrutal.build(
+          accent: useDynamic ? lightDynamic.primary : s.accent.color,
+          brightness: Brightness.light,
+          transitions: transitions,
         );
-        final dark = ThemeData(
-          useMaterial3: true,
-          pageTransitionsTheme: transitions,
-          colorSchemeSeed: useDynamic ? darkDynamic.primary : s.accent.color,
+        final dark = NeoBrutal.build(
+          accent: useDynamic ? darkDynamic.primary : s.accent.color,
           brightness: Brightness.dark,
+          transitions: transitions,
+          pureBlack: s.pureBlack,
         );
         return MaterialApp.router(
           title: 'Hub Reader',
           debugShowCheckedModeBanner: false,
           theme: light,
-          darkTheme: s.pureBlack
-              ? dark.copyWith(
-                  scaffoldBackgroundColor: Colors.black,
-                  colorScheme: dark.colorScheme.copyWith(surface: Colors.black),
-                )
-              : dark,
+          darkTheme: dark,
           themeMode: s.themeMode,
           routerConfig: ref.watch(routerProvider),
           builder: (context, child) => AppLockGate(

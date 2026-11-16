@@ -1,10 +1,10 @@
-## Hub Reader v1.6.0
+## Hub Reader v2.0.0
 
-### Fitur baru
-- **Template ZManga**: sumber komik CrotPedia, Maid Manga, Mangapoi, Shiro Doujin, dan OreManga.
-- **Mirror jsDelivr untuk plugin novel**: manifest dan kode plugin otomatis diambil dari jsDelivr bila raw GitHub gagal diakses.
-- **Daftar repo plugin novel dari jarak jauh**: repos.json diperbarui tanpa rilis aplikasi baru, dengan cadangan lokal bila tidak terjangkau.
-- **Repo plugin novel cadangan**: mirror lnreader-plugins milik sendiri (sinkron harian) ikut terdaftar, sehingga plugin tetap tersedia bila upstream hilang.
+### Tampilan baru: neo-brutalism
+- Desain ulang seluruh aplikasi: kertas krem, garis hitam tebal, sudut kotak, bayangan keras, dan warna blok tegas.
+- Berlaku untuk semua komponen: bilah aplikasi, navigasi bawah, tombol, kolom isian, chip, dialog, sheet, tab, dan sampul seri.
+- Mode gelap memakai garis terang; mode hitam murni tetap tersedia.
+- Warna aksen dan Material You tetap berfungsi, disesuaikan agar kontras dengan garis tebal.
 
 ### Catatan
 - Pasang APK yang sesuai ABI HP (arm64-v8a untuk kebanyakan HP).
