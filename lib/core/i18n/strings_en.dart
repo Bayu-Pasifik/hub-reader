@@ -932,6 +932,10 @@ const Map<String, String> stringsEn = {
       'Test connection',
   'Unggah sekarang':
       'Upload now',
+  'Sinkronkan progres baca': 'Sync reading progress',
+  'Gabungkan favorit, riwayat, dan posisi baca dengan perangkat lain':
+      'Merge favorites, history and reading position with your other devices',
+  'Tersinkron: {f} favorit, {h} riwayat': 'Synced: {f} favorites, {h} history entries',
   'Pulihkan dari WebDAV':
       'Restore from WebDAV',
   'Filter scanlator': 'Scanlator filter',

@@ -10,7 +10,9 @@ import '../../app_restart.dart';
 import '../../data/local/auto_backup.dart';
 import '../../data/local/backup.dart';
 import '../../data/local/backup_crypto.dart';
+import '../../data/local/progress_sync.dart';
 import '../../data/local/webdav_backup.dart';
+import '../../state/source_library_providers.dart';
 import '../../state/background_updates.dart';
 import '../../state/core_providers.dart';
 import '../../state/novel_providers.dart';
@@ -77,6 +79,24 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     );
     if (ok == true) {
       await _saveDav(_dav.copyWith(url: url.text.trim(), username: user.text.trim(), password: pass.text));
+    }
+  }
+
+  Future<void> _davSync() async {
+    setState(() => _busy = true);
+    try {
+      final merged = await ProgressSync.run(ref.read(sharedPreferencesProvider));
+      ref
+        ..invalidate(sourceFavoritesProvider)
+        ..invalidate(sourceHistoryProvider)
+        ..invalidate(sourceProgressProvider);
+      if (mounted) {
+        _snack(trp('Tersinkron: {f} favorit, {h} riwayat', {'f': merged.favorites.length, 'h': merged.history.length}));
+      }
+    } catch (e) {
+      if (mounted) _snack(trp('Gagal: {e}', {'e': e}));
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
   }
 
@@ -595,6 +615,13 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                   subtitle: Text(_davStatus()),
                   enabled: !_busy && _dav.configured,
                   onTap: _davUploadNow,
+                ),
+                ListTile(
+                  leading: const Icon(Icons.sync),
+                  title: Text(tr('Sinkronkan progres baca')),
+                  subtitle: Text(tr('Gabungkan favorit, riwayat, dan posisi baca dengan perangkat lain')),
+                  enabled: !_busy && _dav.configured,
+                  onTap: _davSync,
                 ),
                 ListTile(
                   leading: const Icon(Icons.cloud_download_outlined),
