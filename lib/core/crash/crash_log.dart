@@ -69,6 +69,25 @@ class CrashLog {
     }
   }
 
+  /// Samarkan data pribadi sebelum log dibagikan: email, token/kunci di query
+  /// URL, header Authorization/Cookie, dan nama pengguna di path perangkat.
+  static String redact(String text) {
+    var out = text;
+    out = out.replaceAll(RegExp(r'[\w.+-]+@[\w-]+(\.[\w-]+)+'), '<email>');
+    out = out.replaceAllMapped(
+      RegExp(r'([?&](?:token|access_token|api_key|apikey|key|auth|password|pass|sig|signature|session)=)[^&\s]+', caseSensitive: false),
+      (m) => '${m[1]}<redacted>',
+    );
+    out = out.replaceAllMapped(
+      RegExp(r'\b(authorization|cookie|set-cookie)\s*[:=]\s*[^\r\n]+', caseSensitive: false),
+      (m) => '${m[1]}: <redacted>',
+    );
+    out = out.replaceAllMapped(RegExp(r'([A-Za-z]:\\Users\\)[^\\\s]+'), (m) => '${m[1]}<user>');
+    out = out.replaceAllMapped(RegExp(r'(/(?:data/user|storage/emulated|sdcard)/)\d+'), (m) => '${m[1]}0');
+    out = out.replaceAllMapped(RegExp(r'(/home/|/Users/)[^/\s]+'), (m) => '${m[1]}<user>');
+    return out;
+  }
+
   static void clear() {
     try {
       final f = _file;

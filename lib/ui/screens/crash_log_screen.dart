@@ -26,7 +26,7 @@ class _CrashLogScreenState extends State<CrashLogScreen> {
             icon: const Icon(Icons.share_outlined),
             onPressed: _text.isEmpty
                 ? null
-                : () => SharePlus.instance.share(ShareParams(text: _text, subject: 'Hub Reader error log')),
+                : () => SharePlus.instance.share(ShareParams(text: CrashLog.redact(_text), subject: 'Hub Reader error log')),
           ),
           IconButton(
             tooltip: tr('Hapus'),
