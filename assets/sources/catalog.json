@@ -2,7 +2,7 @@
  "source": "https://github.com/keiyoushi/extensions-source",
  "license": "Apache-2.0",
  "generatedAt": "2026-11-17",
- "count": 520,
+ "count": 522,
  "sources": [
   {
    "id": "all.allporncomicsco",
@@ -1764,6 +1764,19 @@
    }
   },
   {
+   "id": "en.luascans",
+   "name": "Lua Scans",
+   "lang": "en",
+   "baseUrl": "https://luacomic.org",
+   "contentWarning": "safe",
+   "theme": "heancms",
+   "options": {
+    "vals": {
+     "latestSortBy": "asc"
+    }
+   }
+  },
+  {
    "id": "en.lunatoons",
    "name": "Luna Toons",
    "lang": "en",
@@ -2576,6 +2589,20 @@
    "theme": "madara",
    "options": {
     "chapterMode": "MangaAjax"
+   }
+  },
+  {
+   "id": "en.omegascans",
+   "name": "Omega Scans",
+   "lang": "en",
+   "baseUrl": "https://omegascans.org",
+   "contentWarning": "nsfw",
+   "theme": "heancms",
+   "options": {
+    "vals": {
+     "enableLogin": true,
+     "fetchBadge": true
+    }
    }
   },
   {

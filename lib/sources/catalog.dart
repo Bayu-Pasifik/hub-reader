@@ -5,6 +5,7 @@ import 'models.dart';
 import 'source.dart';
 import 'templates/foolslide.dart';
 import 'templates/guya.dart';
+import 'templates/heancms.dart';
 import 'templates/iken.dart';
 import 'templates/json_readers.dart';
 import 'templates/keyoapp.dart';
@@ -224,6 +225,14 @@ class CatalogEntry {
             ],
           ),
         'foolslide' => FoolSlideSource(
+            id: id,
+            name: name,
+            lang: lang,
+            baseUrl: baseUrl,
+            contentWarning: contentWarning,
+            vals: asMap(options['vals']),
+          ),
+        'heancms' => HeanCmsSource(
             id: id,
             name: name,
             lang: lang,
