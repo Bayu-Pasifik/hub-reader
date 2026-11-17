@@ -45,6 +45,18 @@ lib/sources/
 ├── templates/foolslide.dart    # template FoolSlide (pembaca scanlation lama; POST adult=true)
 ├── templates/guya.dart         # template Guya (API JSON: Guya.moe, Danke, Hachirumi)
 ├── templates/json_readers.dart # Monochrome CMS dan BakkinReaderX (JSON)
+├── templates/mangak.dart       # template MangaK (Next.js + API JSON: Comizy, MangaK, ToonTop)
+├── templates/heancms.dart      # template HeanCms (API JSON: Omega Scans, Lua Scans)
+├── templates/ezmanhwa.dart     # template EZManhwa (API JSON: EZmanga, Qi Scans)
+├── templates/initmanga.dart    # template InitManga (UIkit; gambar bisa terenkripsi AES-CBC; mode Image Protector belum)
+├── templates/mangataro.dart    # template MangaTaro (API WP + token bab MD5: MangaTaro, Rolia Scan)
+├── templates/mangadventure.dart # template MangAdventure (API JSON v2: Arc-Relight, Assorted Scans)
+├── templates/manga18.dart      # template Manga18 (HTML; gambar ber-base64 di skrip)
+├── templates/hiper.dart        # template Hiper (API tRPC + header kunci per situs: Hiperdex, Hipercool, Hipertoon)
+├── templates/mangareader.dart  # template MangaReader (gaya "ani": MangaNow, Jmanga, Raw Otaku; filter hanya urutan)
+├── templates/wpcomics.dart     # template WPComics (gaya NetTruyen: XOXO Comics, Raw18, 5 situs Vietnam)
+├── templates/goda.dart         # template GoDa (Astro: Goda, 18Manhua)
+├── templates/liliana.dart      # template Liliana (ManhuaPlus, Raw1001, MangaKoma, DocTruyen5s)
 ├── catalog.dart                # entri katalog → instance template
 ├── catalog_repository.dart     # katalog dari repo remote + cache + sumber yatim
 ├── id/komiku.dart              # sumber kustom, scraping HTML
@@ -52,7 +64,7 @@ lib/sources/
 ├── en/                         # sumber kustom Inggris: MangaPill, TCB Scans, MangaKatana, Weeb Central,
 │                               #   Flame Comics (JSON Next.js), Mangafreak, Asura Scans (API JSON)
 └── registry.dart               # sumber kustom + katalog
-assets/sources/catalog.json     # 517 sumber template, dibuat oleh tool/
+assets/sources/catalog.json     # 561 sumber template, dibuat oleh tool/
 tool/generate_source_catalog.mjs  # generator katalog dari keiyoushi/extensions-source
 lib/state/source_providers.dart # infinite scroll, detail, halaman bab
 lib/ui/screens/sources/         # daftar sumber per bahasa, jelajah, detail, reader
