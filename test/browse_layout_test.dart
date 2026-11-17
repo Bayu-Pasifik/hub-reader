@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hub_reader/state/browse_layout_provider.dart';
 import 'package:hub_reader/state/core_providers.dart';
 import 'package:hub_reader/state/source_library_providers.dart' show LibraryDisplay, libraryLayoutProvider;
-import 'package:hub_reader/state/browse_layout_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {

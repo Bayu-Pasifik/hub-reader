@@ -12,7 +12,6 @@ import '../../../state/novel_providers.dart';
 import '../../router.dart';
 import '../../../state/browse_layout_provider.dart';
 import '../../widgets/browse_layout.dart';
-import '../../widgets/source_widgets.dart';
 import '../../widgets/cover_hero.dart';
 import '../sources/sources_screen.dart' show languageName;
 
