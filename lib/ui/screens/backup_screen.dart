@@ -412,7 +412,9 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     try {
       final file = await AutoBackup.run(ref.read(sharedPreferencesProvider), ref.read(novelRepositoryProvider), library: ref.read(sourceLibraryStoreProvider));
       if (mounted) _snack(trp('Cadangan dibuat: {name}', {'name': file.uri.pathSegments.last}));
-      setState(() => _autoList = AutoBackup.list());
+      setState(() {
+        _autoList = AutoBackup.list();
+      });
     } catch (e) {
       if (mounted) _snack(trp('Gagal membuat cadangan: {e}', {'e': e}));
     } finally {
@@ -422,7 +424,11 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
 
   Future<void> _setAuto(AutoBackupConfig config) async {
     await ref.read(autoBackupProvider.notifier).set(config);
-    if (mounted) setState(() => _autoList = AutoBackup.list());
+    if (mounted) {
+      setState(() {
+        _autoList = AutoBackup.list();
+      });
+    }
   }
 
   Future<void> _confirmRestore(Object? decoded) async {
@@ -713,7 +719,11 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                                   try {
                                     await e.file.delete();
                                   } catch (_) {}
-                                  if (mounted) setState(() => _autoList = AutoBackup.list());
+                                  if (mounted) {
+                                    setState(() {
+                                      _autoList = AutoBackup.list();
+                                    });
+                                  }
                                 },
                         ),
                       ),
