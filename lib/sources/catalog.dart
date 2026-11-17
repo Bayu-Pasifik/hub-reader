@@ -7,6 +7,7 @@ import 'templates/ezmanhwa.dart';
 import 'templates/foolslide.dart';
 import 'templates/guya.dart';
 import 'templates/heancms.dart';
+import 'templates/hiper.dart';
 import 'templates/iken.dart';
 import 'templates/initmanga.dart';
 import 'templates/json_readers.dart';
@@ -183,6 +184,15 @@ class CatalogEntry {
               for (final t in asList(options['titles']))
                 if (asList(t) case [final String title, final String path]) (title, path),
             ],
+          ),
+        'hiper' => HiperSource(
+            id: id,
+            name: name,
+            lang: lang,
+            baseUrl: baseUrl,
+            contentWarning: contentWarning,
+            vals: asMap(options['vals']),
+            genreList: [for (final g in asList(options['genres'])) if (asString(g) case final s?) s],
           ),
         'iken' => IkenSource(
             id: id,
