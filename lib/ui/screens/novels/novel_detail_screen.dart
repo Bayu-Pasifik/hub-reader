@@ -177,6 +177,7 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
       ..showSnackBar(SnackBar(
         content: Text(was ? tr('Dihapus dari favorit') : tr('Ditambahkan ke favorit')),
         duration: const Duration(seconds: 4),
+        persist: false,
         action: was ? null : SnackBarAction(label: tr('Kategori'), onPressed: () => showCategorySheet(context, item.key)),
       ));
   }

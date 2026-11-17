@@ -750,6 +750,7 @@ class _FavoriteActionsSheet extends ConsumerWidget {
                   ..hideCurrentSnackBar()
                   ..showSnackBar(SnackBar(
                     content: Text(trp('"{title}" dihapus dari favorit', {'title': entry.item.title})),
+                    persist: false,
                     action: SnackBarAction(label: tr('Urungkan'), onPressed: () => favorites.restore(entry)),
                   ));
               },

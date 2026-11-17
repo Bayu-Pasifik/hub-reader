@@ -176,6 +176,7 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
       ..showSnackBar(SnackBar(
         content: Text(wasFavorite ? tr('Dihapus dari favorit') : tr('Ditambahkan ke favorit')),
         duration: const Duration(seconds: 4),
+        persist: false,
         action: wasFavorite ? null : SnackBarAction(label: tr('Kategori'), onPressed: () => showCategorySheet(context, item.key)),
       ));
   }
