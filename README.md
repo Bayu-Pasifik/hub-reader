@@ -49,6 +49,8 @@ lib/sources/
 ├── catalog_repository.dart     # katalog dari repo remote + cache + sumber yatim
 ├── id/komiku.dart              # sumber kustom, scraping HTML
 ├── id/shinigami.dart           # sumber kustom, API JSON (api.shngm.io)
+├── en/                         # sumber kustom Inggris: MangaPill, TCB Scans, MangaKatana, Weeb Central,
+│                               #   Flame Comics (JSON Next.js), Mangafreak
 └── registry.dart               # sumber kustom + katalog
 assets/sources/catalog.json     # 517 sumber template, dibuat oleh tool/
 tool/generate_source_catalog.mjs  # generator katalog dari keiyoushi/extensions-source

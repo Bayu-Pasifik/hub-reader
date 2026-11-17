@@ -1,4 +1,10 @@
 import 'catalog.dart';
+import 'en/flamecomics.dart';
+import 'en/mangafreak.dart';
+import 'en/mangakatana.dart';
+import 'en/mangapill.dart';
+import 'en/tcbscans.dart';
+import 'en/weebcentral.dart';
 import 'id/holotoon.dart';
 import 'id/komiknextgonline.dart';
 import 'id/komikrealm.dart';
@@ -20,6 +26,12 @@ List<MangaSource> customSources() => [
       KomikRealmSource(),
       TheMangaSource(),
       HolotoonSource(),
+      MangaPillSource(),
+      TcbScansSource(),
+      MangaKatanaSource(),
+      WeebCentralSource(),
+      FlameComicsSource(),
+      MangafreakSource(),
     ];
 
 /// Semua sumber: sumber kustom + katalog template (Madara, MangaThemesia)
