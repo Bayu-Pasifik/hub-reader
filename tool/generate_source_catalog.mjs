@@ -14,7 +14,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga', 'loneseal', 'natsuid', 'colorlibanime', 'hwalumi', 'keyoapp', 'vinetheme', 'mangacatalog', 'iken', 'zmanga', 'mangahub', 'yiimanga', 'mangabox', 'yiimadara', 'foolslide', 'monochrome', 'bakkin', 'guya', 'mangak', 'heancms', 'ezmanhwa', 'initmanga', 'mangataro', 'mangadventure', 'manga18', 'hiper']);
+const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga', 'loneseal', 'natsuid', 'colorlibanime', 'hwalumi', 'keyoapp', 'vinetheme', 'mangacatalog', 'iken', 'zmanga', 'mangahub', 'yiimanga', 'mangabox', 'yiimadara', 'foolslide', 'monochrome', 'bakkin', 'guya', 'mangak', 'heancms', 'ezmanhwa', 'initmanga', 'mangataro', 'mangadventure', 'manga18', 'hiper', 'mangareader']);
 
 const [root, outArg] = process.argv.slice(2);
 if (!root) {
@@ -137,6 +137,14 @@ for (const langDir of listDirs(path.join(root, 'src'))) {
       if (tags.length) options.tags = tags;
       const agg = str(kt, /API_PAGES_PER_PAGE\s*=\s*(\d+)/);
       if (agg) (options.vals ??= {}).aggregatePages = Number(agg);
+    } else if (theme === 'mangareader') {
+      // Parameter halaman (p/page) dan URL AJAX gambar khusus situs.
+      const pageParam = str(kt, /addPage[\s\S]*?addQueryParameter\("(\w+)",\s*page\.toString\(\)\)/);
+      if (pageParam && pageParam !== 'page') (options.vals ??= {}).pageParam = pageParam;
+      const sel = str(kt, /pageListParseSelector\(\)\s*=\s*"([^"]+)"/);
+      if (sel) (options.vals ??= {}).pageSelector = sel;
+      const ajax = str(kt, /getAjaxUrl\(id: String\)[^=]*=\s*"\$baseUrl([^"]+)"/);
+      if (ajax) (options.vals ??= {}).ajaxUrl = ajax.replace('$id', '{id}');
     } else if (theme === 'hiper') {
       // Header kunci per situs: .set("x-cfg-auth", "kunci"); daftar genre: override val genresList = listOf(...).
       const hdr = kt.match(/\.set\("(x-[a-z-]+)",\s*"([^"]+)"\)/);

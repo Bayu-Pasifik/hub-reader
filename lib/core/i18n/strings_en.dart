@@ -1035,6 +1035,7 @@ const Map<String, String> stringsEn = {
   'URL bab tidak dikenali.': 'Chapter URL not recognized.',
   'Bab tidak ditemukan.': 'Chapter not found.',
   'Daftar gambar tidak terbaca.': 'The image list could not be read.',
+  'ID bab tidak ditemukan.': 'The chapter ID was not found.',
   'Situs menolak permintaan; buka bab di WebView.': 'The site rejected the request; open the chapter in the WebView.',
   'Jam server tidak diketahui.': 'The server clock could not be determined.',
   'Bab berkunci.': 'This chapter is locked.',

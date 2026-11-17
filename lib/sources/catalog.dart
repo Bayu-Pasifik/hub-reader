@@ -19,6 +19,7 @@ import 'templates/mangabox.dart';
 import 'templates/mangadventure.dart';
 import 'templates/mangak.dart';
 import 'templates/mangataro.dart';
+import 'templates/mangareader.dart';
 import 'templates/mangacatalog.dart';
 import 'templates/mangahub.dart';
 import 'templates/mangathemesia.dart';
@@ -298,6 +299,14 @@ class CatalogEntry {
                 : MangAdventureSource.defaultCategories,
           ),
         'manga18' => Manga18Source(
+            id: id,
+            name: name,
+            lang: lang,
+            baseUrl: baseUrl,
+            contentWarning: contentWarning,
+            vals: asMap(options['vals']),
+          ),
+        'mangareader' => MangaReaderSource(
             id: id,
             name: name,
             lang: lang,

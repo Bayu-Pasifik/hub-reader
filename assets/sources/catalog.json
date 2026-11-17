@@ -2,7 +2,7 @@
  "source": "https://github.com/keiyoushi/extensions-source",
  "license": "Apache-2.0",
  "generatedAt": "2026-11-17",
- "count": 545,
+ "count": 548,
  "sources": [
   {
    "id": "all.allporncomicsco",
@@ -2453,6 +2453,20 @@
     "vals": {
      "mangaSource": "mn05"
     }
+   }
+  },
+  {
+   "id": "en.manganow",
+   "name": "MangaNow",
+   "lang": "en",
+   "baseUrl": "https://manganow.to",
+   "contentWarning": "mixed",
+   "theme": "mangareader",
+   "options": {
+    "vals": {
+     "pageSelector": ".container-reader-chapter > .iv-card:not([data-url$=manganow.jpg])"
+    },
+    "customized": true
    }
   },
   {
@@ -7721,6 +7735,23 @@
    "theme": "mangathemesia"
   },
   {
+   "id": "ja.jmanga",
+   "name": "Jmanga",
+   "lang": "ja",
+   "baseUrl": "https://jmanga.cloud",
+   "contentWarning": "mixed",
+   "theme": "mangareader",
+   "options": {
+    "vals": {
+     "searchPathSegment": "",
+     "searchKeyword": "q",
+     "chapterIdSelect": "ja-chaps",
+     "pageParam": "p",
+     "ajaxUrl": "/json/chapter?mode=vertical&id={id}"
+    }
+   }
+  },
+  {
    "id": "ja.kmansin09",
    "name": "Kmansin09",
    "lang": "ja",
@@ -7730,6 +7761,23 @@
    "options": {
     "noAjax": true,
     "chapterMode": "MangaAjax"
+   }
+  },
+  {
+   "id": "ja.rawotaku",
+   "name": "Raw Otaku",
+   "lang": "ja",
+   "baseUrl": "https://rawotaku.com",
+   "contentWarning": "mixed",
+   "theme": "mangareader",
+   "options": {
+    "vals": {
+     "searchPathSegment": "",
+     "searchKeyword": "q",
+     "chapterIdSelect": "ja-chaps",
+     "pageParam": "p",
+     "ajaxUrl": "/json/chapter?mode=vertical&id={id}"
+    }
    }
   },
   {
