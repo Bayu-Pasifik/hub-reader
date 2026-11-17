@@ -14,7 +14,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga', 'loneseal', 'natsuid', 'colorlibanime', 'hwalumi', 'keyoapp', 'vinetheme', 'mangacatalog', 'iken', 'zmanga', 'mangahub', 'yiimanga', 'mangabox', 'yiimadara', 'foolslide', 'monochrome', 'bakkin', 'guya', 'mangak', 'heancms', 'ezmanhwa', 'initmanga', 'mangataro', 'mangadventure', 'manga18', 'hiper', 'mangareader', 'wpcomics', 'goda']);
+const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga', 'loneseal', 'natsuid', 'colorlibanime', 'hwalumi', 'keyoapp', 'vinetheme', 'mangacatalog', 'iken', 'zmanga', 'mangahub', 'yiimanga', 'mangabox', 'yiimadara', 'foolslide', 'monochrome', 'bakkin', 'guya', 'mangak', 'heancms', 'ezmanhwa', 'initmanga', 'mangataro', 'mangadventure', 'manga18', 'hiper', 'mangareader', 'wpcomics', 'goda', 'liliana']);
 
 const [root, outArg] = process.argv.slice(2);
 if (!root) {

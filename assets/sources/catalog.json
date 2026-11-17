@@ -2,7 +2,7 @@
  "source": "https://github.com/keiyoushi/extensions-source",
  "license": "Apache-2.0",
  "generatedAt": "2026-11-17",
- "count": 557,
+ "count": 561,
  "sources": [
   {
    "id": "all.allporncomicsco",
@@ -3503,6 +3503,14 @@
    "options": {
     "chapterMode": "MangaAjax"
    }
+  },
+  {
+   "id": "en.manhuaplusorg",
+   "name": "ManhuaPlus (Unoriginal)",
+   "lang": "en",
+   "baseUrl": "https://manhuaplus.org",
+   "contentWarning": "safe",
+   "theme": "liliana"
   },
   {
    "id": "en.manhuaus",
@@ -7793,6 +7801,17 @@
    }
   },
   {
+   "id": "ja.mangakoma",
+   "name": "Manga Koma",
+   "lang": "ja",
+   "baseUrl": "https://mangakoma01.top",
+   "contentWarning": "nsfw",
+   "theme": "liliana",
+   "options": {
+    "customized": true
+   }
+  },
+  {
    "id": "ja.rawotaku",
    "name": "Raw Otaku",
    "lang": "ja",
@@ -7808,6 +7827,14 @@
      "ajaxUrl": "/json/chapter?mode=vertical&id={id}"
     }
    }
+  },
+  {
+   "id": "ja.raw1001",
+   "name": "Raw1001",
+   "lang": "ja",
+   "baseUrl": "https://raw1001.net",
+   "contentWarning": "mixed",
+   "theme": "liliana"
   },
   {
    "id": "ja.raw18",
@@ -10280,6 +10307,14 @@
     },
     "customized": true
    }
+  },
+  {
+   "id": "vi.doctruyen5s",
+   "name": "DocTruyen5s",
+   "lang": "vi",
+   "baseUrl": "https://manga.io.vn",
+   "contentWarning": "safe",
+   "theme": "liliana"
   },
   {
    "id": "vi.hentaivnplus",

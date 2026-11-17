@@ -13,6 +13,7 @@ import 'templates/iken.dart';
 import 'templates/initmanga.dart';
 import 'templates/json_readers.dart';
 import 'templates/keyoapp.dart';
+import 'templates/liliana.dart';
 import 'templates/loneseal.dart';
 import 'templates/madara.dart';
 import 'templates/manga18.dart';
@@ -325,6 +326,14 @@ class CatalogEntry {
             vals: asMap(options['vals']),
           ),
         'wpcomics' => WPComicsSource(
+            id: id,
+            name: name,
+            lang: lang,
+            baseUrl: baseUrl,
+            contentWarning: contentWarning,
+            vals: asMap(options['vals']),
+          ),
+        'liliana' => LilianaSource(
             id: id,
             name: name,
             lang: lang,
