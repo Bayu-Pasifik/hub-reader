@@ -6,7 +6,7 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 | Bahasa / Language | Belum di-port / Not ported |
 |---|---|
 | Indonesia (id) | 14 (6 sudah di-port: Bacami, MG Komik, West Manga, Komik AV, Hentai Crot, Pix Hentai) |
-| English (en) | 200 (43 sudah di-port dari kelompok Aman / 43 ported from the Safe group) |
+| English (en) | 198 (45 sudah di-port dari kelompok Aman / 45 ported from the Safe group) |
 
 > Catatan / Notes
 > - ID: Pencocokan berdasarkan nama folder dan nama tampilan; beberapa situs bisa salah terdeteksi. Sumber multi-bahasa (`all`) tidak termasuk.
@@ -49,9 +49,9 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 
 ---
 
-## 2. English (en) — 200 sumber / sources
+## 2. English (en) — 198 sumber / sources
 
-#### Aman / Safe (57 belum di-port / not yet ported; 43 sudah di-port / ported)
+#### Aman / Safe (55 belum di-port / not yet ported; 45 sudah di-port / ported)
 
 | # | Nama / Name | Situs / Site | Catatan / Note |
 |---|---|---|---|
@@ -95,14 +95,12 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 | 38 | OriYami | https://oriyami.com | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
 | 39 | Philia Scans | https://philiascans.org | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
 | 40 | Read Comics Online | https://readcomicsonline.ru | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
-| 41 | Read Vagabond Manga | https://readbagabondo.com | Belum di-port: perlu parser kustom. / Not ported yet: needs a custom parser. |
 | 42 | ReadComicsOnline.lol | https://readcomicsonline.lol | Belum di-port: perlu parser kustom. / Not ported yet: needs a custom parser. |
 | 43 | Renascans | https://renascans.net | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
 | 44 | Rinko Comics | https://rinkocomics.com | Belum di-port: perlu parser kustom. / Not ported yet: needs a custom parser. |
 | 45 | Snafu Comics | https://www.snafu-comics.com | Belum di-port: perlu parser kustom. / Not ported yet: needs a custom parser. |
 | 46 | StoneScape | https://stonescape.xyz | Belum di-port: perlu parser kustom. / Not ported yet: needs a custom parser. |
 | 47 | The Far Side | https://www.thefarside.com | Keterangan kartun digambar ke dalam gambar lewat interseptor bitmap; belum ada padanannya. / Captions are drawn into the image by a bitmap interceptor; no equivalent yet. |
-| 48 | The Girl from Random Chatting Manga Online | https://thegirlfromrandomchatting.com | Belum di-port: perlu parser kustom. / Not ported yet: needs a custom parser. |
 | 49 | The Interpretation of Shadows | https://tioscomic.com | Situs menjalankan pemeriksaan bot ("One moment, please") yang butuh browser. / Site runs a bot check ("One moment, please") that needs a browser. |
 | 50 | The Wandering Inn | https://webcomic.wanderinginn.com | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
 | 51 | Vision Haze | https://www.visionhaze.com | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
