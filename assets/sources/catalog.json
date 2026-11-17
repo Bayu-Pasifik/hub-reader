@@ -2,7 +2,7 @@
  "source": "https://github.com/keiyoushi/extensions-source",
  "license": "Apache-2.0",
  "generatedAt": "2026-11-17",
- "count": 500,
+ "count": 511,
  "sources": [
   {
    "id": "all.allporncomicsco",
@@ -1120,6 +1120,14 @@
    }
   },
   {
+   "id": "en.deathtollscans",
+   "name": "Death Toll Scans",
+   "lang": "en",
+   "baseUrl": "https://reader.deathtollscans.net",
+   "contentWarning": "safe",
+   "theme": "foolslide"
+  },
+  {
    "id": "en.decadencescans",
    "name": "Decadence Scans",
    "lang": "en",
@@ -2075,6 +2083,14 @@
    "options": {
     "chapterMode": "MangaAjax"
    }
+  },
+  {
+   "id": "en.mangatellers",
+   "name": "Mangatellers",
+   "lang": "en",
+   "baseUrl": "https://reader.mangatellers.gr",
+   "contentWarning": "safe",
+   "theme": "foolslide"
   },
   {
    "id": "en.mangatoday",
@@ -3554,6 +3570,17 @@
    "theme": "mangathemesia"
   },
   {
+   "id": "en.seinagi",
+   "name": "Seinagi",
+   "lang": "en",
+   "baseUrl": "https://reader.seinagi.org.es",
+   "contentWarning": "mixed",
+   "theme": "foolslide",
+   "options": {
+    "customized": true
+   }
+  },
+  {
    "id": "en.seraphicdeviltry",
    "name": "SeraphicDeviltry",
    "lang": "en",
@@ -4320,6 +4347,14 @@
    }
   },
   {
+   "id": "es.lolivault",
+   "name": "Lolivault",
+   "lang": "es",
+   "baseUrl": "https://lector.lolivault.net",
+   "contentWarning": "nsfw",
+   "theme": "foolslide"
+  },
+  {
    "id": "es.mangatv",
    "name": "Manga  TV",
    "lang": "es",
@@ -4405,6 +4440,19 @@
    }
   },
   {
+   "id": "es.menudofansub",
+   "name": "Menudo-Fansub",
+   "lang": "es",
+   "baseUrl": "https://www.menudo-fansub.com",
+   "contentWarning": "safe",
+   "theme": "foolslide",
+   "options": {
+    "vals": {
+     "urlModifier": "/slide"
+    }
+   }
+  },
+  {
    "id": "es.monopolyscan",
    "name": "Monopoly Scan",
    "lang": "es",
@@ -4433,6 +4481,28 @@
    "baseUrl": "https://nekoproject.org",
    "contentWarning": "mixed",
    "theme": "mangathemesia"
+  },
+  {
+   "id": "es.noranofansub",
+   "name": "Nora no Fansub",
+   "lang": "es",
+   "baseUrl": "https://www.noranofansub.com",
+   "contentWarning": "safe",
+   "theme": "foolslide",
+   "options": {
+    "vals": {
+     "urlModifier": "/lector"
+    },
+    "customized": true
+   }
+  },
+  {
+   "id": "es.pzykosis666hfansub",
+   "name": "Pzykosis666HFansub",
+   "lang": "es",
+   "baseUrl": "https://lector.pzykosis666hfansub.com",
+   "contentWarning": "nsfw",
+   "theme": "foolslide"
   },
   {
    "id": "es.ragnarokscanlation",
@@ -4464,6 +4534,28 @@
    "baseUrl": "https://r1.richtoon.top",
    "contentWarning": "safe",
    "theme": "madara"
+  },
+  {
+   "id": "es.seinagi",
+   "name": "Seinagi",
+   "lang": "es",
+   "baseUrl": "https://online.seinagi.org.es",
+   "contentWarning": "mixed",
+   "theme": "foolslide",
+   "options": {
+    "customized": true
+   }
+  },
+  {
+   "id": "es.seinagi.2",
+   "name": "Seinagi Adulto",
+   "lang": "es",
+   "baseUrl": "https://adulto.seinagi.org.es",
+   "contentWarning": "mixed",
+   "theme": "foolslide",
+   "options": {
+    "customized": true
+   }
   },
   {
    "id": "es.seraphicdeviltry",
@@ -5549,6 +5641,33 @@
    "theme": "madara",
    "options": {
     "chapterMode": "MangaAjax"
+   }
+  },
+  {
+   "id": "it.juinjutsuteamreader",
+   "name": "Juin Jutsu Team Reader",
+   "lang": "it",
+   "baseUrl": "https://www.juinjutsureader.ovh",
+   "contentWarning": "safe",
+   "theme": "foolslide",
+   "options": {
+    "vals": {
+     "supportsLatest": false
+    },
+    "customized": true
+   }
+  },
+  {
+   "id": "it.nifteam",
+   "name": "NIFTeam",
+   "lang": "it",
+   "baseUrl": "https://read-nifteam.info",
+   "contentWarning": "safe",
+   "theme": "foolslide",
+   "options": {
+    "vals": {
+     "urlModifier": "/slide"
+    }
    }
   },
   {

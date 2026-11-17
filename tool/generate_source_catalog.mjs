@@ -14,7 +14,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga', 'loneseal', 'natsuid', 'colorlibanime', 'hwalumi', 'keyoapp', 'vinetheme', 'mangacatalog', 'iken', 'zmanga', 'mangahub', 'yiimanga', 'mangabox', 'yiimadara']);
+const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga', 'loneseal', 'natsuid', 'colorlibanime', 'hwalumi', 'keyoapp', 'vinetheme', 'mangacatalog', 'iken', 'zmanga', 'mangahub', 'yiimanga', 'mangabox', 'yiimadara', 'foolslide']);
 
 const [root, outArg] = process.argv.slice(2);
 if (!root) {
@@ -155,7 +155,7 @@ for (const langDir of listDirs(path.join(root, 'src'))) {
     for (const block of sourceBlocks(gradle)) {
       const lang = str(block, /lang\s*=\s*"([^"]+)"/) ?? langDir;
       const baseUrl = str(block, /baseUrl\s*=\s*"([^"]+)"/) ?? str(block, /custom\("([^"]+)"\)/) ?? str(block, /"(https?:\/\/[^"]+)"/);
-      if (!baseUrl) {
+      if (!baseUrl || /^https?:\/\/(127\.0\.0\.1|localhost)/.test(baseUrl)) {
         skipped.noUrl++;
         continue;
       }

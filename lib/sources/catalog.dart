@@ -3,6 +3,7 @@ import 'dart:convert';
 import '../core/utils/json.dart';
 import 'models.dart';
 import 'source.dart';
+import 'templates/foolslide.dart';
 import 'templates/iken.dart';
 import 'templates/keyoapp.dart';
 import 'templates/loneseal.dart';
@@ -218,6 +219,14 @@ class CatalogEntry {
               for (final g in asList(options['genres']))
                 if (asList(g) case [final String label, final String path]) (label, path),
             ],
+          ),
+        'foolslide' => FoolSlideSource(
+            id: id,
+            name: name,
+            lang: lang,
+            baseUrl: baseUrl,
+            contentWarning: contentWarning,
+            vals: asMap(options['vals']),
           ),
         _ => null,
       };
