@@ -104,8 +104,8 @@ class MonochromeSource extends HttpSource {
         if (name.isNotEmpty) ' - $name',
       ].join();
       chapters.add(SourceChapter(
-        // Jumlah halaman dan versi di fragmen: dibutuhkan untuk membentuk URL gambar.
-        url: '$baseUrl/chapters/$chapterId#$chapterId,${asInt(c['version']) ?? 0},${asInt(c['length']) ?? 0}',
+        // Fragmen: id seri/id bab, versi, jumlah halaman. URL gambar: /media/<seri>/<bab>/N.jpg.
+        url: '$baseUrl/chapters/$chapterId#$id/$chapterId,${asInt(c['version']) ?? 0},${asInt(c['length']) ?? 0}',
         name: title,
         number: number,
         scanlator: asString(c['scanGroup']),
