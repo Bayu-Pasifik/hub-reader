@@ -10622,6 +10622,50 @@
     },
     "customized": true
    }
+  },
+  {
+   "id": "id.bacakomik",
+   "name": "BacaKomik",
+   "lang": "id",
+   "baseUrl": "https://bacakomik.my",
+   "contentWarning": "safe",
+   "theme": "animepost",
+   "options": {
+    "mangaUrlDirectory": "/daftar-komik"
+   }
+  },
+  {
+   "id": "id.komikindoid",
+   "name": "KomikIndoID",
+   "lang": "id",
+   "baseUrl": "https://komikindo.ch",
+   "contentWarning": "mixed",
+   "theme": "animepost",
+   "options": {
+    "mangaUrlDirectory": "/daftar-manga"
+   }
+  },
+  {
+   "id": "id.mirrorkomik",
+   "name": "MirrorKomik",
+   "lang": "id",
+   "baseUrl": "https://mirrorkomik.info",
+   "contentWarning": "mixed",
+   "theme": "mangathemesia",
+   "options": {
+    "mangaUrlDirectory": "/manga"
+   }
+  },
+  {
+   "id": "id.narasininja",
+   "name": "NarasiNinja",
+   "lang": "id",
+   "baseUrl": "https://narasininja.net",
+   "contentWarning": "safe",
+   "theme": "mangathemesia",
+   "options": {
+    "mangaUrlDirectory": "/komik"
+   }
   }
  ]
 }

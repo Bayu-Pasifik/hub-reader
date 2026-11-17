@@ -6,10 +6,13 @@ import 'en/mangakatana.dart';
 import 'en/mangapill.dart';
 import 'en/tcbscans.dart';
 import 'en/weebcentral.dart';
+import 'id/areakomik.dart';
 import 'id/holotoon.dart';
 import 'id/komiknextgonline.dart';
 import 'id/komikrealm.dart';
 import 'id/komiku.dart';
+import 'id/mangalay.dart';
+import 'id/mynimeku.dart';
 import 'id/koronaxscan.dart';
 import 'id/shinigami.dart';
 import 'id/themanga.dart';
@@ -27,6 +30,9 @@ List<MangaSource> customSources() => [
       KomikRealmSource(),
       TheMangaSource(),
       HolotoonSource(),
+      AreaKomikSource(),
+      MyNimekuSource(),
+      MangalaySource(),
       MangaPillSource(),
       TcbScansSource(),
       MangaKatanaSource(),

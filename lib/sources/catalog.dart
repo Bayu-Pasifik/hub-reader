@@ -15,6 +15,7 @@ import 'templates/json_readers.dart';
 import 'templates/keyoapp.dart';
 import 'templates/liliana.dart';
 import 'templates/loneseal.dart';
+import 'templates/animepost.dart';
 import 'templates/madara.dart';
 import 'templates/manga18.dart';
 import 'templates/mangabox.dart';
@@ -116,6 +117,14 @@ class CatalogEntry {
             mangaUrlDirectory: asString(options['mangaUrlDirectory']) ?? '/manga',
             pageSelector:
                 asString(options['pageSelector'])?.replaceAll(':not(noscript img)', '') ?? 'div#readerarea img',
+          ),
+        'animepost' => AnimePostSource(
+            id: id,
+            name: name,
+            lang: lang,
+            baseUrl: baseUrl,
+            contentWarning: contentWarning,
+            mangaUrlDirectory: asString(options['mangaUrlDirectory']) ?? '/daftar-komik',
           ),
         'madara' => MadaraSource(
             id: id,
