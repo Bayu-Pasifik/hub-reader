@@ -3,6 +3,7 @@ import 'dart:convert';
 import '../core/utils/json.dart';
 import 'models.dart';
 import 'source.dart';
+import 'templates/ezmanhwa.dart';
 import 'templates/foolslide.dart';
 import 'templates/guya.dart';
 import 'templates/heancms.dart';
@@ -231,6 +232,18 @@ class CatalogEntry {
             baseUrl: baseUrl,
             contentWarning: contentWarning,
             vals: asMap(options['vals']),
+          ),
+        'ezmanhwa' => EZManhwaSource(
+            id: id,
+            name: name,
+            lang: lang,
+            baseUrl: baseUrl,
+            contentWarning: contentWarning,
+            vals: asMap(options['vals']),
+            genreList: [
+              for (final g in asList(options['genres']))
+                if (asList(g) case [final String label, final String value]) (label, value),
+            ],
           ),
         'heancms' => HeanCmsSource(
             id: id,
