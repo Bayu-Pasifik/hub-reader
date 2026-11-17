@@ -101,7 +101,10 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
       if (view.trackStatus.isNotEmpty && !(extras.trackStatuses[f.item.key]?.contains(view.trackStatus) ?? false)) {
         return false;
       }
-      if (q.isNotEmpty && !f.item.title.toLowerCase().contains(q)) return false;
+      if (view.tag.isNotEmpty && !f.tags.any((t) => t.toLowerCase() == view.tag.toLowerCase())) return false;
+      if (q.isNotEmpty && !f.item.title.toLowerCase().contains(q) && !f.tags.any((t) => t.toLowerCase().contains(q))) {
+        return false;
+      }
       return true;
     }).toList();
     final epoch = DateTime(0);
@@ -484,6 +487,7 @@ class _ViewSheet extends ConsumerWidget {
       bool? unstartedOnly,
       bool? trackedOnly,
       String? trackStatus,
+      String? tag,
     }) {
       if (perCategory) {
         return catN.set(cat, (
@@ -496,6 +500,7 @@ class _ViewSheet extends ConsumerWidget {
           unstartedOnly: unstartedOnly ?? view.unstartedOnly,
           trackedOnly: trackedOnly ?? view.trackedOnly,
           trackStatus: trackStatus ?? view.trackStatus,
+          tag: tag ?? view.tag,
         ));
       }
       return globalN.set(
@@ -508,8 +513,10 @@ class _ViewSheet extends ConsumerWidget {
         unstartedOnly: unstartedOnly,
         trackedOnly: trackedOnly,
         trackStatus: trackStatus,
+        tag: tag,
       );
     }
+    final allTags = ref.watch(libraryTagsProvider);
     final layout = ref.watch(libraryLayoutProvider);
     final layoutNotifier = ref.read(libraryLayoutProvider.notifier);
     final theme = Theme.of(context);
@@ -598,6 +605,20 @@ class _ViewSheet extends ConsumerWidget {
                   ),
               ]),
             ),
+            if (allTags.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(tr('Tag'), style: theme.textTheme.titleSmall),
+              const SizedBox(height: 6),
+              Wrap(spacing: 6, runSpacing: 6, children: [
+                for (final t in allTags)
+                  FilterChip(
+                    label: Text(t),
+                    selected: view.tag.toLowerCase() == t.toLowerCase(),
+                    onSelected: (on) => setView(tag: on ? t : ''),
+                  ),
+              ]),
+              const SizedBox(height: 4),
+            ],
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
               title: Text(tr('Hanya yang sudah diunduh')),
@@ -639,6 +660,10 @@ class _FavoriteActionsSheet extends ConsumerWidget {
     final current = ref.watch(sourceFavoritesProvider.select(
       (list) => list.where((f) => f.item.key == entry.item.key).firstOrNull?.categories ?? const <String>[],
     ));
+    final currentTags = ref.watch(sourceFavoritesProvider.select(
+      (list) => list.where((f) => f.item.key == entry.item.key).firstOrNull?.tags ?? const <String>[],
+    ));
+    final allTags = ref.watch(libraryTagsProvider);
     final favorites = ref.read(sourceFavoritesProvider.notifier);
     return SafeArea(
       child: SingleChildScrollView(
@@ -676,6 +701,34 @@ class _FavoriteActionsSheet extends ConsumerWidget {
                   await favorites.setCategories(entry.item.key, [...current, name.trim()]);
                 }
               },
+            ),
+            const Divider(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: Text(tr('Tag'), style: Theme.of(context).textTheme.titleSmall),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
+              child: Wrap(spacing: 6, runSpacing: 6, children: [
+                for (final t in {...allTags, ...currentTags})
+                  FilterChip(
+                    label: Text(t),
+                    selected: currentTags.any((x) => x.toLowerCase() == t.toLowerCase()),
+                    onSelected: (on) => favorites.setTags(
+                      entry.item.key,
+                      on ? [...currentTags, t] : currentTags.where((x) => x.toLowerCase() != t.toLowerCase()).toList(),
+                    ),
+                  ),
+                ActionChip(
+                  avatar: const Icon(Icons.add, size: 18),
+                  label: Text(tr('Tag baru')),
+                  onPressed: () async {
+                    final name = await askCategoryName(context, title: tr('Tag baru'), hint: tr('Nama tag'));
+                    if (name == null) return;
+                    await favorites.setTags(entry.item.key, [...currentTags, name]);
+                  },
+                ),
+              ]),
             ),
             const Divider(),
             ListTile(

@@ -70,7 +70,7 @@ class CategorySheet extends ConsumerWidget {
   }
 }
 
-Future<String?> askCategoryName(BuildContext context, {required String title, String initial = ''}) {
+Future<String?> askCategoryName(BuildContext context, {required String title, String initial = '', String? hint}) {
   final controller = TextEditingController(text: initial);
   return showDialog<String>(
     context: context,
@@ -79,7 +79,7 @@ Future<String?> askCategoryName(BuildContext context, {required String title, St
       content: TextField(
         controller: controller,
         autofocus: true,
-        decoration: InputDecoration(hintText: tr('Nama kategori')),
+        decoration: InputDecoration(hintText: hint ?? tr('Nama kategori')),
         onSubmitted: (v) => Navigator.pop(context, v),
       ),
       actions: [

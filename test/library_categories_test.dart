@@ -71,6 +71,7 @@ void main() {
       unstartedOnly: false,
       trackedOnly: true,
       trackStatus: 'completed',
+      tag: 'isekai',
     );
     await c.read(libraryCategoryViewsProvider.notifier).set('Baca', custom);
 

@@ -78,6 +78,23 @@ class SourceFavoritesNotifier extends Notifier<List<SourceFavorite>> {
     await _store.writeFavorites(state);
   }
 
+  /// Atur tag satu favorit (dirapikan: tanpa spasi tepi, kosong, atau kembar).
+  Future<void> setTags(String key, List<String> tags) async {
+    final clean = normalizeTags(tags);
+    state = [for (final f in state) f.item.key == key ? f.copyWith(tags: clean, updatedAt: f.updatedAt) : f];
+    await _store.writeFavorites(state);
+  }
+
+  /// Ganti nama / hapus ([to] null) tag di semua favorit.
+  Future<void> renameTag(String from, String? to) async {
+    bool same(String t) => t.toLowerCase() == from.toLowerCase();
+    state = [
+      for (final f in state)
+        f.tags.any(same) ? f.copyWith(tags: normalizeTags([for (final t in f.tags) same(t) ? (to ?? '') : t])) : f,
+    ];
+    await _store.writeFavorites(state);
+  }
+
   /// Ganti nama / hapus ([to] null) kategori di semua favorit.
   Future<void> renameCategory(String from, String? to) async {
     state = [
@@ -92,6 +109,22 @@ class SourceFavoritesNotifier extends Notifier<List<SourceFavorite>> {
     await _store.writeFavorites(state);
   }
 }
+
+/// Rapikan daftar tag: pangkas spasi, buang kosong dan kembar (tanpa beda huruf besar/kecil).
+List<String> normalizeTags(Iterable<String> tags) {
+  final seen = <String>{};
+  return [
+    for (final t in tags.map((e) => e.trim()))
+      if (t.isNotEmpty && seen.add(t.toLowerCase())) t,
+  ];
+}
+
+/// Semua tag yang dipakai favorit, urut abjad.
+final libraryTagsProvider = Provider<List<String>>((ref) {
+  // Tanpa beda huruf besar/kecil: ejaan pertama yang ditemui dipakai.
+  final tags = normalizeTags([for (final f in ref.watch(sourceFavoritesProvider)) ...f.tags]);
+  return tags..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+});
 
 // --------------------------------------------------------------- kategori
 
@@ -184,6 +217,7 @@ typedef LibraryView = ({
   bool unstartedOnly,
   bool trackedOnly,
   String trackStatus,
+  String tag,
 });
 
 const defaultLibraryView = (
@@ -196,6 +230,7 @@ const defaultLibraryView = (
   unstartedOnly: false,
   trackedOnly: false,
   trackStatus: '',
+  tag: '',
 );
 
 /// Apakah tampilan berbeda dari bawaan (untuk lencana tombol filter).
@@ -211,6 +246,7 @@ List<String> encodeLibraryView(LibraryView v) => [
       v.unstartedOnly ? '1' : '0',
       v.trackedOnly ? '1' : '0',
       v.trackStatus,
+      v.tag,
     ];
 
 LibraryView decodeLibraryView(List<Object?> raw) {
@@ -227,6 +263,7 @@ LibraryView decodeLibraryView(List<Object?> raw) {
     unstartedOnly: flag(6),
     trackedOnly: flag(7),
     trackStatus: raw.length > 8 && raw[8] is String ? raw[8] as String : '',
+    tag: raw.length > 9 && raw[9] is String ? raw[9] as String : '',
   );
 }
 
@@ -248,6 +285,7 @@ class LibraryViewNotifier extends Notifier<LibraryView> {
     bool? unstartedOnly,
     bool? trackedOnly,
     String? trackStatus,
+    String? tag,
   }) async {
     state = (
       sort: sort ?? state.sort,
@@ -259,6 +297,7 @@ class LibraryViewNotifier extends Notifier<LibraryView> {
       unstartedOnly: unstartedOnly ?? state.unstartedOnly,
       trackedOnly: trackedOnly ?? state.trackedOnly,
       trackStatus: trackStatus ?? state.trackStatus,
+      tag: tag ?? state.tag,
     );
     await ref.read(sharedPreferencesProvider).setStringList(_key, encodeLibraryView(state));
   }

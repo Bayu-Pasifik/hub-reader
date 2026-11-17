@@ -942,6 +942,12 @@ const Map<String, String> stringsEn = {
   'Sinkronkan progres baca': 'Sync reading progress',
   'Sinkron otomatis': 'Auto sync',
   'Lanjutkan membaca': 'Continue reading',
+  'Tag': 'Tags',
+  'Tag baru': 'New tag',
+  'Catatan sorotan': 'Highlight note',
+  'Tulis catatan…': 'Write a note…',
+  'Hapus catatan': 'Delete note',
+  'Nama tag': 'Tag name',
   'Sinkronkan favorit dan progres saat aplikasi dibuka atau kembali aktif':
       'Sync favorites and progress when the app opens or returns to the foreground',
   'Gabungkan favorit, riwayat, dan posisi baca dengan perangkat lain':

@@ -50,7 +50,13 @@ class SourceLibraryItem {
 }
 
 class SourceFavorite {
-  const SourceFavorite({required this.item, required this.addedAt, this.categories = const [], this.updatedAt});
+  const SourceFavorite({
+    required this.item,
+    required this.addedAt,
+    this.categories = const [],
+    this.tags = const [],
+    this.updatedAt,
+  });
 
   final SourceLibraryItem item;
   final DateTime addedAt;
@@ -58,16 +64,26 @@ class SourceFavorite {
   /// Nama kategori (rak) tempat favorit ini; kosong = tanpa kategori.
   final List<String> categories;
 
+  /// Label bebas (mis. "tamat", "isekai"); satu favorit boleh punya banyak.
+  final List<String> tags;
+
   /// Terakhir difavoritkan/dipulihkan. Dipakai sync untuk membandingkan dengan
   /// waktu penghapusan; null = pakai [addedAt].
   final DateTime? updatedAt;
 
   DateTime get aliveSince => updatedAt != null && updatedAt!.isAfter(addedAt) ? updatedAt! : addedAt;
 
-  SourceFavorite copyWith({SourceLibraryItem? item, List<String>? categories, DateTime? updatedAt}) => SourceFavorite(
+  SourceFavorite copyWith({
+    SourceLibraryItem? item,
+    List<String>? categories,
+    List<String>? tags,
+    DateTime? updatedAt,
+  }) =>
+      SourceFavorite(
         item: item ?? this.item,
         addedAt: addedAt,
         categories: categories ?? this.categories,
+        tags: tags ?? this.tags,
         updatedAt: updatedAt ?? this.updatedAt,
       );
 
@@ -78,6 +94,7 @@ class SourceFavorite {
       item: item,
       addedAt: asDate(json['added_at']) ?? DateTime.now(),
       categories: asStringList(json['categories']),
+      tags: asStringList(json['tags']),
       updatedAt: asDate(json['updated_at']),
     );
   }
@@ -87,6 +104,7 @@ class SourceFavorite {
         'added_at': addedAt.toIso8601String(),
         if (updatedAt != null) 'updated_at': updatedAt!.toIso8601String(),
         if (categories.isNotEmpty) 'categories': categories,
+        if (tags.isNotEmpty) 'tags': tags,
       };
 }
 

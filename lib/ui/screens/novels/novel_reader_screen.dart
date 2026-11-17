@@ -25,6 +25,7 @@ import '../../../sources/models.dart';
 import '../../../state/bookmarks_provider.dart';
 import '../../../state/download_providers.dart' show downloadIndexProvider;
 import '../../../state/novel_highlights.dart';
+import '../../widgets/highlight_note_dialog.dart';
 import '../../../state/novel_providers.dart';
 import '../../../state/reading_stats_provider.dart';
 import '../../../state/source_library_providers.dart';
@@ -498,9 +499,23 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
             label: alreadyHighlighted ? tr('Hapus sorot') : tr('Sorot'),
             onPressed: () {
               final n = ref.read(novelHighlightsProvider.notifier);
-              alreadyHighlighted ? n.remove(key, text) : n.add(key, text);
+              if (alreadyHighlighted) {
+                n.remove(key, text);
+                ref.read(novelHighlightNotesProvider.notifier).removeFor(key, text);
+              } else {
+                n.add(key, text);
+              }
               state.hideToolbar();
               state.clearSelection();
+            },
+          ),
+        if (text.isNotEmpty)
+          ContextMenuButtonItem(
+            label: tr('Catatan'),
+            onPressed: () {
+              state.hideToolbar();
+              state.clearSelection();
+              _editNote(key, text);
             },
           ),
         if (text.isNotEmpty)
@@ -513,6 +528,17 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
           ),
       ],
     );
+  }
+
+  /// Tambah/ubah catatan pada teks terpilih; teks otomatis disorot bila belum.
+  Future<void> _editNote(String key, String text) async {
+    final highlights = ref.read(novelHighlightsProvider)[key] ?? const <String>[];
+    final target = matchingHighlight(highlights, text) ?? text.trim();
+    final notes = ref.read(novelHighlightNotesProvider.notifier);
+    final result = await askHighlightNote(context, quote: target, initial: notes.noteFor(key, target) ?? '');
+    if (result == null) return;
+    if (result.trim().isNotEmpty) await ref.read(novelHighlightsProvider.notifier).add(key, target);
+    await notes.set(key, target, result);
   }
 
   Future<void> _showLookup(String text) async {
