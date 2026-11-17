@@ -11,6 +11,12 @@ import 'id/holotoon.dart';
 import 'id/komiknextgonline.dart';
 import 'id/komikrealm.dart';
 import 'id/komiku.dart';
+import 'id/wurmz.dart';
+import 'id/ikiru.dart';
+import 'id/bacakomikpics.dart';
+import 'id/keikomik.dart';
+import 'id/riztranslation.dart';
+import 'id/omicaso.dart';
 import 'id/mangalay.dart';
 import 'id/mynimeku.dart';
 import 'id/koronaxscan.dart';
@@ -33,6 +39,12 @@ List<MangaSource> customSources() => [
       AreaKomikSource(),
       MyNimekuSource(),
       MangalaySource(),
+      WurmzSource(),
+      IkiruSource(),
+      BacaKomikPicsSource(),
+      KeikomikSource(),
+      RiztranslationSource(),
+      OmicasoSource(),
       MangaPillSource(),
       TcbScansSource(),
       MangaKatanaSource(),

@@ -518,6 +518,8 @@ const Map<String, String> stringsEn = {
   'Bab ini memakai gambar teracak yang belum didukung.': 'This chapter uses scrambled images, which are not supported yet.',
   'Gagal membaca versi data situs.': 'Could not read the site data version.',
   'Gambar bab tidak ditemukan.': 'Chapter images not found.',
+  'Permintaan gagal.': 'Request failed.',
+  'Gagal memproses detail komik.': 'Failed to process the comic details.',
   'Gambar bab tidak ditemukan. Bab mungkin terkunci atau format situs berubah.': 'Chapter images not found. The chapter may be locked or the site format changed.',
   'Gambar tidak ditemukan (bab premium?).': 'Images not found (premium chapter?).',
   'Gambar tidak ditemukan.': 'Images not found.',
