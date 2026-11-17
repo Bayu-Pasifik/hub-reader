@@ -4,6 +4,7 @@ import '../core/utils/json.dart';
 import 'models.dart';
 import 'source.dart';
 import 'templates/foolslide.dart';
+import 'templates/guya.dart';
 import 'templates/iken.dart';
 import 'templates/json_readers.dart';
 import 'templates/keyoapp.dart';
@@ -232,6 +233,14 @@ class CatalogEntry {
         'monochrome' =>
           MonochromeSource(id: id, name: name, lang: lang, baseUrl: baseUrl, contentWarning: contentWarning),
         'bakkin' => BakkinSource(id: id, name: name, lang: lang, baseUrl: baseUrl, contentWarning: contentWarning),
+        'guya' => GuyaSource(
+            id: id,
+            name: name,
+            lang: lang,
+            baseUrl: baseUrl,
+            contentWarning: contentWarning,
+            vals: asMap(options['vals']),
+          ),
         _ => null,
       };
 }

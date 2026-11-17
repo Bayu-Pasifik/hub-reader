@@ -14,7 +14,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga', 'loneseal', 'natsuid', 'colorlibanime', 'hwalumi', 'keyoapp', 'vinetheme', 'mangacatalog', 'iken', 'zmanga', 'mangahub', 'yiimanga', 'mangabox', 'yiimadara', 'foolslide', 'monochrome', 'bakkin']);
+const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga', 'loneseal', 'natsuid', 'colorlibanime', 'hwalumi', 'keyoapp', 'vinetheme', 'mangacatalog', 'iken', 'zmanga', 'mangahub', 'yiimanga', 'mangabox', 'yiimadara', 'foolslide', 'monochrome', 'bakkin', 'guya']);
 
 const [root, outArg] = process.argv.slice(2);
 if (!root) {
@@ -123,6 +123,9 @@ for (const langDir of listDirs(path.join(root, 'src'))) {
         v.supportsFilterFetching = false;
         options.genres = [...kt.matchAll(/"([^"]+)" to "([^"]+)",/g)].map((m) => [m[1], 'genre/' + m[2]]);
       }
+    } else if (theme === 'guya') {
+      // Magical Translators: bahasa dibedakan akhiran slug (-ES, -PL).
+      if (/filterMangas/.test(kt) && /-ES/.test(kt)) (options.vals ??= {}).slugLangFilter = true;
     } else if (theme === 'iken') {
       const perPage = str(kt, /override\s+val\s+perPage\s*=\s*(\d+)/);
       if (perPage) options.perPage = Number(perPage);

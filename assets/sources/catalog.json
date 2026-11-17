@@ -2,7 +2,7 @@
  "source": "https://github.com/keiyoushi/extensions-source",
  "license": "Apache-2.0",
  "generatedAt": "2026-11-17",
- "count": 513,
+ "count": 517,
  "sources": [
   {
    "id": "all.allporncomicsco",
@@ -61,6 +61,19 @@
      "seriesGenreSelector": ".wd-full:has(b:contains(Generos)) a, .wd-full:has(b:contains(Tags)) a"
     },
     "customized": true
+   }
+  },
+  {
+   "id": "all.magicaltranslators",
+   "name": "Magical Translators",
+   "lang": "all",
+   "baseUrl": "https://mahoushoujobu.com",
+   "contentWarning": "safe",
+   "theme": "guya",
+   "options": {
+    "vals": {
+     "slugLangFilter": true
+    }
    }
   },
   {
@@ -1128,6 +1141,14 @@
    }
   },
   {
+   "id": "en.dankefurslesen",
+   "name": "Danke fürs Lesen",
+   "lang": "en",
+   "baseUrl": "https://danke.moe",
+   "contentWarning": "mixed",
+   "theme": "guya"
+  },
+  {
    "id": "en.deathtollscans",
    "name": "Death Toll Scans",
    "lang": "en",
@@ -1355,6 +1376,22 @@
    "baseUrl": "https://grimscans.com",
    "contentWarning": "safe",
    "theme": "keyoapp"
+  },
+  {
+   "id": "en.guya",
+   "name": "Guya",
+   "lang": "en",
+   "baseUrl": "https://guya.cubari.moe",
+   "contentWarning": "safe",
+   "theme": "guya"
+  },
+  {
+   "id": "en.hachirumi",
+   "name": "Hachirumi",
+   "lang": "en",
+   "baseUrl": "https://hachirumi.com",
+   "contentWarning": "mixed",
+   "theme": "guya"
   },
   {
    "id": "en.hadesscans",
