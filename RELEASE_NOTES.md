@@ -1,3 +1,20 @@
+## Hub Reader v3.2.0
+
+### Sumber baru
+- Katalog bertambah dari 493 menjadi 517 sumber komik lewat lima template baru: **YiiMadara** (7 sumber), **FoolSlide** (11), **Monochrome** dan **Bakkin** (2), serta **Guya** (4).
+- Tujuh sumber bahasa Inggris tulisan tangan: **MangaPill**, **TCB Scans**, **MangaKatana**, **Weeb Central**, **Flame Comics**, **Mangafreak**, dan **Asura Scans** (lewat API; bab berbayar disembunyikan, bab dengan gambar teracak belum didukung).
+- Beberapa sumber FoolSlide sedang mati di situsnya (timeout atau HTTP 500); itu masalah situs, bukan aplikasi.
+
+### Perbaikan
+- Gambar Monochrome kini memakai id seri dan id bab di URL-nya, jadi halaman bab tidak lagi 404.
+
+### Catatan
+- Sumber dari template baru hanya muncul setelah memasang APK ini; pembaruan katalog saja tidak cukup.
+- Pasang APK yang sesuai ABI HP (arm64-v8a untuk kebanyakan HP).
+- Pasang di atas versi lama hanya bila ditandatangani dengan kunci yang sama.
+
+---
+
 ## Hub Reader v3.1.0
 
 ### Sumber baru
