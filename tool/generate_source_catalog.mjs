@@ -14,7 +14,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga', 'loneseal', 'natsuid', 'colorlibanime', 'hwalumi', 'keyoapp', 'vinetheme', 'mangacatalog', 'iken', 'zmanga']);
+const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga', 'loneseal', 'natsuid', 'colorlibanime', 'hwalumi', 'keyoapp', 'vinetheme', 'mangacatalog', 'iken', 'zmanga', 'mangahub', 'yiimanga', 'mangabox']);
 
 const [root, outArg] = process.argv.slice(2);
 if (!root) {
@@ -92,6 +92,16 @@ for (const langDir of listDirs(path.join(root, 'src'))) {
         .map((m) => [JSON.parse(`"${m[1]}"`), m[2] ?? '']);
       if (/chapterListSelector\(\)[^=]*=\s*"tbody > tr"/.test(kt)) options.layout = 'table';
       else if (/blogger\.googleusercontent/.test(kt)) options.layout = 'blogger';
+    } else if (theme === 'yiimanga') {
+      // Jalur genre: `listUrl("genero", ...)` (Spanyol) atau genreUrl tanpa segmen "page" (ToonGod).
+      const genreSeg = str(kt, /listUrl\("(\w+)",\s*genre/);
+      if (genreSeg) options.genreSegment = genreSeg;
+      if (/fun genreUrl[\s\S]*?addPathSegment\(page\.toString\(\)\)/.test(kt) && !/fun genreUrl[\s\S]*?"page"/.test(kt)) options.genreWithoutPageSegment = true;
+      if (/spanishGenres/.test(kt)) options.spanishGenres = true;
+      if (/\.item-move/.test(kt)) options.popularFromHome = true;
+    } else if (theme === 'mangabox') {
+      // Mangakakalot: slug berbentuk id diganti slug dari judul.
+      if (/titleToSlug/.test(kt)) options.titleSlugForIdSlugs = true;
     } else if (theme === 'iken') {
       const perPage = str(kt, /override\s+val\s+perPage\s*=\s*(\d+)/);
       if (perPage) options.perPage = Number(perPage);

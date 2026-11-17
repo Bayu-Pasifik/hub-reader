@@ -38,12 +38,15 @@ lib/sources/
 ├── templates/vinetheme.dart    # template VineTheme (API JSON + payload Next.js RSC)
 ├── templates/mangacatalog.dart # template MangaCatalog (situs fan satu franchise, daftar judul tetap)
 ├── templates/iken.dart         # template Iken (API JSON di api.<domain>)
+├── templates/mangahub.dart     # template MangaHub (GraphQL + kunci API, gambar bisa terenkripsi AES-GCM)
+├── templates/yiimanga.dart     # template Yiimanga (situs HTML: daftar /page/N/, genre, bab di satu halaman)
+├── templates/mangabox.dart     # template MangaBox (Mangabat, Mangakakalot, Manganelo; bab dari API)
 ├── catalog.dart                # entri katalog → instance template
 ├── catalog_repository.dart     # katalog dari repo remote + cache + sumber yatim
 ├── id/komiku.dart              # sumber kustom, scraping HTML
 ├── id/shinigami.dart           # sumber kustom, API JSON (api.shngm.io)
 └── registry.dart               # sumber kustom + katalog
-assets/sources/catalog.json     # 467 sumber template, dibuat oleh tool/
+assets/sources/catalog.json     # 493 sumber template, dibuat oleh tool/
 tool/generate_source_catalog.mjs  # generator katalog dari keiyoushi/extensions-source
 lib/state/source_providers.dart # infinite scroll, detail, halaman bab
 lib/ui/screens/sources/         # daftar sumber per bahasa, jelajah, detail, reader
@@ -52,8 +55,8 @@ lib/ui/screens/sources/         # daftar sumber per bahasa, jelajah, detail, rea
 ### Katalog sumber
 
 Semua extension keiyoushi yang memakai template yang sudah di-port masuk otomatis:
-**Madara** (247), **MangaThemesia** (115), **ZeistManga** (38), **Keyoapp** (16), **VineTheme** (6), **MangaCatalog** (18), **Iken** (9), LoneSeal (5),
-NatsuId (3), Hwalumi (2), ColorlibAnime (2), dan ZManga (6; CrotPedia wajib login member), jadi totalnya 467 sumber dalam 16 bahasa.
+**Madara** (247), **MangaThemesia** (115), **ZeistManga** (38), **Keyoapp** (16), **VineTheme** (6), **MangaCatalog** (18), **Iken** (9), **Yiimanga** (12), **MangaHub** (11), **MangaBox** (3), LoneSeal (5),
+NatsuId (3), Hwalumi (2), ColorlibAnime (2), dan ZManga (6; CrotPedia wajib login member), jadi totalnya 493 sumber dalam 16 bahasa.
 Keyoapp (12 Nov 2026): 11 dari 16 situs English jalan penuh; 3 di balik Cloudflare
 (Meitoon, Luna Toons, Kaizen Scans) dan 2 sedang down (Mist Scans, Grim Scans). VineTheme: 6 dari 6
 jalan penuh (Drake, Elf Toon, Kayn, Kero, Valir, Diva Scans). MangaCatalog: 17 dari 18 situs

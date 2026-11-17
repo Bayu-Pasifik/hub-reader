@@ -131,7 +131,10 @@ abstract class HttpSource extends MangaSource {
           }
           options.headers.putIfAbsent('User-Agent', () => userAgent);
           final cookie = cookies.cookieHeaderFor(options.uri);
-          if (cookie != null) options.headers['Cookie'] = cookie;
+          if (cookie != null) {
+            final own = options.headers['Cookie'];
+            options.headers['Cookie'] = own == null ? cookie : '$own; $cookie';
+          }
           handler.next(options);
         })));
 
@@ -201,6 +204,23 @@ abstract class HttpSource extends MangaSource {
     try {
       final response = await dio.getUri<String>(rewriteToCurrentHost(url), options: Options(headers: headers));
       return response.data ?? '';
+    } catch (error) {
+      throw toSourceException(error);
+    }
+  }
+
+  /// POST JSON, hasil JSON (mis. GraphQL).
+  Future<Object?> postJson(Uri url, Object body, {Map<String, String>? headers}) async {
+    await _throttle();
+    try {
+      final response = await dio.postUri<String>(
+        url,
+        data: jsonEncode(body),
+        options: Options(contentType: Headers.jsonContentType, headers: {'Accept': 'application/json', ...?headers}),
+      );
+      return jsonDecode(response.data ?? 'null');
+    } on FormatException {
+      throw SourceException(SourceErrorKind.parse, detail: tr('Respons API bukan JSON.'));
     } catch (error) {
       throw toSourceException(error);
     }

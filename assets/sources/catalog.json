@@ -2,7 +2,7 @@
  "source": "https://github.com/keiyoushi/extensions-source",
  "license": "Apache-2.0",
  "generatedAt": "2026-11-17",
- "count": 467,
+ "count": 493,
  "sources": [
   {
    "id": "all.allporncomicsco",
@@ -614,6 +614,34 @@
    }
   },
   {
+   "id": "en.onemangaco",
+   "name": "1Manga.co",
+   "lang": "en",
+   "baseUrl": "https://1manga.co",
+   "contentWarning": "mixed",
+   "theme": "mangahub",
+   "options": {
+    "vals": {
+     "mangaSource": "mn03"
+    }
+   }
+  },
+  {
+   "id": "en.fourporncomic",
+   "name": "4PornComic",
+   "lang": "en",
+   "baseUrl": "https://4porncomic.com",
+   "contentWarning": "nsfw",
+   "theme": "yiimanga",
+   "options": {
+    "vals": {
+     "mangaPath": "comic",
+     "searchParam": "q",
+     "popularPath": "porn-comics"
+    }
+   }
+  },
+  {
    "id": "en.akazascans",
    "name": "Akaza Scans",
    "lang": "en",
@@ -1122,6 +1150,21 @@
    }
   },
   {
+   "id": "en.hentai20lol",
+   "name": "Hentai20 (Unoriginal)",
+   "lang": "en",
+   "baseUrl": "https://hentai20.lol",
+   "contentWarning": "nsfw",
+   "theme": "yiimanga",
+   "options": {
+    "vals": {
+     "mangaPath": "manga",
+     "popularPath": "manga-lists",
+     "supportsFilterFetching": true
+    }
+   }
+  },
+  {
    "id": "en.hentai4free",
    "name": "Hentai4Free",
    "lang": "en",
@@ -1552,6 +1595,14 @@
    }
   },
   {
+   "id": "en.mangabat",
+   "name": "Mangabat",
+   "lang": "en",
+   "baseUrl": "https://www.mangabats.com",
+   "contentWarning": "mixed",
+   "theme": "mangabox"
+  },
+  {
    "id": "en.mangaforfreecom",
    "name": "Mangaforfree.com",
    "lang": "en",
@@ -1560,6 +1611,19 @@
    "theme": "madara",
    "options": {
     "chapterMode": "AdminAjax"
+   }
+  },
+  {
+   "id": "en.mangafoxfun",
+   "name": "MangaFox.fun",
+   "lang": "en",
+   "baseUrl": "https://mangafox.fun",
+   "contentWarning": "mixed",
+   "theme": "mangahub",
+   "options": {
+    "vals": {
+     "mangaSource": "mf01"
+    }
    }
   },
   {
@@ -1600,6 +1664,19 @@
    }
   },
   {
+   "id": "en.mangahereonl",
+   "name": "MangaHere.onl",
+   "lang": "en",
+   "baseUrl": "https://mangahere.onl",
+   "contentWarning": "mixed",
+   "theme": "mangahub",
+   "options": {
+    "vals": {
+     "mangaSource": "mh01"
+    }
+   }
+  },
+  {
    "id": "en.mangahot",
    "name": "MangaHot",
    "lang": "en",
@@ -1615,12 +1692,83 @@
    }
   },
   {
+   "id": "en.mangahubio",
+   "name": "MangaHub",
+   "lang": "en",
+   "baseUrl": "https://mangahub.io",
+   "contentWarning": "mixed",
+   "theme": "mangahub",
+   "options": {
+    "vals": {
+     "mangaSource": "m01"
+    }
+   }
+  },
+  {
+   "id": "en.mangakakalot",
+   "name": "Mangakakalot",
+   "lang": "en",
+   "baseUrl": "https://www.kakamanga.com",
+   "contentWarning": "mixed",
+   "theme": "mangabox",
+   "options": {
+    "titleSlugForIdSlugs": true
+   }
+  },
+  {
+   "id": "en.mangakakalotfun",
+   "name": "Mangakakalot.fun",
+   "lang": "en",
+   "baseUrl": "https://mangakakalot.fun",
+   "contentWarning": "mixed",
+   "theme": "mangahub",
+   "options": {
+    "vals": {
+     "mangaSource": "mn01"
+    }
+   }
+  },
+  {
    "id": "en.mangamaniacs",
    "name": "MangaManiacs",
    "lang": "en",
    "baseUrl": "https://mangamaniacs.org",
    "contentWarning": "nsfw",
    "theme": "madara"
+  },
+  {
+   "id": "en.manganelo",
+   "name": "Manganato",
+   "lang": "en",
+   "baseUrl": "https://www.natomanga.com",
+   "contentWarning": "mixed",
+   "theme": "mangabox"
+  },
+  {
+   "id": "en.manganel",
+   "name": "MangaNel",
+   "lang": "en",
+   "baseUrl": "https://manganel.me",
+   "contentWarning": "mixed",
+   "theme": "mangahub",
+   "options": {
+    "vals": {
+     "mangaSource": "mn05"
+    }
+   }
+  },
+  {
+   "id": "en.mangaonlinefun",
+   "name": "MangaOnline.fun",
+   "lang": "en",
+   "baseUrl": "https://mangaonline.fun",
+   "contentWarning": "mixed",
+   "theme": "mangahub",
+   "options": {
+    "vals": {
+     "mangaSource": "m02"
+    }
+   }
   },
   {
    "id": "en.mangaowlio",
@@ -1634,6 +1782,19 @@
     "mangaSubString": "read-1",
     "vals": {
      "mangaSubString": "read-1"
+    }
+   }
+  },
+  {
+   "id": "en.mangapandaonl",
+   "name": "MangaPanda.onl",
+   "lang": "en",
+   "baseUrl": "https://mangapanda.onl",
+   "contentWarning": "mixed",
+   "theme": "mangahub",
+   "options": {
+    "vals": {
+     "mangaSource": "mr02"
     }
    }
   },
@@ -1660,6 +1821,19 @@
    }
   },
   {
+   "id": "en.mangareadersite",
+   "name": "MangaReader.site",
+   "lang": "en",
+   "baseUrl": "https://mangareader.site",
+   "contentWarning": "mixed",
+   "theme": "mangahub",
+   "options": {
+    "vals": {
+     "mangaSource": "mr01"
+    }
+   }
+  },
+  {
    "id": "en.mangasushi",
    "name": "Mangasushi",
    "lang": "en",
@@ -1668,6 +1842,19 @@
    "theme": "madara",
    "options": {
     "chapterMode": "MangaAjax"
+   }
+  },
+  {
+   "id": "en.mangatoday",
+   "name": "MangaToday",
+   "lang": "en",
+   "baseUrl": "https://mangatoday.fun",
+   "contentWarning": "mixed",
+   "theme": "mangahub",
+   "options": {
+    "vals": {
+     "mangaSource": "m03"
+    }
    }
   },
   {
@@ -1785,6 +1972,20 @@
    }
   },
   {
+   "id": "en.manhwa18tx",
+   "name": "Manhwa18TX",
+   "lang": "en",
+   "baseUrl": "https://manhwa18tx.com",
+   "contentWarning": "mixed",
+   "theme": "yiimanga",
+   "options": {
+    "vals": {
+     "mangaPath": "manhwa",
+     "searchParam": "q"
+    }
+   }
+  },
+  {
    "id": "en.manhwa68",
    "name": "Manhwa68",
    "lang": "en",
@@ -1796,6 +1997,37 @@
     "filterNonMangaItems": false,
     "vals": {
      "filterNonMangaItems": false
+    }
+   }
+  },
+  {
+   "id": "en.manhwabuddy",
+   "name": "ManhwaBuddy",
+   "lang": "en",
+   "baseUrl": "https://manhwabuddy.com",
+   "contentWarning": "mixed",
+   "theme": "yiimanga",
+   "options": {
+    "popularFromHome": true,
+    "vals": {
+     "mangaPath": "manhwa",
+     "supportsLatest": true,
+     "supportsFilterFetching": true
+    },
+    "customized": true
+   }
+  },
+  {
+   "id": "en.manhwaddict",
+   "name": "Manhwaddict",
+   "lang": "en",
+   "baseUrl": "https://manhwaddict.com",
+   "contentWarning": "mixed",
+   "theme": "yiimanga",
+   "options": {
+    "vals": {
+     "mangaPath": "manga",
+     "searchParam": "q"
     }
    }
   },
@@ -1812,6 +2044,20 @@
     "filterNonMangaItems": false,
     "vals": {
      "filterNonMangaItems": false
+    }
+   }
+  },
+  {
+   "id": "en.manhwagalaxy",
+   "name": "ManhwaGalaxy",
+   "lang": "en",
+   "baseUrl": "https://manhwagalaxy.com",
+   "contentWarning": "mixed",
+   "theme": "yiimanga",
+   "options": {
+    "vals": {
+     "mangaPath": "manhwa",
+     "searchParam": "q"
     }
    }
   },
@@ -1854,6 +2100,20 @@
    "theme": "madara",
    "options": {
     "chapterMode": "MangaAjax"
+   }
+  },
+  {
+   "id": "en.manhwaonline",
+   "name": "ManhwaOnline",
+   "lang": "en",
+   "baseUrl": "https://manhwaonline.org",
+   "contentWarning": "mixed",
+   "theme": "yiimanga",
+   "options": {
+    "vals": {
+     "mangaPath": "manga",
+     "popularPath": "webtoons"
+    }
    }
   },
   {
@@ -1906,6 +2166,21 @@
      "mangaDetailsSelectorInfoTitle": "dt",
      "mangaDetailsSelectorInfoDescription": "dd",
      "pageListSelector": ".post-body, .check-box"
+    }
+   }
+  },
+  {
+   "id": "en.myreadingcomic",
+   "name": "MyReadingComic",
+   "lang": "en",
+   "baseUrl": "https://myreadingcomic.com",
+   "contentWarning": "nsfw",
+   "theme": "yiimanga",
+   "options": {
+    "vals": {
+     "mangaPath": "comic",
+     "searchParam": "q",
+     "popularPath": "porn-comics"
     }
    }
   },
@@ -1966,6 +2241,19 @@
    "theme": "madara",
    "options": {
     "chapterMode": "MangaAjax"
+   }
+  },
+  {
+   "id": "en.onemangainfo",
+   "name": "OneManga.info",
+   "lang": "en",
+   "baseUrl": "https://onemanga.info",
+   "contentWarning": "mixed",
+   "theme": "mangahub",
+   "options": {
+    "vals": {
+     "mangaSource": "mn02"
+    }
    }
   },
   {
@@ -3084,6 +3372,22 @@
    }
   },
   {
+   "id": "en.toongodcc",
+   "name": "ToonGod (Unoriginal)",
+   "lang": "en",
+   "baseUrl": "https://toongod.cc",
+   "contentWarning": "mixed",
+   "theme": "yiimanga",
+   "options": {
+    "genreWithoutPageSegment": true,
+    "vals": {
+     "mangaPath": "webtoon",
+     "popularPath": "webtoons",
+     "supportsFilterFetching": true
+    }
+   }
+  },
+  {
    "id": "en.toonily",
    "name": "Toonily",
    "lang": "en",
@@ -3322,6 +3626,20 @@
    "baseUrl": "https://yaoiscan.com",
    "contentWarning": "mixed",
    "theme": "madara"
+  },
+  {
+   "id": "en.yaoiscanme",
+   "name": "YaoiScan (Unoriginal)",
+   "lang": "en",
+   "baseUrl": "https://yaoiscan.me",
+   "contentWarning": "mixed",
+   "theme": "yiimanga",
+   "options": {
+    "vals": {
+     "mangaPath": "read",
+     "searchParam": "q"
+    }
+   }
   },
   {
    "id": "en.zazamanga",
@@ -3721,6 +4039,21 @@
    }
   },
   {
+   "id": "es.leermanhwas",
+   "name": "LeerManhwas",
+   "lang": "es",
+   "baseUrl": "https://leermanhwas.com",
+   "contentWarning": "nsfw",
+   "theme": "yiimanga",
+   "options": {
+    "genreSegment": "genero",
+    "spanishGenres": true,
+    "vals": {
+     "mangaPath": "manhwa"
+    }
+   }
+  },
+  {
    "id": "es.mangatv",
    "name": "Manga  TV",
    "lang": "es",
@@ -3892,6 +4225,21 @@
      "mangaDetailsSelectorStatus": "div.manga-status span:last-child",
      "mangaDetailsSelectorDescription": "div.summary__content p",
      "filterGenresSelector": ".manga-genres"
+    }
+   }
+  },
+  {
+   "id": "es.tmomanhwa",
+   "name": "TmoManhwa",
+   "lang": "es",
+   "baseUrl": "https://tmomanhwa.com",
+   "contentWarning": "nsfw",
+   "theme": "yiimanga",
+   "options": {
+    "genreSegment": "genero",
+    "spanishGenres": true,
+    "vals": {
+     "mangaPath": "manhwa"
     }
    }
   },

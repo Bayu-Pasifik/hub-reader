@@ -1026,4 +1026,11 @@ const Map<String, String> stringsEn = {
   'Batas cache gambar': 'Image cache limit',
   'Entri yang paling lama tidak dibuka dibuang bila lewat batas': 'The least recently opened entries are removed when over the limit',
   'Tanpa batas': 'No limit',
+  'Alamat sumber sudah berubah.': 'The source address has changed.',
+  'Respons API tidak berisi data.': 'The API response has no data.',
+  'URL bab tidak dikenali.': 'Chapter URL not recognized.',
+  'Bab tidak ditemukan.': 'Chapter not found.',
+  'Daftar gambar tidak terbaca.': 'The image list could not be read.',
+  'Format enkripsi tidak dikenal.': 'Unknown encryption format.',
+  'Kunci dekripsi tidak ditemukan.': 'Decryption key not found.',
 };

@@ -7,11 +7,14 @@ import 'templates/iken.dart';
 import 'templates/keyoapp.dart';
 import 'templates/loneseal.dart';
 import 'templates/madara.dart';
+import 'templates/mangabox.dart';
 import 'templates/mangacatalog.dart';
+import 'templates/mangahub.dart';
 import 'templates/mangathemesia.dart';
 import 'templates/natsuid.dart';
 import 'templates/small_templates.dart';
 import 'templates/vinetheme.dart';
+import 'templates/yiimanga.dart';
 import 'templates/zeistmanga.dart';
 
 /// Satu entri di `assets/sources/catalog.json` (dihasilkan oleh
@@ -178,6 +181,30 @@ class CatalogEntry {
             contentWarning: contentWarning,
             perPage: asInt(options['perPage']) ?? 18,
             sortPagesByFilename: asMap(options['vals'])['sortPagesByFilename'] == true,
+          ),
+        'mangahub' => MangaHubSource(
+            id: id,
+            name: name,
+            lang: lang,
+            baseUrl: baseUrl,
+            contentWarning: contentWarning,
+            mangaSource: asString(asMap(options['vals'])['mangaSource']) ?? 'm01',
+          ),
+        'yiimanga' => YiimangaSource(
+            id: id,
+            name: name,
+            lang: lang,
+            baseUrl: baseUrl,
+            contentWarning: contentWarning,
+            vals: {...asMap(options['vals']), for (final k in const ['genreSegment', 'genreWithoutPageSegment', 'spanishGenres', 'popularFromHome']) if (options.containsKey(k)) k: options[k]},
+          ),
+        'mangabox' => MangaBoxSource(
+            id: id,
+            name: name,
+            lang: lang,
+            baseUrl: baseUrl,
+            contentWarning: contentWarning,
+            titleSlugForIdSlugs: options['titleSlugForIdSlugs'] == true,
           ),
         _ => null,
       };
