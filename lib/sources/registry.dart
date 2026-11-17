@@ -12,6 +12,7 @@ import 'en/webcomics_h.dart';
 import 'en/webcomics_i.dart';
 import 'en/webcomics_j.dart';
 import 'en/webcomics_k.dart';
+import 'en/webcomics_l.dart';
 import 'en/asurascans.dart';
 import 'en/flamecomics.dart';
 import 'en/mangafreak.dart';
@@ -82,6 +83,7 @@ List<MangaSource> customSources() => [
       ...webcomicsI(),
       ...webcomicsJ(),
       ...webcomicsK(),
+      ...webcomicsL(),
       MangaPillSource(),
       TcbScansSource(),
       MangaKatanaSource(),
