@@ -247,7 +247,7 @@ abstract class HttpSource extends MangaSource {
     final cookie = cookies.cookieHeaderFor(baseUri);
     return {
       'User-Agent': userAgent,
-      'Referer': referer ?? '$baseUrl/',
+      'Referer': referer == null ? '$baseUrl/' : baseUri.resolve(referer).toString(),
       'Accept': 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
       if (cookie != null) 'Cookie': cookie,
     };
