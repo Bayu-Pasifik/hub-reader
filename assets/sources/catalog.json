@@ -2,7 +2,7 @@
  "source": "https://github.com/keiyoushi/extensions-source",
  "license": "Apache-2.0",
  "generatedAt": "2026-11-17",
- "count": 537,
+ "count": 539,
  "sources": [
   {
    "id": "all.allporncomicsco",
@@ -947,6 +947,34 @@
    }
   },
   {
+   "id": "en.arcrelight",
+   "name": "Arc-Relight",
+   "lang": "en",
+   "baseUrl": "https://arc-relight.com",
+   "contentWarning": "safe",
+   "theme": "mangadventure",
+   "options": {
+    "genres": [
+     "4-Koma",
+     "Chaos;Head",
+     "Collection",
+     "Comedy",
+     "Drama",
+     "Jubilee",
+     "Mystery",
+     "Psychological",
+     "Robotics;Notes",
+     "Romance",
+     "Sci-Fi",
+     "Seinen",
+     "Shounen",
+     "Steins;Gate",
+     "Supernatural",
+     "Tragedy"
+    ]
+   }
+  },
+  {
    "id": "en.arenascans",
    "name": "Arena Scans",
    "lang": "en",
@@ -984,6 +1012,14 @@
    "options": {
     "variant": "v2"
    }
+  },
+  {
+   "id": "en.assortedscans",
+   "name": "Assorted Scans",
+   "lang": "en",
+   "baseUrl": "https://assortedscans.com",
+   "contentWarning": "safe",
+   "theme": "mangadventure"
   },
   {
    "id": "en.asterscans",

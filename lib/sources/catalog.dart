@@ -14,6 +14,7 @@ import 'templates/keyoapp.dart';
 import 'templates/loneseal.dart';
 import 'templates/madara.dart';
 import 'templates/mangabox.dart';
+import 'templates/mangadventure.dart';
 import 'templates/mangak.dart';
 import 'templates/mangataro.dart';
 import 'templates/mangacatalog.dart';
@@ -274,6 +275,16 @@ class CatalogEntry {
               for (final t in asList(options['tags']))
                 if (asList(t) case [final String label, final String value]) (label, value),
             ],
+          ),
+        'mangadventure' => MangAdventureSource(
+            id: id,
+            name: name,
+            lang: lang,
+            baseUrl: baseUrl,
+            contentWarning: contentWarning,
+            categories: options.containsKey('genres')
+                ? [for (final g in asList(options['genres'])) if (asString(g) case final s?) s]
+                : MangAdventureSource.defaultCategories,
           ),
         'mangak' => MangaKSource(id: id, name: name, lang: lang, baseUrl: baseUrl, contentWarning: contentWarning),
         'monochrome' =>

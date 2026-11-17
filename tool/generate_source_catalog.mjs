@@ -14,7 +14,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga', 'loneseal', 'natsuid', 'colorlibanime', 'hwalumi', 'keyoapp', 'vinetheme', 'mangacatalog', 'iken', 'zmanga', 'mangahub', 'yiimanga', 'mangabox', 'yiimadara', 'foolslide', 'monochrome', 'bakkin', 'guya', 'mangak', 'heancms', 'ezmanhwa', 'initmanga', 'mangataro']);
+const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga', 'loneseal', 'natsuid', 'colorlibanime', 'hwalumi', 'keyoapp', 'vinetheme', 'mangacatalog', 'iken', 'zmanga', 'mangahub', 'yiimanga', 'mangabox', 'yiimadara', 'foolslide', 'monochrome', 'bakkin', 'guya', 'mangak', 'heancms', 'ezmanhwa', 'initmanga', 'mangataro', 'mangadventure']);
 
 const [root, outArg] = process.argv.slice(2);
 if (!root) {
@@ -137,6 +137,10 @@ for (const langDir of listDirs(path.join(root, 'src'))) {
       if (tags.length) options.tags = tags;
       const agg = str(kt, /API_PAGES_PER_PAGE\s*=\s*(\d+)/);
       if (agg) (options.vals ??= {}).aggregatePages = Number(agg);
+    } else if (theme === 'mangadventure') {
+      // Kategori khusus situs: override val categories = listOf("A", "B", ...).
+      const list = kt.match(/override\s+val\s+categories\s*=\s*listOf\(([\s\S]*?)\)/)?.[1];
+      if (list) options.genres = [...list.matchAll(/"([^"]+)"/g)].map((m) => m[1]);
     } else if (theme === 'guya') {
       // Magical Translators: bahasa dibedakan akhiran slug (-ES, -PL).
       if (/filterMangas/.test(kt) && /-ES/.test(kt)) (options.vals ??= {}).slugLangFilter = true;
