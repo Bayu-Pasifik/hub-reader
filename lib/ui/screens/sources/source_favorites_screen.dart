@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../data/models/source_library.dart';
+import '../../../trackers/tracker.dart' show TrackStatus;
 import '../../../state/download_providers.dart' show downloadIndexProvider;
 import '../../../state/library_updates_provider.dart';
 import '../../../state/novel_providers.dart';
@@ -12,12 +13,18 @@ import '../../../state/source_library_providers.dart';
 import '../../../state/tracker_providers.dart' show trackLinksProvider;
 import '../../router.dart';
 import '../../widgets/category_sheet.dart' show askCategoryName;
+import '../../widgets/continue_reading.dart';
 import '../../widgets/library_routing.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/state_views.dart';
 import '../../../core/i18n/strings.dart';
 
-typedef LibraryExtras = ({Set<String> tracked, Map<String, DateTime> updatedAt, Map<String, String> sourceNames});
+typedef LibraryExtras = ({
+  Set<String> tracked,
+  Map<String, Set<String>> trackStatuses,
+  Map<String, DateTime> updatedAt,
+  Map<String, String> sourceNames,
+});
 
 /// Favorit komik & novel, per kategori (tab), dengan filter dan urutan.
 class SourceFavoritesScreen extends ConsumerStatefulWidget {
@@ -55,15 +62,20 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
       final cur = updatedAt[u.item.key];
       if (cur == null || u.foundAt.isAfter(cur)) updatedAt[u.item.key] = u.foundAt;
     }
+    final links = ref.watch(trackLinksProvider);
     final tracked = {
-      for (final e in ref.watch(trackLinksProvider).entries)
+      for (final e in links.entries)
         if (e.value.isNotEmpty) e.key,
+    };
+    final trackStatuses = {
+      for (final e in links.entries)
+        if (e.value.isNotEmpty) e.key: {for (final l in e.value) l.status.name},
     };
     final names = <String, String>{};
     for (final f in ref.watch(sourceFavoritesProvider)) {
       names.putIfAbsent(f.item.sourceId, () => librarySourceInfo(ref, f.item.sourceId).name);
     }
-    return (tracked: tracked, updatedAt: updatedAt, sourceNames: names);
+    return (tracked: tracked, trackStatuses: trackStatuses, updatedAt: updatedAt, sourceNames: names);
   }
 
   List<SourceFavorite> _apply(
@@ -86,6 +98,9 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
       if (view.startedOnly && !lastRead.containsKey(f.item.key)) return false;
       if (view.unstartedOnly && lastRead.containsKey(f.item.key)) return false;
       if (view.trackedOnly && !extras.tracked.contains(f.item.key)) return false;
+      if (view.trackStatus.isNotEmpty && !(extras.trackStatuses[f.item.key]?.contains(view.trackStatus) ?? false)) {
+        return false;
+      }
       if (q.isNotEmpty && !f.item.title.toLowerCase().contains(q)) return false;
       return true;
     }).toList();
@@ -250,22 +265,31 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
                   ],
                 ),
         ),
-        body: favorites.isEmpty
-            ? EmptyView(
-                icon: Icons.favorite_outline,
-                title: tr('Belum ada favorit'),
-                message: tr('Ketuk ikon hati di halaman detail seri untuk menyimpannya ke sini.'),
-              )
-            : TabBarView(
-                children: [
-                  for (final c in tabs)
-                    _FavoritesGrid(
-                      entries: _apply(favorites, c, effectiveLibraryView(view, categoryViews, c), unread, lastRead, downloaded, extras),
-                      unread: unread,
-                      onLongPress: _openActions,
+        body: Column(
+          children: [
+            // Tersembunyi saat mencari supaya hasil pencarian tidak terdorong.
+            if (!_searching) const ContinueReadingStrip(),
+            Expanded(
+              child: favorites.isEmpty
+                  ? EmptyView(
+                      icon: Icons.favorite_outline,
+                      title: tr('Belum ada favorit'),
+                      message: tr('Ketuk ikon hati di halaman detail seri untuk menyimpannya ke sini.'),
+                    )
+                  : TabBarView(
+                      children: [
+                        for (final c in tabs)
+                          _FavoritesGrid(
+                            entries: _apply(
+                                favorites, c, effectiveLibraryView(view, categoryViews, c), unread, lastRead, downloaded, extras),
+                            unread: unread,
+                            onLongPress: _openActions,
+                          ),
+                      ],
                     ),
-                ],
-              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -459,6 +483,7 @@ class _ViewSheet extends ConsumerWidget {
       bool? startedOnly,
       bool? unstartedOnly,
       bool? trackedOnly,
+      String? trackStatus,
     }) {
       if (perCategory) {
         return catN.set(cat, (
@@ -470,6 +495,7 @@ class _ViewSheet extends ConsumerWidget {
           startedOnly: startedOnly ?? view.startedOnly,
           unstartedOnly: unstartedOnly ?? view.unstartedOnly,
           trackedOnly: trackedOnly ?? view.trackedOnly,
+          trackStatus: trackStatus ?? view.trackStatus,
         ));
       }
       return globalN.set(
@@ -481,6 +507,7 @@ class _ViewSheet extends ConsumerWidget {
         startedOnly: startedOnly,
         unstartedOnly: unstartedOnly,
         trackedOnly: trackedOnly,
+        trackStatus: trackStatus,
       );
     }
     final layout = ref.watch(libraryLayoutProvider);
@@ -557,7 +584,19 @@ class _ViewSheet extends ConsumerWidget {
               contentPadding: EdgeInsets.zero,
               title: Text(tr('Hanya yang terhubung tracker')),
               value: view.trackedOnly,
-              onChanged: (v) => setView(trackedOnly: v),
+              // Memilih status otomatis menyiratkan "terhubung tracker".
+              onChanged: (v) => setView(trackedOnly: v, trackStatus: v ? null : ''),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Wrap(spacing: 6, runSpacing: 6, children: [
+                for (final s in TrackStatus.values)
+                  FilterChip(
+                    label: Text(s.label),
+                    selected: view.trackStatus == s.name,
+                    onSelected: (on) => setView(trackStatus: on ? s.name : ''),
+                  ),
+              ]),
             ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,

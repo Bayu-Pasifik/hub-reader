@@ -183,6 +183,7 @@ typedef LibraryView = ({
   bool startedOnly,
   bool unstartedOnly,
   bool trackedOnly,
+  String trackStatus,
 });
 
 const defaultLibraryView = (
@@ -194,6 +195,7 @@ const defaultLibraryView = (
   startedOnly: false,
   unstartedOnly: false,
   trackedOnly: false,
+  trackStatus: '',
 );
 
 /// Apakah tampilan berbeda dari bawaan (untuk lencana tombol filter).
@@ -208,6 +210,7 @@ List<String> encodeLibraryView(LibraryView v) => [
       v.startedOnly ? '1' : '0',
       v.unstartedOnly ? '1' : '0',
       v.trackedOnly ? '1' : '0',
+      v.trackStatus,
     ];
 
 LibraryView decodeLibraryView(List<Object?> raw) {
@@ -223,6 +226,7 @@ LibraryView decodeLibraryView(List<Object?> raw) {
     startedOnly: flag(5),
     unstartedOnly: flag(6),
     trackedOnly: flag(7),
+    trackStatus: raw.length > 8 && raw[8] is String ? raw[8] as String : '',
   );
 }
 
@@ -243,6 +247,7 @@ class LibraryViewNotifier extends Notifier<LibraryView> {
     bool? startedOnly,
     bool? unstartedOnly,
     bool? trackedOnly,
+    String? trackStatus,
   }) async {
     state = (
       sort: sort ?? state.sort,
@@ -253,6 +258,7 @@ class LibraryViewNotifier extends Notifier<LibraryView> {
       startedOnly: startedOnly ?? state.startedOnly,
       unstartedOnly: unstartedOnly ?? state.unstartedOnly,
       trackedOnly: trackedOnly ?? state.trackedOnly,
+      trackStatus: trackStatus ?? state.trackStatus,
     );
     await ref.read(sharedPreferencesProvider).setStringList(_key, encodeLibraryView(state));
   }

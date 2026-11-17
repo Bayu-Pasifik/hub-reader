@@ -70,6 +70,7 @@ void main() {
       startedOnly: true,
       unstartedOnly: false,
       trackedOnly: true,
+      trackStatus: 'completed',
     );
     await c.read(libraryCategoryViewsProvider.notifier).set('Baca', custom);
 
@@ -103,5 +104,11 @@ void main() {
     expect(decodeLibraryView(encodeLibraryView(v)), v);
     expect(isLibraryViewFiltered(v), isTrue);
     expect(decodeLibraryView(['updated']).sort, LibrarySort.updated);
+    // Status tracker: format lama tanpa kolom ke-9 = tidak memfilter.
+    expect(decodeLibraryView(['added', 'all', '0', '0', '0', '0', '0', '1']).trackStatus, '');
+    final withStatus = decodeLibraryView(['added', 'all', '0', '0', '0', '0', '0', '0', 'completed']);
+    expect(withStatus.trackStatus, 'completed');
+    expect(isLibraryViewFiltered(withStatus), isTrue);
+    expect(decodeLibraryView(encodeLibraryView(withStatus)), withStatus);
   });
 }

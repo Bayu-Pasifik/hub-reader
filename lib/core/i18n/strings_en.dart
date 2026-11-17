@@ -941,6 +941,7 @@ const Map<String, String> stringsEn = {
       'Upload now',
   'Sinkronkan progres baca': 'Sync reading progress',
   'Sinkron otomatis': 'Auto sync',
+  'Lanjutkan membaca': 'Continue reading',
   'Sinkronkan favorit dan progres saat aplikasi dibuka atau kembali aktif':
       'Sync favorites and progress when the app opens or returns to the foreground',
   'Gabungkan favorit, riwayat, dan posisi baca dengan perangkat lain':
