@@ -15,6 +15,7 @@ import 'templates/loneseal.dart';
 import 'templates/madara.dart';
 import 'templates/mangabox.dart';
 import 'templates/mangak.dart';
+import 'templates/mangataro.dart';
 import 'templates/mangacatalog.dart';
 import 'templates/mangahub.dart';
 import 'templates/mangathemesia.dart';
@@ -261,6 +262,18 @@ class CatalogEntry {
             baseUrl: baseUrl,
             contentWarning: contentWarning,
             vals: asMap(options['vals']),
+          ),
+        'mangataro' => MangaTaroSource(
+            id: id,
+            name: name,
+            lang: lang,
+            baseUrl: baseUrl,
+            contentWarning: contentWarning,
+            vals: asMap(options['vals']),
+            tags: [
+              for (final t in asList(options['tags']))
+                if (asList(t) case [final String label, final String value]) (label, value),
+            ],
           ),
         'mangak' => MangaKSource(id: id, name: name, lang: lang, baseUrl: baseUrl, contentWarning: contentWarning),
         'monochrome' =>

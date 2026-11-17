@@ -14,7 +14,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga', 'loneseal', 'natsuid', 'colorlibanime', 'hwalumi', 'keyoapp', 'vinetheme', 'mangacatalog', 'iken', 'zmanga', 'mangahub', 'yiimanga', 'mangabox', 'yiimadara', 'foolslide', 'monochrome', 'bakkin', 'guya', 'mangak', 'heancms', 'ezmanhwa', 'initmanga']);
+const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga', 'loneseal', 'natsuid', 'colorlibanime', 'hwalumi', 'keyoapp', 'vinetheme', 'mangacatalog', 'iken', 'zmanga', 'mangahub', 'yiimanga', 'mangabox', 'yiimadara', 'foolslide', 'monochrome', 'bakkin', 'guya', 'mangak', 'heancms', 'ezmanhwa', 'initmanga', 'mangataro']);
 
 const [root, outArg] = process.argv.slice(2);
 if (!root) {
@@ -131,6 +131,12 @@ for (const langDir of listDirs(path.join(root, 'src'))) {
       // Zona waktu situs: ZoneOffset.ofHours(n); bawaan Turki (+3) diwakili ZoneId.of("Europe/Istanbul").
       const off = str(kt, /siteZone[^=\n]*=\s*ZoneOffset\.ofHours\((-?\d+)\)/);
       if (off) (options.vals ??= {}).siteOffsetHours = Number(off);
+    } else if (theme === 'mangataro') {
+      // Daftar tag per situs: "Nama" to 123. Rolia Scan menggabungkan beberapa halaman API.
+      const tags = [...kt.matchAll(/"([^"]+)"\s+to\s+(\d+)\b/g)].map((m) => [m[1], m[2]]);
+      if (tags.length) options.tags = tags;
+      const agg = str(kt, /API_PAGES_PER_PAGE\s*=\s*(\d+)/);
+      if (agg) (options.vals ??= {}).aggregatePages = Number(agg);
     } else if (theme === 'guya') {
       // Magical Translators: bahasa dibedakan akhiran slug (-ES, -PL).
       if (/filterMangas/.test(kt) && /-ES/.test(kt)) (options.vals ??= {}).slugLangFilter = true;
