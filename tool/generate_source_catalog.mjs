@@ -14,7 +14,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga', 'loneseal', 'natsuid', 'colorlibanime', 'hwalumi', 'keyoapp', 'vinetheme', 'mangacatalog', 'iken', 'zmanga', 'mangahub', 'yiimanga', 'mangabox', 'yiimadara', 'foolslide', 'monochrome', 'bakkin', 'guya', 'mangak', 'heancms', 'ezmanhwa', 'initmanga', 'mangataro', 'mangadventure', 'manga18', 'hiper', 'mangareader', 'wpcomics']);
+const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga', 'loneseal', 'natsuid', 'colorlibanime', 'hwalumi', 'keyoapp', 'vinetheme', 'mangacatalog', 'iken', 'zmanga', 'mangahub', 'yiimanga', 'mangabox', 'yiimadara', 'foolslide', 'monochrome', 'bakkin', 'guya', 'mangak', 'heancms', 'ezmanhwa', 'initmanga', 'mangataro', 'mangadventure', 'manga18', 'hiper', 'mangareader', 'wpcomics', 'goda']);
 
 const [root, outArg] = process.argv.slice(2);
 if (!root) {
@@ -73,7 +73,8 @@ for (const langDir of listDirs(path.join(root, 'src'))) {
       continue;
     }
     // Instalasi self-hosted/placeholder (alamat diisi pengguna) tidak masuk katalog.
-    if (['monochromecustom', 'bakkinselfhosted', 'foolslidecustomizable'].includes(ext)) continue;
+    // baozimhorg memakai API sendiri (daftar gambar diacak) di atas tema GoDa: tidak cocok dengan port.
+    if (['monochromecustom', 'bakkinselfhosted', 'foolslidecustomizable', 'baozimhorg'].includes(ext)) continue;
     const name = str(gradle, /^\s*name\s*=\s*"([^"]+)"/m) ?? ext;
     const cw = (str(gradle, /ContentWarning\.([A-Z]+)/) ?? 'SAFE').toLowerCase();
     const kt = kotlinSources(path.join(extDir, 'src'));

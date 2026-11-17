@@ -5,6 +5,7 @@ import 'models.dart';
 import 'source.dart';
 import 'templates/ezmanhwa.dart';
 import 'templates/foolslide.dart';
+import 'templates/goda.dart';
 import 'templates/guya.dart';
 import 'templates/heancms.dart';
 import 'templates/hiper.dart';
@@ -186,6 +187,14 @@ class CatalogEntry {
               for (final t in asList(options['titles']))
                 if (asList(t) case [final String title, final String path]) (title, path),
             ],
+          ),
+        'goda' => GoDaSource(
+            id: id,
+            name: name,
+            lang: lang,
+            baseUrl: baseUrl,
+            contentWarning: contentWarning,
+            vals: asMap(options['vals']),
           ),
         'hiper' => HiperSource(
             id: id,

@@ -2,7 +2,7 @@
  "source": "https://github.com/keiyoushi/extensions-source",
  "license": "Apache-2.0",
  "generatedAt": "2026-11-17",
- "count": 555,
+ "count": 557,
  "sources": [
   {
    "id": "all.allporncomicsco",
@@ -1579,6 +1579,14 @@
     "noAjax": true,
     "chapterMode": "MangaAjax"
    }
+  },
+  {
+   "id": "en.goda",
+   "name": "Goda",
+   "lang": "en",
+   "baseUrl": "https://manhuascans.org",
+   "contentWarning": "safe",
+   "theme": "goda"
   },
   {
    "id": "en.gourmetscans",
@@ -10543,6 +10551,14 @@
     },
     "customized": true
    }
+  },
+  {
+   "id": "zh.eighteenmanhua",
+   "name": "18漫画",
+   "lang": "zh",
+   "baseUrl": "https://18mh.org",
+   "contentWarning": "mixed",
+   "theme": "goda"
   },
   {
    "id": "zh.hanman18",
