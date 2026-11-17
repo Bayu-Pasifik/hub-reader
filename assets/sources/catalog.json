@@ -2,7 +2,7 @@
  "source": "https://github.com/keiyoushi/extensions-source",
  "license": "Apache-2.0",
  "generatedAt": "2026-11-17",
- "count": 548,
+ "count": 555,
  "sources": [
   {
    "id": "all.allporncomicsco",
@@ -5942,6 +5942,27 @@
    }
   },
   {
+   "id": "en.xoxocomics",
+   "name": "XOXO Comics",
+   "lang": "en",
+   "baseUrl": "https://xoxocomic.com",
+   "contentWarning": "safe",
+   "theme": "wpcomics",
+   "options": {
+    "vals": {
+     "searchPath": "search-comic",
+     "popularPath": "hot-comic",
+     "genresSelector": ".genres h2:contains(Genres) + ul.nav li a",
+     "latestUpdatesSelector": "li.row",
+     "monthFirst": true,
+     "latestPath": "comic-update",
+     "chapterDateSelector": "div.col-xs-3",
+     "pagesSuffix": "/all"
+    },
+    "customized": true
+   }
+  },
+  {
    "id": "en.yakshacomics",
    "name": "YakshaComics",
    "lang": "en",
@@ -7778,6 +7799,22 @@
      "pageParam": "p",
      "ajaxUrl": "/json/chapter?mode=vertical&id={id}"
     }
+   }
+  },
+  {
+   "id": "ja.raw18",
+   "name": "Raw18",
+   "lang": "ja",
+   "baseUrl": "https://raw18.chat",
+   "contentWarning": "nsfw",
+   "theme": "wpcomics",
+   "options": {
+    "vals": {
+     "searchPath": "search/manga",
+     "genresUrlDelimiter": "=",
+     "popularMangaSelector": "div.items .item"
+    },
+    "customized": true
    }
   },
   {
@@ -10221,6 +10258,22 @@
    }
   },
   {
+   "id": "vi.doctruyen3q",
+   "name": "DocTruyen3Q",
+   "lang": "vi",
+   "baseUrl": "https://doctruyen3qhub.club",
+   "contentWarning": "mixed",
+   "theme": "wpcomics",
+   "options": {
+    "vals": {
+     "genresSelector": ".categories-detail ul.nav li:not(.active) a",
+     "popularMangaSelector": "div.item-manga div.item",
+     "chapterListSelector": "div.list-chapter li.row:not(.heading):not([style])"
+    },
+    "customized": true
+   }
+  },
+  {
    "id": "vi.hentaivnplus",
    "name": "HentaiVN.plus",
    "lang": "vi",
@@ -10315,6 +10368,49 @@
    }
   },
   {
+   "id": "vi.nettruyenco",
+   "name": "NetTruyenCO (unoriginal)",
+   "lang": "vi",
+   "baseUrl": "https://nettruyenar.com",
+   "contentWarning": "safe",
+   "theme": "wpcomics",
+   "options": {
+    "vals": {
+     "popularPath": "truyen-tranh-hot"
+    },
+    "customized": true
+   }
+  },
+  {
+   "id": "vi.nettruyenx",
+   "name": "NetTruyenX (unoriginal)",
+   "lang": "vi",
+   "baseUrl": "https://nettruyenx.net",
+   "contentWarning": "safe",
+   "theme": "wpcomics",
+   "options": {
+    "vals": {
+     "popularPath": "truyen-tranh-hot"
+    },
+    "customized": true
+   }
+  },
+  {
+   "id": "vi.nhattruyen",
+   "name": "NhatTruyen",
+   "lang": "vi",
+   "baseUrl": "https://nhattruyenqq.com",
+   "contentWarning": "safe",
+   "theme": "wpcomics",
+   "options": {
+    "vals": {
+     "searchPath": "tim-truyen",
+     "popularPath": "truyen-tranh-hot"
+    },
+    "customized": true
+   }
+  },
+  {
    "id": "vi.quadaocute",
    "name": "QuaDaoCute",
    "lang": "vi",
@@ -10382,6 +10478,23 @@
      "chapterPrefix": "Chương",
      "altTitleLabel": "Tên khác",
      "siteOffsetHours": 7
+    },
+    "customized": true
+   }
+  },
+  {
+   "id": "vi.toptruyen",
+   "name": "Top Truyen",
+   "lang": "vi",
+   "baseUrl": "https://www.toptruyenzone14.com",
+   "contentWarning": "mixed",
+   "theme": "wpcomics",
+   "options": {
+    "vals": {
+     "genresSelector": ".categories-detail ul.nav li:not(.active) a",
+     "popularMangaSelector": "div.item-manga div.item",
+     "chapterListSelector": "div.list-chapter li.row:not(.heading):not([style])",
+     "chapterDateSelector": ".chapters + div"
     },
     "customized": true
    }

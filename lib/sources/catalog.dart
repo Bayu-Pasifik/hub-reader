@@ -26,6 +26,7 @@ import 'templates/mangathemesia.dart';
 import 'templates/natsuid.dart';
 import 'templates/small_templates.dart';
 import 'templates/vinetheme.dart';
+import 'templates/wpcomics.dart';
 import 'templates/yiimadara.dart';
 import 'templates/yiimanga.dart';
 import 'templates/zeistmanga.dart';
@@ -307,6 +308,14 @@ class CatalogEntry {
             vals: asMap(options['vals']),
           ),
         'mangareader' => MangaReaderSource(
+            id: id,
+            name: name,
+            lang: lang,
+            baseUrl: baseUrl,
+            contentWarning: contentWarning,
+            vals: asMap(options['vals']),
+          ),
+        'wpcomics' => WPComicsSource(
             id: id,
             name: name,
             lang: lang,

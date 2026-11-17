@@ -14,7 +14,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga', 'loneseal', 'natsuid', 'colorlibanime', 'hwalumi', 'keyoapp', 'vinetheme', 'mangacatalog', 'iken', 'zmanga', 'mangahub', 'yiimanga', 'mangabox', 'yiimadara', 'foolslide', 'monochrome', 'bakkin', 'guya', 'mangak', 'heancms', 'ezmanhwa', 'initmanga', 'mangataro', 'mangadventure', 'manga18', 'hiper', 'mangareader']);
+const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga', 'loneseal', 'natsuid', 'colorlibanime', 'hwalumi', 'keyoapp', 'vinetheme', 'mangacatalog', 'iken', 'zmanga', 'mangahub', 'yiimanga', 'mangabox', 'yiimadara', 'foolslide', 'monochrome', 'bakkin', 'guya', 'mangak', 'heancms', 'ezmanhwa', 'initmanga', 'mangataro', 'mangadventure', 'manga18', 'hiper', 'mangareader', 'wpcomics']);
 
 const [root, outArg] = process.argv.slice(2);
 if (!root) {
@@ -145,6 +145,17 @@ for (const langDir of listDirs(path.join(root, 'src'))) {
       if (sel) (options.vals ??= {}).pageSelector = sel;
       const ajax = str(kt, /getAjaxUrl\(id: String\)[^=]*=\s*"\$baseUrl([^"]+)"/);
       if (ajax) (options.vals ??= {}).ajaxUrl = ajax.replace('$id', '{id}');
+    } else if (theme === 'wpcomics') {
+      // Selector (override fun xxxSelector() = "..."), tanggal AS, jalur beranda terbaru & akhiran gambar.
+      const v = (options.vals ??= {});
+      for (const m of kt.matchAll(/override\s+fun\s+(popularMangaSelector|latestUpdatesSelector|searchMangaSelector|chapterListSelector)\(\)\s*=\s*"((?:[^"\\]|\\.)*)"/g)) v[m[1]] = JSON.parse(`"${m[2]}"`);
+      if (/ofPattern\("MM\/dd/.test(kt)) v.monthFirst = true;
+      const latest = str(kt, /getLatestUpdates[\s\S]*?"\$baseUrl\/([\w-]+)\?page=\$page"/);
+      if (latest) v.latestPath = latest;
+      const dateSel = str(kt, /date_upload\s*=\s*element\.select\("([^"]+)"\)/);
+      if (dateSel) v.chapterDateSelector = dateSel;
+      if (/\$\{chapter\.url\}\/all/.test(kt)) v.pagesSuffix = '/all';
+      if (!Object.keys(v).length) delete options.vals;
     } else if (theme === 'hiper') {
       // Header kunci per situs: .set("x-cfg-auth", "kunci"); daftar genre: override val genresList = listOf(...).
       const hdr = kt.match(/\.set\("(x-[a-z-]+)",\s*"([^"]+)"\)/);
