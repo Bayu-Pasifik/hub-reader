@@ -2,7 +2,7 @@
  "source": "https://github.com/keiyoushi/extensions-source",
  "license": "Apache-2.0",
  "generatedAt": "2026-11-17",
- "count": 539,
+ "count": 542,
  "sources": [
   {
    "id": "all.allporncomicsco",
@@ -843,6 +843,14 @@
      "datePattern": "d. MMMM yyyy"
     }
    }
+  },
+  {
+   "id": "en.eighteenporncomic",
+   "name": "18 Porn Comic",
+   "lang": "en",
+   "baseUrl": "https://18porncomic.com",
+   "contentWarning": "nsfw",
+   "theme": "manga18"
   },
   {
    "id": "en.onemangaco",
@@ -2121,6 +2129,14 @@
    "baseUrl": "https://mangatrend.org",
    "contentWarning": "safe",
    "theme": "mangathemesia"
+  },
+  {
+   "id": "en.manga18club",
+   "name": "Manga18.Club",
+   "lang": "en",
+   "baseUrl": "https://manga18.club",
+   "contentWarning": "nsfw",
+   "theme": "manga18"
   },
   {
    "id": "en.manga18free",
@@ -9590,6 +9606,19 @@
      "pageListParseSelector": "div.page-break, li.blocks-gallery-item, .reading-content .text-left:not(:has(.blocks-gallery-item)) img"
     },
     "customized": true
+   }
+  },
+  {
+   "id": "zh.hanman18",
+   "name": "HANMAN18",
+   "lang": "zh",
+   "baseUrl": "https://hanman18.com",
+   "contentWarning": "nsfw",
+   "theme": "manga18",
+   "options": {
+    "vals": {
+     "getAvailableTags": false
+    }
    }
   },
   {

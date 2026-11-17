@@ -13,6 +13,7 @@ import 'templates/json_readers.dart';
 import 'templates/keyoapp.dart';
 import 'templates/loneseal.dart';
 import 'templates/madara.dart';
+import 'templates/manga18.dart';
 import 'templates/mangabox.dart';
 import 'templates/mangadventure.dart';
 import 'templates/mangak.dart';
@@ -285,6 +286,14 @@ class CatalogEntry {
             categories: options.containsKey('genres')
                 ? [for (final g in asList(options['genres'])) if (asString(g) case final s?) s]
                 : MangAdventureSource.defaultCategories,
+          ),
+        'manga18' => Manga18Source(
+            id: id,
+            name: name,
+            lang: lang,
+            baseUrl: baseUrl,
+            contentWarning: contentWarning,
+            vals: asMap(options['vals']),
           ),
         'mangak' => MangaKSource(id: id, name: name, lang: lang, baseUrl: baseUrl, contentWarning: contentWarning),
         'monochrome' =>
