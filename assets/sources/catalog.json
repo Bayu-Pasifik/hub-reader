@@ -1,8 +1,8 @@
 {
  "source": "https://github.com/keiyoushi/extensions-source",
  "license": "Apache-2.0",
- "generatedAt": "2026-11-12",
- "count": 458,
+ "generatedAt": "2026-11-17",
+ "count": 467,
  "sources": [
   {
    "id": "all.allporncomicsco",
@@ -117,7 +117,7 @@
    "id": "all.miauscan",
    "name": "Miau Scan",
    "lang": "all",
-   "baseUrl": "https://leemiau.com",
+   "baseUrl": "https://leer.lectovela.com",
    "contentWarning": "mixed",
    "theme": "mangathemesia",
    "options": {
@@ -127,6 +127,24 @@
      "seriesStatusSelector": ".lm4-poster-status",
      "seriesThumbnailSelector": "img.lm4-poster-image",
      "seriesDescriptionSelector": ".lm4-summary-full"
+    },
+    "customized": true
+   }
+  },
+  {
+   "id": "all.nhentaiyaoi",
+   "name": "nHentai Yaoi",
+   "lang": "all",
+   "baseUrl": "https://nhentaiyaoi.com",
+   "contentWarning": "nsfw",
+   "theme": "madara",
+   "options": {
+    "noAjax": true,
+    "chapterMode": "MangaAjax",
+    "vals": {
+     "supportsPostId": false,
+     "mangaDetailsSelectorAuthor": "div.artist-content > a",
+     "seriesTypeSelector": ".post-content_item:contains(Language) .summary-content"
     },
     "customized": true
    }
@@ -208,6 +226,21 @@
     "mangaSubString": "webtoon",
     "vals": {
      "mangaSubString": "webtoon"
+    }
+   }
+  },
+  {
+   "id": "ar.fastestmanga",
+   "name": "Fastest Manga",
+   "lang": "ar",
+   "baseUrl": "https://www.fastestmanga.com/ar",
+   "contentWarning": "safe",
+   "theme": "madara",
+   "options": {
+    "noAjax": true,
+    "vals": {
+     "sendViewCount": false,
+     "seriesTypeSelector": ".post-content_item:contains(Type) .summary-content:matches(\\p{L})"
     }
    }
   },
@@ -305,7 +338,7 @@
    "id": "ar.mangastarz",
    "name": "Manga Starz",
    "lang": "ar",
-   "baseUrl": "https://starzmanga.com",
+   "baseUrl": "https://starzmanga.net",
    "contentWarning": "safe",
    "theme": "madara"
   },
@@ -402,6 +435,21 @@
      "archiveUrlSelector": ".mn-card__title a",
      "mangaDetailsSelectorTitle": ".mn-hero__title"
     }
+   }
+  },
+  {
+   "id": "ar.reuomanga",
+   "name": "REUO MANGA",
+   "lang": "ar",
+   "baseUrl": "https://mgadoji.blogspot.com",
+   "contentWarning": "safe",
+   "theme": "zeistmanga",
+   "options": {
+    "vals": {
+     "supportsLatest": false,
+     "pageListSelector": "div.i_img"
+    },
+    "customized": true
    }
   },
   {
@@ -622,7 +670,7 @@
     "noAjax": true,
     "vals": {
      "supportsPostId": false,
-     "archiveUrlSelector": ".aqua-archive-card__title a",
+     "archiveUrlSelector": ".aqua-manga-card__title a",
      "searchQueryParameter": "search",
      "filterGenresSelector": "div.aqua-genre-pills",
      "mangaDetailsSelectorTitle": ".aqua-series-info__title",
@@ -916,6 +964,21 @@
     "vals": {
      "mangaUrlDirectory": "/series",
      "seriesAltNameSelector": ".desktop-titles"
+    }
+   }
+  },
+  {
+   "id": "en.fastestmanga",
+   "name": "Fastest Manga",
+   "lang": "en",
+   "baseUrl": "https://www.fastestmanga.com/en",
+   "contentWarning": "safe",
+   "theme": "madara",
+   "options": {
+    "noAjax": true,
+    "vals": {
+     "sendViewCount": false,
+     "seriesTypeSelector": ".post-content_item:contains(Type) .summary-content:matches(\\p{L})"
     }
    }
   },
@@ -1820,9 +1883,12 @@
    "id": "en.mistscans",
    "name": "Mist Scans",
    "lang": "en",
-   "baseUrl": "https://mistscans.com",
+   "baseUrl": "https://mistscans.org",
    "contentWarning": "safe",
-   "theme": "keyoapp"
+   "theme": "keyoapp",
+   "options": {
+    "variant": "v2"
+   }
   },
   {
    "id": "en.murimscan",
@@ -3164,9 +3230,18 @@
    "id": "en.webtoonscan",
    "name": "WebtoonScan",
    "lang": "en",
-   "baseUrl": "https://webtoonscan.com",
-   "contentWarning": "mixed",
-   "theme": "madara"
+   "baseUrl": "https://webtoonscan.org",
+   "contentWarning": "nsfw",
+   "theme": "madara",
+   "options": {
+    "mangaSubString": "manhwa",
+    "vals": {
+     "mangaSubString": "manhwa",
+     "genreDirectory": "genre",
+     "seriesTypeSelector": ".post-content_item:has(h5:matchesOwn(^\\s*Type\\s*$)) .summary-content"
+    },
+    "customized": true
+   }
   },
   {
    "id": "en.webtoonxyz",
@@ -3499,6 +3574,38 @@
    }
   },
   {
+   "id": "es.hibonblscanlation",
+   "name": "Hibon BL Scanlation",
+   "lang": "es",
+   "baseUrl": "https://hibon-bl.blogspot.com",
+   "contentWarning": "mixed",
+   "theme": "zeistmanga",
+   "options": {
+    "vals": {
+     "supportsLatest": false,
+     "chapterCategory": "Capitulo",
+     "hasFilters": true,
+     "hasTypeFilter": false,
+     "hasLanguageFilter": false
+    },
+    "customized": true
+   }
+  },
+  {
+   "id": "es.homocdrs",
+   "name": "HOMOcdrs",
+   "lang": "es",
+   "baseUrl": "https://homocdrscan.blogspot.com",
+   "contentWarning": "mixed",
+   "theme": "zeistmanga",
+   "options": {
+    "vals": {
+     "supportsLatest": false
+    },
+    "customized": true
+   }
+  },
+  {
    "id": "es.houseofotakus",
    "name": "House Of Otakus",
    "lang": "es",
@@ -3563,6 +3670,23 @@
    "theme": "madara",
    "options": {
     "chapterMode": "MangaAjax"
+   }
+  },
+  {
+   "id": "es.jentranslation",
+   "name": "JenTranslation",
+   "lang": "es",
+   "baseUrl": "https://jentranslation11.blogspot.com",
+   "contentWarning": "nsfw",
+   "theme": "zeistmanga",
+   "options": {
+    "vals": {
+     "supportsLatest": false,
+     "hasFilters": true,
+     "hasTypeFilter": false,
+     "hasLanguageFilter": false
+    },
+    "customized": true
    }
   },
   {
@@ -3667,17 +3791,6 @@
    }
   },
   {
-   "id": "es.manhwaonline",
-   "name": "ManhwaOnline",
-   "lang": "es",
-   "baseUrl": "https://manhwa-online.com",
-   "contentWarning": "nsfw",
-   "theme": "madara",
-   "options": {
-    "chapterMode": "MangaAjax"
-   }
-  },
-  {
    "id": "es.marmota",
    "name": "Marmota",
    "lang": "es",
@@ -3779,30 +3892,6 @@
      "mangaDetailsSelectorStatus": "div.manga-status span:last-child",
      "mangaDetailsSelectorDescription": "div.summary__content p",
      "filterGenresSelector": ".manga-genres"
-    }
-   }
-  },
-  {
-   "id": "es.templescanesp",
-   "name": "Temple Scan",
-   "lang": "es",
-   "baseUrl": "https://aedexnox.syakaihoken-web.com",
-   "contentWarning": "nsfw",
-   "theme": "madara",
-   "options": {
-    "mangaSubString": "serie",
-    "vals": {
-     "supportsPostId": false,
-     "mangaSubString": "serie",
-     "mangaDetailsSelectorTitle": "div.wp-manga div.grid > h1",
-     "mangaDetailsSelectorStatus": "div.wp-manga div[alt=type]:eq(0) > span",
-     "mangaDetailsSelectorGenre": "div.wp-manga div[alt=type]:gt(0) > span",
-     "mangaDetailsSelectorDescription": "div.wp-manga div#expand_content",
-     "archiveUrlSelector": "a:has(h3)",
-     "archiveTitleSelector": "h3",
-     "chapterNameSelector": "div.grid > span",
-     "chapterDateSelector": "div.grid > div",
-     "chapterUrlSelector": "a"
     }
    }
   },
@@ -4120,6 +4209,19 @@
    "options": {
     "vals": {
      "hasProjectPage": true
+    }
+   }
+  },
+  {
+   "id": "id.crotpedia",
+   "name": "CrotPedia",
+   "lang": "id",
+   "baseUrl": "https://crotpedia.net",
+   "contentWarning": "nsfw",
+   "theme": "zmanga",
+   "options": {
+    "vals": {
+     "hasProjectPage": false
     }
    }
   },
@@ -4457,6 +4559,19 @@
    }
   },
   {
+   "id": "id.maidmanga",
+   "name": "Maid - Manga",
+   "lang": "id",
+   "baseUrl": "https://www.maid.my.id",
+   "contentWarning": "mixed",
+   "theme": "zmanga",
+   "options": {
+    "vals": {
+     "hasProjectPage": true
+    }
+   }
+  },
+  {
    "id": "id.mangacan",
    "name": "Manga Can",
    "lang": "id",
@@ -4475,16 +4590,14 @@
    }
   },
   {
-   "id": "id.mangakuri",
-   "name": "Mangakuri",
+   "id": "id.mangapoi",
+   "name": "Mangapoi",
    "lang": "id",
-   "baseUrl": "https://lc2.mangakuri.online",
+   "baseUrl": "https://mangapoi.io",
    "contentWarning": "nsfw",
-   "theme": "loneseal",
+   "theme": "zmanga",
    "options": {
-    "vals": {
-     "urlLayout": "LEGACY_COMIC"
-    }
+    "customized": true
    }
   },
   {
@@ -4538,6 +4651,19 @@
    "baseUrl": "https://mihentai.net",
    "contentWarning": "nsfw",
    "theme": "mangathemesia"
+  },
+  {
+   "id": "id.mangakuri",
+   "name": "Mushinook",
+   "lang": "id",
+   "baseUrl": "https://mushinook.org",
+   "contentWarning": "nsfw",
+   "theme": "loneseal",
+   "options": {
+    "vals": {
+     "urlLayout": "LEGACY_COMIC"
+    }
+   }
   },
   {
    "id": "id.natsu",
@@ -4701,6 +4827,19 @@
    "baseUrl": "https://01.sektekomik.id",
    "contentWarning": "safe",
    "theme": "colorlibanime"
+  },
+  {
+   "id": "id.shirodoujin",
+   "name": "Shiro Doujin",
+   "lang": "id",
+   "baseUrl": "https://shirodoujin.com",
+   "contentWarning": "nsfw",
+   "theme": "zmanga",
+   "options": {
+    "vals": {
+     "hasProjectPage": true
+    }
+   }
   },
   {
    "id": "id.shiyurasub",
@@ -5458,20 +5597,20 @@
    "theme": "madara",
    "options": {
     "noAjax": true,
-    "mangaSubString": "bl",
     "vals": {
-     "mangaSubString": "bl",
-     "genreDirectory": "genero",
-     "mangaDetailsSelectorTitle": ".xyaoi-main-title, h1",
+     "supportsPostId": false,
+     "supportsLatest": false,
+     "archiveUrlSelector": "a[title]:has(img)",
+     "mangaDetailsSelectorTitle": "h1",
      "mangaDetailsSelectorAuthor": "a[href*=author]",
      "mangaDetailsSelectorArtist": "a[href*=artist]",
      "mangaDetailsSelectorStatus": "span:contains(status) + span",
-     "mangaDetailsSelectorDescription": "[class*=synopsis]",
-     "mangaDetailsSelectorGenre": ".xyaoi-genres-list a",
-     "mangaDetailsSelectorTag": ".wp-manga-tags-list a",
-     "seriesTypeSelector": "span:contains(tipo) + span:not(:contains(Não informado))",
-     "archiveUrlSelector": "h3 > a"
-    }
+     "mangaDetailsSelectorDescription": ".xyaoi-synopsis-text",
+     "mangaDetailsSelectorThumbnail": ".xyaoi-cover-img",
+     "mangaDetailsSelectorTag": "a[rel=tag][href*='?genre=']",
+     "seriesTypeSelector": "span:contains(tipo) + span:not(:contains(Não informado))"
+    },
+    "customized": true
    }
   },
   {
@@ -5817,6 +5956,34 @@
    "theme": "mangathemesia"
   },
   {
+   "id": "th.oremanga",
+   "name": "OreManga",
+   "lang": "th",
+   "baseUrl": "https://www.oremanga.net",
+   "contentWarning": "mixed",
+   "theme": "zmanga",
+   "options": {
+    "vals": {
+     "searchPath": "advance-search"
+    },
+    "customized": true
+   }
+  },
+  {
+   "id": "th.rankermanga",
+   "name": "Ranker-Manga",
+   "lang": "th",
+   "baseUrl": "https://www.ranker-manga.com",
+   "contentWarning": "mixed",
+   "theme": "zmanga",
+   "options": {
+    "vals": {
+     "supportsFilterFetching": false
+    },
+    "customized": true
+   }
+  },
+  {
    "id": "th.reapertrans",
    "name": "ReaperTrans",
    "lang": "th",
@@ -5901,6 +6068,29 @@
    "theme": "mangathemesia"
   },
   {
+   "id": "tr.aesirscans",
+   "name": "AesirScans",
+   "lang": "tr",
+   "baseUrl": "https://www.aesirscans.site",
+   "contentWarning": "safe",
+   "theme": "zeistmanga",
+   "options": {
+    "vals": {
+     "supportsLatest": false,
+     "mangaDetailsSelector": "article.hentry",
+     "mangaDetailsSelectorThumbnail": ".entry-content .separator img",
+     "mangaDetailsSelectorDescription": ".synopsis",
+     "mangaDetailsSelectorGenres": "h1.entry-title + div > span:first-child, a[rel=tag]",
+     "mangaDetailsSelectorStatus": "h1.entry-title + div > span:last-child",
+     "mangaDetailsSelectorAltName": ".infotable .fmed:has(b:matchesOwn(^Orijinal isim$)) span",
+     "mangaDetailsSelectorInfo": ".infotable .fmed",
+     "mangaDetailsSelectorInfoTitle": "b",
+     "mangaDetailsSelectorInfoDescription": "span"
+    },
+    "customized": true
+   }
+  },
+  {
    "id": "tr.amangaplanet",
    "name": "Amanga Planet",
    "lang": "tr",
@@ -5939,6 +6129,20 @@
    }
   },
   {
+   "id": "tr.averisfansub",
+   "name": "Averis Fansub",
+   "lang": "tr",
+   "baseUrl": "https://averisfansub.site",
+   "contentWarning": "nsfw",
+   "theme": "madara",
+   "options": {
+    "vals": {
+     "altNameSelector": ".post-content_item:contains(Diğer isimler) .summary-content"
+    },
+    "customized": true
+   }
+  },
+  {
    "id": "tr.diamondfansub",
    "name": "DiamondFansub",
    "lang": "tr",
@@ -5953,6 +6157,21 @@
      "mangaSubString": "seri",
      "mangaDetailsSelectorAuthor": ".manga-authors",
      "mangaDetailsSelectorDescription": ".manga-info"
+    }
+   }
+  },
+  {
+   "id": "tr.fastestmanga",
+   "name": "Fastest Manga",
+   "lang": "tr",
+   "baseUrl": "https://www.fastestmanga.com/tr",
+   "contentWarning": "safe",
+   "theme": "madara",
+   "options": {
+    "noAjax": true,
+    "vals": {
+     "sendViewCount": false,
+     "seriesTypeSelector": ".post-content_item:contains(Type) .summary-content:matches(\\p{L})"
     }
    }
   },
@@ -6294,10 +6513,13 @@
    "id": "tr.summertoon",
    "name": "SummerToon",
    "lang": "tr",
-   "baseUrl": "https://summertoons.net",
+   "baseUrl": "https://summertoons.org",
    "contentWarning": "safe",
    "theme": "mangathemesia",
    "options": {
+    "vals": {
+     "seriesStatusSelector": ".tsinfo .imptdt:contains(Durum) > i"
+    },
     "customized": true
    }
   },
@@ -6621,70 +6843,6 @@
     "vals": {
      "mangaDetailsSelectorStatus": ".post-content_item:contains(状态) .summary-content",
      "chapterDateSelector": "span.chapter-release-date i"
-    },
-    "customized": true
-   }
-  },
-  {
-   "id": "id.crotpedia",
-   "name": "CrotPedia",
-   "lang": "id",
-   "baseUrl": "https://crotpedia.net",
-   "contentWarning": "nsfw",
-   "theme": "zmanga",
-   "options": {
-    "vals": {
-     "hasProjectPage": false
-    }
-   }
-  },
-  {
-   "id": "id.maidmanga",
-   "name": "Maid - Manga",
-   "lang": "id",
-   "baseUrl": "https://www.maid.my.id",
-   "contentWarning": "mixed",
-   "theme": "zmanga",
-   "options": {
-    "vals": {
-     "hasProjectPage": true
-    }
-   }
-  },
-  {
-   "id": "id.mangapoi",
-   "name": "Mangapoi",
-   "lang": "id",
-   "baseUrl": "https://mangapoi.io",
-   "contentWarning": "nsfw",
-   "theme": "zmanga",
-   "options": {
-    "customized": true
-   }
-  },
-  {
-   "id": "id.shirodoujin",
-   "name": "Shiro Doujin",
-   "lang": "id",
-   "baseUrl": "https://shirodoujin.com",
-   "contentWarning": "nsfw",
-   "theme": "zmanga",
-   "options": {
-    "vals": {
-     "hasProjectPage": true
-    }
-   }
-  },
-  {
-   "id": "th.oremanga",
-   "name": "OreManga",
-   "lang": "th",
-   "baseUrl": "https://www.oremanga.net",
-   "contentWarning": "mixed",
-   "theme": "zmanga",
-   "options": {
-    "vals": {
-     "searchPath": "advance-search"
     },
     "customized": true
    }
