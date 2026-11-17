@@ -17,6 +17,11 @@ import 'id/bacakomikpics.dart';
 import 'id/keikomik.dart';
 import 'id/riztranslation.dart';
 import 'id/omicaso.dart';
+import 'id/bacami.dart';
+import 'id/mgkomik.dart';
+import 'id/komikav.dart';
+import 'id/westmanga.dart';
+import 'id/oceanwp.dart';
 import 'id/mangalay.dart';
 import 'id/mynimeku.dart';
 import 'id/koronaxscan.dart';
@@ -45,6 +50,12 @@ List<MangaSource> customSources() => [
       KeikomikSource(),
       RiztranslationSource(),
       OmicasoSource(),
+      BacamiSource(),
+      MgKomikSource(),
+      KomikAvSource(),
+      WestMangaSource(),
+      OceanWpSource(id: 'id.hentaicrot', name: 'Hentai Crot', baseUrl: 'https://hentaicrot.com'),
+      OceanWpSource(id: 'id.pixhentai', name: 'Pix Hentai', baseUrl: 'https://pixhentai.com'),
       MangaPillSource(),
       TcbScansSource(),
       MangaKatanaSource(),
