@@ -2,7 +2,7 @@
  "source": "https://github.com/keiyoushi/extensions-source",
  "license": "Apache-2.0",
  "generatedAt": "2026-11-17",
- "count": 517,
+ "count": 520,
  "sources": [
   {
    "id": "all.allporncomicsco",
@@ -1130,6 +1130,14 @@
    }
   },
   {
+   "id": "en.comizy",
+   "name": "Comizy",
+   "lang": "en",
+   "baseUrl": "https://comizy.io",
+   "contentWarning": "mixed",
+   "theme": "mangak"
+  },
+  {
    "id": "en.cucumbermanga",
    "name": "Cucumber Manga",
    "lang": "en",
@@ -1988,6 +1996,14 @@
      "mangaSource": "m01"
     }
    }
+  },
+  {
+   "id": "en.mangabuddy",
+   "name": "MangaK",
+   "lang": "en",
+   "baseUrl": "https://mangak.io",
+   "contentWarning": "mixed",
+   "theme": "mangak"
   },
   {
    "id": "en.mangakakalot",
@@ -3767,6 +3783,14 @@
      "mangaDetailsSelectorTitle": ".post-content h3"
     }
    }
+  },
+  {
+   "id": "en.toonilyme",
+   "name": "ToonTop",
+   "lang": "en",
+   "baseUrl": "https://toontop.io",
+   "contentWarning": "nsfw",
+   "theme": "mangak"
   },
   {
    "id": "en.topmanhua",

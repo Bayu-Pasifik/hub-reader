@@ -11,6 +11,7 @@ import 'templates/keyoapp.dart';
 import 'templates/loneseal.dart';
 import 'templates/madara.dart';
 import 'templates/mangabox.dart';
+import 'templates/mangak.dart';
 import 'templates/mangacatalog.dart';
 import 'templates/mangahub.dart';
 import 'templates/mangathemesia.dart';
@@ -230,6 +231,7 @@ class CatalogEntry {
             contentWarning: contentWarning,
             vals: asMap(options['vals']),
           ),
+        'mangak' => MangaKSource(id: id, name: name, lang: lang, baseUrl: baseUrl, contentWarning: contentWarning),
         'monochrome' =>
           MonochromeSource(id: id, name: name, lang: lang, baseUrl: baseUrl, contentWarning: contentWarning),
         'bakkin' => BakkinSource(id: id, name: name, lang: lang, baseUrl: baseUrl, contentWarning: contentWarning),

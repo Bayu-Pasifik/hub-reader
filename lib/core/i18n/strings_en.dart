@@ -1035,6 +1035,7 @@ const Map<String, String> stringsEn = {
   'URL bab tidak dikenali.': 'Chapter URL not recognized.',
   'Bab tidak ditemukan.': 'Chapter not found.',
   'Daftar gambar tidak terbaca.': 'The image list could not be read.',
+  'Data halaman tidak terbaca.': 'The page data could not be read.',
   'Format enkripsi tidak dikenal.': 'Unknown encryption format.',
   'Kunci dekripsi tidak ditemukan.': 'Decryption key not found.',
 };
