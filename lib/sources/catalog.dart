@@ -8,6 +8,7 @@ import 'templates/foolslide.dart';
 import 'templates/guya.dart';
 import 'templates/heancms.dart';
 import 'templates/iken.dart';
+import 'templates/initmanga.dart';
 import 'templates/json_readers.dart';
 import 'templates/keyoapp.dart';
 import 'templates/loneseal.dart';
@@ -246,6 +247,14 @@ class CatalogEntry {
             ],
           ),
         'heancms' => HeanCmsSource(
+            id: id,
+            name: name,
+            lang: lang,
+            baseUrl: baseUrl,
+            contentWarning: contentWarning,
+            vals: asMap(options['vals']),
+          ),
+        'initmanga' => InitMangaSource(
             id: id,
             name: name,
             lang: lang,

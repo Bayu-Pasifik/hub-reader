@@ -14,7 +14,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga', 'loneseal', 'natsuid', 'colorlibanime', 'hwalumi', 'keyoapp', 'vinetheme', 'mangacatalog', 'iken', 'zmanga', 'mangahub', 'yiimanga', 'mangabox', 'yiimadara', 'foolslide', 'monochrome', 'bakkin', 'guya', 'mangak', 'heancms', 'ezmanhwa']);
+const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga', 'loneseal', 'natsuid', 'colorlibanime', 'hwalumi', 'keyoapp', 'vinetheme', 'mangacatalog', 'iken', 'zmanga', 'mangahub', 'yiimanga', 'mangabox', 'yiimadara', 'foolslide', 'monochrome', 'bakkin', 'guya', 'mangak', 'heancms', 'ezmanhwa', 'initmanga']);
 
 const [root, outArg] = process.argv.slice(2);
 if (!root) {
@@ -127,6 +127,10 @@ for (const langDir of listDirs(path.join(root, 'src'))) {
       // Filter genre: pasangan "Label" to "nilai" (tanpa "All").
       const genres = [...kt.matchAll(/"([^"]+)"\s+to\s+"([^"]+)"/g)].map((m) => [m[1], m[2]]);
       if (genres.length) options.genres = genres;
+    } else if (theme === 'initmanga') {
+      // Zona waktu situs: ZoneOffset.ofHours(n); bawaan Turki (+3) diwakili ZoneId.of("Europe/Istanbul").
+      const off = str(kt, /siteZone[^=\n]*=\s*ZoneOffset\.ofHours\((-?\d+)\)/);
+      if (off) (options.vals ??= {}).siteOffsetHours = Number(off);
     } else if (theme === 'guya') {
       // Magical Translators: bahasa dibedakan akhiran slug (-ES, -PL).
       if (/filterMangas/.test(kt) && /-ES/.test(kt)) (options.vals ??= {}).slugLangFilter = true;

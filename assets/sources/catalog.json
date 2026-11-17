@@ -2,7 +2,7 @@
  "source": "https://github.com/keiyoushi/extensions-source",
  "license": "Apache-2.0",
  "generatedAt": "2026-11-17",
- "count": 524,
+ "count": 535,
  "sources": [
   {
    "id": "all.allporncomicsco",
@@ -2049,6 +2049,28 @@
    }
   },
   {
+   "id": "en.mangadrama",
+   "name": "Manga Drama",
+   "lang": "en",
+   "baseUrl": "https://mangadrama.com",
+   "contentWarning": "nsfw",
+   "theme": "initmanga",
+   "options": {
+    "vals": {
+     "mangaUrlDirectory": "manga",
+     "popularUrlSlug": "manga-ranking",
+     "latestUrlSlug": "recently-updated",
+     "authorLabel": "Author",
+     "artistLabel": "Illustrator",
+     "chapterPrefix": "Chapter",
+     "genreFilterName": "Genres",
+     "allGenresLabel": "All",
+     "altTitleLabel": "Alternative title",
+     "siteOffsetHours": 8
+    }
+   }
+  },
+  {
    "id": "en.mangaeclipse",
    "name": "Manga Eclipse",
    "lang": "en",
@@ -2653,6 +2675,25 @@
    "baseUrl": "https://meitoon.org",
    "contentWarning": "safe",
    "theme": "keyoapp"
+  },
+  {
+   "id": "en.mgreadio",
+   "name": "Mgread.io",
+   "lang": "en",
+   "baseUrl": "https://mgread.io",
+   "contentWarning": "mixed",
+   "theme": "initmanga",
+   "options": {
+    "vals": {
+     "mangaUrlDirectory": "manga",
+     "popularUrlSlug": "manga-ranking",
+     "latestUrlSlug": "recently-updated",
+     "chapterPrefix": "Chapter",
+     "altTitleLabel": "Alternative title",
+     "siteOffsetHours": 7
+    },
+    "customized": true
+   }
   },
   {
    "id": "en.mistscans",
@@ -7478,6 +7519,21 @@
    }
   },
   {
+   "id": "tr.korelimanga",
+   "name": "Koreli Manga",
+   "lang": "tr",
+   "baseUrl": "https://korelimanga.com",
+   "contentWarning": "safe",
+   "theme": "initmanga",
+   "options": {
+    "vals": {
+     "mangaUrlDirectory": "manga",
+     "popularUrlSlug": "manga-ranking",
+     "latestUrlSlug": "recently-updated"
+    }
+   }
+  },
+  {
    "id": "tr.koreliscans",
    "name": "Koreli Scans",
    "lang": "tr",
@@ -7536,6 +7592,21 @@
    "theme": "mangathemesia"
   },
   {
+   "id": "tr.mangaruhu",
+   "name": "Manga Ruhu",
+   "lang": "tr",
+   "baseUrl": "https://mangaruhu.net",
+   "contentWarning": "safe",
+   "theme": "initmanga",
+   "options": {
+    "vals": {
+     "mangaUrlDirectory": "manga",
+     "latestUrlSlug": "recently-updated",
+     "popularUrlSlug": "manga-ranking"
+    }
+   }
+  },
+  {
    "id": "tr.mangatilkisi",
    "name": "MangaTilkisi",
    "lang": "tr",
@@ -7579,6 +7650,20 @@
      "mangaDetailsSelectorArtist": "div.artist-content > a:not([href$='/merlinmanga/'])"
     },
     "customized": true
+   }
+  },
+  {
+   "id": "tr.merlinscans",
+   "name": "Merlin Scans",
+   "lang": "tr",
+   "baseUrl": "https://merlintoon.net",
+   "contentWarning": "safe",
+   "theme": "initmanga",
+   "options": {
+    "vals": {
+     "popularUrlSlug": "seri-siralamasi",
+     "latestUrlSlug": "son-guncellenenler"
+    }
    }
   },
   {
@@ -7654,6 +7739,21 @@
    }
   },
   {
+   "id": "tr.orimanga",
+   "name": "Ori Manga",
+   "lang": "tr",
+   "baseUrl": "https://orimanga.net",
+   "contentWarning": "safe",
+   "theme": "initmanga",
+   "options": {
+    "vals": {
+     "mangaUrlDirectory": "manga",
+     "popularUrlSlug": "manga-siralamasi",
+     "latestUrlSlug": "yakin-zamanda-guncellendi"
+    }
+   }
+  },
+  {
    "id": "tr.outcatsscans",
    "name": "Outcats Scans",
    "lang": "tr",
@@ -7666,12 +7766,40 @@
    }
   },
   {
+   "id": "tr.paradoxscans",
+   "name": "Paradox Scans",
+   "lang": "tr",
+   "baseUrl": "https://paradoxscans.com",
+   "contentWarning": "safe",
+   "theme": "initmanga",
+   "options": {
+    "vals": {
+     "popularUrlSlug": "manga-ranking",
+     "latestUrlSlug": "recently-updated"
+    }
+   }
+  },
+  {
    "id": "tr.patimanga",
    "name": "Pati Manga",
    "lang": "tr",
    "baseUrl": "https://www.patimanga.com",
    "contentWarning": "safe",
    "theme": "mangathemesia"
+  },
+  {
+   "id": "tr.ragnarscans",
+   "name": "Ragnar Scans",
+   "lang": "tr",
+   "baseUrl": "https://ragnarscans2.com",
+   "contentWarning": "safe",
+   "theme": "initmanga",
+   "options": {
+    "vals": {
+     "mangaUrlDirectory": "manga",
+     "popularUrlSlug": "webtoon-siralamasi"
+    }
+   }
   },
   {
    "id": "tr.raindropfansub",
@@ -7737,6 +7865,21 @@
     "mangaUrlDirectory": "/seri",
     "vals": {
      "mangaUrlDirectory": "/seri"
+    }
+   }
+  },
+  {
+   "id": "tr.siyahmelek",
+   "name": "Siyah Melek",
+   "lang": "tr",
+   "baseUrl": "https://siyahmelek.my",
+   "contentWarning": "nsfw",
+   "theme": "initmanga",
+   "options": {
+    "vals": {
+     "mangaUrlDirectory": "manga",
+     "latestUrlSlug": "recently-updated",
+     "popularUrlSlug": "manga-ranking"
     }
    }
   },
@@ -7976,6 +8119,27 @@
    }
   },
   {
+   "id": "vi.meosss",
+   "name": "MeoSSS",
+   "lang": "vi",
+   "baseUrl": "https://meosss.com",
+   "contentWarning": "mixed",
+   "theme": "initmanga",
+   "options": {
+    "vals": {
+     "mangaUrlDirectory": "truyen",
+     "popularUrlSlug": "bang-xep-hang-truyen",
+     "latestUrlSlug": "moi-cap-nhat",
+     "authorLabel": "Tác giả",
+     "artistLabel": "Họa sĩ minh họa",
+     "chapterPrefix": "Chương",
+     "altTitleLabel": "Tên khác",
+     "siteOffsetHours": 7
+    },
+    "customized": true
+   }
+  },
+  {
    "id": "vi.quadaocute",
    "name": "QuaDaoCute",
    "lang": "vi",
@@ -8025,6 +8189,27 @@
    "baseUrl": "https://ruahapchanhday2.com",
    "contentWarning": "mixed",
    "theme": "madara"
+  },
+  {
+   "id": "vi.sangchanhteam",
+   "name": "SangChanhTeam",
+   "lang": "vi",
+   "baseUrl": "https://sangchanhteam.com",
+   "contentWarning": "safe",
+   "theme": "initmanga",
+   "options": {
+    "vals": {
+     "mangaUrlDirectory": "truyen",
+     "popularUrlSlug": "bang-xep-hang-truyen",
+     "latestUrlSlug": "moi-cap-nhat",
+     "authorLabel": "Tác giả",
+     "artistLabel": "Họa sĩ minh họa",
+     "chapterPrefix": "Chương",
+     "altTitleLabel": "Tên khác",
+     "siteOffsetHours": 7
+    },
+    "customized": true
+   }
   },
   {
    "id": "vi.truyentranhdammy",
