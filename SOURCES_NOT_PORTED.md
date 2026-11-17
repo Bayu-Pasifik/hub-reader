@@ -6,7 +6,7 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 | Bahasa / Language | Belum di-port / Not ported |
 |---|---|
 | Indonesia (id) | 14 (6 sudah di-port: Bacami, MG Komik, West Manga, Komik AV, Hentai Crot, Pix Hentai) |
-| English (en) | 198 (45 sudah di-port dari kelompok Aman / 45 ported from the Safe group) |
+| English (en) | 179 (64 sudah di-port dari kelompok Aman / 64 ported from the Safe group) |
 
 > Catatan / Notes
 > - ID: Pencocokan berdasarkan nama folder dan nama tampilan; beberapa situs bisa salah terdeteksi. Sumber multi-bahasa (`all`) tidak termasuk.
@@ -49,67 +49,48 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 
 ---
 
-## 2. English (en) — 198 sumber / sources
+## 2. English (en) — 179 sumber / sources
 
-#### Aman / Safe (55 belum di-port / not yet ported; 45 sudah di-port / ported)
+#### Aman / Safe (36 belum di-port / not yet ported; 64 sudah di-port / ported)
 
 | # | Nama / Name | Situs / Site | Catatan / Note |
 |---|---|---|---|
-| 1 | Aethon Webcomics | https://aethonwebcomics.com | Belum di-port: perlu parser kustom. / Not ported yet: needs a custom parser. |
-| 2 | Alpha Manga | https://www.alpha-manga.com | Belum di-port: perlu parser kustom. / Not ported yet: needs a custom parser. |
-| 3 | Arven Scans | https://arvenscans.net | Belum di-port: perlu parser kustom. / Not ported yet: needs a custom parser. |
-| 4 | Baetoon | https://baetoon.com | Belum di-port: perlu parser kustom. / Not ported yet: needs a custom parser. |
-| 5 | Bakkin Self-hosted | - | Sumber template tanpa situs tetap (template: bakkin). / Template-only source without a fixed site (template: bakkin). |
-| 6 | BatCave | https://batcave.biz | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
-| 7 | Broccoli Soup | https://politeandgood.com | Belum di-port: perlu parser kustom. / Not ported yet: needs a custom parser. |
-| 8 | Character Design References | https://characterdesignreferences.com | Belum di-port: perlu parser kustom. / Not ported yet: needs a custom parser. |
-| 9 | Colorized Mangas | https://colorizedmangas.com | Belum di-port: perlu parser kustom. / Not ported yet: needs a custom parser. |
-| 10 | ComicHubFree | https://comichubfree.com | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
-| 11 | Comivex | https://comivex.com | Situs tidak terjangkau / folder upstream tidak ditemukan. / Site unreachable / upstream folder not found. |
-| 12 | Complex Bowler | https://complexbowler.neocities.org | Belum di-port: perlu parser kustom. / Not ported yet: needs a custom parser. |
-| 13 | Digital Comic Museum | https://digitalcomicmuseum.com | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
-| 14 | Gone with the Blastwave | https://www.blastwave-comic.com | Situs tidak terjangkau / folder upstream tidak ditemukan. / Site unreachable / upstream folder not found. |
-| 15 | Hiveworks Comics | https://hiveworkscomics.com | Belum di-port: perlu parser kustom. / Not ported yet: needs a custom parser. |
-| 16 | HYPERCOMIC | https://play.hypercomic.io | Belum di-port: perlu parser kustom. / Not ported yet: needs a custom parser. |
-| 17 | J-Novel | https://j-novel.club | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
-| 18 | K Manga | https://kmanga.kodansha.com | Toko resmi berbayar/login; tidak ada konten gratis tanpa akun. / Paid/login-gated official store; no free content without an account. |
-| 19 | Leslie&Victims | https://leslie-victims.pages.dev | Daftar halaman bab ditemukan lewat HEAD per gambar; belum di-port. / Chapter pages are discovered by per-image HEAD probing; not ported yet. |
-| 20 | LoLoBun | https://www.lolobun.com | Belum di-port: perlu parser kustom. / Not ported yet: needs a custom parser. |
-| 21 | Luminare Translations | https://luminaretranslations.com | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
-| 22 | LuxManga | https://luxmanga.net | Belum di-port: perlu parser kustom. / Not ported yet: needs a custom parser. |
-| 23 | Madokami | https://manga.madokami.al | Butuh login (HTTP 401). / Requires login (HTTP 401). |
-| 24 | Manga Demon | https://demonicscans.org | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
-| 25 | MangaBolt | https://mangabolt.com | API rute `manga-list` sudah dihapus situs (404). / API route `manga-list` was removed by the site (404). |
-| 26 | MangaCherri | https://mangacherri.com | Belum di-port: perlu parser kustom. / Not ported yet: needs a custom parser. |
-| 27 | Mangack | https://mangack.com | Belum di-port: perlu parser kustom. / Not ported yet: needs a custom parser. |
-| 28 | MangaCloud | https://mangacloud.org | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
-| 29 | Mangamo | https://www.mangamo.com | Toko resmi berbayar/login; tidak ada konten gratis tanpa akun. / Paid/login-gated official store; no free content without an account. |
-| 30 | ManhuaPlus.top | https://manhuaplus.top | Belum di-port: perlu parser kustom. / Not ported yet: needs a custom parser. |
-| 31 | Megatokyo | https://megatokyo.com | Situs memakai sertifikat SSL rusak dan membalas 403 ke klien non-browser. / Site uses a broken SSL certificate and answers 403 to non-browser clients. |
-| 32 | Monochrome Custom | - | Sumber template tanpa situs tetap (template: monochrome). / Template-only source without a fixed site (template: monochrome). |
-| 33 | Ninko Comics | https://ninkocomics.com | Belum di-port: perlu parser kustom. / Not ported yet: needs a custom parser. |
-| 34 | Nuvia Toon | https://nuviatoon.org | Belum di-port: perlu parser kustom. / Not ported yet: needs a custom parser. |
-| 35 | Nux Scans | https://nuxscans-comics.blogspot.com | Belum di-port: perlu parser kustom. / Not ported yet: needs a custom parser. |
-| 36 | O Translations | https://otl.moe | Belum di-port: perlu parser kustom. / Not ported yet: needs a custom parser. |
-| 37 | One Punch Man Online | https://w21.1punchman.com | Halaman bab hanya berisi iklan untuk klien non-browser (tanpa gambar). / Chapter pages only serve ads to non-browser clients (no images). |
-| 38 | OriYami | https://oriyami.com | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
-| 39 | Philia Scans | https://philiascans.org | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
-| 40 | Read Comics Online | https://readcomicsonline.ru | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
-| 42 | ReadComicsOnline.lol | https://readcomicsonline.lol | Belum di-port: perlu parser kustom. / Not ported yet: needs a custom parser. |
-| 43 | Renascans | https://renascans.net | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
-| 44 | Rinko Comics | https://rinkocomics.com | Belum di-port: perlu parser kustom. / Not ported yet: needs a custom parser. |
-| 45 | Snafu Comics | https://www.snafu-comics.com | Belum di-port: perlu parser kustom. / Not ported yet: needs a custom parser. |
-| 46 | StoneScape | https://stonescape.xyz | Belum di-port: perlu parser kustom. / Not ported yet: needs a custom parser. |
-| 47 | The Far Side | https://www.thefarside.com | Keterangan kartun digambar ke dalam gambar lewat interseptor bitmap; belum ada padanannya. / Captions are drawn into the image by a bitmap interceptor; no equivalent yet. |
-| 49 | The Interpretation of Shadows | https://tioscomic.com | Situs menjalankan pemeriksaan bot ("One moment, please") yang butuh browser. / Site runs a bot check ("One moment, please") that needs a browser. |
-| 50 | The Wandering Inn | https://webcomic.wanderinginn.com | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
-| 51 | Vision Haze | https://www.visionhaze.com | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
-| 52 | VIZ | https://www.viz.com | Toko resmi berbayar/login; tidak ada konten gratis tanpa akun. / Paid/login-gated official store; no free content without an account. |
-| 53 | Voyce.Me | https://www.voyce.me | Toko resmi berbayar/login; tidak ada konten gratis tanpa akun. / Paid/login-gated official store; no free content without an account. |
-| 54 | War For Rayuba | https://xrabohrok.github.io/WarMap/#/ | Bab diambil lewat API Cubari/GitHub; belum di-port. / Chapters come via the Cubari/GitHub API; not ported yet. |
-| 55 | Webdex Scans | https://webdexscans.com | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
-| 56 | WebNovel | https://www.webnovel.com | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
-| 57 | ZipComic | https://www.zipcomic.com | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
+| 1 | Alpha Manga | https://www.alpha-manga.com | Gambar diacak lewat interseptor bitmap (descramble) dan situs membalas 202 ke klien non-browser. / Images are scrambled and unscrambled by a bitmap interceptor, and the site answers 202 to non-browser clients. |
+| 2 | Bakkin Self-hosted | - | Sumber template tanpa situs tetap (template: bakkin). / Template-only source without a fixed site (template: bakkin). |
+| 3 | BatCave | https://batcave.biz | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
+| 4 | Character Design References | https://characterdesignreferences.com | Galeri Squarespace dengan koleksi bernomor, kursor halaman berstatus, dan banyak jenis bagian; belum di-port. / Squarespace galleries with numbered collections, a stateful page cursor, and several section kinds; not ported yet. |
+| 5 | ComicHubFree | https://comichubfree.com | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
+| 6 | Comivex | https://comivex.com | Situs tidak terjangkau / folder upstream tidak ditemukan. / Site unreachable / upstream folder not found. |
+| 7 | Digital Comic Museum | https://digitalcomicmuseum.com | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
+| 8 | Gone with the Blastwave | https://www.blastwave-comic.com | Situs tidak terjangkau / folder upstream tidak ditemukan. / Site unreachable / upstream folder not found. |
+| 9 | Hiveworks Comics | https://hiveworkscomics.com | Agregator ratusan webcomic di situs berbeda dengan penanganan khusus per situs; tidak ada satu parser yang cocok. / Aggregator of hundreds of webcomics on different sites with per-site special cases; no single parser fits. |
+| 10 | J-Novel | https://j-novel.club | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
+| 11 | K Manga | https://kmanga.kodansha.com | Toko resmi berbayar/login; tidak ada konten gratis tanpa akun. / Paid/login-gated official store; no free content without an account. |
+| 12 | Leslie&Victims | https://leslie-victims.pages.dev | Daftar halaman bab ditemukan lewat HEAD per gambar; belum di-port. / Chapter pages are discovered by per-image HEAD probing; not ported yet. |
+| 13 | Luminare Translations | https://luminaretranslations.com | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
+| 14 | Madokami | https://manga.madokami.al | Butuh login (HTTP 401). / Requires login (HTTP 401). |
+| 15 | Manga Demon | https://demonicscans.org | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
+| 16 | MangaBolt | https://mangabolt.com | API rute `manga-list` sudah dihapus situs (404). / API route `manga-list` was removed by the site (404). |
+| 17 | MangaCloud | https://mangacloud.org | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
+| 18 | Mangamo | https://www.mangamo.com | Toko resmi berbayar/login; tidak ada konten gratis tanpa akun. / Paid/login-gated official store; no free content without an account. |
+| 19 | Megatokyo | https://megatokyo.com | Situs memakai sertifikat SSL rusak dan membalas 403 ke klien non-browser. / Site uses a broken SSL certificate and answers 403 to non-browser clients. |
+| 20 | Monochrome Custom | - | Sumber template tanpa situs tetap (template: monochrome). / Template-only source without a fixed site (template: monochrome). |
+| 21 | Nux Scans | https://nuxscans-comics.blogspot.com | Struktur situs berubah sehingga parser upstream tidak lagi cocok (penanda daftar bab tidak ditemukan). / The site structure changed so the upstream parser no longer matches (chapter-list markers not found). |
+| 22 | One Punch Man Online | https://w21.1punchman.com | Halaman bab hanya berisi iklan untuk klien non-browser (tanpa gambar). / Chapter pages only serve ads to non-browser clients (no images). |
+| 23 | OriYami | https://oriyami.com | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
+| 24 | Philia Scans | https://philiascans.org | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
+| 25 | Read Comics Online | https://readcomicsonline.ru | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
+| 26 | Renascans | https://renascans.net | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
+| 27 | The Far Side | https://www.thefarside.com | Keterangan kartun digambar ke dalam gambar lewat interseptor bitmap; belum ada padanannya. / Captions are drawn into the image by a bitmap interceptor; no equivalent yet. |
+| 28 | The Interpretation of Shadows | https://tioscomic.com | Situs menjalankan pemeriksaan bot ("One moment, please") yang butuh browser. / Site runs a bot check ("One moment, please") that needs a browser. |
+| 29 | The Wandering Inn | https://webcomic.wanderinginn.com | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
+| 30 | Vision Haze | https://www.visionhaze.com | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
+| 31 | VIZ | https://www.viz.com | Toko resmi berbayar/login; tidak ada konten gratis tanpa akun. / Paid/login-gated official store; no free content without an account. |
+| 32 | Voyce.Me | https://www.voyce.me | Toko resmi berbayar/login; tidak ada konten gratis tanpa akun. / Paid/login-gated official store; no free content without an account. |
+| 33 | War For Rayuba | https://xrabohrok.github.io/WarMap/#/ | Bab diambil lewat API Cubari/GitHub; belum di-port. / Chapters come via the Cubari/GitHub API; not ported yet. |
+| 34 | Webdex Scans | https://webdexscans.com | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
+| 35 | WebNovel | https://www.webnovel.com | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
+| 36 | ZipComic | https://www.zipcomic.com | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
 
 #### Campuran / Mixed (73)
 
