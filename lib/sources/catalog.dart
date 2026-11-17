@@ -14,6 +14,7 @@ import 'templates/mangathemesia.dart';
 import 'templates/natsuid.dart';
 import 'templates/small_templates.dart';
 import 'templates/vinetheme.dart';
+import 'templates/yiimadara.dart';
 import 'templates/yiimanga.dart';
 import 'templates/zeistmanga.dart';
 
@@ -205,6 +206,18 @@ class CatalogEntry {
             baseUrl: baseUrl,
             contentWarning: contentWarning,
             titleSlugForIdSlugs: options['titleSlugForIdSlugs'] == true,
+          ),
+        'yiimadara' => YiiMadaraSource(
+            id: id,
+            name: name,
+            lang: lang,
+            baseUrl: baseUrl,
+            contentWarning: contentWarning,
+            vals: asMap(options['vals']),
+            genreList: [
+              for (final g in asList(options['genres']))
+                if (asList(g) case [final String label, final String path]) (label, path),
+            ],
           ),
         _ => null,
       };

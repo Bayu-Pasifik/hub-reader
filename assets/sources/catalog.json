@@ -2,7 +2,7 @@
  "source": "https://github.com/keiyoushi/extensions-source",
  "license": "Apache-2.0",
  "generatedAt": "2026-11-17",
- "count": 493,
+ "count": 500,
  "sources": [
   {
    "id": "all.allporncomicsco",
@@ -64,6 +64,195 @@
    }
   },
   {
+   "id": "all.manga18me",
+   "name": "Manga18.me",
+   "lang": "all",
+   "baseUrl": "https://manga18.me",
+   "contentWarning": "nsfw",
+   "theme": "yiimadara",
+   "options": {
+    "vals": {
+     "rawPath": "manhwa-raw",
+     "supportsFilterFetching": false
+    },
+    "genres": [
+     [
+      "Action",
+      "genre/action"
+     ],
+     [
+      "Adult",
+      "genre/adult"
+     ],
+     [
+      "Adventure",
+      "genre/adventure"
+     ],
+     [
+      "BL",
+      "genre/bl"
+     ],
+     [
+      "Comedy",
+      "genre/comedy"
+     ],
+     [
+      "Drama",
+      "genre/drama"
+     ],
+     [
+      "Ecchi",
+      "genre/ecchi"
+     ],
+     [
+      "Family",
+      "genre/family"
+     ],
+     [
+      "Fantasy",
+      "genre/fantasy"
+     ],
+     [
+      "Gender Bender",
+      "genre/gender-bender"
+     ],
+     [
+      "GL",
+      "genre/gl"
+     ],
+     [
+      "Harem",
+      "genre/harem"
+     ],
+     [
+      "Hentai",
+      "genre/hentai"
+     ],
+     [
+      "Historical",
+      "genre/historical"
+     ],
+     [
+      "Horror",
+      "genre/horror"
+     ],
+     [
+      "Isekai",
+      "genre/isekai"
+     ],
+     [
+      "Josei",
+      "genre/josei"
+     ],
+     [
+      "Magic",
+      "genre/magic"
+     ],
+     [
+      "Manhua",
+      "genre/manhua"
+     ],
+     [
+      "Manhwa",
+      "genre/manhwa"
+     ],
+     [
+      "Martial Arts",
+      "genre/martial-arts"
+     ],
+     [
+      "Mature",
+      "genre/mature"
+     ],
+     [
+      "Mystery",
+      "genre/mystery"
+     ],
+     [
+      "Psychological",
+      "genre/psychological"
+     ],
+     [
+      "Romance",
+      "genre/romance"
+     ],
+     [
+      "School Life",
+      "genre/school-life"
+     ],
+     [
+      "Sci-Fi",
+      "genre/sci-fi"
+     ],
+     [
+      "Seinen",
+      "genre/seinen"
+     ],
+     [
+      "Shoujo",
+      "genre/shoujo"
+     ],
+     [
+      "Shounen",
+      "genre/shounen"
+     ],
+     [
+      "Slice of Life",
+      "genre/slice-of-life"
+     ],
+     [
+      "Smut",
+      "genre/smut"
+     ],
+     [
+      "Sports",
+      "genre/sports"
+     ],
+     [
+      "Supernatural",
+      "genre/supernatural"
+     ],
+     [
+      "Thriller",
+      "genre/thriller"
+     ],
+     [
+      "Tragedy",
+      "genre/tragedy"
+     ],
+     [
+      "Uncensored",
+      "genre/uncensored"
+     ],
+     [
+      "Yaoi",
+      "genre/yaoi"
+     ],
+     [
+      "Yuri",
+      "genre/yuri"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "all.manga18fx",
+   "name": "Manga18fx",
+   "lang": "all",
+   "baseUrl": "https://manga18fx.com",
+   "contentWarning": "nsfw",
+   "theme": "yiimadara",
+   "options": {
+    "vals": {
+     "rawPath": "manhwa-raw",
+     "directoryPath": "",
+     "completedPath": null,
+     "hotMangaPopular": true
+    },
+    "customized": true
+   }
+  },
+  {
    "id": "all.mangacrazy",
    "name": "MangaCrazy",
    "lang": "all",
@@ -72,6 +261,20 @@
    "theme": "madara",
    "options": {
     "chapterMode": "MangaAjax"
+   }
+  },
+  {
+   "id": "all.mangadna",
+   "name": "MangaDNA",
+   "lang": "all",
+   "baseUrl": "https://mangadna.com",
+   "contentWarning": "mixed",
+   "theme": "yiimadara",
+   "options": {
+    "vals": {
+     "rawPath": "manhwa-raw",
+     "completedPath": null
+    }
    }
   },
   {
@@ -100,6 +303,21 @@
      "pageListParseSelector": "div.page-break img.wp-manga-chapter-img"
     },
     "customized": true
+   }
+  },
+  {
+   "id": "all.manhwa18cc",
+   "name": "Manhwa18.cc",
+   "lang": "all",
+   "baseUrl": "https://manhwa18.cc",
+   "contentWarning": "nsfw",
+   "theme": "yiimadara",
+   "options": {
+    "vals": {
+     "mangaPath": "webtoon",
+     "rawPath": "raw",
+     "directoryPath": "webtoons"
+    }
    }
   },
   {
@@ -1549,6 +1767,20 @@
    }
   },
   {
+   "id": "en.mangadass",
+   "name": "Manga Dass",
+   "lang": "en",
+   "baseUrl": "https://mangadass.com",
+   "contentWarning": "mixed",
+   "theme": "yiimadara",
+   "options": {
+    "vals": {
+     "rawPath": "raw-manhwa",
+     "rawEntries": "show"
+    }
+   }
+  },
+  {
    "id": "en.mangadistrict",
    "name": "Manga District",
    "lang": "en",
@@ -2128,6 +2360,24 @@
     "filterNonMangaItems": false,
     "vals": {
      "filterNonMangaItems": false
+    }
+   }
+  },
+  {
+   "id": "en.manhwaus",
+   "name": "ManhwaUS",
+   "lang": "en",
+   "baseUrl": "https://manhwaus.net",
+   "contentWarning": "nsfw",
+   "theme": "yiimadara",
+   "options": {
+    "vals": {
+     "mangaPath": "webtoon",
+     "directoryPath": "webtoons",
+     "pageSegment": true,
+     "trailingSlash": true,
+     "searchParam": "s",
+     "rawPath": "raw"
     }
    }
   },
@@ -3174,6 +3424,22 @@
       "/manga/tokyo-ghoulre/"
      ]
     ]
+   }
+  },
+  {
+   "id": "en.readmanga18",
+   "name": "ReadManga18",
+   "lang": "en",
+   "baseUrl": "https://readmanga18.com",
+   "contentWarning": "nsfw",
+   "theme": "yiimadara",
+   "options": {
+    "vals": {
+     "trailingSlash": true,
+     "searchParam": "s",
+     "rawPath": "raw",
+     "completedPath": null
+    }
    }
   },
   {

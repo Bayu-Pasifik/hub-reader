@@ -14,7 +14,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga', 'loneseal', 'natsuid', 'colorlibanime', 'hwalumi', 'keyoapp', 'vinetheme', 'mangacatalog', 'iken', 'zmanga', 'mangahub', 'yiimanga', 'mangabox']);
+const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga', 'loneseal', 'natsuid', 'colorlibanime', 'hwalumi', 'keyoapp', 'vinetheme', 'mangacatalog', 'iken', 'zmanga', 'mangahub', 'yiimanga', 'mangabox', 'yiimadara']);
 
 const [root, outArg] = process.argv.slice(2);
 if (!root) {
@@ -102,6 +102,25 @@ for (const langDir of listDirs(path.join(root, 'src'))) {
     } else if (theme === 'mangabox') {
       // Mangakakalot: slug berbentuk id diganti slug dari judul.
       if (/titleToSlug/.test(kt)) options.titleSlugForIdSlugs = true;
+    } else if (theme === 'yiimadara') {
+      // Properti bertipe `String?` tidak ikut regex generik di bawah.
+      const v = (options.vals ??= {});
+      for (const m of kt.matchAll(/override\s+val\s+(directoryPath|completedPath|rawPath|searchParam|mangaPath)\s*:\s*String\?\s*=\s*("(?:[^"\\]|\\.)*"|null)/g)) {
+        v[m[1]] = m[2] === 'null' ? (m[1] === 'directoryPath' ? '' : null) : JSON.parse(m[2]);
+      }
+      // directoryPath bergantung bahasa: if (lang == "ko") rawPath else "webtoons".
+      const byLang = kt.match(/override\s+val\s+directoryPath\s+get\(\)\s*=\s*if\s*\(lang\s*==\s*"(\w+)"\)\s*(\w+)\s+else\s+"([^"]+)"/);
+      if (byLang) {
+        v.directoryPath = byLang[3];
+        v['directoryPath' + byLang[1]] = v[byLang[2]];
+      }
+      if (/hot-manga/.test(kt)) v.hotMangaPopular = true;
+      const raw = kt.match(/rawEntries\s*=\s*RawEntries\.(SHOW|HIDE|ONLY)/);
+      if (raw) v.rawEntries = raw[1].toLowerCase();
+      if (/override fun genres/.test(kt)) {
+        v.supportsFilterFetching = false;
+        options.genres = [...kt.matchAll(/"([^"]+)" to "([^"]+)",/g)].map((m) => [m[1], 'genre/' + m[2]]);
+      }
     } else if (theme === 'iken') {
       const perPage = str(kt, /override\s+val\s+perPage\s*=\s*(\d+)/);
       if (perPage) options.perPage = Number(perPage);
@@ -127,7 +146,7 @@ for (const langDir of listDirs(path.join(root, 'src'))) {
     if (/apiUrl[^\n]*"\$baseUrl\/api"/.test(kt)) vals.apiOnBase = true;
     // NatsuId (Kiryuu): daftar bab memakai page=1.
     if (/setQueryParameter\("page", "1"\)/.test(kt)) vals.chapterPageOne = true;
-    if (Object.keys(vals).length) options.vals = vals;
+    if (Object.keys(vals).length) options.vals = { ...vals, ...options.vals };
     // Keyoapp: override yang dikenal (Livewire, V2, populer via pencarian) sudah ditangani port Dart.
     if (!['keyoapp', 'mangacatalog'].includes(theme) && /getPopularManga|getSearchMangaList|parseArchive|pageListParse|parsePages|mangaDetailsParse|parseDetails|getChapterFeedUrl|parsePopularManga|parseSearchManga/.test(kt)) {
       options.customized = true; // Kotlin meng-override logika inti; port Dart bisa kurang pas.
