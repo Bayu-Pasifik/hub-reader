@@ -5,7 +5,7 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 
 | Bahasa / Language | Belum di-port / Not ported |
 |---|---|
-| Indonesia (id) | 20 |
+| Indonesia (id) | 14 (6 sudah di-port: Bacami, MG Komik, West Manga, Komik AV, Hentai Crot, Pix Hentai) |
 | English (en) | 252 |
 
 > Catatan / Notes
@@ -16,7 +16,7 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 
 ---
 
-## 1. Indonesia (id) — 20 sumber / sources
+## 1. Indonesia (id) — 14 sumber / sources
 
 #### Aman / Safe (6)
 
