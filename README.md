@@ -50,7 +50,7 @@ lib/sources/
 ├── id/komiku.dart              # sumber kustom, scraping HTML
 ├── id/shinigami.dart           # sumber kustom, API JSON (api.shngm.io)
 ├── en/                         # sumber kustom Inggris: MangaPill, TCB Scans, MangaKatana, Weeb Central,
-│                               #   Flame Comics (JSON Next.js), Mangafreak
+│                               #   Flame Comics (JSON Next.js), Mangafreak, Asura Scans (API JSON)
 └── registry.dart               # sumber kustom + katalog
 assets/sources/catalog.json     # 517 sumber template, dibuat oleh tool/
 tool/generate_source_catalog.mjs  # generator katalog dari keiyoushi/extensions-source

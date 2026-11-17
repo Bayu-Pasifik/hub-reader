@@ -1,4 +1,5 @@
 import 'catalog.dart';
+import 'en/asurascans.dart';
 import 'en/flamecomics.dart';
 import 'en/mangafreak.dart';
 import 'en/mangakatana.dart';
@@ -31,6 +32,7 @@ List<MangaSource> customSources() => [
       MangaKatanaSource(),
       WeebCentralSource(),
       FlameComicsSource(),
+      AsuraScansSource(),
       MangafreakSource(),
     ];
 

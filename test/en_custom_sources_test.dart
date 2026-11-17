@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:html/parser.dart' as html;
+import 'package:hub_reader/sources/en/asurascans.dart';
 import 'package:hub_reader/sources/en/flamecomics.dart';
 import 'package:hub_reader/sources/en/mangakatana.dart';
 import 'package:hub_reader/sources/en/mangapill.dart';
@@ -118,5 +119,65 @@ void main() {
           'https://cdn.flamecomics.xyz/uploads/images/series/2/tok/a.jpg?5',
           'https://cdn.flamecomics.xyz/uploads/images/series/2/tok/b.jpg?5',
         ]);
+  });
+
+  test('Asura Scans: daftar, detail tanpa bab terkunci, halaman', () {
+    final s = AsuraScansSource();
+    final page = s.parseList({
+      'data': [
+        {'public_url': '/comics/abc-7ba78ec7', 'title': 'Abc', 'cover': 'https://c.test/a.webp'},
+      ],
+      'meta': {'has_more': true},
+    });
+    expect(page.items.single.url, 'https://asurascans.com/comics/abc-7ba78ec7');
+    expect(page.hasNextPage, isTrue);
+
+    final d = s.parseDetails({
+      'series': {
+        'title': 'Abc',
+        'public_url': '/comics/abc-7ba78ec7',
+        'description': '<p>Isi</p>',
+        'alternative_titles': 'A1 • A2',
+        'status': 'dropped',
+        'type': 'manhwa',
+        'genres': [
+          {'name': 'Action', 'slug': 'action'},
+        ],
+      },
+    }, {
+      'data': [
+        {'number': 3, 'is_premium': true},
+        {'number': 2, 'title': 'Dua', 'early_access_until': '2999-01-01T00:00:00Z'},
+        {'number': 1.5, 'title': 'Satu', 'published_at': '2024-01-01T00:00:00Z'},
+      ],
+    }, 'https://asurascans.com/comics/abc-7ba78ec7');
+    expect(d.chapters.single.name, 'Chapter 1.5 - Satu');
+    expect(d.chapters.single.url, 'https://asurascans.com/comics/abc-7ba78ec7/chapter/1.5');
+    expect(d.status, SourceMangaStatus.cancelled);
+    expect(d.genres, ['Manhwa', 'Action']);
+    expect(d.description, contains('- A2'));
+
+    expect(
+        s.parsePages({
+          'data': {
+            'chapter': {
+              'pages': [
+                {'url': 'https://i.test/1.webp'},
+              ],
+            },
+          },
+        }),
+        ['https://i.test/1.webp']);
+    expect(
+        () => s.parsePages({
+              'data': {
+                'chapter': {
+                  'pages': [
+                    {'url': 'https://i.test/1.webp', 'tiles': [1, 2]},
+                  ],
+                },
+              },
+            }),
+        throwsA(anything));
   });
 }

@@ -513,6 +513,7 @@ const Map<String, String> stringsEn = {
   'Folder lokal belum siap.': 'Local folder is not ready.',
   'Format situs berubah': 'Site format changed',
   'Gagal mendekripsi gambar bab (chapter protector).': 'Failed to decrypt chapter images (chapter protector).',
+  'Bab ini memakai gambar teracak yang belum didukung.': 'This chapter uses scrambled images, which are not supported yet.',
   'Gagal membaca versi data situs.': 'Could not read the site data version.',
   'Gambar bab tidak ditemukan.': 'Chapter images not found.',
   'Gambar bab tidak ditemukan. Bab mungkin terkunci atau format situs berubah.': 'Chapter images not found. The chapter may be locked or the site format changed.',
