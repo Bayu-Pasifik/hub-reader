@@ -1,4 +1,6 @@
 import 'catalog.dart';
+import 'en/adult_galleries.dart';
+import 'en/adult_webcomics.dart';
 import 'en/asurascans.dart';
 import 'en/flamecomics.dart';
 import 'en/mangafreak.dart';
@@ -56,6 +58,8 @@ List<MangaSource> customSources() => [
       WestMangaSource(),
       OceanWpSource(id: 'id.hentaicrot', name: 'Hentai Crot', baseUrl: 'https://hentaicrot.com'),
       OceanWpSource(id: 'id.pixhentai', name: 'Pix Hentai', baseUrl: 'https://pixhentai.com'),
+      ...adultWebcomics(),
+      ...adultGalleries(),
       MangaPillSource(),
       TcbScansSource(),
       MangaKatanaSource(),
