@@ -9,6 +9,7 @@ import 'core_providers.dart';
 import '../data/local/download_store.dart';
 import '../data/models/download.dart';
 import '../sources/models.dart';
+import '../sources/source.dart' show imageHeadersFor;
 import '../sources/source_exception.dart';
 import 'app_settings_provider.dart';
 import 'novel_providers.dart';
@@ -272,7 +273,7 @@ class DownloadQueueNotifier extends Notifier<List<DownloadTask>> {
           final i = next++;
           final file = File('${dir.path}${Platform.pathSeparator}${files[i]}');
           if (!(await file.exists() && await file.length() > 0)) {
-            final res = await _http.get<List<int>>(urls[i], options: Options(headers: headers));
+            final res = await _http.get<List<int>>(urls[i], options: Options(headers: imageHeadersFor(headers, urls[i])));
             await file.writeAsBytes(res.data ?? const [], flush: true);
           }
           done++;

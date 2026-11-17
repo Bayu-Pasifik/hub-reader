@@ -5,11 +5,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:html/parser.dart' show parse;
 import 'package:hub_reader/sources/catalog.dart';
 import 'package:hub_reader/sources/models.dart';
+import 'package:hub_reader/sources/source.dart';
 import 'package:hub_reader/sources/templates/mangahub.dart';
 import 'package:hub_reader/sources/templates/yiimanga.dart';
 import 'package:pointycastle/export.dart';
 
 void main() {
+  imageHeaderTests();
   group('Yiimanga', () {
     final source = YiimangaSource(id: 'en.x', name: 'X', baseUrl: 'https://x.test', lang: 'en');
     final base = Uri.parse('https://x.test/manhwa/seri/');
@@ -134,6 +136,36 @@ void main() {
       final cipher = out.sublist(0, out.length - 16);
       final tag = out.sublist(out.length - 16);
       expect(MangaHubSource.decryptGcm(key, iv, tag, cipher), plain);
+    });
+  });
+}
+
+void imageHeaderTests() {
+  group('imageHeadersFor', () {
+    const base = {'Referer': 'https://mangafox.fun/', 'Cookie': 'cf_clearance=abc', 'User-Agent': 'Mozilla/5.0 (wv)'};
+
+    test('cookie dibuang untuk CDN beda situs', () {
+      final h = imageHeadersFor(base, 'https://thumb.mghcdn.com/mf/a.jpg');
+      expect(h.containsKey('Cookie'), isFalse);
+      expect(h['Referer'], 'https://mangafox.fun/');
+      expect(h['User-Agent'], HttpSource.fallbackUserAgent);
+    });
+
+    test('cookie tetap untuk situs yang sama dan subdomainnya', () {
+      expect(imageHeadersFor(base, 'https://mangafox.fun/a.jpg')['Cookie'], 'cf_clearance=abc');
+      expect(imageHeadersFor(base, 'https://mangafox.fun/a.jpg')['User-Agent'], 'Mozilla/5.0 (wv)');
+      expect(imageHeadersFor(base, 'https://img-1.mangafox.fun/a.jpg')['Cookie'], 'cf_clearance=abc');
+    });
+
+    test('UA WebView diganti walau tidak ada cookie', () {
+      const noCookie = {'Referer': 'https://mangafox.fun/', 'User-Agent': 'Mozilla/5.0 (Linux; wv) Chrome'};
+      expect(imageHeadersFor(noCookie, 'https://thumb.mghcdn.com/a.jpg')['User-Agent'], HttpSource.fallbackUserAgent);
+      expect(imageHeadersFor(noCookie, 'https://mangafox.fun/a.jpg')['User-Agent'], 'Mozilla/5.0 (Linux; wv) Chrome');
+    });
+
+    test('tanpa cookie atau tanpa referer: tidak diubah', () {
+      expect(imageHeadersFor(const {'Referer': 'https://a.test/'}, 'https://b.test/x'), const {'Referer': 'https://a.test/'});
+      expect(imageHeadersFor(const {'Cookie': 'c=1'}, 'https://b.test/x')['Cookie'], 'c=1');
     });
   });
 }

@@ -58,6 +58,10 @@ class MangaBoxSource extends HttpSource {
 
   String mangaUrlFor(String slug) => '$baseUrl/manga/$slug';
 
+  /// CDN gambar hanya menerima Referer berupa root situs ("$baseUrl/"); URL bab penuh ditolak 403.
+  @override
+  Map<String, String> imageHeaders({String? referer}) => super.imageHeaders(referer: '$baseUrl/');
+
   // =========================== Daftar ===========================
 
   @override

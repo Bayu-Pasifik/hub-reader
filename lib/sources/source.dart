@@ -253,3 +253,29 @@ abstract class HttpSource extends MangaSource {
     };
   }
 }
+
+/// Header gambar untuk [url]: cookie situs (mis. `cf_clearance`) hanya ikut bila
+/// gambar berasal dari situs yang sama dengan `Referer`. Cookie Cloudflare terikat
+/// ke satu domain; dikirim ke CDN lain (mis. thumb.mghcdn.com) malah ditolak 403.
+/// Tanpa cookie itu, User-Agent WebView (`; wv)`) juga tidak perlu dan sebagian CDN
+/// menolaknya, jadi diganti UA Chrome biasa.
+Map<String, String> imageHeadersFor(Map<String, String> headers, String url) {
+  final referer = Uri.tryParse(headers['Referer'] ?? '')?.host ?? '';
+  final host = Uri.tryParse(url)?.host ?? '';
+  if (referer.isEmpty || host.isEmpty || sameSite(referer, host)) return headers;
+  final out = {...headers}..remove('Cookie');
+  if ((out['User-Agent'] ?? '').contains('wv)')) out['User-Agent'] = HttpSource.fallbackUserAgent;
+  return out;
+}
+
+/// Dua host dianggap satu situs bila dua label terakhirnya sama
+/// (`img-1.contoh.com` dan `contoh.com`). Tidak mengenal akhiran seperti `.co.id`,
+/// jadi keliru ke arah "sama": cookie tetap ikut seperti sebelumnya.
+bool sameSite(String a, String b) {
+  String site(String h) {
+    final parts = h.toLowerCase().split('.');
+    return parts.length <= 2 ? parts.join('.') : parts.sublist(parts.length - 2).join('.');
+  }
+
+  return site(a) == site(b);
+}

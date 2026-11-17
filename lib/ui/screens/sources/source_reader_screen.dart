@@ -493,7 +493,7 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
     _nextPrecached = true;
     final nextHeaders = widget.source.imageHeaders(referer: next.url);
     for (final url in urls.take(2).where((u) => u.startsWith('http'))) {
-      precacheImage(CachedNetworkImageProvider(cacheManager: AppImageCache.instance, url, headers: nextHeaders), context).ignore();
+      precacheImage(CachedNetworkImageProvider(cacheManager: AppImageCache.instance, url, headers: imageHeadersFor(nextHeaders, url)), context).ignore();
     }
   }
 
@@ -513,7 +513,7 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       for (final i in todo) {
-        precacheImage(CachedNetworkImageProvider(cacheManager: AppImageCache.instance, urls[i], headers: headers), context).ignore();
+        precacheImage(CachedNetworkImageProvider(cacheManager: AppImageCache.instance, urls[i], headers: imageHeadersFor(headers, urls[i])), context).ignore();
       }
     });
   }
@@ -528,7 +528,7 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
             context,
             ref,
             url: url,
-            headers: headers,
+            headers: imageHeadersFor(headers, url),
             page: i,
             chapterName: widget.chapter.name,
             series: widget.series,
@@ -542,7 +542,7 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
       final local = !url.startsWith('http');
       return CroppedPageImage(
         cacheKey: url,
-        image: local ? FileImage(File(url)) : CachedNetworkImageProvider(cacheManager: AppImageCache.instance, url, headers: headers),
+        image: local ? FileImage(File(url)) : CachedNetworkImageProvider(cacheManager: AppImageCache.instance, url, headers: imageHeadersFor(headers, url)),
         vertical: widget.mode.isPaged,
         placeholder: (_) => const SizedBox(height: 400, child: LoadingView()),
         error: (_) => SizedBox(
@@ -565,7 +565,7 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
     }
     return CachedNetworkImage(cacheManager: AppImageCache.instance, 
       imageUrl: url,
-      httpHeaders: headers,
+      httpHeaders: imageHeadersFor(headers, url),
       fit: fit,
       placeholder: (_, __) => const SizedBox(
         height: 400,

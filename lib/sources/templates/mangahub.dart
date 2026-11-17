@@ -49,6 +49,10 @@ class MangaHubSource extends HttpSource {
   static const thumbUrl = 'https://thumb.mghcdn.com';
   static const pageSize = 30;
 
+  /// Cloudflare menantang UA WebView (`; wv)`) di /graphql, UA Chrome biasa lolos.
+  @override
+  Map<String, String> get extraHeaders => {'User-Agent': HttpSource.fallbackUserAgent};
+
   String _apiKey = _randomKey();
 
   static String _randomKey() {

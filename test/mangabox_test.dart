@@ -5,6 +5,7 @@ import 'package:hub_reader/sources/models.dart';
 import 'package:hub_reader/sources/templates/mangabox.dart';
 
 void main() {
+  imageHeaderTest();
   final source = MangaBoxSource(id: 'en.m', name: 'M', baseUrl: 'https://m.test', lang: 'en');
   final base = Uri.parse('https://m.test/manga/judul');
 
@@ -85,5 +86,12 @@ void main() {
     })!.create();
     expect(s, isA<MangaBoxSource>());
     expect((s! as MangaBoxSource).titleSlugForIdSlugs, isTrue);
+  });
+}
+
+void imageHeaderTest() {
+  test('Referer gambar selalu root situs', () {
+    final s = MangaBoxSource(id: 'x', name: 'x', baseUrl: 'https://m.test', lang: 'en');
+    expect(s.imageHeaders(referer: 'https://m.test/manga/a/chapter-1')['Referer'], 'https://m.test/');
   });
 }

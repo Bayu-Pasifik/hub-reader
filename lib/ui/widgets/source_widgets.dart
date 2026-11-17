@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../sources/models.dart';
+import '../../sources/source.dart' show imageHeadersFor;
 import '../../core/update/app_update.dart';
 import '../../sources/source_exception.dart';
 import '../../sources/source_report.dart';
@@ -51,7 +52,7 @@ class SourceCover extends StatelessWidget {
                     )
                   : CachedNetworkImage(cacheManager: AppImageCache.instance, 
                   imageUrl: url!,
-                  httpHeaders: headers,
+                  httpHeaders: imageHeadersFor(headers, url!),
                   fit: BoxFit.cover,
                   fadeInDuration: const Duration(milliseconds: 150),
                   placeholder: (_, __) => box(Icons.image_outlined),
