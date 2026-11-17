@@ -14,7 +14,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga', 'loneseal', 'natsuid', 'colorlibanime', 'hwalumi', 'keyoapp', 'vinetheme', 'mangacatalog', 'iken', 'zmanga', 'mangahub', 'yiimanga', 'mangabox', 'yiimadara', 'foolslide']);
+const SUPPORTED = new Set(['madara', 'mangathemesia', 'zeistmanga', 'loneseal', 'natsuid', 'colorlibanime', 'hwalumi', 'keyoapp', 'vinetheme', 'mangacatalog', 'iken', 'zmanga', 'mangahub', 'yiimanga', 'mangabox', 'yiimadara', 'foolslide', 'monochrome', 'bakkin']);
 
 const [root, outArg] = process.argv.slice(2);
 if (!root) {
@@ -72,6 +72,8 @@ for (const langDir of listDirs(path.join(root, 'src'))) {
       skipped.theme++;
       continue;
     }
+    // Instalasi self-hosted/placeholder (alamat diisi pengguna) tidak masuk katalog.
+    if (['monochromecustom', 'bakkinselfhosted', 'foolslidecustomizable'].includes(ext)) continue;
     const name = str(gradle, /^\s*name\s*=\s*"([^"]+)"/m) ?? ext;
     const cw = (str(gradle, /ContentWarning\.([A-Z]+)/) ?? 'SAFE').toLowerCase();
     const kt = kotlinSources(path.join(extDir, 'src'));

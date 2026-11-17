@@ -5,6 +5,7 @@ import 'models.dart';
 import 'source.dart';
 import 'templates/foolslide.dart';
 import 'templates/iken.dart';
+import 'templates/json_readers.dart';
 import 'templates/keyoapp.dart';
 import 'templates/loneseal.dart';
 import 'templates/madara.dart';
@@ -228,6 +229,9 @@ class CatalogEntry {
             contentWarning: contentWarning,
             vals: asMap(options['vals']),
           ),
+        'monochrome' =>
+          MonochromeSource(id: id, name: name, lang: lang, baseUrl: baseUrl, contentWarning: contentWarning),
+        'bakkin' => BakkinSource(id: id, name: name, lang: lang, baseUrl: baseUrl, contentWarning: contentWarning),
         _ => null,
       };
 }

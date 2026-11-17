@@ -2,7 +2,7 @@
  "source": "https://github.com/keiyoushi/extensions-source",
  "license": "Apache-2.0",
  "generatedAt": "2026-11-17",
- "count": 511,
+ "count": 513,
  "sources": [
   {
    "id": "all.allporncomicsco",
@@ -998,6 +998,14 @@
    "baseUrl": "https://auntmanhwa.com",
    "contentWarning": "nsfw",
    "theme": "madara"
+  },
+  {
+   "id": "en.bakkin",
+   "name": "Bakkin",
+   "lang": "en",
+   "baseUrl": "https://bakkin.moe/reader",
+   "contentWarning": "safe",
+   "theme": "bakkin"
   },
   {
    "id": "en.battleinfivesecondsaftermeeting",
@@ -2415,6 +2423,14 @@
    "options": {
     "variant": "v2"
    }
+  },
+  {
+   "id": "en.monochromescans",
+   "name": "Monochrome Scans",
+   "lang": "en",
+   "baseUrl": "https://manga.d34d.one",
+   "contentWarning": "safe",
+   "theme": "monochrome"
   },
   {
    "id": "en.murimscan",
