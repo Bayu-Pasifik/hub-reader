@@ -1,3 +1,20 @@
+## Hub Reader v3.1.0
+
+### Sumber baru
+- Katalog bertambah dari 458 menjadi 493 sumber komik.
+- Tiga template baru: **MangaHub** (11 sumber, termasuk MangaFox.fun dan MangaHere.onl), **Yiimanga** (12 sumber, termasuk ManhwaGalaxy dan ToonGod), dan **MangaBox** (Mangabat, Mangakakalot, Manganelo).
+- 11 sumber lain ikut masuk dari katalog terbaru, dan 2 yang sudah dihapus situsnya dibuang. Domain 6 sumber diperbarui.
+- Sebagian sumber baru masih bermasalah: Fastest Manga dan Ranker-Manga belum bisa dibuka, dan beberapa lain minta verifikasi Cloudflare (ketuk Buka di WebView).
+
+### Perbaikan
+- Sampul dan halaman komik yang gambarnya ada di domain lain dari situsnya (CDN) tidak lagi ditolak 403. Cookie Cloudflare dan User-Agent WebView tidak dikirim ke domain lain.
+
+### Catatan
+- Pasang APK yang sesuai ABI HP (arm64-v8a untuk kebanyakan HP).
+- Pasang di atas versi lama hanya bila ditandatangani dengan kunci yang sama.
+
+---
+
 ## Hub Reader v3.0.1
 
 ### Perbaikan
