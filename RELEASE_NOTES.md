@@ -1,3 +1,10 @@
+## Hub Reader v3.0.1
+
+### Perbaikan
+- Notifikasi "Ditambahkan ke favorit" (tombol Kategori) dan "Dihapus dari favorit" (tombol Urungkan) kini hilang otomatis setelah beberapa detik, tidak lagi menempel di layar.
+
+---
+
 ## Hub Reader v3.0.0
 
 ### Penyimpanan baru (database)
