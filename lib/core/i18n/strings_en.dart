@@ -339,6 +339,8 @@ const Map<String, String> stringsEn = {
   'Gagal memuat rekomendasi': 'Failed to load recommendations',
   'Tidak ada seri mirip ditemukan': 'No similar series found',
   'Pengaturan baca': 'Reader settings',
+  'Layar penuh': 'Fullscreen',
+  'Keluar layar penuh': 'Exit fullscreen',
   'Ini bab terbaru.': 'This is the latest chapter.',
   'URL katalog sumber (format catalog.json hub_reader)': 'Source catalog URL (hub_reader catalog.json format)',
   'Gagal memperbarui sebagian repo': 'Failed to update some repos',

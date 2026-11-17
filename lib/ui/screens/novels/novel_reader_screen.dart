@@ -144,6 +144,18 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
     _scroll.animateTo(target, duration: const Duration(milliseconds: 220), curve: Curves.easeOut);
   }
 
+  bool _fullscreen = false;
+
+  /// Layar penuh: bilah sistem + bilah baca disembunyikan; ketuk teks untuk
+  /// memunculkan bilah baca (tombol keluar ada di bilah atas).
+  void _setFullscreen(bool value) {
+    setState(() {
+      _fullscreen = value;
+      _chrome = !value;
+    });
+    SystemChrome.setEnabledSystemUIMode(value ? SystemUiMode.immersiveSticky : SystemUiMode.edgeToEdge);
+  }
+
   void _toggleAutoScroll() {
     setState(() => _autoScroll = !_autoScroll);
     if (_autoScroll) {
@@ -801,6 +813,11 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
                           tooltip: _autoScroll ? tr('Hentikan gulir otomatis') : tr('Gulir otomatis'),
                           icon: Icon(_autoScroll ? Icons.pause_circle_outline : Icons.keyboard_double_arrow_down),
                           onPressed: content.hasValue ? _toggleAutoScroll : null,
+                        ),
+                        IconButton(
+                          tooltip: _fullscreen ? tr('Keluar layar penuh') : tr('Layar penuh'),
+                          icon: Icon(_fullscreen ? Icons.fullscreen_exit : Icons.fullscreen),
+                          onPressed: () => _setFullscreen(!_fullscreen),
                         ),
                         IconButton(
                           tooltip: tr('Tampilan'),

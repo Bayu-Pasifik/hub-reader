@@ -7,6 +7,7 @@ import '../../../core/net/image_cache.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart' show Ticker;
 import 'package:flutter/semantics.dart' show CustomSemanticsAction;
+import 'package:flutter/services.dart' show SystemChrome, SystemUiMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
@@ -108,6 +109,21 @@ class _SourceReaderScreenState extends ConsumerState<SourceReaderScreen> {
 
   void _goTo(SourceChapter chapter) => setState(() => _chapterUrl = chapter.url);
 
+  /// Layar penuh: sembunyikan app bar, bilah bawah, dan bilah sistem.
+  bool _fullscreen = false;
+
+  void _setFullscreen(bool value) {
+    if (_fullscreen == value) return;
+    setState(() => _fullscreen = value);
+    SystemChrome.setEnabledSystemUIMode(value ? SystemUiMode.immersiveSticky : SystemUiMode.edgeToEdge);
+  }
+
+  @override
+  void dispose() {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final source = ref.watch(sourceProvider(widget.sourceId));
@@ -128,8 +144,13 @@ class _SourceReaderScreenState extends ConsumerState<SourceReaderScreen> {
       if (source != null) _downloadAhead(source, manga, chapters, index);
     }
 
-    return Scaffold(
-      appBar: AppBar(
+    return PopScope(
+      canPop: !_fullscreen,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _setFullscreen(false);
+      },
+      child: Scaffold(
+      appBar: _fullscreen ? null : AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -155,6 +176,11 @@ class _SourceReaderScreenState extends ConsumerState<SourceReaderScreen> {
               );
             }),
           IconButton(
+            tooltip: tr('Layar penuh'),
+            icon: const Icon(Icons.fullscreen),
+            onPressed: () => _setFullscreen(true),
+          ),
+          IconButton(
             tooltip: tr('Pengaturan baca'),
             icon: const Icon(Icons.tune),
             onPressed: () => showReaderSettingsSheet(context, seriesKey),
@@ -163,7 +189,8 @@ class _SourceReaderScreenState extends ConsumerState<SourceReaderScreen> {
       ),
       body: source == null
           ? EmptyView(title: tr('Sumber tidak ditemukan'))
-          : _Pages(
+          : Stack(children: [
+              Positioned.fill(child: _Pages(
               // Kunci menyertakan mode: ganti mode = posisi dibaca ulang dari progres.
               key: ValueKey('${chapter.url}|${mode.name}'),
               source: source,
@@ -173,8 +200,19 @@ class _SourceReaderScreenState extends ConsumerState<SourceReaderScreen> {
               mode: mode,
               display: reader.display,
               onNext: next == null ? null : () => _goTo(next),
-            ),
-      bottomNavigationBar: index < 0
+            )),
+              if (_fullscreen)
+                Positioned(
+                  top: MediaQuery.paddingOf(context).top + 8,
+                  right: 12,
+                  child: IconButton.filledTonal(
+                    tooltip: tr('Keluar layar penuh'),
+                    icon: const Icon(Icons.fullscreen_exit),
+                    onPressed: () => _setFullscreen(false),
+                  ),
+                ),
+            ]),
+      bottomNavigationBar: index < 0 || _fullscreen
           ? null
           : BottomAppBar(
               height: 64,
@@ -198,6 +236,7 @@ class _SourceReaderScreenState extends ConsumerState<SourceReaderScreen> {
                 ],
               ),
             ),
+      ),
     );
   }
 }
