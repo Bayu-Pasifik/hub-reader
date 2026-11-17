@@ -2,6 +2,9 @@
 // banyak sumber keiyoushi/extensions-source (Apache-2.0). Tiap seri punya
 // pemuat bab dan pemuat halaman sendiri.
 
+import 'package:dio/dio.dart';
+import 'package:html/parser.dart' as html_parser;
+
 import '../filters.dart';
 import '../html_utils.dart';
 import '../models.dart';
@@ -77,6 +80,9 @@ class MultiSeriesSource extends HttpSource {
     return series.firstWhere((d) => d.key == key, orElse: () => series.first);
   }
 
+  /// URL bab relatif dijadikan absolut agar Referer gambar valid.
+  String _abs(String url) => url.startsWith('/') ? '$baseUrl$url' : url;
+
   Future<String?> _cover(SeriesDef d) async {
     if (d.cover != null || d.loadCover == null) return d.cover;
     try {
@@ -123,7 +129,7 @@ class MultiSeriesSource extends HttpSource {
       chapters: [
         for (final c in await d.loadChapters(this))
           SourceChapter(
-            url: series.length > 1 ? '${d.key}|${c.url}' : c.url,
+            url: series.length > 1 ? '${d.key}|${_abs(c.url)}' : _abs(c.url),
             name: c.name,
             number: c.number,
             uploadedAt: c.uploadedAt,
@@ -174,4 +180,12 @@ Future<String?> wcOgImage(HttpSource s) async {
   final res = await wcGet(s, '/');
   final meta = res.document.querySelector("meta[property='og:image']");
   return absUrl(res.url, meta?.attributes['content']);
+}
+
+/// Seperti [wcGet] tetapi menerima status 500 (beberapa situs membalas 500 dengan isi halaman valid).
+Future<HtmlResponse> wcGetLoose(HttpSource s, String path) async {
+  final uri = s.rewriteToCurrentHost(wcUri(s, path));
+  final res = await s.dio.getUri<String>(uri, options: Options(validateStatus: (c) => c != null && (c < 400 || c == 500)));
+  final body = res.data ?? '';
+  return HtmlResponse(html_parser.parse(body), body, res.realUri);
 }
