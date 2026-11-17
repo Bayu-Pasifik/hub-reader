@@ -1,3 +1,20 @@
+## Hub Reader v3.3.0
+
+### Sumber baru
+- Katalog bertambah dari 517 menjadi 561 sumber komik lewat 12 template baru: **MangaK** (Comizy, MangaK, ToonTop), **HeanCms** (Omega Scans, Lua Scans), **EZManhwa** (EZmanga, Qi Scans), **InitManga** (Manga Drama, Mgread.io, situs Turki dan Vietnam), **MangaTaro** (MangaTaro, Rolia Scan), **MangAdventure** (Arc-Relight, Assorted Scans), **Manga18** (18 Porn Comic, Manga18.Club, HANMAN18), **Hiper** (Hiperdex, Hipercool, Hipertoon), **MangaReader** (MangaNow, Jmanga, Raw Otaku), **WPComics** (XOXO Comics, Raw18, situs Vietnam), **GoDa** (Goda, 18Manhua), dan **Liliana** (ManhuaPlus, Raw1001, MangaKoma, DocTruyen5s).
+- Template MangaReader baru punya filter urutan saja; filter jenis dan genre per situs belum ada.
+
+### Fitur baru
+- Mode layar penuh di pembaca komik dan novel.
+
+### Catatan
+- Sebagian sumber baru belum sempurna: di XOXO Comics sebagian halaman gagal dimuat (situs membalas 404 untuk gambar), detail Goda sedang diblokir situsnya, dan bab InitManga dengan gambar teracak (Image Protector) belum didukung. Beberapa situs lain minta verifikasi Cloudflare (ketuk Buka di WebView).
+- Sumber dari template baru hanya muncul setelah memasang APK ini; pembaruan katalog saja tidak cukup.
+- Pasang APK yang sesuai ABI HP (arm64-v8a untuk kebanyakan HP).
+- Pasang di atas versi lama hanya bila ditandatangani dengan kunci yang sama.
+
+---
+
 ## Hub Reader v3.2.0
 
 ### Sumber baru
