@@ -5,6 +5,8 @@ import 'package:html/dom.dart';
 
 import 'dart:convert';
 import 'ports_util.dart';
+import 'package:dio/dio.dart';
+import 'package:html/parser.dart' as html;
 import '../html_utils.dart';
 import '../models.dart';
 import '../source.dart';
@@ -807,4 +809,78 @@ FnSource _pornhwame() => FnSource(
       },
     );
 
-List<MangaSource> portsAa() => [_myadultcomics(), _schalescans(), _mythtoons(), _bbato(), _inkora(), _kaliscans(), _mymangalist(), _hentaikun(), _pornhwame()];
+// ----------------------------------------------------------------- StreameX
+
+SourceManga _sxEntry(FnSource s, Map m) {
+  final t = (m['title'] as Map);
+  final names = [t['english'], t['romaji'], t['native']].where((e) => e != null && '$e'.trim().isNotEmpty).toList();
+  final cover = m['coverImage'] as Map?;
+  return SourceManga(url: '${s.baseUrl}/manga/${m['id']}', title: '${names.first}', thumbnailUrl: (cover?['extraLarge'] ?? cover?['large']) as String?);
+}
+
+Future<MangaPage> _sxList(FnSource s, String path, Map<String, String> q) async {
+  final j = await s.fetchJson(_u('${s.baseUrl}/api/manga/$path').replace(queryParameters: q), headers: const {'Accept': 'application/json'}) as Map;
+  return MangaPage(
+    [for (final m in (j['results'] as List).cast<Map>()) _sxEntry(s, m)],
+    hasNextPage: (j['page'] as num) < (j['total_pages'] as num),
+  );
+}
+
+FnSource _streamex() => FnSource(
+      id: 'en.streamex',
+      name: 'StreameX',
+      baseUrl: 'https://streamex.hn',
+      contentWarning: ContentWarning.mixed,
+      popularFn: (s, page) => _sxList(s, 'popular', {'page': '$page'}),
+      searchFn: (s, page, q) => _sxList(s, 'search', {'query': q, 'page': '$page'}),
+      detailsFn: (s, url) async {
+        final id = _u(url).pathSegments.where((e) => e.isNotEmpty).last;
+        final d = await s.fetchJson(_u('${s.baseUrl}/api/manga/info/$id'), headers: const {'Accept': 'application/json'}) as Map;
+        final ch = await s.fetchJson(_u('${s.baseUrl}/api/manga/chapters?id=$id'), headers: const {'Accept': 'application/json'}) as Map;
+        final t = d['title'] as Map;
+        final names = [t['english'], t['romaji'], t['native']].where((e) => e != null && '$e'.trim().isNotEmpty).map((e) => '$e').toSet().toList();
+        List<String> staff(List<String> roles) {
+          final edges = ((d['staff'] as Map?)?['edges'] as List? ?? const []).cast<Map>();
+          return {
+            for (final e in edges)
+              if (roles.any((r) => '${e['role']}'.startsWith(r))) '${((e['node'] as Map)['name'] as Map)['full']}',
+          }.toList();
+        }
+
+        final cover = d['coverImage'] as Map?;
+        final desc = clean(html.parseFragment('${d['description'] ?? ''}'.replaceAll(RegExp(r'<br\s*/?>'), '\n')).text);
+        return SourceMangaDetails(
+          url: url,
+          title: names.first,
+          thumbnailUrl: (cover?['extraLarge'] ?? cover?['large']) as String?,
+          author: staff(['Story', 'Original']).join(', '),
+          artist: staff(['Art', 'Story & Art']).join(', '),
+          genres: [for (final g in (d['genres'] as List? ?? const [])) '$g'],
+          description: [if (desc.isNotEmpty) desc, if (names.length > 1) 'Alternative titles: ${names.skip(1).join(', ')}'].join('\n\n'),
+          status: switch (d['status']) {
+            'RELEASING' => SourceMangaStatus.ongoing,
+            'FINISHED' => SourceMangaStatus.completed,
+            'HIATUS' => SourceMangaStatus.hiatus,
+            'CANCELLED' => SourceMangaStatus.cancelled,
+            _ => SourceMangaStatus.unknown,
+          },
+          chapters: [
+            for (final c in (ch['chapters'] as List? ?? const []).cast<Map>())
+              SourceChapter(
+                url: '${s.baseUrl}/manga/read/$id?chapterId=${c['id']}',
+                name: '${c['title']}',
+                number: double.tryParse('${c['chapter']}') ?? -1,
+              ),
+          ],
+        );
+      },
+      pagesFn: (s, ch) async {
+        final chapterId = _u(ch.url).queryParameters['chapterId'];
+        final res = await s.dio.getUri<String>(_u('${s.baseUrl}/api/manga/pages?chapterId=$chapterId'), options: Options(headers: {'Accept': 'application/json', 'Referer': ch.url}));
+        final proxy = res.realUri.resolve('/api/manga-image');
+        final pages = jsonDecode(res.data ?? '[]') as List;
+        return [for (final p in pages.cast<Map>()) proxy.replace(queryParameters: {'url': '${p['img']}'}).toString()];
+      },
+    );
+
+List<MangaSource> portsAa() => [_myadultcomics(), _schalescans(), _mythtoons(), _bbato(), _inkora(), _kaliscans(), _mymangalist(), _hentaikun(), _pornhwame(), _streamex()];
