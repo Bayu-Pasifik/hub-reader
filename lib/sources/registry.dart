@@ -1,5 +1,6 @@
 import 'catalog.dart';
 import 'en/adult_galleries.dart';
+import 'en/adult_galleries_b.dart';
 import 'en/adult_webcomics.dart';
 import 'en/webcomics_a.dart';
 import 'en/webcomics_b.dart';
@@ -77,6 +78,7 @@ List<MangaSource> customSources() => [
       OceanWpSource(id: 'id.pixhentai', name: 'Pix Hentai', baseUrl: 'https://pixhentai.com'),
       ...adultWebcomics(),
       ...adultGalleries(),
+      ...adultGalleriesB(),
       ...webcomicsA(),
       ...webcomicsB(),
       ...webcomicsC(),
