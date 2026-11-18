@@ -617,4 +617,99 @@ FnSource _mymangalist() => FnSource(
       },
     );
 
-List<MangaSource> portsAa() => [_myadultcomics(), _schalescans(), _mythtoons(), _bbato(), _inkora(), _kaliscans(), _mymangalist()];
+// ----------------------------------------------------------------- HentaiKun
+
+List<SourceManga> _hkTable(HtmlResponse res) {
+  final out = <SourceManga>[];
+  for (final row in res.document.querySelectorAll('table.table-striped tr')) {
+    if (row.classes.contains('danger')) continue;
+    final a = row.querySelector('td a');
+    final href = absUrl(res.url, a?.attributes['href']);
+    if (a == null || href == null) continue;
+    final tip = a.attributes['title'] ?? '';
+    final img = RegExp('''src=["']([^"']+)["']''').firstMatch(tip)?[1];
+    out.add(SourceManga(url: href, title: clean(a.text), thumbnailUrl: absUrl(res.url, img)));
+  }
+  return out;
+}
+
+List<SourceManga> _hkGallery(HtmlResponse res) {
+  final out = <SourceManga>[];
+  for (final div in res.document.querySelectorAll("div.thumbnail[id^='galary-']")) {
+    final a = div.querySelector('div.overlay a');
+    final href = absUrl(res.url, a?.attributes['href']);
+    if (a == null || href == null) continue;
+    out.add(SourceManga(url: href, title: clean(a.text), thumbnailUrl: attrAbs(div.querySelector('img.img-responsive'), 'src', res.url)));
+  }
+  return out;
+}
+
+Future<MangaPage> _hkList(FnSource s, String path) async {
+  final res = await s.fetchHtml(_u('${s.baseUrl}$path'));
+  final items = res.document.querySelector('table.table-striped') != null ? _hkTable(res) : _hkGallery(res);
+  return MangaPage(items, hasNextPage: res.document.querySelector('ul.pagination li[aria-label=Next]') != null);
+}
+
+FnSource _hentaikun() => FnSource(
+      id: 'en.hentaikun',
+      name: 'HentaiKun',
+      baseUrl: 'https://hentaikun.com',
+      contentWarning: ContentWarning.nsfw,
+      popularFn: (s, page) => _hkList(s, '/manga/manga-list/most-viewed/${page > 1 ? '$page/' : ''}'),
+      latestFn: (s, page) => _hkList(s, '/manga/manga-list/last-updated/${page > 1 ? '$page/' : ''}'),
+      searchFn: (s, page, q) => _hkList(s, '/manga/search/title/${Uri.encodeComponent(q)}/${page > 1 ? '$page/' : ''}'),
+      detailsFn: (s, url) async {
+        final res = await s.fetchHtml(_u(url));
+        final d = res.document;
+        List<String> linked(String label) {
+          for (final h in d.querySelectorAll('h2')) {
+            if (h.querySelector('strong')?.text.contains(label) ?? false) return [for (final a in h.querySelectorAll('a')) clean(a.text)];
+          }
+          return const [];
+        }
+
+        final og = d.querySelector("meta[property='og:image']")?.attributes['content'];
+        final chapters = <SourceChapter>[];
+        for (final a in d.querySelectorAll('table a.readchap')) {
+          final href = absUrl(res.url, a.attributes['href']);
+          if (href == null) continue;
+          final name = clean(a.text);
+          Element? tr = a.parent;
+          while (tr != null && tr.localName != 'tr') {
+            tr = tr.parent;
+          }
+          chapters.add(SourceChapter(
+            url: href,
+            name: name.isEmpty ? 'Chapter' : name,
+            number: double.tryParse(RegExp(r'(\d+(?:\.\d+)?)').firstMatch(name)?[1] ?? '') ?? 1,
+            uploadedAt: parseLooseDate(tr?.querySelector('td:last-child h6')?.text),
+          ));
+        }
+        return SourceMangaDetails(
+          url: url,
+          title: clean(d.querySelector('div.single_title h1')?.text),
+          thumbnailUrl: absUrl(res.url, og),
+          author: linked('Artist').join(', '),
+          genres: [
+            ...linked('Category').take(1),
+            for (final sp in d.querySelectorAll("div.desc a[href*='/tag/'] span.label-danger")) clean(sp.text),
+          ],
+          status: SourceMangaStatus.completed,
+          chapters: chapters,
+        );
+      },
+      pagesFn: (s, ch) async {
+        final seg = _u(ch.url).pathSegments;
+        final key = '${seg[2]}/${seg[3]}';
+        final res = await s.fetchHtml(_u(ch.url), headers: {'Cookie': '$key=2'});
+        for (final sc in res.document.querySelectorAll('script')) {
+          final data = sc.text;
+          if (!data.contains('var jsondata=')) continue;
+          final json = data.split('var jsondata=').last.split(';').first;
+          return [for (final u in jsonDecode(json) as List) '$u'];
+        }
+        throw StateError('no images');
+      },
+    );
+
+List<MangaSource> portsAa() => [_myadultcomics(), _schalescans(), _mythtoons(), _bbato(), _inkora(), _kaliscans(), _mymangalist(), _hentaikun()];
