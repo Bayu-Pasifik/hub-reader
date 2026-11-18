@@ -883,4 +883,80 @@ FnSource _streamex() => FnSource(
       },
     );
 
-List<MangaSource> portsAa() => [_myadultcomics(), _schalescans(), _mythtoons(), _bbato(), _inkora(), _kaliscans(), _mymangalist(), _hentaikun(), _pornhwame(), _streamex()];
+// ---------------------------------------------------------------- BabeSource
+
+List<SourceManga> _babeCards(HtmlResponse res) {
+  final out = <SourceManga>[];
+  for (final card in res.document.querySelectorAll('.main-content__cards .main-content__tumba')) {
+    final link = card.querySelector('a.main-content__card-link');
+    final href = absUrl(res.url, link?.attributes['href']);
+    if (link == null || href == null || !href.contains('/galleries/')) continue;
+    final img = link.querySelector('img');
+    out.add(SourceManga(url: href, title: clean(img?.attributes['alt']), thumbnailUrl: attrAbs(img, 'src', res.url)));
+  }
+  return out;
+}
+
+Future<MangaPage> _babeList(FnSource s, Uri base, int page) async {
+  var uri = base;
+  if (page > 1) {
+    final segs = [...base.pathSegments.where((e) => e.isNotEmpty)];
+    uri = base.replace(pathSegments: [...segs, 'page$page.html']);
+  }
+  final res = await s.fetchHtml(uri);
+  return MangaPage(_babeCards(res), hasNextPage: res.document.querySelector('a.paginations__next[rel=next]') != null);
+}
+
+FnSource _babesource() => FnSource(
+      id: 'en.babesource',
+      name: 'BabeSource',
+      baseUrl: 'https://babesource.com',
+      contentWarning: ContentWarning.nsfw,
+      popularFn: (s, page) => _babeList(s, _u('${s.baseUrl}/most-viewed/'), page),
+      latestFn: (s, page) => _babeList(s, _u('${s.baseUrl}/newest/'), page),
+      searchFn: (s, page, q) async {
+        // Gerbang pencarian situs mengalihkan ke daftar hasil; ikuti pengalihannya.
+        final gate = await s.fetchHtml(_u('${s.baseUrl}/searchgate.php').replace(queryParameters: {'mode': 'search', 'type': 'photos', 'q': q}));
+        if (page == 1) return MangaPage(_babeCards(gate), hasNextPage: gate.document.querySelector('a.paginations__next[rel=next]') != null);
+        final base = gate.url.replace(pathSegments: gate.url.pathSegments.where((e) => e.isNotEmpty && !RegExp(r'^page\d+\.html$').hasMatch(e)).toList());
+        return _babeList(s, base.replace(path: '${base.path}/'), page);
+      },
+      detailsFn: (s, url) async {
+        final res = await s.fetchHtml(_u(url));
+        final d = res.document;
+        final aside = d.querySelector('aside.aside-setting');
+        final models = [for (final a in aside?.querySelectorAll('.aside-setting__chapter--models a') ?? const []) clean(a.querySelector('strong')?.text)].where((e) => e.isNotEmpty).toList();
+        final paysite = clean(aside?.querySelector('.aside-setting__chapter--paysite a .aside-link-text')?.text);
+        final cats = <String>{
+          for (final a in [...?aside?.querySelectorAll('.aside-setting__chapter--categories a'), ...?aside?.querySelectorAll('a.aside-setting__category-link')])
+            if (clean(a.text).isNotEmpty) clean(a.text),
+        };
+        final photos = d.querySelectorAll('a.slideshowGalleryImage');
+        final title = clean(d.querySelector('title')?.text);
+        final dates = [for (final sp in aside?.querySelectorAll('.aside-setting__views-item span:last-child') ?? const []) clean(sp.text)];
+        return SourceMangaDetails(
+          url: url,
+          title: title.contains(' | ') ? title.substring(0, title.lastIndexOf(' | ')) : title,
+          thumbnailUrl: attrAbs(photos.isEmpty ? null : photos.first.querySelector('img'), 'src', res.url),
+          author: models.join(', '),
+          artist: paysite,
+          genres: cats.toList(),
+          description: '${photos.length} photos',
+          status: SourceMangaStatus.completed,
+          chapters: [
+            SourceChapter(
+              url: url,
+              name: 'Gallery',
+              number: 1,
+              uploadedAt: DateTime.tryParse(dates.firstWhere((e) => RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(e), orElse: () => '')),
+            ),
+          ],
+        );
+      },
+      pagesFn: (s, ch) async {
+        final res = await s.fetchHtml(_u(ch.url));
+        return [for (final a in res.document.querySelectorAll('a.slideshowGalleryImage')) if (absUrl(res.url, a.attributes['href']) case final u?) u];
+      },
+    );
+
+List<MangaSource> portsAa() => [_myadultcomics(), _schalescans(), _mythtoons(), _bbato(), _inkora(), _kaliscans(), _mymangalist(), _hentaikun(), _pornhwame(), _streamex(), _babesource()];
