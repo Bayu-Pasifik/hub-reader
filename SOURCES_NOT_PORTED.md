@@ -6,7 +6,7 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 | Bahasa / Language | Belum di-port / Not ported |
 |---|---|
 | Indonesia (id) | 14 (6 sudah di-port: Bacami, MG Komik, West Manga, Komik AV, Hentai Crot, Pix Hentai) |
-| English (en) | 175 (64 sudah di-port dari kelompok Aman / 64 ported from the Safe group) |
+| English (en) | 172 (64 sudah di-port dari kelompok Aman / 64 ported from the Safe group) |
 
 > Catatan / Notes
 > - ID: Pencocokan berdasarkan nama folder dan nama tampilan; beberapa situs bisa salah terdeteksi. Sumber multi-bahasa (`all`) tidak termasuk.
@@ -49,7 +49,7 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 
 ---
 
-## 2. English (en) — 175 sumber / sources
+## 2. English (en) — 172 sumber / sources
 
 #### Aman / Safe (36 belum di-port / not yet ported; 64 sudah di-port / ported)
 
@@ -170,7 +170,7 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 | 72 | XoManga | https://www.xomanga.site |  |
 | 73 | Yurivan | https://www.yurivan.com |  |
 
-#### Dewasa (NSFW) / Adult (NSFW) (66 tersisa dari 79; 13 sudah di-port: KingComiX, XlecX, HentaiForce, Only The Best Hentai, Vixen Logic, Oglaf, I Roved Out, Mahouirexnohentaikarte, XYZ Comics, ILikeComix, Cutie Comics, PornComix, Eggporncomics. XYZ Comics dan PornComix di balik Cloudflare, belum terverifikasi)
+#### Dewasa (NSFW) / Adult (NSFW) (63 tersisa dari 79; 16 sudah di-port: Multporn, Oh Joy Sex Toy, Rule34Comic, KingComiX, XlecX, HentaiForce, Only The Best Hentai, Vixen Logic, Oglaf, I Roved Out, Mahouirexnohentaikarte, XYZ Comics, ILikeComix, Cutie Comics, PornComix, Eggporncomics. XYZ Comics dan PornComix di balik Cloudflare, belum terverifikasi)
 
 | # | Nama / Name | Situs / Site | Catatan / Note |
 |---|---|---|---|
@@ -216,20 +216,17 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 | 47 | ManhwaX (unoriginal) | https://manhwax.pro |  |
 | 48 | Mehgazone | https://mehgazone.com |  |
 | 49 | Milftoon | https://milftoon.xxx |  |
-| 50 | Multporn | https://multporn.net |  |
 | 51 | MyAdultComics | https://myadultcomics.com |  |
 | 52 | MyHentaiComics | https://myhentaicomics.com |  |
 | 53 | MyHentaiGallery | https://myhentaigallery.com | Dicoba lalu dihapus: klien app ditolak 403 (Cloudflare) walau curl lolos. / Tried then removed: app client gets 403 (Cloudflare) although curl passes. |
 | 54 | Myth Toons | https://mythtoons.org |  |
 | 55 | NineHentai | https://9hentai.so |  |
 | 56 | Nortverse | https://nortverse.com |  |
-| 58 | Oh Joy Sex Toy | https://www.ohjoysextoy.com |  |
 | 60 | Paradise Scans | https://paradisescans.com |  |
 | 62 | Pornhwa.me | https://pornhwa.me |  |
 | 63 | Pornhwa18 | https://pornhwa18.com |  |
 | 64 | PornhwaDB Reader | https://pornhwareader.com |  |
 | 65 | Revival Scans | https://www.revivalscans.com |  |
-| 66 | Rule34Comic | https://rule34comic.party |  |
 | 67 | SpyFakku | - |  |
 | 68 | Sunshine Butterfly Scans | https://wings.sbs |  |
 | 69 | Tailspace | https://tailspace.com |  |

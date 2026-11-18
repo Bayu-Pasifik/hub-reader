@@ -96,4 +96,52 @@ List<MangaSource> adultGalleriesB() => [
             .toSet()
             .toList(),
       ),
+      GallerySource(
+        id: 'en.ohjoysextoy',
+        name: 'Oh Joy Sex Toy',
+        baseUrl: 'https://www.ohjoysextoy.com',
+        popularUrl: (b, p) => '$b/category/comic/${p > 1 ? 'page/$p/' : ''}',
+        searchUrl: _wpSearch,
+        cardSel: 'div.comicthumbwrap, .post-text',
+        cardLinkSel: 'h2.post-title a, a[title]',
+        nextSel: 'a[href*="category/comic/page/"]',
+        titleSel: 'h2.post-title',
+        tagSel: '.post-tags a',
+        imagesOf: (d, u) => imagesFrom(d, u, '#comic .comicpane img', ['src']),
+      ),
+      GallerySource(
+        id: 'en.rule34comic',
+        name: 'Rule34Comic',
+        baseUrl: 'https://rule34comic.party',
+        popularUrl: (b, p) => p > 1 ? '$b/comic/$p/' : '$b/',
+        searchUrl: (b, p, q) => p > 1 ? null : '$b/search/${Uri.encodeComponent(q)}/',
+        cardSel: 'div.item.thumb',
+        cardLinkSel: 'a.th',
+        cardTitleSel: '.thumb_title',
+        cardThumbSel: 'img',
+        nextSel: 'div.item.pager.next a',
+        titleSel: 'h1.album-hero__title',
+        tagSel: '.album-hero__meta a',
+        imagesOf: (d, u) => imagesFrom(d, u, '.album-holder .images img[data-original]', ['data-original']),
+      ),
+      GallerySource(
+        id: 'en.multporn',
+        name: 'Multporn',
+        baseUrl: 'https://multporn.net',
+        popularUrl: (b, p) =>
+            '$b/new?type=3&language=1&sort_by=created&sort_order=DESC&page=${p - 1}',
+        searchUrl: (b, p, q) => '$b/search?search_api_views_fulltext=${Uri.encodeQueryComponent(q)}&page=${p - 1}',
+        cardSel: 'div.masonry-item',
+        cardLinkSel: '.views-field-title a',
+        cardTitleSel: '.views-field-title a',
+        cardThumbSel: '.views-field-field-preview img',
+        nextSel: 'li.pager-next a, a[title="Go to next page"]',
+        titleSel: 'h1#page-title',
+        tagSel: '.field-label-inline .links.inline a',
+        // Galeri Juicebox: gambar ada di blok <noscript> (teks mentah), jadi diambil lewat regex.
+        imagesOf: (d, u) => [
+          for (final m in RegExp(r'src="([^"?]*/styles/juicebox_medium/public/[^"?]+)').allMatches(d.outerHtml))
+            m[1]!.replaceFirst('/styles/juicebox_medium/public', ''),
+        ],
+      ),
     ];
