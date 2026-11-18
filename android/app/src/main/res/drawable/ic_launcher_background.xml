@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Neo-brutal: latar kuning aksen tema (#FFD93D). -->
+<!-- Neo-brutal: latar krem kertas tema (#FFF4D6). -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <solid android:color="#FFD93D" />
+    <solid android:color="#FFF4D6" />
 </shape>
