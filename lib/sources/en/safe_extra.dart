@@ -961,6 +961,116 @@ List<MangaSource> safeExtra() => [
         },
       ),
       SingleSeriesSource(
+        id: 'en.transfusions',
+        name: 'Transfusions',
+        baseUrl: 'https://transfusionscomic.com',
+        seriesTitle: 'Transfusions',
+        contentWarning: ContentWarning.safe,
+        author: 'Anni K.',
+        status: SourceMangaStatus.completed,
+        cover: 'https://transfusionscomic.com/uploads/1537402414-2_joa.png',
+        description: 'Transfusions is a love story between Dylan, a media student, and a young, arrogant vampire '
+            'called Joa. Book 1 focuses on their relationship; Book 2 has more vampire action.',
+        loadChapters: (s) async {
+          final res = await s.fetchHtml(Uri.parse('${s.baseUrl}/comic/archive'));
+          final parents = <(int, String)>[];
+          final items = <(String, String)>[];
+          for (final el in res.document.querySelectorAll('.cc-storyline-contain')) {
+            final indent = int.tryParse(RegExp(r'margin-left:\s*(\d+)').firstMatch(el.attributes['style'] ?? '')?[1] ?? '') ?? 0;
+            final link = el.querySelector('.cc-storyline-header a');
+            final href = attrAbs(link, 'href', res.url);
+            if (link == null || href == null) continue;
+            parents.removeWhere((p) => p.$1 >= indent);
+            items.add(([...parents.map((p) => p.$2), clean(link.text)].join(' - '), href));
+            parents.add((indent, clean(link.text)));
+          }
+          const months = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
+          Future<DateTime> firstDate(String url) async {
+            try {
+              final d = await s.fetchHtml(Uri.parse(url));
+              final txt = d.document.querySelector('.cc-publishtime')?.text ?? '';
+              final m = RegExp(r'(\w+) (\d+), (\d+) at (\d+):(\d+)').firstMatch(txt);
+              if (m != null) {
+                return DateTime(int.parse(m[3]!), months.indexOf(m[1]!.toLowerCase()) + 1, int.parse(m[2]!), int.parse(m[4]!), int.parse(m[5]!));
+              }
+            } catch (_) {}
+            return DateTime(2100);
+          }
+          final dated = await Future.wait([for (final i in items) firstDate(i.$2).then((d) => (i.$1, i.$2, d))]);
+          dated.sort((a, b) => a.$3.compareTo(b.$3));
+          final nextOf = <String, String>{for (var i = 0; i < dated.length; i++) dated[i].$2: i + 1 < dated.length ? dated[i + 1].$2 : ''};
+          return [
+            for (var i = dated.length - 1; i >= 0; i--)
+              SourceChapter(
+                url: '${dated[i].$2}#${Uri.encodeComponent(nextOf[dated[i].$2]!)}',
+                name: dated[i].$1,
+                number: i + 1.0,
+              ),
+          ];
+        },
+        loadPages: (s, ch) async {
+          final parts = ch.url.split('#');
+          final stop = Uri.decodeComponent(parts.last);
+          final images = <String>[];
+          String? url = parts.first;
+          for (var i = 0; url != null && i < 500; i++) {
+            final res = await s.fetchHtml(Uri.parse(url));
+            images.addAll(imagesFrom(res.document, res.url, '#cc-comic', ['src']));
+            final next = attrAbs(res.document.querySelector('a.cc-next'), 'href', res.url);
+            url = (next == null || next == stop) ? null : next;
+          }
+          return images;
+        },
+      ),
+      SingleSeriesSource(
+        id: 'en.extrafabulouscomics',
+        name: 'Extra Fabulous Comics',
+        baseUrl: 'https://www.extrafabulouscomics.com',
+        seriesTitle: 'Extra Fabulous Comics',
+        contentWarning: ContentWarning.safe,
+        author: 'Zach M. Stafford',
+        cover: 'https://static.wixstatic.com/media/904535_d7187dcb8545431db8f80865f59ef376~mv2.png',
+        description: 'Comics from hell and beyond.',
+        loadChapters: (s) async {
+          final h = await _efcHeaders(s);
+          Future<Map> query(int offset) async {
+            final r = await s.dio.postUri<Object>(
+              Uri.parse('${s.baseUrl}/_api/communities-blog-node-api/v3/posts/query'),
+              data: {'query': {'paging': {'offset': offset, 'limit': 100}}},
+              options: Options(headers: h, responseType: ResponseType.json),
+            );
+            return r.data as Map;
+          }
+          final first = await query(0);
+          final posts = [...(first['posts'] as List)];
+          final total = (first['pagingMetadata'] as Map)['total'] as int;
+          for (var off = posts.length; off < total; off += 100) {
+            posts.addAll((await query(off))['posts'] as List);
+          }
+          return [
+            for (var i = 0; i < posts.length; i++)
+              SourceChapter(
+                url: '${s.baseUrl}/${(posts[i] as Map)['slug']}',
+                name: '${(posts[i] as Map)['title']}',
+                number: (posts.length - i).toDouble(),
+              ),
+          ];
+        },
+        loadPages: (s, ch) async {
+          final slug = ch.url.split('/').last;
+          final r = await s.dio.getUri<Object>(
+            Uri.parse('${s.baseUrl}/_api/blog-frontend-adapter-public/v2/post-page/${Uri.encodeComponent(slug)}?languageCode=en'),
+            options: Options(headers: await _efcHeaders(s), responseType: ResponseType.json),
+          );
+          final nodes = ((((r.data as Map)['postPage'] as Map)['post'] as Map)['richContent'] as Map)['nodes'] as List;
+          return [
+            for (final n in nodes.cast<Map>())
+              if ((((n['imageData'] as Map?)?['image'] as Map?)?['src'] as Map?)?['id'] case final id?)
+                'https://static.wixstatic.com/media/$id',
+          ];
+        },
+      ),
+      SingleSeriesSource(
         id: 'en.megatokyo',
         name: 'Megatokyo',
         baseUrl: 'https://megatokyo.com',
@@ -1433,4 +1543,10 @@ Future<MangaPage> _atsuBrowse(HttpSource s, String path, int page, {bool daily =
   })) as Map;
   final items = (r['items'] as List).cast<Map>();
   return MangaPage([for (final m in items) _atsuManga(s, m)], hasNextPage: items.length == 40);
+}
+
+Future<Map<String, String>> _efcHeaders(HttpSource s) async {
+  final tokens = await s.fetchJson(Uri.parse('${s.baseUrl}/_api/v1/access-tokens')) as Map;
+  final inst = (((tokens['apps'] as Map)['14bcded7-0066-7c35-14d7-466cb3f09103']) as Map)['instance'];
+  return {'Authorization': '$inst'};
 }
