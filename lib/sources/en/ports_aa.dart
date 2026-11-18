@@ -300,4 +300,75 @@ FnSource _mythtoons() => FnSource(
       },
     );
 
-List<MangaSource> portsAa() => [_myadultcomics(), _schalescans(), _mythtoons()];
+// ------------------------------------------------------------------- Bbato
+
+String? _bbatoImg(Element? img, Uri base) {
+  if (img == null) return null;
+  final ds = attrAbs(img, 'data-src', base);
+  return (ds != null && ds.isNotEmpty) ? ds : attrAbs(img, 'src', base);
+}
+
+Future<MangaPage> _bbatoList(FnSource s, Uri uri) async {
+  final res = await s.fetchHtml(uri);
+  final out = <SourceManga>[];
+  for (final el in res.document.querySelectorAll('.original.card-lg .unit')) {
+    final poster = el.querySelector('a.poster');
+    final href = absUrl(res.url, poster?.attributes['href']);
+    if (poster == null || href == null) continue;
+    out.add(SourceManga(url: href, title: clean(el.querySelector('.info > a')?.text ?? ''), thumbnailUrl: _bbatoImg(poster.querySelector('img'), res.url)));
+  }
+  return MangaPage(out, hasNextPage: res.document.querySelector('.pagination a[rel=next]') != null);
+}
+
+List<String> _bbatoMeta(Element d, String label) {
+  for (final div in d.querySelectorAll('.meta div')) {
+    if (div.querySelector('span')?.text.contains(label) ?? false) return [for (final a in div.querySelectorAll('a')) clean(a.text)];
+  }
+  return const [];
+}
+
+FnSource _bbato() => FnSource(
+      id: 'en.bbato',
+      name: 'Bbato',
+      baseUrl: 'https://bbato.com',
+      contentWarning: ContentWarning.mixed,
+      popularFn: (s, page) => _bbatoList(s, _u('${s.baseUrl}/filter').replace(queryParameters: {'sort': 'views', if (page > 1) 'page': '$page'})),
+      latestFn: (s, page) => _bbatoList(s, _u('${s.baseUrl}/updated${page > 1 ? '/page/$page' : ''}')),
+      searchFn: (s, page, q) => _bbatoList(s, _u('${s.baseUrl}/filter').replace(queryParameters: {'keyword': q, if (page > 1) 'page': '$page'})),
+      detailsFn: (s, url) async {
+        final res = await s.fetchHtml(_u(url));
+        final d = res.document;
+        final slug = _u(url).pathSegments.where((e) => e.isNotEmpty).last;
+        final origin = _u(url).origin;
+        final list = await s.fetchJson(_u('$origin/get-chapter-list?slug=$slug'), headers: const {'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json'}) as Map;
+        final chapters = <SourceChapter>[
+          for (final c in (list['data'] as List? ?? const []).cast<Map>())
+            SourceChapter(
+              url: '$origin/read/$slug/${c['chapter_slug']}',
+              name: '${c['chapter_name']}',
+              number: parseChapterNumber('${c['chapter_name']}'),
+              uploadedAt: DateTime.tryParse('${c['updated_at']}'.replaceFirst(' ', 'T')),
+            ),
+        ];
+        return SourceMangaDetails(
+          url: url,
+          title: clean(d.querySelector('h1[itemprop=name]')?.text ?? ''),
+          thumbnailUrl: _bbatoImg(d.querySelector('.poster img'), res.url),
+          author: _bbatoMeta(d.documentElement!, 'Author').join(', '),
+          description: clean(d.querySelector('.description')?.text ?? ''),
+          genres: _bbatoMeta(d.documentElement!, 'Genres'),
+          status: parseStatus(d.querySelector('.info > p')?.text),
+          chapters: chapters,
+        );
+      },
+      pagesFn: (s, ch) async {
+        final res = await s.fetchHtml(_u(ch.url));
+        return [
+          for (final page in res.document.querySelectorAll('.pages .page'))
+            if (!page.classes.contains('notice-page'))
+              if (_bbatoImg(page.querySelector('img'), res.url) case final u? when !u.startsWith('data:')) u,
+        ];
+      },
+    );
+
+List<MangaSource> portsAa() => [_myadultcomics(), _schalescans(), _mythtoons(), _bbato()];
