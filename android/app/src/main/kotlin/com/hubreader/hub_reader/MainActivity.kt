@@ -57,6 +57,45 @@ class MainActivity : FlutterFragmentActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
+        // Render halaman PDF jadi JPEG (sumber Story About Us).
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "hub_reader/pdf").setMethodCallHandler { call, result ->
+            if (call.method != "render") {
+                result.notImplemented()
+                return@setMethodCallHandler
+            }
+            val path = call.argument<String>("path")
+            val outDir = call.argument<String>("outDir")
+            if (path == null || outDir == null) {
+                result.error("ARG", "path dan outDir wajib", null)
+                return@setMethodCallHandler
+            }
+            Thread {
+                try {
+                    val files = ArrayList<String>()
+                    android.os.ParcelFileDescriptor.open(java.io.File(path), android.os.ParcelFileDescriptor.MODE_READ_ONLY).use { fd ->
+                        android.graphics.pdf.PdfRenderer(fd).use { renderer ->
+                            for (i in 0 until renderer.pageCount) {
+                                renderer.openPage(i).use { page ->
+                                    val scale = minOf(2.5f, 1500f / page.width)
+                                    val bmp = android.graphics.Bitmap.createBitmap(
+                                        (page.width * scale).toInt(), (page.height * scale).toInt(), android.graphics.Bitmap.Config.ARGB_8888)
+                                    android.graphics.Canvas(bmp).drawColor(android.graphics.Color.WHITE)
+                                    page.render(bmp, null, null, android.graphics.pdf.PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+                                    val file = java.io.File(outDir, String.format("%04d.jpg", i))
+                                    file.outputStream().use { bmp.compress(android.graphics.Bitmap.CompressFormat.JPEG, 90, it) }
+                                    bmp.recycle()
+                                    files.add(file.absolutePath)
+                                }
+                            }
+                        }
+                    }
+                    runOnUiThread { result.success(files) }
+                } catch (e: Exception) {
+                    runOnUiThread { result.error("PDF", e.toString(), null) }
+                }
+            }.start()
+        }
+
         // Deep link ditangani di Dart (DeepLinks) dengan daftar rute yang
         // diizinkan, bukan deep linking otomatis Flutter.
         linkChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "hub_reader/links").also {

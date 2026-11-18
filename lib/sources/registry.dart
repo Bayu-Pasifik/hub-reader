@@ -36,6 +36,7 @@ import 'id/holotoon.dart';
 import 'id/komiknextgonline.dart';
 import 'id/komikrealm.dart';
 import 'id/komiku.dart';
+import 'id/storyaboutus.dart';
 import 'id/mikoroku.dart';
 import 'id/wurmz.dart';
 import 'id/ikiru.dart';
@@ -61,6 +62,7 @@ import 'source.dart';
 List<MangaSource> customSources() => [
       LocalSource(),
       KomikuSource(),
+      StoryAboutUsSource(),
       MikoRokuSource(),
       ShinigamiSource(),
       KomikNextGOnlineSource(),
