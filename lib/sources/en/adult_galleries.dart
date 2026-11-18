@@ -1,7 +1,6 @@
 // Sumber galeri dewasa (satu entri = satu bab), port Dart dari extension
 // keiyoushi/extensions-source (Apache-2.0): src/en/*.
 
-import '../models.dart';
 import '../source.dart';
 import 'gallery_source.dart';
 
