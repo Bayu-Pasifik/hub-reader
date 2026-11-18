@@ -31,6 +31,7 @@ import 'en/ports_u.dart';
 import 'en/ports_v.dart';
 import 'en/ports_w.dart';
 import 'en/ports_x.dart';
+import 'en/ports_y.dart';
 import 'en/asurascans.dart';
 import 'en/flamecomics.dart';
 import 'en/mangafreak.dart';
@@ -124,6 +125,7 @@ List<MangaSource> customSources() => [
       ...portsV(),
       ...portsW(),
       ...portsX(),
+      ...portsY(),
       MangaPillSource(),
       TcbScansSource(),
       MangaKatanaSource(),
