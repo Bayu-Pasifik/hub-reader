@@ -2,6 +2,7 @@ import 'catalog.dart';
 import 'en/adult_galleries.dart';
 import 'en/adult_galleries_b.dart';
 import 'en/adult_galleries_c.dart';
+import 'en/adult_galleries_d.dart';
 import 'en/adult_fn.dart';
 import 'en/adult_chapters.dart';
 import 'en/safe_extra.dart';
@@ -84,6 +85,7 @@ List<MangaSource> customSources() => [
       ...adultGalleries(),
       ...adultGalleriesB(),
       ...adultGalleriesC(),
+      ...adultGalleriesD(),
       ...adultFn(),
       ...adultChapters(),
       ...safeExtra(),
