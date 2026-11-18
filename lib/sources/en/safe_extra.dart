@@ -698,6 +698,75 @@ List<MangaSource> safeExtra() => [
           return [for (final p in (r['pages'] as List? ?? const [])) '$p'];
         },
       ),
+      FnSource(
+        id: 'en.kuramanga',
+        name: 'KuraManga',
+        baseUrl: 'https://kuramanga.com',
+        contentWarning: ContentWarning.mixed,
+        popularFn: (s, page) => _kuraSearch(s, page, ''),
+        latestFn: (s, page) async {
+          final res = await s.fetchHtml(Uri.parse(page > 1 ? '${s.baseUrl}/?page=$page' : '${s.baseUrl}/'));
+          final seen = <String>{};
+          final out = <SourceManga>[];
+          for (final row in res.document.querySelectorAll('.update-list .update-row')) {
+            final a = row.querySelector('a.update-series-link');
+            final href = attrAbs(a, 'href', res.url);
+            if (a == null || href == null || !seen.add(href)) continue;
+            out.add(SourceManga(url: href, title: clean(a.text), thumbnailUrl: attrAbs(row.querySelector('img'), 'src', res.url)));
+          }
+          return MangaPage(out, hasNextPage: res.document.querySelector('a[data-lu-next]:not(.is-disabled)') != null);
+        },
+        searchFn: (s, page, q) => _kuraSearch(s, page, q),
+        detailsFn: (s, url) async {
+          final res = await s.fetchHtml(Uri.parse(url));
+          final d = res.document;
+          String? cred(String key) {
+            for (final c in d.querySelectorAll('.mp-cred')) {
+              final k = clean(c.querySelector('.mp-cred-k')?.text);
+              if (k.toLowerCase().contains(key.toLowerCase())) return clean(c.querySelector('.mp-cred-v')?.text);
+            }
+            return null;
+          }
+          final both = cred('Story & Art') ?? cred('Author & Artist');
+          final statusText = clean(d.querySelector('.mp-status')?.text).toLowerCase();
+          final chapters = <SourceChapter>[];
+          for (final el in d.querySelectorAll('.chapter-list .chapter-item')) {
+            final a = el.querySelector('a');
+            final href = attrAbs(a, 'href', res.url);
+            if (a == null || href == null) continue;
+            final name = clean(a.text);
+            chapters.add(SourceChapter(
+              url: href,
+              name: name,
+              number: double.tryParse(RegExp(r'(\d+(?:\.\d+)?)').firstMatch(name)?[1] ?? ''),
+            ));
+          }
+          return SourceMangaDetails(
+            url: url,
+            title: clean(d.querySelector('h1.manga-title')?.text),
+            thumbnailUrl: d.querySelector('meta[property="og:image"]')?.attributes['content'],
+            description: clean(d.querySelector('.summary-inner')?.text ?? d.querySelector('.mp-synopsis')?.text),
+            author: cred('Author') ?? cred('Story') ?? both,
+            artist: cred('Artist') ?? both,
+            genres: [for (final g in d.querySelectorAll('.genre-list a.genre-chip')) clean(g.text)],
+            status: switch (statusText) {
+              'ongoing' || 'upcoming' => SourceMangaStatus.ongoing,
+              'completed' => SourceMangaStatus.completed,
+              'on_hold' || 'on hold' || 'hiatus' => SourceMangaStatus.hiatus,
+              'canceled' || 'cancelled' => SourceMangaStatus.cancelled,
+              _ => SourceMangaStatus.unknown,
+            },
+            chapters: chapters,
+          );
+        },
+        pagesFn: (s, ch) async {
+          final res = await s.fetchHtml(Uri.parse(ch.url));
+          return [
+            for (final img in res.document.querySelectorAll('#chapterImages img'))
+              if ((attrAbs(img, 'data-src', res.url) ?? attrAbs(img, 'src', res.url)) case final u? when u.isNotEmpty) u,
+          ];
+        },
+      ),
       SingleSeriesSource(
         id: 'en.megatokyo',
         name: 'Megatokyo',
@@ -1097,5 +1166,25 @@ Future<MangaPage> _chikariList(HttpSource s, int page, String query, String sort
         SourceManga(url: '${s.baseUrl}/series/${c['slug']}', title: clean('${c['title']}'), thumbnailUrl: c['cover_url'] as String?),
     ],
     hasNextPage: page * 36 < (r['total'] as int),
+  );
+}
+
+Future<MangaPage> _kuraSearch(HttpSource s, int page, String query) async {
+  final r = await s.fetchJson(
+    Uri.parse('${s.baseUrl}/search?ajax=1&page=$page${query.isEmpty ? '' : '&name=${Uri.encodeQueryComponent(query)}'}'),
+    headers: {'X-Requested-With': 'XMLHttpRequest'},
+  ) as Map;
+  final data = (r['data'] as List).cast<Map>();
+  final total = (r['total'] as num?)?.toInt() ?? 0;
+  return MangaPage(
+    [
+      for (final m in data)
+        SourceManga(
+          url: '${s.baseUrl}/${m['normalized_title']}',
+          title: clean('${m['title']}'),
+          thumbnailUrl: (m['thumb'] ?? m['cover_image_url']) as String?,
+        ),
+    ],
+    hasNextPage: data.length == 18 && (total == 0 || page * 18 < total),
   );
 }
