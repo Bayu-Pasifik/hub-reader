@@ -28,6 +28,7 @@ class FnSource extends HttpSource {
     this.latestFn,
     this.contentWarning = ContentWarning.safe,
     this.lang = 'en',
+    this.noReferer = false,
     super.dio,
   }) : defaultBaseUrl = baseUrl;
 
@@ -49,6 +50,15 @@ class FnSource extends HttpSource {
   final SearchFn searchFn;
   final DetailsFn detailsFn;
   final PagesFn pagesFn;
+
+  /// Host gambar menolak permintaan yang membawa Referer (403).
+  final bool noReferer;
+
+  @override
+  Map<String, String> imageHeaders({String? referer}) {
+    final headers = super.imageHeaders(referer: referer);
+    return noReferer ? (headers..remove('Referer')) : headers;
+  }
 
   @override
   Future<MangaPage> popular(int page) => popularFn(this, page);

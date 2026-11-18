@@ -474,6 +474,7 @@ String? _kaliMeta(Element info, String label, String sel) {
 FnSource _kaliscans() => FnSource(
       id: 'en.kaliscans',
       name: 'KaliScans',
+      noReferer: true,
       baseUrl: 'https://kaliscans.org',
       contentWarning: ContentWarning.mixed,
       popularFn: (s, page) => _kaliList(s, _u('${s.baseUrl}/popular?page=$page')),
