@@ -6,7 +6,7 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 | Bahasa / Language | Belum di-port / Not ported |
 |---|---|
 | Indonesia (id) | 14 (6 sudah di-port: Bacami, MG Komik, West Manga, Komik AV, Hentai Crot, Pix Hentai) |
-| English (en) | 167 (64 sudah di-port dari kelompok Aman / 64 ported from the Safe group) |
+| English (en) | 166 (64 sudah di-port dari kelompok Aman / 64 ported from the Safe group) |
 
 > Catatan / Notes
 > - ID: Pencocokan berdasarkan nama folder dan nama tampilan; beberapa situs bisa salah terdeteksi. Sumber multi-bahasa (`all`) tidak termasuk.
@@ -49,7 +49,7 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 
 ---
 
-## 2. English (en) — 167 sumber / sources
+## 2. English (en) — 166 sumber / sources
 
 #### Aman / Safe (36 belum di-port / not yet ported; 64 sudah di-port / ported)
 
@@ -170,13 +170,12 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 | 72 | XoManga | https://www.xomanga.site |  |
 | 73 | Yurivan | https://www.yurivan.com |  |
 
-#### Dewasa (NSFW) / Adult (NSFW) (58 tersisa dari 79; 21 sudah di-port: EAHentai, HentaiKisu, Manhwa18Dash, Hentara, Manhwa210, Multporn, Oh Joy Sex Toy, Rule34Comic, KingComiX, XlecX, HentaiForce, Only The Best Hentai, Vixen Logic, Oglaf, I Roved Out, Mahouirexnohentaikarte, XYZ Comics, ILikeComix, Cutie Comics, PornComix, Eggporncomics. XYZ Comics dan PornComix di balik Cloudflare, belum terverifikasi)
+#### Dewasa (NSFW) / Adult (NSFW) (57 tersisa dari 79; 22 sudah di-port: Asuratoons (unoriginal), EAHentai, HentaiKisu, Manhwa18Dash, Hentara, Manhwa210, Multporn, Oh Joy Sex Toy, Rule34Comic, KingComiX, XlecX, HentaiForce, Only The Best Hentai, Vixen Logic, Oglaf, I Roved Out, Mahouirexnohentaikarte, XYZ Comics, ILikeComix, Cutie Comics, PornComix, Eggporncomics. XYZ Comics dan PornComix di balik Cloudflare, belum terverifikasi)
 
 | # | Nama / Name | Situs / Site | Catatan / Note |
 |---|---|---|---|
 | 1 | 8Muses | https://comics.8muses.com | template: eromuse |
 | 2 | 8Muses (unoriginal) | https://8muses.xxx |  |
-| 3 | Asuratoons (unoriginal) | https://www.asuratoons.info |  |
 | 4 | Babes Rater | https://babesrater.com |  |
 | 5 | BabeSource | https://babesource.com |  |
 | 6 | buttsmithy | https://incase.buttsmithy.com |  |

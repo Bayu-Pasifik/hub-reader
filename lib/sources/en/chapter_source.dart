@@ -91,8 +91,8 @@ class ChapterSource extends HttpSource {
       final href = attrAbs(link, 'href', res.url);
       if (link == null || href == null || !seen.add(href)) continue;
       final title = clean(cardTitleSel == null
-          ? (link.attributes['title'] ?? link.attributes['aria-label'] ?? link.text)
-          : card.querySelector(cardTitleSel!)?.text);
+          ? (link.attributes['title'] ?? link.attributes['aria-label'] ?? (link.text.trim().isEmpty ? card.querySelector('img')?.attributes['alt'] : link.text))
+          : _text(card.querySelector(cardTitleSel!)));
       if (title.isEmpty) continue;
       items.add(SourceManga(url: href, title: title, thumbnailUrl: _thumb(card.querySelector(cardThumbSel), res.url)));
     }
@@ -157,7 +157,8 @@ class ChapterSource extends HttpSource {
     );
   }
 
-  static String _text(Element? el) => clean(el == null ? null : (el.attributes['content'] ?? el.text));
+  static String _text(Element? el) =>
+      clean(el == null ? null : (el.attributes['content'] ?? (el.localName == 'img' ? el.attributes['alt'] : el.text)));
 
   /// Gambar dari <img>, <meta content>, atau `background-image: url(...)`.
   static String? _thumb(Element? el, Uri base) {
