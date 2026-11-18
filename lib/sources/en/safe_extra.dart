@@ -187,6 +187,81 @@ List<MangaSource> safeExtra() => [
           return imagesFrom(doc, Uri.parse(s.baseUrl), 'img', ['src', 'data-src']);
         },
       ),
+      FnSource(
+        id: 'en.leslievictims',
+        name: 'Leslie&Victims',
+        baseUrl: 'https://leslie-victims.pages.dev',
+        contentWarning: ContentWarning.mixed,
+        popularFn: (s, page) async => _lesliePage(s, await _leslieLibrary(s), '', page),
+        searchFn: (s, page, q) async => _lesliePage(s, await _leslieLibrary(s), q, page),
+        detailsFn: (s, url) async {
+          final id = Uri.decodeComponent(url.split('#').last);
+          final m = (await _leslieLibrary(s)).firstWhere((e) => '${e['id']}' == id);
+          final chapters = [
+            for (final c in (m['chapters'] as List).cast<Object>())
+              SourceChapter(
+                url: '${s.baseUrl}/#${Uri.encodeComponent(id)}/${Uri.encodeComponent('$c')}',
+                name: 'Chapter $c',
+                number: double.tryParse(RegExp(r'^\d+(?:\.\d+)?').firstMatch('$c')?[0] ?? ''),
+              ),
+          ].reversed.toList();
+          return SourceMangaDetails(
+            url: url,
+            title: '${m['title']}',
+            thumbnailUrl: m['cover'] == null ? null : '${s.baseUrl}/${Uri.encodeFull('${m['cover']}')}',
+            chapters: chapters,
+          );
+        },
+        pagesFn: _lesliePages,
+      ),
+      FnSource(
+        id: 'en.warforrayuba',
+        name: 'War For Rayuba',
+        baseUrl: 'https://xrabohrok.github.io/WarMap',
+        contentWarning: ContentWarning.safe,
+        popularFn: (s, page) => _rayubaList(s, page, ''),
+        searchFn: (s, page, q) => _rayubaList(s, page, q),
+        detailsFn: (s, url) async {
+          final id = url.split('/').where((e) => e.isNotEmpty).last;
+          final g = await _gist(s, id);
+          final chapters = <SourceChapter>[];
+          for (final e in (g['chapters'] as Map).entries) {
+            final c = e.value as Map;
+            final num = double.tryParse('${e.key}');
+            final title = clean('${c['title'] ?? ''}');
+            chapters.add(SourceChapter(
+              url: '$url#${e.key}',
+              name: title.isEmpty ? 'Chapter ${e.key}' : 'Chapter ${e.key}: $title',
+              number: num,
+            ));
+          }
+          chapters.sort((a, b) => (b.number ?? 0).compareTo(a.number ?? 0));
+          return SourceMangaDetails(
+            url: url,
+            title: clean('${g['title']}'),
+            thumbnailUrl: g['cover'] as String?,
+            description: clean('${g['description'] ?? ''}'),
+            author: g['author'] as String?,
+            chapters: chapters,
+          );
+        },
+        pagesFn: (s, ch) async {
+          final parts = ch.url.split('#');
+          final id = parts.first.split('/').where((e) => e.isNotEmpty).last;
+          final key = parts.last;
+          final g = await _gist(s, id);
+          final groups = ((g['chapters'] as Map)[key] as Map)['groups'] as Map;
+          final v = groups.values.first;
+          Object? items = v;
+          if (v is String) {
+            items = await s.fetchJson(Uri.parse('https://cubari.moe${v.replaceFirst('/proxy/', '/read/')}'));
+          }
+          return [
+            for (final p in (items as List))
+              if (p is Map) '${p['src']}' else '$p',
+          ];
+        },
+      ),
       SingleSeriesSource(
         id: 'en.megatokyo',
         name: 'Megatokyo',
@@ -315,4 +390,74 @@ Future<MangaPage> _luminareList(HttpSource s, int page, String query) async {
     for (final e in (json['data'] as List).cast<Map>())
       SourceManga(url: '${e['url']}', title: clean('${e['title']}'), thumbnailUrl: e['cover_image'] as String?),
   ], hasNextPage: page < totalPages);
+}
+
+Future<List<Map>> _leslieLibrary(HttpSource s) async =>
+    ((await s.fetchJson(Uri.parse('${s.baseUrl}/manga.json'))) as List).cast<Map>();
+
+MangaPage _lesliePage(HttpSource s, List<Map> all, String q, int page) {
+  final lq = q.toLowerCase();
+  final hits = [for (final e in all) if (lq.isEmpty || '${e['title']}'.toLowerCase().contains(lq)) e];
+  if (page > 1) return const MangaPage([], hasNextPage: false);
+  return MangaPage([
+    for (final e in hits)
+      SourceManga(
+        url: '${s.baseUrl}/#${Uri.encodeComponent('${e['id']}')}',
+        title: '${e['title']}',
+        thumbnailUrl: e['cover'] == null ? null : '${s.baseUrl}/${Uri.encodeFull('${e['cover']}')}',
+      ),
+  ], hasNextPage: false);
+}
+
+/// Halaman bab Leslie&Victims: `chapter_roots` (r2), `chapter_pages` (jumlah/daftar), atau cari lewat HEAD.
+Future<List<String>> _lesliePages(HttpSource s, SourceChapter ch) async {
+  final parts = ch.url.split('#').last.split('/');
+  final id = Uri.decodeComponent(parts.first);
+  final chapter = Uri.decodeComponent(parts.sublist(1).join('/'));
+  final lib = await _leslieLibrary(s);
+  final m = lib.firstWhere((e) => '${e['id']}' == id);
+  String two(int n) => n.toString().padLeft(2, '0');
+  List<String> fromData(String root, Object? data, Object? mode) {
+    if (data is int && (mode == null || mode == 'count')) return [for (var i = 1; i <= data; i++) '$root/${two(i)}.webp'];
+    if (data is List) return [for (final n in data) '$root/${Uri.encodeComponent('$n')}'];
+    return const [];
+  }
+
+  final rootInfo = (m['chapter_roots'] as Map?)?[chapter];
+  if (rootInfo is Map) {
+    final root = Uri.encodeFull('${rootInfo['url']}');
+    final out = fromData(root, rootInfo['data'], rootInfo['mode']);
+    if (out.isNotEmpty) return out;
+  }
+  final pagesInfo = (m['chapter_pages'] as Map?)?[chapter];
+  final base = '${s.baseUrl}/content/${Uri.encodeComponent(id)}/${Uri.encodeComponent(chapter)}';
+  final listed = fromData(base, pagesInfo, 'count');
+  if (listed.isNotEmpty) return listed;
+  final out = <String>[];
+  for (var i = 1; i <= 120; i++) {
+    final u = '$base/${two(i)}.webp';
+    final r = await s.dio.headUri<void>(Uri.parse(u), options: Options(validateStatus: (_) => true));
+    if (r.statusCode != 200) break;
+    out.add(u);
+  }
+  return out;
+}
+
+const _rayubaGists = ['J0Nwh', 'JBu17', 'JED9q', 'Jnaek'];
+
+Future<Map> _gist(HttpSource s, String id) async =>
+    (await s.fetchJson(Uri.parse('https://cubari.moe/read/api/gist/series/$id/'))) as Map;
+
+Future<MangaPage> _rayubaList(HttpSource s, int page, String q) async {
+  if (page > 1) return const MangaPage([], hasNextPage: false);
+  final lq = q.toLowerCase();
+  final out = <SourceManga>[];
+  for (final id in _rayubaGists) {
+    final g = await _gist(s, id);
+    final title = clean('${g['title']}');
+    if (lq.isEmpty || title.toLowerCase().contains(lq)) {
+      out.add(SourceManga(url: 'https://cubari.moe/read/gist/$id/', title: title, thumbnailUrl: g['cover'] as String?));
+    }
+  }
+  return MangaPage(out, hasNextPage: false);
 }
