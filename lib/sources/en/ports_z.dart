@@ -1,6 +1,8 @@
-// Situs katalog (bagian Z: Sacachispa), port Dart dari extension
+// Situs katalog (bagian Z: Sacachispa, NexComic), port Dart dari extension
 // keiyoushi/extensions-source (Apache-2.0). Bab khusus Patreon disembunyikan;
 // filter genre/katalog komisi belum ada.
+
+import 'dart:convert';
 
 import '../models.dart';
 import '../source.dart';
@@ -112,4 +114,135 @@ FnSource _sacachispa() => FnSource(
       },
     );
 
-List<MangaSource> portsZ() => [_sacachispa()];
+// ---------------------------------------------------------------- NexComic
+
+/// Larik JSON pertama setelah `"key":` di [body] yang lolos [accept]; dipindai
+/// langsung karena potongan teks RSC bisa memuat baris baru.
+List<Map>? _arrayAfter(String body, String key, bool Function(Map first) accept) {
+  final needle = '"$key":[';
+  var from = 0;
+  while (true) {
+    final at = body.indexOf(needle, from);
+    if (at < 0) return null;
+    from = at + needle.length;
+    final start = from - 1;
+    var depth = 0;
+    var inString = false;
+    var end = -1;
+    for (var i = start; i < body.length; i++) {
+      final c = body.codeUnitAt(i);
+      if (inString) {
+        if (c == 0x5c) {
+          i++;
+        } else if (c == 0x22) {
+          inString = false;
+        }
+      } else if (c == 0x22) {
+        inString = true;
+      } else if (c == 0x5b || c == 0x7b) {
+        depth++;
+      } else if (c == 0x5d || c == 0x7d) {
+        depth--;
+        if (depth == 0) {
+          end = i;
+          break;
+        }
+      }
+    }
+    if (end < 0) continue;
+    try {
+      final list = jsonDecode(body.substring(start, end + 1)) as List;
+      if (list.isNotEmpty && list.first is Map && accept(list.first as Map)) return list.cast<Map>();
+    } on FormatException {
+      continue;
+    }
+  }
+}
+
+SourceMangaStatus _nexStatus(Object? s) => switch ('$s'.toLowerCase()) {
+      'ongoing' => SourceMangaStatus.ongoing,
+      'completed' => SourceMangaStatus.completed,
+      'hiatus' => SourceMangaStatus.hiatus,
+      'cancelled' || 'dropped' => SourceMangaStatus.cancelled,
+      _ => SourceMangaStatus.unknown,
+    };
+
+SourceManga _nexEntry(FnSource s, Map m) {
+  final avatar = m['avatar'];
+  return SourceManga(
+    url: '${s.baseUrl}/series/${m['slug']}',
+    title: '${m['title']}',
+    thumbnailUrl: avatar is Map ? '${s.baseUrl}${avatar['url']}' : null,
+  );
+}
+
+Future<List<Map>> _nexAll(FnSource s) async {
+  final j = await s.fetchJson(Uri.parse('${s.baseUrl}/api/local/series'), headers: const {'Accept': 'application/json'}) as Map;
+  return (j['data'] as List).cast<Map>();
+}
+
+FnSource _nexcomic() => FnSource(
+      id: 'en.nexcomic',
+      name: 'NexComic',
+      baseUrl: 'https://nexcomic.com',
+      contentWarning: ContentWarning.mixed,
+      popularFn: (s, page) async {
+        if (page > 1) return const MangaPage([], hasNextPage: false);
+        final all = await _nexAll(s);
+        final pop = await s.fetchJson(Uri.parse('${s.baseUrl}/api/local/popular?limit=100&period=all'), headers: const {'Accept': 'application/json'}) as Map;
+        final rank = {for (final e in (pop['data'] as List).cast<Map>().indexed) '${e.$2['slug']}': e.$1};
+        all.sort((a, b) => (rank['${a['slug']}'] ?? 1 << 30).compareTo(rank['${b['slug']}'] ?? 1 << 30));
+        return MangaPage([for (final m in all) _nexEntry(s, m)], hasNextPage: false);
+      },
+      latestFn: (s, page) async => page > 1 ? const MangaPage([], hasNextPage: false) : MangaPage([for (final m in await _nexAll(s)) _nexEntry(s, m)], hasNextPage: false),
+      searchFn: (s, page, q) async {
+        if (page > 1) return const MangaPage([], hasNextPage: false);
+        final needle = q.toLowerCase();
+        bool hit(Map m) => [m['title'], ...(m['alternativeTitles'] as List? ?? const [])].any((t) => '$t'.toLowerCase().contains(needle));
+        return MangaPage([for (final m in await _nexAll(s)) if (hit(m)) _nexEntry(s, m)], hasNextPage: false);
+      },
+      detailsFn: (s, url) async {
+        final slug = Uri.parse(url).pathSegments.where((e) => e.isNotEmpty).last;
+        final body = await s.fetchText(Uri.parse('${s.baseUrl}/series/$slug.rsc'), headers: const {'RSC': '1'});
+        final series = _arrayAfter(body, 'series', (f) => f.containsKey('slug') && f.containsKey('title'));
+        final chapterRows = _arrayAfter(body, 'chapters', (f) => f.containsKey('seriesSlug'));
+        if (series == null || chapterRows == null) throw StateError('catalog not found');
+        final m = series.firstWhere((e) => e['slug'] == slug);
+        String? joined(Object? l) => (l as List? ?? const []).join(', ');
+        final alts = [for (final a in (m['alternativeTitles'] as List? ?? const [])) if ('$a' != '${m['title']}') '$a'];
+        final chapters = <SourceChapter>[];
+        for (final c in chapterRows) {
+          if (c['seriesSlug'] != slug || c['locked'] == true) continue;
+          final n = (c['chapterNumber'] as num).toDouble();
+          final title = '${c['title'] ?? ''}'.trim();
+          chapters.add(SourceChapter(
+            url: '${s.baseUrl}/series/$slug/chapter/${'${c['id']}'.split(':').last}',
+            name: 'Chapter ${n == n.roundToDouble() ? n.toInt() : n}${title.isEmpty ? '' : ' - $title'}',
+            number: n,
+            uploadedAt: c['publishedAt'] is num ? DateTime.fromMillisecondsSinceEpoch((c['publishedAt'] as num).toInt()) : null,
+          ));
+        }
+        chapters.sort((a, b) => (b.number ?? 0).compareTo(a.number ?? 0));
+        final avatar = m['avatar'];
+        return SourceMangaDetails(
+          url: url,
+          title: '${m['title']}',
+          thumbnailUrl: avatar is Map ? '${s.baseUrl}${avatar['url']}' : null,
+          author: joined(m['authors']),
+          artist: joined(m['artists']),
+          genres: {if (m['type'] != null) '${m['type']}', ...(m['genres'] as List? ?? const []).map((e) => '$e'), ...(m['tags'] as List? ?? const []).map((e) => '$e')}.toList(),
+          description: ['${m['description'] ?? ''}'.trim(), if (alts.isNotEmpty) 'Alternative Titles:\n${alts.join('\n')}'].where((e) => e.isNotEmpty).join('\n\n'),
+          status: _nexStatus(m['status']),
+          chapters: chapters,
+        );
+      },
+      pagesFn: (s, ch) async {
+        final body = await s.fetchText(Uri.parse('${ch.url}.rsc'), headers: const {'RSC': '1'});
+        final pages = _arrayAfter(body, 'pages', (f) => f.containsKey('pageNumber'));
+        if (pages == null) throw StateError('pages not found');
+        pages.sort((a, b) => (a['pageNumber'] as num).compareTo(b['pageNumber'] as num));
+        return [for (final p in pages) '${s.baseUrl}${p['url']}'];
+      },
+    );
+
+List<MangaSource> portsZ() => [_sacachispa(), _nexcomic()];
