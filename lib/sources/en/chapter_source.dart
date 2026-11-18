@@ -196,3 +196,24 @@ class ChapterSource extends HttpSource {
     return images;
   }
 }
+
+/// Gambar bab situs berpola `.../images/manga/<seri>/chapter-N/<i>.jpg`; bab lama memakai
+/// `.../images/manga/<tanggal>/<seri>-chapter-N-c<i>.jpg`. Halaman juga memuat gambar bab
+/// tetangga (pra-muat), jadi hanya bab ini yang diambil. Dipakai Hentai18, HentaiFull, Manhwalike.
+List<String> numberedChapterImages(Document d, Uri url) {
+  final html = d.outerHtml.replaceAll(r'\/', '/');
+  final folder = RegExp(r'(chapter-[\d-]+?)-ch\d+$').firstMatch(url.path)?[1];
+  final pages = <int, String>{};
+  final modern = RegExp(r'https?://[^"\s\x5C]+/images/manga/[^"\s\x5C]+/(\d+)\.\w+');
+  for (final m in modern.allMatches(html)) {
+    if (folder != null && !m[0]!.contains('/$folder/')) continue;
+    pages[int.parse(m[1]!)] ??= m[0]!;
+  }
+  if (pages.isEmpty && folder != null) {
+    final legacy = RegExp(r'https?://[^"\s\x5C]+/images/manga/[^"\s\x5C]+-' + folder + r'-c(\d+)\.\w+');
+    for (final m in legacy.allMatches(html)) {
+      pages[int.parse(m[1]!)] ??= m[0]!;
+    }
+  }
+  return [for (final k in pages.keys.toList()..sort()) pages[k]!];
+}

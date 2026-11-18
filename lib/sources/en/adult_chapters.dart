@@ -122,17 +122,7 @@ List<MangaSource> adultChapters() => [
         titleSel: 'h1',
         coverSel: 'meta[property="og:image"]',
         chapterSel: r'a[href*="-chapter-"][href*="-ch"]',
-        imagesOf: (d, u) {
-          final html = d.outerHtml.replaceAll(r'\"', '"').replaceAll(r'\/', '/');
-          // Halaman memuat gambar bab lain juga (pra-muat): ambil hanya folder bab ini.
-          final folder = RegExp(r'-(chapter-[\d-]+?)-ch\d+$').firstMatch(u.path)?[1];
-          final pages = <int, String>{};
-          for (final m in RegExp(r'https://cdn\.hentai18\.net/images/manga/[^"\s\\]+/(\d+)\.\w+').allMatches(html)) {
-            if (folder != null && !m[0]!.contains('/$folder/')) continue;
-            pages[int.parse(m[1]!)] ??= m[0]!;
-          }
-          return [for (final k in pages.keys.toList()..sort()) pages[k]!];
-        },
+        imagesOf: numberedChapterImages,
       ),
       ChapterSource(
         id: 'en.manhwalike',
@@ -145,18 +135,9 @@ List<MangaSource> adultChapters() => [
         cardTitleSel: 'h3.title a',
         titleSel: 'h1',
         coverSel: 'meta[property="og:image"]',
-        tagSel: 'a[href^="/manga-genre-"]',
+        tagSel: 'a.property-item[href^="/manga-genre-"]',
         chapterSel: r'a[href*="-chapter-"][href*="-ch"]',
-        imagesOf: (d, u) {
-          final folder = RegExp(r'-(chapter-[\d-]+?)-ch\d+$').firstMatch(u.path)?[1];
-          final pages = <int, String>{};
-          for (final m in RegExp(r'https://stcdn\.manhwalike\.com/images/manga/[^"\s\\]+/(\d+)\.\w+')
-              .allMatches(d.outerHtml.replaceAll(r'\/', '/'))) {
-            if (folder != null && !m[0]!.contains('/$folder/')) continue;
-            pages[int.parse(m[1]!)] ??= m[0]!;
-          }
-          return [for (final k in pages.keys.toList()..sort()) pages[k]!];
-        },
+        imagesOf: numberedChapterImages,
       ),
       ChapterSource(
         id: 'en.hentaifull',
@@ -172,15 +153,6 @@ List<MangaSource> adultChapters() => [
         coverSel: 'meta[property="og:image"]',
         tagSel: 'a.tag, a.tag-link',
         chapterSel: 'li.citem',
-        imagesOf: (d, u) {
-          final folder = RegExp(r'/(chapter-[\d-]+?)-ch\d+$').firstMatch(u.path)?[1];
-          final pages = <int, String>{};
-          for (final m in RegExp(r'https://img\.hentaifull\.net/images/manga/[^"\s\\]+/(\d+)\.\w+')
-              .allMatches(d.outerHtml.replaceAll(r'\/', '/'))) {
-            if (folder != null && !m[0]!.contains('/$folder/')) continue;
-            pages[int.parse(m[1]!)] ??= m[0]!;
-          }
-          return [for (final k in pages.keys.toList()..sort()) pages[k]!];
-        },
+        imagesOf: numberedChapterImages,
       ),
     ];
