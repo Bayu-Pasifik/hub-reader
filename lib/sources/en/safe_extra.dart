@@ -262,6 +262,42 @@ List<MangaSource> safeExtra() => [
           ];
         },
       ),
+      FnSource(
+        id: 'en.nuxscans',
+        name: 'Nux Scans',
+        baseUrl: 'https://nuxscans-comics.blogspot.com',
+        contentWarning: ContentWarning.safe,
+        popularFn: (s, page) async => _nuxPage(s, page, ''),
+        searchFn: (s, page, q) async => _nuxPage(s, page, q),
+        detailsFn: (s, url) async {
+          final res = await s.fetchHtml(Uri.parse('$url?m=0'));
+          final doc = res.document;
+          final chapters = <SourceChapter>[];
+          final seen = <String>{};
+          // Daftar bab ada di dalam komentar HTML, jadi dibaca dari teks mentah.
+          for (final m in RegExp(r'class="list-item[^"]*"s*>s*<a href="([^"]+)"[^>]*>([^<]+)</a>').allMatches(doc.outerHtml)) {
+            final href = m[1]!;
+            if (!seen.add(href)) continue;
+            final label = clean(m[2]);
+            chapters.add(SourceChapter(url: href, name: 'Chapter $label', number: double.tryParse(label)));
+          }
+          chapters.sort((a, b) => (b.number ?? 0).compareTo(a.number ?? 0));
+          final feed = await _nuxEntries(s);
+          final e = feed.where((x) => x.url == url).firstOrNull;
+          return SourceMangaDetails(
+            url: url,
+            title: clean(doc.querySelector('meta[property="og:title"]')?.attributes['content']),
+            thumbnailUrl: e?.thumbnailUrl,
+            genres: e?.genres ?? const [],
+            status: e?.status ?? SourceMangaStatus.unknown,
+            chapters: chapters,
+          );
+        },
+        pagesFn: (s, ch) async {
+          final res = await s.fetchHtml(Uri.parse('${ch.url}?m=0'));
+          return imagesFrom(res.document, res.url, '.post-content img[src*="googleusercontent"]', ['src']);
+        },
+      ),
       SingleSeriesSource(
         id: 'en.megatokyo',
         name: 'Megatokyo',
@@ -460,4 +496,46 @@ Future<MangaPage> _rayubaList(HttpSource s, int page, String q) async {
     }
   }
   return MangaPage(out, hasNextPage: false);
+}
+
+class _NuxEntry {
+  _NuxEntry(this.url, this.title, this.thumbnailUrl, this.genres, this.status);
+  final String url;
+  final String title;
+  final String? thumbnailUrl;
+  final List<String> genres;
+  final SourceMangaStatus status;
+}
+
+Future<List<_NuxEntry>> _nuxEntries(HttpSource s) async {
+  final json = await s.fetchJson(Uri.parse('${s.baseUrl}/feeds/posts/default?alt=json&max-results=150')) as Map;
+  final out = <_NuxEntry>[];
+  for (final e in ((json['feed'] as Map)['entry'] as List? ?? const []).cast<Map>()) {
+    final link = (e['link'] as List).cast<Map>().where((l) => l['rel'] == 'alternate').firstOrNull;
+    if (link == null) continue;
+    final terms = [for (final c in (e['category'] as List? ?? const []).cast<Map>()) '${c['term']}'];
+    final thumb = (e['media\$thumbnail'] as Map?)?['url'] as String?;
+    out.add(_NuxEntry(
+      '${link['href']}',
+      clean('${(e['title'] as Map)['\$t']}'),
+      thumb?.replaceFirst(RegExp(r'/s72-c/'), '/s0/'),
+      [for (final x in terms) if (!x.startsWith('-')) x],
+      terms.contains('-ONGOING')
+          ? SourceMangaStatus.ongoing
+          : terms.contains('-DROPPED') || terms.contains('-AXED')
+              ? SourceMangaStatus.cancelled
+              : SourceMangaStatus.unknown,
+    ));
+  }
+  return out;
+}
+
+Future<MangaPage> _nuxPage(HttpSource s, int page, String q) async {
+  if (page > 1) return const MangaPage([], hasNextPage: false);
+  final lq = q.toLowerCase();
+  return MangaPage([
+    for (final e in await _nuxEntries(s))
+      if (lq.isEmpty || e.title.toLowerCase().contains(lq))
+        SourceManga(url: e.url, title: e.title, thumbnailUrl: e.thumbnailUrl),
+  ], hasNextPage: false);
 }
