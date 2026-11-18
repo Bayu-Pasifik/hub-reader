@@ -62,8 +62,6 @@ import 'source.dart';
 List<MangaSource> customSources() => [
       LocalSource(),
       KomikuSource(),
-      StoryAboutUsSource(),
-      MikoRokuSource(),
       ShinigamiSource(),
       KomikNextGOnlineSource(),
       KoronaxScanSource(),
@@ -83,6 +81,8 @@ List<MangaSource> customSources() => [
       MgKomikSource(),
       KomikAvSource(),
       WestMangaSource(),
+      MikoRokuSource(),
+      StoryAboutUsSource(),
       OceanWpSource(id: 'id.hentaicrot', name: 'Hentai Crot', baseUrl: 'https://hentaicrot.com'),
       OceanWpSource(id: 'id.pixhentai', name: 'Pix Hentai', baseUrl: 'https://pixhentai.com'),
       ...adultWebcomics(),

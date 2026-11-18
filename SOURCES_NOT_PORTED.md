@@ -5,7 +5,7 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 
 | Bahasa / Language | Belum di-port / Not ported |
 |---|---|
-| Indonesia (id) | 14 (6 sudah di-port: Bacami, MG Komik, West Manga, Komik AV, Hentai Crot, Pix Hentai) |
+| Indonesia (id) | 12 (8 sudah di-port: Bacami, MG Komik, West Manga, Komik AV, Hentai Crot, Pix Hentai, MikoRoku, Story About Us) |
 | English (en) | 124 (sisanya dari 153; 29 baru di-port 2026-11-18 / 29 more ported on 2026-11-18) |
 
 > Catatan / Notes
@@ -16,36 +16,34 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 
 ---
 
-## 1. Indonesia (id) — 14 sumber / sources
+## 1. Indonesia (id) — 12 sumber / sources
 
 #### Aman / Safe (6)
 
 | # | Nama / Name | Situs / Site | Catatan / Note |
 |---|---|---|---|
-| 1 | Komiku.com | https://01.komiku.asia | Dicoba lalu dihapus: gambar diblokir tantangan Cloudflare. / Tried then removed: images blocked by Cloudflare challenge. |
-| 2 | Softkomik | - | Tidak di-port: sesi API bertanda tangan + dekripsi CryptoJS. / Not ported: signed API sessions + CryptoJS decryption. |
-| 3 | VoraToon | - | Dicoba lalu dihapus: gambar bab gagal diekstrak dari RSC. / Tried then removed: chapter images could not be extracted from RSC. |
+| 1 | Komiku.com | https://01.komiku.asia | Dicek ulang 2026-11-18: API JSON dan sampul jalan, tetapi CDN gambar bab (cdnkomiku.xyz) membalas tantangan Cloudflare "Just a moment..." ke aplikasi (Dart maupun HTTP bawaan Android). / Re-checked: API and covers work, but the chapter image CDN serves a Cloudflare challenge to the app. |
+| 2 | Softkomik | - | Tidak di-port: sesi API bertanda tangan + dekripsi, anti-scraper. / Not ported: signed API sessions + decryption (anti-scraper). |
+| 3 | VoraToon | - | Tidak di-port: gambar bab tidak ada di respons RSC (dimuat lewat JS setelah verifikasi). / Not ported: chapter images are absent from RSC, loaded by JS after a verification step. |
 
-#### Campuran / Mixed (8)
+#### Campuran / Mixed (6)
 
 | # | Nama / Name | Situs / Site | Catatan / Note |
 |---|---|---|---|
-| 1 | CGBUM | https://cgbum.com | Tidak di-port: gambar bab dilindungi tantangan proof-of-work. / Not ported: chapter images gated by a proof-of-work challenge. |
-| 2 | Comicaso | https://v3.comicaso.pro | Tidak di-port: API meminta tantangan verifikasi. / Not ported: API demands a verification challenge. |
+| 1 | CGBUM | https://cgbum.com | Tidak di-port: akses gambar bab dijaga tantangan proof-of-work anti-bot. / Not ported: chapter image access is gated by an anti-bot proof-of-work challenge. |
+| 2 | Comicaso | https://v3.comicaso.pro | Tidak di-port: API meminta tantangan verifikasi anti-bot. / Not ported: API demands an anti-bot verification challenge. |
 | 3 | CosmicScans | https://04.cosmicscans.to | Tidak di-port: sesi gambar memakai Turnstile. / Not ported: image sessions require Turnstile. |
-| 4 | KomikNesia | https://v2.komiknesiaku.com | Situs mati saat dicek (HTTP 521). / Site down when checked (HTTP 521). |
-| 5 | Manhwa Indo | https://www.manhwaindo.my | Dicoba lalu dihapus: CDN gambar memblokir klien. / Tried then removed: image CDN blocks the client. |
-| 6 | MikoRoku | https://mikoroku.com | Situs error saat dicek (HTTP 500). / Site erroring when checked (HTTP 500). |
-| 7 | Pramramadhan | https://01.pramramadhan.my.id | Situs tidak terjangkau. / Site unreachable. |
+| 4 | KomikNesia | https://v2.komiknesiaku.com | Situs mati saat dicek ulang (HTTP 521) dan API terenkripsi. / Backend still down (HTTP 521) and API is encrypted. |
+| 5 | Manhwa Indo | https://www.manhwaindo.my | Dicek ulang 2026-11-18: daftar, detail, bab jalan, tetapi CDN gambar (upload.gmbr.pro) menolak klien aplikasi (Cloudflare). / Re-checked: listing and chapters work, image CDN refuses the app client (Cloudflare). |
+| 6 | Pramramadhan | https://01.pramramadhan.my.id | Situs tidak terjangkau. / Site unreachable. |
 
-#### Dewasa (NSFW) / Adult (NSFW) (6)
+#### Dewasa (NSFW) / Adult (NSFW) (3)
 
 | # | Nama / Name | Situs / Site | Catatan / Note |
 |---|---|---|---|
-| 1 | Doujindesu | - | Tidak di-port: API memakai rahasia aplikasi + dekripsi XOR. / Not ported: API uses an app secret + XOR decryption. |
-| 2 | KumoPoi | - | Dicoba lalu dihapus: halaman palsu (honeypot) untuk klien non-browser. / Tried then removed: honeypot pages for non-browser clients. |
+| 1 | Doujindesu | - | Tidak di-port: API sengaja diacak (rahasia aplikasi + XOR) untuk menolak scraper pihak ketiga. / Not ported: API is deliberately obfuscated to block third-party scrapers. |
+| 2 | KumoPoi | - | Tidak di-port: situs memberi halaman palsu ke klien non-browser. / Not ported: site serves decoy pages to non-browser clients. |
 | 3 | Ryukomik | https://ryukomik.my.id | Situs tidak terjangkau. / Site unreachable. |
-| 4 | Story About Us | https://storyabout-us.com | Tidak di-port: bab berupa PDF yang dirender di perangkat. / Not ported: chapters are PDFs rendered on-device. |
 
 ---
 
