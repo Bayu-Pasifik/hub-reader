@@ -6,7 +6,7 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 | Bahasa / Language | Belum di-port / Not ported |
 |---|---|
 | Indonesia (id) | 12 (8 sudah di-port: Bacami, MG Komik, West Manga, Komik AV, Hentai Crot, Pix Hentai, MikoRoku, Story About Us) |
-| English (en) | 107 (17 baru di-port 2026-11-18 / 17 more ported on 2026-11-18: MangaFox, Mangahere, Mangatown, MangaHome, WebtoonClub, Toon Hub, Komix, LustToon, MangaMelon, Tapas, The Duck Webcomics, Dynasty Scans, HentaiFC, HentaiNexus, Manhwa18, Paradise Scans, Pornhwa18) |
+| English (en) | 105 (2 lagi di-port 2026-11-18: Sacachispa, NexComic; 17 baru di-port 2026-11-18 / 17 more ported on 2026-11-18: MangaFox, Mangahere, Mangatown, MangaHome, WebtoonClub, Toon Hub, Komix, LustToon, MangaMelon, Tapas, The Duck Webcomics, Dynasty Scans, HentaiFC, HentaiNexus, Manhwa18, Paradise Scans, Pornhwa18) |
 
 > Catatan / Notes
 > - ID: Pencocokan berdasarkan nama folder dan nama tampilan; beberapa situs bisa salah terdeteksi. Sumber multi-bahasa (`all`) tidak termasuk.
@@ -47,7 +47,7 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 
 ---
 
-## 2. English (en) — 107 sumber / sources
+## 2. English (en) — 105 sumber / sources
 
 #### Aman / Safe (23 belum di-port / not yet ported)
 
@@ -77,7 +77,7 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 | 22 | WebNovel | https://www.webnovel.com | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
 | 23 | ZipComic | https://www.zipcomic.com | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
 
-#### Campuran / Mixed (51)
+#### Campuran / Mixed (49)
 
 | # | Nama / Name | Situs / Site | Catatan / Note |
 |---|---|---|---|
@@ -113,15 +113,13 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 | 30 | ManhwaZone | https://manhwazone.com |  |
 | 31 | MyMangaList | https://www5.mymangalist.org |  |
 | 32 | New Manhwa | https://saymanhwa.com |  |
-| 33 | NexComic | https://nexcomic.com |  |
-| 34 | OceComic | https://ocecomic.com |  |
+| 34 | OceComic | https://ocecomic.com | Pemeriksaan bot butuh WebView. / Bot check needs a WebView. |
 | 35 | Omoi | https://www.omoi.com |  |
-| 36 | Oppai Stream | https://read.oppai.stream |  |
+| 36 | Oppai Stream | https://read.oppai.stream | Pembaca manhwa sudah tidak ada (situs kini berisi video). / Manhwa reader is gone (site is now video). |
 | 37 | ReiManga | https://reimanga.net | Akses gambar dijaga token/guard anti-bot; tidak di-port. / Image access is gated by guard tokens; not ported. |
-| 38 | SACACHISPA | https://sacachispa.site |  |
 | 39 | ScansGG | https://scans.gg |  |
 | 40 | Schale Scans | https://www.schalescans.com |  |
-| 41 | SilentQuill | https://silentquill.net |  |
+| 41 | SilentQuill | https://silentquill.net | Dinilai: data lewat payload RSC bertingkat; belum di-port. / Assessed: nested RSC payloads; not ported. |
 | 42 | StreameX (unoriginal) | https://streamex.hn |  |
 | 43 | Team Shadowi | https://www.team-shadowi.com |  |
 | 44 | TodayManga | https://todaymanga.com |  |
@@ -131,7 +129,7 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 | 48 | Webnex | https://webnex.cc |  |
 | 49 | WebtoonLib | https://webtoonlib.to | Gambar bab digabung dengan balon dialog oleh interseptor bitmap; belum ada padanannya. / Bubbles are composited by a bitmap interceptor; no equivalent yet. |
 | 50 | XoManga | https://www.xomanga.site |  |
-| 51 | Yurivan | https://www.yurivan.com |  |
+| 51 | Yurivan | https://www.yurivan.com | Dicoba 2026-11-18: API membalas tantangan Cloudflare ke klien aplikasi. / Tried: API answers a Cloudflare challenge to the app client. |
 
 #### Dewasa (NSFW) / Adult (NSFW) (33 tersisa / remaining; HentaiDad, HentaiPill, Hentai.yoga, HentaiHere, HentaiTnT, Transfusions dan sebelumnya 35 lain sudah di-port / already ported)
 
@@ -157,7 +155,7 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 | 18 | ManhwaH | https://manhwah.com | Daftar dan bab terbaca, tetapi CDN gambar (Cloudflare) menolak klien aplikasi dengan 403; dilewati. / Lists and chapters parse, but the image CDN (Cloudflare) answers 403 to the app client; skipped. |
 | 19 | Mehgazone | https://mehgazone.com |  |
 | 20 | MyAdultComics | https://myadultcomics.com |  |
-| 21 | MyHentaiComics | https://myhentaicomics.com |  |
+| 21 | MyHentaiComics | https://myhentaicomics.com | Dicoba 2026-11-18: klien app ditolak 403 (Cloudflare) walau curl lolos. / Tried: app client gets 403 (Cloudflare) although curl passes. |
 | 22 | MyHentaiGallery | https://myhentaigallery.com | Dicoba lalu dihapus: klien app ditolak 403 (Cloudflare) walau curl lolos. / Tried then removed: app client gets 403 (Cloudflare) although curl passes. |
 | 23 | Myth Toons | https://mythtoons.org |  |
 | 24 | NineHentai | https://9hentai.so | API butuh token CSRF dan sesi; tidak di-port. / API needs a CSRF token and session; not ported. |
