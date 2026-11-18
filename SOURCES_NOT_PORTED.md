@@ -6,7 +6,7 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 | Bahasa / Language | Belum di-port / Not ported |
 |---|---|
 | Indonesia (id) | 12 (8 sudah di-port: Bacami, MG Komik, West Manga, Komik AV, Hentai Crot, Pix Hentai, MikoRoku, Story About Us) |
-| English (en) | 124 (sisanya dari 153; 29 baru di-port 2026-11-18 / 29 more ported on 2026-11-18) |
+| English (en) | 107 (17 baru di-port 2026-11-18 / 17 more ported on 2026-11-18: MangaFox, Mangahere, Mangatown, MangaHome, WebtoonClub, Toon Hub, Komix, LustToon, MangaMelon, Tapas, The Duck Webcomics, Dynasty Scans, HentaiFC, HentaiNexus, Manhwa18, Paradise Scans, Pornhwa18) |
 
 > Catatan / Notes
 > - ID: Pencocokan berdasarkan nama folder dan nama tampilan; beberapa situs bisa salah terdeteksi. Sumber multi-bahasa (`all`) tidak termasuk.
@@ -47,7 +47,7 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 
 ---
 
-## 2. English (en) — 124 sumber / sources
+## 2. English (en) — 107 sumber / sources
 
 #### Aman / Safe (23 belum di-port / not yet ported)
 
@@ -77,7 +77,7 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 | 22 | WebNovel | https://www.webnovel.com | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
 | 23 | ZipComic | https://www.zipcomic.com | Dilindungi Cloudflare (HTTP 403); tidak bisa diverifikasi tanpa WebView. / Cloudflare-protected (HTTP 403); cannot be verified without a WebView. |
 
-#### Campuran / Mixed (63)
+#### Campuran / Mixed (51)
 
 | # | Nama / Name | Situs / Site | Catatan / Note |
 |---|---|---|---|
@@ -86,104 +86,87 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 | 3 | Bbato | - |  |
 | 4 | BookWalker | https://bookwalker.com |  |
 | 5 | Coffee Manga (Unoriginal) | https://coffeemanga.net | template: imperiomanhwa |
-| 6 | ComicK Fanmade | https://comickfan.com |  |
+| 6 | ComicK Fanmade | https://comickfan.com | Situs tidak terjangkau saat dicek. / Site unreachable when checked. |
 | 7 | Comix | - |  |
 | 8 | Coolmic | https://coolmic.me |  |
 | 9 | Dashtoon | https://dashtoon.com |  |
 | 10 | Dream-Manga | https://dream-manga.com |  |
-| 11 | Dynasty Scans | https://dynasty-scans.com |  |
-| 12 | EbookRenta | https://www.ebookrenta.com |  |
-| 13 | emaqi | https://emaqi.com |  |
-| 14 | InfinityScans | https://infinityscans.org |  |
-| 15 | Inkora | https://inkora.spacely.tech |  |
-| 16 | INKR | https://comics.inkr.com |  |
-| 17 | KaliScans.org (unoriginal) | https://kaliscans.org |  |
-| 18 | Kemono Café | https://kemono.cafe |  |
-| 19 | Kodansha | https://kodansha.us |  |
-| 20 | Komix | https://komix.to |  |
-| 21 | Lazy Monki Scans | https://lazy-monki-scans.netlify.app |  |
-| 22 | LustToon | https://lustoon.com |  |
-| 23 | Manga MTL | https://mtlmanga.org | template: manhuarm |
-| 24 | Manga-Bay | https://manga-bay.biz |  |
-| 25 | Manga.uno | https://manga.uno |  |
-| 26 | MangaFox | https://fanfox.net |  |
-| 27 | MangaGeko | https://www.mgeko.cc |  |
-| 28 | Mangago | https://www.mangago.me |  |
-| 29 | Mangahere | https://www.mangahere.cc |  |
-| 30 | MangaHome | https://www.mangahome.com |  |
-| 31 | MangaLix | https://mangalix.com |  |
-| 32 | MangaMelon | https://mangamelon.com |  |
-| 33 | MangaPlaza | https://mangaplaza.com |  |
-| 34 | Mangastash | https://mangastash.org |  |
-| 35 | Mangatown | https://www.mangatown.com |  |
-| 36 | ManhuaTop | https://manhuatop.org |  |
-| 37 | ManhwaRead | - |  |
-| 38 | ManhwaZone | https://manhwazone.com |  |
-| 39 | MyMangaList | https://www5.mymangalist.org |  |
-| 40 | New Manhwa | https://saymanhwa.com |  |
-| 41 | NexComic | https://nexcomic.com |  |
-| 42 | OceComic | https://ocecomic.com |  |
-| 43 | Omoi | https://www.omoi.com |  |
-| 44 | Oppai Stream | https://read.oppai.stream |  |
-| 45 | ReiManga | https://reimanga.net |  |
-| 46 | SACACHISPA | https://sacachispa.site |  |
-| 47 | ScansGG | https://scans.gg |  |
-| 48 | Schale Scans | https://www.schalescans.com |  |
-| 49 | SilentQuill | https://silentquill.net |  |
-| 50 | StreameX (unoriginal) | https://streamex.hn |  |
-| 51 | Tapas | https://tapas.io |  |
-| 52 | Team Shadowi | https://www.team-shadowi.com |  |
-| 53 | The Duck Webcomics | https://www.theduckwebcomics.com |  |
-| 54 | TodayManga | https://todaymanga.com |  |
-| 55 | Toon Hub | https://toon-hub.com |  |
-| 56 | Toonkotsu | https://toonkotsu.com |  |
-| 57 | Toonz/Toonx | https://toonz.to |  |
-| 58 | VyvyManga | - |  |
-| 59 | Webnex | https://webnex.cc |  |
-| 60 | WebtoonClub | https://webtoonclub.com |  |
-| 61 | WebtoonLib | https://webtoonlib.to |  |
-| 62 | XoManga | https://www.xomanga.site |  |
-| 63 | Yurivan | https://www.yurivan.com |  |
+| 11 | EbookRenta | https://www.ebookrenta.com |  |
+| 12 | emaqi | https://emaqi.com |  |
+| 13 | InfinityScans | https://infinityscans.org |  |
+| 14 | Inkora | https://inkora.spacely.tech |  |
+| 15 | INKR | https://comics.inkr.com |  |
+| 16 | KaliScans.org (unoriginal) | https://kaliscans.org |  |
+| 17 | Kemono Café | https://kemono.cafe |  |
+| 18 | Kodansha | https://kodansha.us |  |
+| 19 | Lazy Monki Scans | https://lazy-monki-scans.netlify.app |  |
+| 20 | Manga MTL | https://mtlmanga.org | template: manhuarm |
+| 21 | Manga-Bay | https://manga-bay.biz |  |
+| 22 | Manga.uno | https://manga.uno |  |
+| 23 | MangaGeko | https://www.mgeko.cc |  |
+| 24 | Mangago | https://www.mangago.me | Gambar bab diacak lewat deobfuscator JS (SoJsonV4); belum di-port. / Chapter images use a JS deobfuscator (SoJsonV4); not ported. |
+| 25 | MangaLix | https://mangalix.com | Katalog dibaca dari berkas JS terbundel lewat parser literal JS; belum di-port. / Catalog is read from a bundled JS file via a JS-literal parser; not ported. |
+| 26 | MangaPlaza | https://mangaplaza.com |  |
+| 27 | Mangastash | https://mangastash.org |  |
+| 28 | ManhuaTop | https://manhuatop.org | Dicoba 2026-11-18: API membalas 403 Cloudflare ke klien aplikasi walau curl lolos. / Tried: API answers 403 (Cloudflare) to the app client although curl passes. |
+| 29 | ManhwaRead | - | Dilindungi Cloudflare (HTTP 403). / Cloudflare-protected (HTTP 403). |
+| 30 | ManhwaZone | https://manhwazone.com |  |
+| 31 | MyMangaList | https://www5.mymangalist.org |  |
+| 32 | New Manhwa | https://saymanhwa.com |  |
+| 33 | NexComic | https://nexcomic.com |  |
+| 34 | OceComic | https://ocecomic.com |  |
+| 35 | Omoi | https://www.omoi.com |  |
+| 36 | Oppai Stream | https://read.oppai.stream |  |
+| 37 | ReiManga | https://reimanga.net | Akses gambar dijaga token/guard anti-bot; tidak di-port. / Image access is gated by guard tokens; not ported. |
+| 38 | SACACHISPA | https://sacachispa.site |  |
+| 39 | ScansGG | https://scans.gg |  |
+| 40 | Schale Scans | https://www.schalescans.com |  |
+| 41 | SilentQuill | https://silentquill.net |  |
+| 42 | StreameX (unoriginal) | https://streamex.hn |  |
+| 43 | Team Shadowi | https://www.team-shadowi.com |  |
+| 44 | TodayManga | https://todaymanga.com |  |
+| 45 | Toonkotsu | https://toonkotsu.com | Gambar bab dienkripsi dan didekripsi oleh interseptor; belum ada padanannya. / Chapter images are encrypted and decrypted by an interceptor; no equivalent yet. |
+| 46 | Toonz/Toonx | https://toonz.to | Daftar jalan, tetapi halaman seri dijaga tantangan Cloudflare (403) untuk klien aplikasi. / Listing works, but series pages are behind a Cloudflare challenge (403) for the app client. |
+| 47 | VyvyManga | - |  |
+| 48 | Webnex | https://webnex.cc |  |
+| 49 | WebtoonLib | https://webtoonlib.to | Gambar bab digabung dengan balon dialog oleh interseptor bitmap; belum ada padanannya. / Bubbles are composited by a bitmap interceptor; no equivalent yet. |
+| 50 | XoManga | https://www.xomanga.site |  |
+| 51 | Yurivan | https://www.yurivan.com |  |
 
-#### Dewasa (NSFW) / Adult (NSFW) (38 tersisa / remaining; HentaiDad, HentaiPill, Hentai.yoga, HentaiHere, HentaiTnT, Transfusions dan sebelumnya 35 lain sudah di-port / already ported)
+#### Dewasa (NSFW) / Adult (NSFW) (33 tersisa / remaining; HentaiDad, HentaiPill, Hentai.yoga, HentaiHere, HentaiTnT, Transfusions dan sebelumnya 35 lain sudah di-port / already ported)
 
 | # | Nama / Name | Situs / Site | Catatan / Note |
 |---|---|---|---|
-| 1 | 8Muses | https://comics.8muses.com | template: eromuse |
+| 1 | 8Muses | https://comics.8muses.com | Struktur album bertingkat dengan tumpukan halaman berstatus (template eromuse); belum di-port. / Nested albums with a stateful page stack (eromuse template); not ported. |
 | 2 | Babes Rater | https://babesrater.com |  |
 | 3 | BabeSource | https://babesource.com |  |
 | 4 | buttsmithy | https://incase.buttsmithy.com |  |
 | 5 | Doujin.io - J18 | https://doujin.io |  |
-| 6 | Erofus | https://www.erofus.com | template: eromuse |
+| 6 | Erofus | https://www.erofus.com | Struktur album bertingkat dengan tumpukan halaman berstatus (template eromuse); belum di-port. / Nested albums with a stateful page stack (eromuse template); not ported. |
 | 7 | Fairies vs Tentacles | https://eldrikdgt.com | Situs kosong/pindah domain saat dicek. / Site empty or moved when checked. |
 | 8 | Futapo | https://futapo.com |  |
 | 9 | Gensura | https://gensura.net |  |
 | 10 | GirlsTop | https://en.girlstop.info |  |
-| 11 | HentaiFC | https://hentaifc.com |  |
-| 12 | HentaiKun | https://hentaikun.com |  |
-| 13 | HentaiNexus | https://hentainexus.com |  |
-| 14 | HentaiRead | https://hentairead.com |  |
-| 15 | HentaiRead.io | https://hentairead.io | Server Cloudflare menolak klien aplikasi (403) walau curl lolos; dilewati. / Cloudflare answers 403 to the app client although curl passes; skipped. |
-| 16 | HentaiSco | https://hentaisco.cc |  |
-| 17 | HotComics | https://hotcomics.io |  |
-| 18 | Kotokotek | https://kotokotek.wixsite.com |  |
-| 19 | LGBToon | https://lgbtoon.com | Daftar dan bab terbaca, tetapi CDN gambar (Cloudflare) menolak klien aplikasi dengan 403; dilewati. / Lists and chapters parse, but the image CDN (Cloudflare) answers 403 to the app client; skipped. |
-| 20 | Manhwa18 | https://manhwa18.com |  |
-| 21 | ManhwaH | https://manhwah.com | Daftar dan bab terbaca, tetapi CDN gambar (Cloudflare) menolak klien aplikasi dengan 403; dilewati. / Lists and chapters parse, but the image CDN (Cloudflare) answers 403 to the app client; skipped. |
-| 22 | Mehgazone | https://mehgazone.com |  |
-| 23 | MyAdultComics | https://myadultcomics.com |  |
-| 24 | MyHentaiComics | https://myhentaicomics.com |  |
-| 25 | MyHentaiGallery | https://myhentaigallery.com | Dicoba lalu dihapus: klien app ditolak 403 (Cloudflare) walau curl lolos. / Tried then removed: app client gets 403 (Cloudflare) although curl passes. |
-| 26 | Myth Toons | https://mythtoons.org |  |
-| 27 | NineHentai | https://9hentai.so | API butuh token CSRF dan sesi; tidak di-port. / API needs a CSRF token and session; not ported. |
-| 28 | Nortverse | https://nortverse.com |  |
-| 29 | Paradise Scans | https://paradisescans.com |  |
-| 30 | Pornhwa.me | https://pornhwa.me |  |
-| 31 | Pornhwa18 | https://pornhwa18.com |  |
-| 32 | SpyFakku | - |  |
-| 33 | Sunshine Butterfly Scans | https://wings.sbs |  |
-| 34 | Tailspace | https://tailspace.com |  |
-| 35 | Temple Scan | https://templetoons.com | Konten dimuat lewat skrip loader yang diobfuskasi (`/api/kaneda/boot`); dilewati. / Content is loaded via an obfuscated loader script; skipped. |
-| 36 | The Blank | https://theblank.net | template: pam |
-| 37 | ToonHey | https://toonhey.com |  |
-| 38 | YaoiHot | https://yaoihot.com |  |
+| 11 | HentaiKun | https://hentaikun.com |  |
+| 12 | HentaiRead | https://hentairead.com | Dilindungi Cloudflare (HTTP 403) ke klien aplikasi. / Cloudflare answers 403 to the app client. |
+| 13 | HentaiRead.io | https://hentairead.io | Server Cloudflare menolak klien aplikasi (403) walau curl lolos; dilewati. / Cloudflare answers 403 to the app client although curl passes; skipped. |
+| 14 | HentaiSco | https://hentaisco.cc |  |
+| 15 | HotComics | https://hotcomics.io |  |
+| 16 | Kotokotek | https://kotokotek.wixsite.com |  |
+| 17 | LGBToon | https://lgbtoon.com | Daftar dan bab terbaca, tetapi CDN gambar (Cloudflare) menolak klien aplikasi dengan 403; dilewati. / Lists and chapters parse, but the image CDN (Cloudflare) answers 403 to the app client; skipped. |
+| 18 | ManhwaH | https://manhwah.com | Daftar dan bab terbaca, tetapi CDN gambar (Cloudflare) menolak klien aplikasi dengan 403; dilewati. / Lists and chapters parse, but the image CDN (Cloudflare) answers 403 to the app client; skipped. |
+| 19 | Mehgazone | https://mehgazone.com |  |
+| 20 | MyAdultComics | https://myadultcomics.com |  |
+| 21 | MyHentaiComics | https://myhentaicomics.com |  |
+| 22 | MyHentaiGallery | https://myhentaigallery.com | Dicoba lalu dihapus: klien app ditolak 403 (Cloudflare) walau curl lolos. / Tried then removed: app client gets 403 (Cloudflare) although curl passes. |
+| 23 | Myth Toons | https://mythtoons.org |  |
+| 24 | NineHentai | https://9hentai.so | API butuh token CSRF dan sesi; tidak di-port. / API needs a CSRF token and session; not ported. |
+| 25 | Nortverse | https://nortverse.com |  |
+| 26 | Pornhwa.me | https://pornhwa.me |  |
+| 27 | SpyFakku | - |  |
+| 28 | Sunshine Butterfly Scans | https://wings.sbs |  |
+| 29 | Tailspace | https://tailspace.com | Data memakai aliran Turbo (turbo-stream); belum di-port. / Data uses a turbo-stream payload; not ported. |
+| 30 | Temple Scan | https://templetoons.com | Konten dimuat lewat skrip loader yang diobfuskasi (`/api/kaneda/boot`); dilewati. / Content is loaded via an obfuscated loader script; skipped. |
+| 31 | The Blank | https://theblank.net | template: pam |
+| 32 | ToonHey | https://toonhey.com |  |
+| 33 | YaoiHot | https://yaoihot.com |  |
