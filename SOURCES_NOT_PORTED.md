@@ -170,7 +170,7 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 | 72 | XoManga | https://www.xomanga.site |  |
 | 73 | Yurivan | https://www.yurivan.com |  |
 
-#### Dewasa (NSFW) / Adult (NSFW) (45 tersisa dari 79; 34 sudah di-port: HD Porn Comics, ManhwaX, Manhwalike, HentaiFull, DesireScans, PornhwaDB Reader, Hentai18, Yiff Comics, Doujins, Milftoon, Webtoon Hentai, 8Muses.xxx, Revival Scans, Asuratoons (unoriginal), EAHentai, HentaiKisu, Manhwa18Dash, Hentara, Manhwa210, Multporn, Oh Joy Sex Toy, Rule34Comic, KingComiX, XlecX, HentaiForce, Only The Best Hentai, Vixen Logic, Oglaf, I Roved Out, Mahouirexnohentaikarte, XYZ Comics, ILikeComix, Cutie Comics, PornComix, Eggporncomics. XYZ Comics dan PornComix di balik Cloudflare, belum terverifikasi)
+#### Dewasa (NSFW) / Adult (NSFW) (44 tersisa dari 79; 35 sudah di-port: HD Porn Comics, ManhwaX, Manhwalike, HentaiFull, DesireScans, PornhwaDB Reader, Hentai18, Yiff Comics, Doujins, Milftoon, Webtoon Hentai, 8Muses.xxx, Revival Scans, Asuratoons (unoriginal), EAHentai, HentaiKisu, Manhwa18Dash, Hentara, Manhwa210, Multporn, Oh Joy Sex Toy, Rule34Comic, KingComiX, XlecX, HentaiForce, Only The Best Hentai, Vixen Logic, Oglaf, I Roved Out, Mahouirexnohentaikarte, XYZ Comics, ILikeComix, Cutie Comics, PornComix, Eggporncomics. XYZ Comics dan PornComix di balik Cloudflare, belum terverifikasi)
 
 | # | Nama / Name | Situs / Site | Catatan / Note |
 |---|---|---|---|
