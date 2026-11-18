@@ -1047,4 +1047,80 @@ FnSource _girlstop() => FnSource(
       },
     );
 
-List<MangaSource> portsAa() => [_myadultcomics(), _schalescans(), _mythtoons(), _bbato(), _inkora(), _kaliscans(), _mymangalist(), _hentaikun(), _pornhwame(), _streamex(), _babesource(), _girlstop()];
+// ------------------------------------------------------------------ Gensura
+
+MangaPage _gensuraPage(HtmlResponse res) {
+  final out = <SourceManga>[];
+  for (final a in res.document.querySelectorAll('a')) {
+    final href = a.attributes['href'] ?? '';
+    if (!href.startsWith('/manga/')) continue;
+    final h2 = a.querySelector('h2');
+    if (h2 == null) continue;
+    out.add(SourceManga(url: absUrl(res.url, href)!, title: clean(ownText(h2)), thumbnailUrl: attrAbs(a.querySelector('img'), 'src', res.url)));
+  }
+  final next = res.document.querySelectorAll('a').any((a) => (a.attributes['href'] ?? '').contains('page') && a.text.trim().isEmpty);
+  return MangaPage(out, hasNextPage: next);
+}
+
+FnSource _gensura() => FnSource(
+      id: 'en.gensura',
+      name: 'Gensura',
+      baseUrl: 'https://gensura.net',
+      contentWarning: ContentWarning.nsfw,
+      popularFn: (s, page) async => _gensuraPage(await s.fetchHtml(_u('${s.baseUrl}/advanced-search/?search=1&type=0&sort=1&page=$page'))),
+      latestFn: (s, page) async => _gensuraPage(await s.fetchHtml(_u('${s.baseUrl}/advanced-search/?search=1&type=0&sort=2&page=$page'))),
+      searchFn: (s, page, q) async => _gensuraPage(await s.fetchHtml(_u('${s.baseUrl}/advanced-search/').replace(queryParameters: {'name': q, 'search': '1', if (page > 1) 'page': '$page'}))),
+      detailsFn: (s, url) async {
+        final res = await s.fetchHtml(_u(url));
+        final d = res.document;
+        List<String> texts(String sel) => [for (final e in d.querySelectorAll(sel)) clean(e.text)];
+        final titles = clean(d.querySelector('h1.font-semibold')?.text).split(' | ');
+        final alt = clean(d.querySelector('h2.text-lg.font-medium')?.text);
+        final chapters = <SourceChapter>[];
+        final list = d.querySelector('div.gap-1 > ul');
+        if (list == null) {
+          chapters.add(SourceChapter(url: url, name: 'Chapter', number: 1));
+        } else {
+          for (final li in list.querySelectorAll('li')) {
+            final a = li.querySelector('a');
+            final m = RegExp(r'^#?([\d.]+)\s+(.+)$').firstMatch(clean(a?.text));
+            final href = absUrl(res.url, a?.attributes['href']);
+            if (a == null || m == null || href == null) continue;
+            final n = double.tryParse(m[1]!) ?? 1;
+            chapters.add(SourceChapter(url: href, name: '${n == n.roundToDouble() ? n.toInt() : n} - ${m[2]}', number: n));
+          }
+          chapters.sort((a, b) => (b.number ?? 0).compareTo(a.number ?? 0));
+        }
+        final circles = texts("a[href*='/circles/']");
+        final artists = texts("a[href*='/authors/']");
+        return SourceMangaDetails(
+          url: url,
+          title: titles.first,
+          thumbnailUrl: [for (final i in d.querySelectorAll('img.w-96')) if ((i.attributes['src'] ?? '').contains('thumbnail')) attrAbs(i, 'src', res.url)].firstOrNull,
+          author: (circles.isNotEmpty ? circles : artists).join(', '),
+          artist: artists.join(', '),
+          genres: texts("a[href*='/tags/']"),
+          description: [
+            if (titles.length > 1) 'Alternative Titles:\n- ${titles[1]}${alt.isEmpty ? '' : '\n- $alt'}',
+            'Categories: ${texts("a[href*='/categories/']").join(' ')}',
+            'Parodies: ${texts("a[href*='/parodies/']").join(' ')}',
+          ].join('\n\n'),
+          status: SourceMangaStatus.completed,
+          chapters: chapters,
+        );
+      },
+      pagesFn: (s, ch) async {
+        final res = await s.fetchHtml(_u(ch.url));
+        final out = <String>[];
+        for (final img in res.document.querySelectorAll('img')) {
+          final src = attrAbs(img, 'src', res.url) ?? '';
+          final data = attrAbs(img, 'data-src', res.url) ?? '';
+          final isMain = src.contains('images') && !src.contains('thumbnail') && img.classes.contains('w-full');
+          final url = isMain ? src : (data.contains('images') ? data : null);
+          if (url != null && url.isNotEmpty) out.add(url.replaceAll(RegExp(r'-t(?=\.)'), ''));
+        }
+        return out;
+      },
+    );
+
+List<MangaSource> portsAa() => [_myadultcomics(), _schalescans(), _mythtoons(), _bbato(), _inkora(), _kaliscans(), _mymangalist(), _hentaikun(), _pornhwame(), _streamex(), _babesource(), _girlstop(), _gensura()];
