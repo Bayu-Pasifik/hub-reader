@@ -6,7 +6,7 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 | Bahasa / Language | Belum di-port / Not ported |
 |---|---|
 | Indonesia (id) | 14 (6 sudah di-port: Bacami, MG Komik, West Manga, Komik AV, Hentai Crot, Pix Hentai) |
-| English (en) | 161 (64 sudah di-port dari kelompok Aman / 64 ported from the Safe group) |
+| English (en) | 157 (64 sudah di-port dari kelompok Aman / 64 ported from the Safe group) |
 
 > Catatan / Notes
 > - ID: Pencocokan berdasarkan nama folder dan nama tampilan; beberapa situs bisa salah terdeteksi. Sumber multi-bahasa (`all`) tidak termasuk.
@@ -49,7 +49,7 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 
 ---
 
-## 2. English (en) — 161 sumber / sources
+## 2. English (en) — 157 sumber / sources
 
 #### Aman / Safe (36 belum di-port / not yet ported; 64 sudah di-port / ported)
 
@@ -170,7 +170,7 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 | 72 | XoManga | https://www.xomanga.site |  |
 | 73 | Yurivan | https://www.yurivan.com |  |
 
-#### Dewasa (NSFW) / Adult (NSFW) (52 tersisa dari 79; 27 sudah di-port: Doujins, Milftoon, Webtoon Hentai, 8Muses.xxx, Revival Scans, Asuratoons (unoriginal), EAHentai, HentaiKisu, Manhwa18Dash, Hentara, Manhwa210, Multporn, Oh Joy Sex Toy, Rule34Comic, KingComiX, XlecX, HentaiForce, Only The Best Hentai, Vixen Logic, Oglaf, I Roved Out, Mahouirexnohentaikarte, XYZ Comics, ILikeComix, Cutie Comics, PornComix, Eggporncomics. XYZ Comics dan PornComix di balik Cloudflare, belum terverifikasi)
+#### Dewasa (NSFW) / Adult (NSFW) (48 tersisa dari 79; 31 sudah di-port: DesireScans, PornhwaDB Reader, Hentai18, Yiff Comics, Doujins, Milftoon, Webtoon Hentai, 8Muses.xxx, Revival Scans, Asuratoons (unoriginal), EAHentai, HentaiKisu, Manhwa18Dash, Hentara, Manhwa210, Multporn, Oh Joy Sex Toy, Rule34Comic, KingComiX, XlecX, HentaiForce, Only The Best Hentai, Vixen Logic, Oglaf, I Roved Out, Mahouirexnohentaikarte, XYZ Comics, ILikeComix, Cutie Comics, PornComix, Eggporncomics. XYZ Comics dan PornComix di balik Cloudflare, belum terverifikasi)
 
 | # | Nama / Name | Situs / Site | Catatan / Note |
 |---|---|---|---|
@@ -178,7 +178,6 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 | 4 | Babes Rater | https://babesrater.com |  |
 | 5 | BabeSource | https://babesource.com |  |
 | 6 | buttsmithy | https://incase.buttsmithy.com |  |
-| 8 | DesireScans | https://desirescans.com |  |
 | 9 | Doujin.io - J18 | https://doujin.io |  |
 | 13 | Erofus | https://www.erofus.com | template: eromuse |
 | 14 | Fairies vs Tentacles | https://eldrikdgt.com |  |
@@ -187,7 +186,6 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 | 17 | GirlsTop | https://en.girlstop.info |  |
 | 18 | HD Porn Comics | https://hdporncomics.com |  |
 | 19 | Hentai.yoga | https://hentai.yoga |  |
-| 20 | Hentai18 | https://hentai18.net |  |
 | 21 | HentaiDad | https://hentaidad.com |  |
 | 22 | HentaiFC | https://hentaifc.com |  |
 | 24 | HentaiFull | https://hentaifull.net |  |
@@ -201,9 +199,9 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 | 33 | HentaiTnT | https://hentaitnt.net |  |
 | 35 | HotComics | https://hotcomics.io |  |
 | 39 | Kotokotek | https://kotokotek.wixsite.com |  |
-| 40 | LGBToon | https://lgbtoon.com |  |
+| 40 | LGBToon | https://lgbtoon.com | Daftar dan bab terbaca, tetapi CDN gambar (Cloudflare) menolak klien aplikasi dengan 403; dilewati. / Lists and chapters parse, but the image CDN (Cloudflare) answers 403 to the app client; skipped. |
 | 42 | Manhwa18 | https://manhwa18.com |  |
-| 45 | ManhwaH | https://manhwah.com |  |
+| 45 | ManhwaH | https://manhwah.com | Daftar dan bab terbaca, tetapi CDN gambar (Cloudflare) menolak klien aplikasi dengan 403; dilewati. / Lists and chapters parse, but the image CDN (Cloudflare) answers 403 to the app client; skipped. |
 | 46 | Manhwalike | https://manhwalike.com |  |
 | 47 | ManhwaX (unoriginal) | https://manhwax.pro |  |
 | 48 | Mehgazone | https://mehgazone.com |  |
@@ -216,7 +214,6 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 | 60 | Paradise Scans | https://paradisescans.com |  |
 | 62 | Pornhwa.me | https://pornhwa.me |  |
 | 63 | Pornhwa18 | https://pornhwa18.com |  |
-| 64 | PornhwaDB Reader | https://pornhwareader.com |  |
 | 67 | SpyFakku | - |  |
 | 68 | Sunshine Butterfly Scans | https://wings.sbs |  |
 | 69 | Tailspace | https://tailspace.com |  |
@@ -225,4 +222,3 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 | 72 | ToonHey | https://toonhey.com |  |
 | 73 | Transfusions | https://transfusionscomic.com |  |
 | 78 | YaoiHot | https://yaoihot.com |  |
-| 79 | Yiff Comics (unoriginal) | https://yiff-comics.com |  |

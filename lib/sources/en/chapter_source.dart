@@ -33,6 +33,7 @@ class ChapterSource extends HttpSource {
     this.statusSel,
     this.chapterNameSel,
     this.reverseChapters = false,
+    this.thumbFromUrl,
     this.cleanTitle,
     this.localSearch = false,
     this.contentWarning = ContentWarning.nsfw,
@@ -75,6 +76,9 @@ class ChapterSource extends HttpSource {
   /// Balik urutan bila situs menampilkan bab dari yang terlama.
   final bool reverseChapters;
 
+  /// Sampul daftar bila kartu tidak memuat gambar: dibangun dari URL seri.
+  final String? Function(String seriesUrl)? thumbFromUrl;
+
   /// Rapikan judul seri di halaman detail (mis. buang awalan SEO).
   final String Function(String title)? cleanTitle;
 
@@ -93,8 +97,9 @@ class ChapterSource extends HttpSource {
       final title = clean(cardTitleSel == null
           ? (link.attributes['title'] ?? link.attributes['aria-label'] ?? (link.text.trim().isEmpty ? card.querySelector('img')?.attributes['alt'] : link.text))
           : _text(card.querySelector(cardTitleSel!)));
-      if (title.isEmpty) continue;
-      items.add(SourceManga(url: href, title: title, thumbnailUrl: _thumb(card.querySelector(cardThumbSel), res.url)));
+      final shown = cleanTitle == null ? title : cleanTitle!(title);
+      if (shown.isEmpty) continue;
+      items.add(SourceManga(url: href, title: shown, thumbnailUrl: _thumb(card.querySelector(cardThumbSel), res.url) ?? thumbFromUrl?.call(href)));
     }
     return MangaPage(items, hasNextPage: res.document.querySelector(nextSel) != null);
   }
