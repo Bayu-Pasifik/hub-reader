@@ -880,6 +880,86 @@ List<MangaSource> safeExtra() => [
           return imagesFrom(res.document, res.url, '.page-image', ['src', 'data-src']);
         },
       ),
+      FnSource(
+        id: 'en.atsumaru',
+        name: 'Atsumaru',
+        baseUrl: 'https://atsu.moe',
+        contentWarning: ContentWarning.mixed,
+        popularFn: (s, page) => _atsuBrowse(s, 'popular', page, daily: true),
+        latestFn: (s, page) => _atsuBrowse(s, 'recentlyUpdated', page),
+        searchFn: (s, page, q) async {
+          final r = await s.fetchJson(Uri.https(Uri.parse(s.baseUrl).host, '/collections/manga/documents/search', {
+            'q': q,
+            'query_by': 'title,englishTitle,otherNames,authors,acronyms',
+            'query_by_weights': '4,3,2,2,1',
+            'num_typos': '4,3,2,1,0',
+            'prefix': 'true,true,true,true,false',
+            'include_fields': 'id,title,posterMedium',
+            'filter_by': r'medium:!=[`Novel`] && isAdult:=false && mbContentRating:!=[`Pornographic`] && hidden:!=true',
+            'page': '$page',
+            'per_page': '40',
+            'infix': 'off,off,fallback,off,off',
+          })) as Map;
+          final perPage = ((r['request_params'] as Map)['per_page'] as num).toInt();
+          return MangaPage(
+            [
+              for (final h in (r['hits'] as List).cast<Map>())
+                _atsuManga(s, h['document'] as Map),
+            ],
+            hasNextPage: (r['page'] as int) * perPage < (r['found'] as int),
+          );
+        },
+        detailsFn: (s, url) async {
+          final id = url.split('/').where((e) => e.isNotEmpty).last;
+          final host = Uri.parse(s.baseUrl).host;
+          final page = ((await s.fetchJson(Uri.https(host, '/api/manga/page', {'id': id}))) as Map)['mangaPage'] as Map;
+          final all = (await s.fetchJson(Uri.https(host, '/api/manga/allChapters', {'mangaId': id}))) as Map;
+          final scans = {for (final sc in ((page['scanlators'] as List?) ?? const []).cast<Map>()) '${sc['id']}': '${sc['name']}'};
+          final chapters = <SourceChapter>[];
+          for (final c in (all['chapters'] as List).cast<Map>()) {
+            final n = (c['number'] as num?)?.toDouble();
+            final sid = c['scanlationMangaId'];
+            chapters.add(SourceChapter(
+              url: '${s.baseUrl}/read/$id/${c['id']}',
+              name: clean('${c['title']}'),
+              number: n,
+              scanlator: sid == null ? null : scans['$sid'],
+            ));
+          }
+          chapters.sort((a, b) => (b.number ?? 0).compareTo(a.number ?? 0));
+          final authors = ((page['authors'] as List?) ?? const []).cast<Map>();
+          String join(bool artist) => authors.where((a) => (a['type'] == 'Artist') == artist).map((a) => '${a['name']}').join(', ');
+          final type = page['type'] as String?;
+          final st = '${page['status']}'.toLowerCase();
+          return SourceMangaDetails(
+            url: url,
+            title: clean('${page['title']}'),
+            thumbnailUrl: _atsuCdn(s, ((page['poster'] as Map?)?['largeImage']) as String?),
+            author: join(false).isEmpty ? null : join(false),
+            artist: join(true).isEmpty ? null : join(true),
+            description: page['synopsis'] as String?,
+            genres: {
+              if (type != null) type == 'Manwha' ? 'Manhwa' : type,
+              for (final g in ((page['genres'] as List?) ?? const []).cast<Map>()) '${g['name']}',
+              for (final g in ((page['tags'] as List?) ?? const []).cast<Map>()) '${g['name']}',
+            }.toList(),
+            status: switch (st) {
+              'ongoing' => SourceMangaStatus.ongoing,
+              'completed' => SourceMangaStatus.completed,
+              'hiatus' => SourceMangaStatus.hiatus,
+              'canceled' => SourceMangaStatus.cancelled,
+              _ => SourceMangaStatus.unknown,
+            },
+            chapters: chapters,
+          );
+        },
+        pagesFn: (s, ch) async {
+          final parts = ch.url.split('/read/').last.split('/');
+          final r = await s.fetchJson(Uri.https(Uri.parse(s.baseUrl).host, '/api/read/chapter', {'mangaId': parts[0], 'chapterId': parts[1]})) as Map;
+          final pages = ((r['readChapter'] as Map)['pages'] as List).cast<Map>();
+          return [for (final p in pages) _atsuCdn(s, '${p['image']}')!];
+        },
+      ),
       SingleSeriesSource(
         id: 'en.megatokyo',
         name: 'Megatokyo',
@@ -1326,4 +1406,31 @@ Future<MangaPage> _tntList(HttpSource s, String url) async {
     out.add(SourceManga(url: href, title: title, thumbnailUrl: attrAbs(a.querySelector('img'), 'src', res.url)));
   }
   return MangaPage(out, hasNextPage: res.document.querySelector('a[title=Next]') != null);
+}
+
+String? _atsuCdn(HttpSource s, String? path) {
+  if (path == null) return null;
+  return Uri.parse('https://cdn.${Uri.parse(s.baseUrl).host}/static/').resolve(path).toString();
+}
+
+SourceManga _atsuManga(HttpSource s, Map m) {
+  final big = m['largeImage'] as String?;
+  final poster = m['posterMedium'] as String?;
+  return SourceManga(
+    url: '${s.baseUrl}/manga/${m['id']}',
+    title: clean('${m['title']}'),
+    thumbnailUrl: _atsuCdn(s, big ?? poster?.replaceFirst('-medium.', '-large.')),
+  );
+}
+
+Future<MangaPage> _atsuBrowse(HttpSource s, String path, int page, {bool daily = false}) async {
+  final r = await s.fetchJson(Uri.https(Uri.parse(s.baseUrl).host, '/api/home2/$path', {
+    'offset': '${(page - 1) * 40}',
+    'limit': '40',
+    'types': 'Manga,Manwha,Manhua,OEL',
+    'mediums': 'Comic',
+    if (daily) 'timeframe': 'daily',
+  })) as Map;
+  final items = (r['items'] as List).cast<Map>();
+  return MangaPage([for (final m in items) _atsuManga(s, m)], hasNextPage: items.length == 40);
 }
