@@ -133,68 +133,8 @@ List<MangaSource> adultFn() => [
           return out.toSet().toList();
         },
       ),
-      FnSource(
-        id: 'en.webtoonhentai',
-        name: 'Webtoon Hentai (unoriginal)',
-        baseUrl: 'https://webtoonhentai.org',
-        contentWarning: ContentWarning.nsfw,
-        popularFn: (s, page) async {
-          if (page > 1) return const MangaPage([], hasNextPage: false);
-          final res = await s.fetchHtml(Uri.parse(s.baseUrl));
-          final items = <SourceManga>[];
-          final seen = <String>{};
-          for (final a in res.document.querySelectorAll('a.card[href^="/webtoon/"]')) {
-            final href = attrAbs(a, 'href', res.url);
-            if (href == null || !seen.add(href)) continue;
-            final alt = a.querySelector('img')?.attributes['alt'] ?? '';
-            items.add(SourceManga(
-              url: href,
-              title: clean(alt.replaceFirst(RegExp(r'\s+[–-]\s+read on .*$'), '')),
-              thumbnailUrl: _whCover(a.querySelector('img'), res.url),
-            ));
-          }
-          return MangaPage(items, hasNextPage: false);
-        },
-        searchFn: (s, page, q) async {
-          if (page > 1) return const MangaPage([], hasNextPage: false);
-          final json = await s.fetchJson(Uri.parse('${s.baseUrl}/api-proxy/v1/search').replace(queryParameters: {'q': q}));
-          return MangaPage([
-            for (final e in ((json as Map)['data'] as List).cast<Map>())
-              SourceManga(url: '${s.baseUrl}${e['href']}', title: '${e['title']}', thumbnailUrl: '${e['cover']}'),
-          ], hasNextPage: false);
-        },
-        detailsFn: (s, url) async {
-          final res = await s.fetchHtml(Uri.parse(url));
-          final doc = res.document;
-          final title = clean(doc.querySelector('h1')?.text).replaceFirst(RegExp(r'^18\+\s*'), '');
-          if (title.isEmpty) throw SourceException(SourceErrorKind.parse);
-          final chapters = <SourceChapter>[];
-          final seen = <String>{};
-          for (final a in doc.querySelectorAll('a[href*="/read/"]')) {
-            final href = attrAbs(a, 'href', res.url);
-            if (href == null || !seen.add(href)) continue;
-            final n = RegExp(r'chapter-([\d.]+)').firstMatch(href)?[1];
-            chapters.add(SourceChapter(url: href, name: 'Chapter ${n ?? ''}'.trim(), number: n == null ? null : double.tryParse(n)));
-          }
-          chapters.sort((a, b) => (b.number ?? 0).compareTo(a.number ?? 0));
-          return SourceMangaDetails(
-            url: url,
-            title: title,
-            thumbnailUrl: _whCover(doc.querySelector('.cover img, img'), res.url),
-            description: clean(doc.querySelector('meta[name=description]')?.attributes['content']),
-            chapters: chapters,
-          );
-        },
-        pagesFn: (s, ch) async {
-          // /read/<slug>/chapter-N  ->  sumber asli manhwa18.cc/webtoon/<slug>/chapter-N
-          final seg = Uri.parse(ch.url).pathSegments;
-          final src = 'https://manhwa18.cc/webtoon/${seg[seg.length - 2]}/${seg.last}';
-          final json = await s.fetchJson(Uri.parse('${s.baseUrl}/api-proxy/v1/chapter').replace(queryParameters: {'url': src}));
-          final pages = [for (final p in ((json as Map)['pages'] as List)) '$p'];
-          if (pages.isEmpty) throw SourceException(SourceErrorKind.parse);
-          return pages;
-        },
-      ),
+      _wth('en.webtoonhentai', 'Webtoon Hentai (unoriginal)', 'https://webtoonhentai.org'),
+      _wth('en.manhwax', 'ManhwaX (unoriginal)', 'https://manhwax.pro'),
       FnSource(
         id: 'en.milftoon',
         name: 'Milftoon',
@@ -367,3 +307,68 @@ Future<MangaPage> _m8List(HttpSource s, String url, int page) async {
   }
   return MangaPage(items, hasNextPage: false);
 }
+
+/// Mesin 'webtoon hentai' (api-proxy ke manhwa18.cc): dipakai Webtoon Hentai dan ManhwaX.
+FnSource _wth(String id, String name, String baseUrl) =>
+    FnSource(
+      id: id,
+      name: name,
+      baseUrl: baseUrl,
+      contentWarning: ContentWarning.nsfw,
+      popularFn: (s, page) async {
+        if (page > 1) return const MangaPage([], hasNextPage: false);
+        final res = await s.fetchHtml(Uri.parse(s.baseUrl));
+        final items = <SourceManga>[];
+        final seen = <String>{};
+        for (final a in res.document.querySelectorAll('a[href^="/webtoon/"]')) {
+          final href = attrAbs(a, 'href', res.url);
+          if (href == null || a.querySelector('img') == null || !seen.add(href)) continue;
+          final alt = a.attributes['title'] ?? a.querySelector('img')?.attributes['alt'] ?? '';
+          items.add(SourceManga(
+            url: href,
+            title: clean(alt.replaceFirst(RegExp(r'\s+[–-]\s+read on .*$'), '').replaceFirst(RegExp(r'\s+cover$'), '')),
+            thumbnailUrl: _whCover(a.querySelector('img'), res.url),
+          ));
+        }
+        return MangaPage(items, hasNextPage: false);
+      },
+      searchFn: (s, page, q) async {
+        if (page > 1) return const MangaPage([], hasNextPage: false);
+        final json = await s.fetchJson(Uri.parse('${s.baseUrl}/api-proxy/v1/search').replace(queryParameters: {'q': q}));
+        return MangaPage([
+          for (final e in ((json as Map)['data'] as List).cast<Map>())
+            SourceManga(url: '${s.baseUrl}${e['href']}', title: '${e['title']}', thumbnailUrl: '${e['cover']}'),
+        ], hasNextPage: false);
+      },
+      detailsFn: (s, url) async {
+        final res = await s.fetchHtml(Uri.parse(url));
+        final doc = res.document;
+        final title = clean(doc.querySelector('h1')?.text).replaceFirst(RegExp(r'^18\+\s*'), '');
+        if (title.isEmpty) throw SourceException(SourceErrorKind.parse);
+        final chapters = <SourceChapter>[];
+        final seen = <String>{};
+        for (final a in doc.querySelectorAll('a[href*="/chapter-"]')) {
+          final href = attrAbs(a, 'href', res.url);
+          if (href == null || !seen.add(href)) continue;
+          final n = RegExp(r'chapter-([\d.]+)').firstMatch(href)?[1];
+          chapters.add(SourceChapter(url: href, name: 'Chapter ${n ?? ''}'.trim(), number: n == null ? null : double.tryParse(n)));
+        }
+        chapters.sort((a, b) => (b.number ?? 0).compareTo(a.number ?? 0));
+        return SourceMangaDetails(
+          url: url,
+          title: title,
+          thumbnailUrl: _whCover(doc.querySelector('.cover img, img'), res.url),
+          description: clean(doc.querySelector('meta[name=description]')?.attributes['content']),
+          chapters: chapters,
+        );
+      },
+      pagesFn: (s, ch) async {
+        // /read/<slug>/chapter-N  ->  sumber asli manhwa18.cc/webtoon/<slug>/chapter-N
+        final seg = Uri.parse(ch.url).pathSegments;
+        final src = 'https://manhwa18.cc/webtoon/${seg[seg.length - 2]}/${seg.last}';
+        final json = await s.fetchJson(Uri.parse('${s.baseUrl}/api-proxy/v1/chapter').replace(queryParameters: {'url': src}));
+        final pages = [for (final p in ((json as Map)['pages'] as List)) '$p'];
+        if (pages.isEmpty) throw SourceException(SourceErrorKind.parse);
+        return pages;
+      },
+    );

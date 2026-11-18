@@ -134,4 +134,53 @@ List<MangaSource> adultChapters() => [
           return [for (final k in pages.keys.toList()..sort()) pages[k]!];
         },
       ),
+      ChapterSource(
+        id: 'en.manhwalike',
+        name: 'Manhwalike',
+        baseUrl: 'https://manhwalike.com',
+        popularUrl: (b, p) => p > 1 ? '$b/?page=$p' : '$b/',
+        searchUrl: (b, p, q) => '$b/?s=${Uri.encodeQueryComponent(q)}${p > 1 ? '&page=$p' : ''}',
+        cardSel: 'div.item',
+        cardLinkSel: 'h3.title a',
+        cardTitleSel: 'h3.title a',
+        titleSel: 'h1',
+        coverSel: 'meta[property="og:image"]',
+        tagSel: 'a[href^="/manga-genre-"]',
+        chapterSel: r'a[href*="-chapter-"][href*="-ch"]',
+        imagesOf: (d, u) {
+          final folder = RegExp(r'-(chapter-[\d-]+?)-ch\d+$').firstMatch(u.path)?[1];
+          final pages = <int, String>{};
+          for (final m in RegExp(r'https://stcdn\.manhwalike\.com/images/manga/[^"\s\\]+/(\d+)\.\w+')
+              .allMatches(d.outerHtml.replaceAll(r'\/', '/'))) {
+            if (folder != null && !m[0]!.contains('/$folder/')) continue;
+            pages[int.parse(m[1]!)] ??= m[0]!;
+          }
+          return [for (final k in pages.keys.toList()..sort()) pages[k]!];
+        },
+      ),
+      ChapterSource(
+        id: 'en.hentaifull',
+        name: 'HentaiFull',
+        baseUrl: 'https://hentaifull.net',
+        popularUrl: (b, p) => p > 1 ? '$b/?page=$p' : '$b/',
+        searchUrl: (b, p, q) => '$b/search?q=${Uri.encodeQueryComponent(q)}${p > 1 ? '&page=$p' : ''}',
+        cardSel: 'div.item',
+        cardLinkSel: '.hentai-cover a, a[href^="/hentai/"]',
+        cardTitleSel: 'img',
+        cardThumbSel: 'img',
+        titleSel: 'h1',
+        coverSel: 'meta[property="og:image"]',
+        tagSel: 'a.tag, a.tag-link',
+        chapterSel: 'li.citem',
+        imagesOf: (d, u) {
+          final folder = RegExp(r'/(chapter-[\d-]+?)-ch\d+$').firstMatch(u.path)?[1];
+          final pages = <int, String>{};
+          for (final m in RegExp(r'https://img\.hentaifull\.net/images/manga/[^"\s\\]+/(\d+)\.\w+')
+              .allMatches(d.outerHtml.replaceAll(r'\/', '/'))) {
+            if (folder != null && !m[0]!.contains('/$folder/')) continue;
+            pages[int.parse(m[1]!)] ??= m[0]!;
+          }
+          return [for (final k in pages.keys.toList()..sort()) pages[k]!];
+        },
+      ),
     ];

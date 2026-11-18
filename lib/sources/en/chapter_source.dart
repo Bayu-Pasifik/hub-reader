@@ -34,6 +34,7 @@ class ChapterSource extends HttpSource {
     this.chapterNameSel,
     this.reverseChapters = false,
     this.thumbFromUrl,
+    this.cardHref,
     this.cleanTitle,
     this.localSearch = false,
     this.contentWarning = ContentWarning.nsfw,
@@ -79,6 +80,9 @@ class ChapterSource extends HttpSource {
   /// Sampul daftar bila kartu tidak memuat gambar: dibangun dari URL seri.
   final String? Function(String seriesUrl)? thumbFromUrl;
 
+  /// Hanya kartu yang URL-nya cocok pola ini (menyaring tautan menu/navigasi).
+  final RegExp? cardHref;
+
   /// Rapikan judul seri di halaman detail (mis. buang awalan SEO).
   final String Function(String title)? cleanTitle;
 
@@ -93,7 +97,7 @@ class ChapterSource extends HttpSource {
     for (final card in res.document.querySelectorAll(cardSel)) {
       final link = card.localName == 'a' && card.attributes.containsKey('href') ? card : card.querySelector(cardLinkSel);
       final href = attrAbs(link, 'href', res.url);
-      if (link == null || href == null || !seen.add(href)) continue;
+      if (link == null || href == null || (cardHref != null && !cardHref!.hasMatch(href)) || !seen.add(href)) continue;
       final title = clean(cardTitleSel == null
           ? (link.attributes['title'] ?? link.attributes['aria-label'] ?? (link.text.trim().isEmpty ? card.querySelector('img')?.attributes['alt'] : link.text))
           : _text(card.querySelector(cardTitleSel!)));
