@@ -1,3 +1,21 @@
+## Hub Reader v3.4.0
+
+### Sumber baru
+- 15 sumber bahasa Inggris baru: **Sacachispa**, **NexComic**, **Schale Scans**, **Myth Toons**, **Bbato**, **Inkora**, **MyMangaList**, **KaliScans**, **StreameX**, serta situs dewasa **MyAdultComics**, **HentaiKun**, **Pornhwa.me**, **BabeSource**, **GirlsTop**, dan **Gensura**.
+- Sebelumnya di sesi yang sama: MangaFox, Mangahere, Mangatown, MangaHome, WebtoonClub, Toon Hub, Komix, LustToon, MangaMelon, Tapas, The Duck Webcomics, Dynasty Scans, HentaiFC, HentaiNexus, Manhwa18, Paradise Scans, dan Pornhwa18.
+
+### Tampilan
+- Ikon aplikasi baru bergaya neo-brutalist (latar krem, buku kuning, bayangan pink).
+
+### Catatan
+- KaliScans: host gambarnya tidak terjangkau dari jaringan pengembang, jadi unduh gambar belum teruji.
+- Bbato: sebagian judul teratas belum punya bab ("Coming Soon") di situsnya.
+- Daftar sumber yang belum bisa di-port beserta alasannya ada di `SOURCES_NOT_PORTED.md`.
+- Pasang APK yang sesuai ABI HP (arm64-v8a untuk kebanyakan HP).
+- Pasang di atas versi lama hanya bila ditandatangani dengan kunci yang sama.
+
+---
+
 ## Hub Reader v3.3.0
 
 ### Sumber baru
