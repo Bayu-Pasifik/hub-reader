@@ -2,6 +2,7 @@
 // keiyoushi/extensions-source (Apache-2.0): src/en/*.
 
 import 'package:dio/dio.dart';
+import 'package:html/dom.dart';
 import 'package:html/parser.dart' as html_parser;
 
 import '../html_utils.dart';
@@ -298,6 +299,234 @@ List<MangaSource> safeExtra() => [
           return imagesFrom(res.document, res.url, '.post-content img[src*="googleusercontent"]', ['src']);
         },
       ),
+      FnSource(
+        id: 'en.kappabeast',
+        name: 'Kappa Beast',
+        baseUrl: 'https://kappabeast.com',
+        contentWarning: ContentWarning.safe,
+        popularFn: (s, page) => _kappaList(s, page, '', ''),
+        latestFn: (s, page) => _kappaList(s, page, '', 'updatedAt:desc'),
+        searchFn: (s, page, q) => _kappaList(s, page, q, ''),
+        detailsFn: (s, url) async {
+          final slug = Uri.parse(url).pathSegments.last;
+          final json = await s.fetchJson(_kappaApi(s, 'mangas', {
+            r'filters[slug][$eq]': slug,
+            'populate[media][populate]': '*',
+            'populate[category][fields][0]': 'name',
+            'populate[chapters][fields][0]': 'number',
+            'populate[chapters][fields][1]': 'title',
+            'populate[chapters][fields][2]': 'createdAt',
+            'populate[chapters][sort][0]': 'number:desc',
+            'pagination[pageSize]': '1',
+          })) as Map;
+          final d = ((json['data'] as List).first) as Map;
+          final m = _kappaManga(s, d);
+          final chapters = <SourceChapter>[];
+          for (final c in ((d['chapters'] as List?) ?? const []).cast<Map>()) {
+            final n = c['number'] as num;
+            final shown = n % 1 == 0 ? n.toInt().toString() : n.toString();
+            final title = clean('${c['title'] ?? ''}');
+            chapters.add(SourceChapter(
+              url: '${s.baseUrl}/reader/$slug/${c['number']}#${d['documentId']}',
+              name: 'Chapter $shown${title.isEmpty || title == 'Chapter $shown' ? '' : ' - $title'}',
+              number: n.toDouble(),
+            ));
+          }
+          return SourceMangaDetails(
+            url: m.url,
+            title: m.title,
+            thumbnailUrl: m.thumbnailUrl,
+            description: d['description'] as String?,
+            author: d['author'] as String?,
+            artist: d['artist'] as String?,
+            genres: [for (final c in ((d['category'] as List?) ?? const []).cast<Map>()) '${c['name']}'],
+            status: switch (d['manga_status']) {
+              'Ongoing' => SourceMangaStatus.ongoing,
+              'Completed' => SourceMangaStatus.completed,
+              'Hiatus' => SourceMangaStatus.hiatus,
+              _ => SourceMangaStatus.unknown,
+            },
+            chapters: chapters,
+          );
+        },
+        pagesFn: (s, ch) async {
+          final u = Uri.parse(ch.url);
+          final json = await s.fetchJson(_kappaApi(s, 'chapters', {
+            r'filters[manga][documentId][$eq]': u.fragment,
+            r'filters[number][$eq]': u.pathSegments[u.pathSegments.length - 1],
+            'pagination[pageSize]': '1',
+          })) as Map;
+          final data = json['data'] as List;
+          final htmlText = data.isEmpty ? null : (data.first as Map)['htmlContent'] as String?;
+          if (htmlText == null) return const [];
+          return [
+            for (final a in html_parser.parse(htmlText).querySelectorAll('div.separator > a[href]'))
+              _kappaFull(a.attributes['href']!),
+          ];
+        },
+      ),
+      FnSource(
+        id: 'en.comicland',
+        name: 'ComicLand',
+        baseUrl: 'https://comicland.org',
+        contentWarning: ContentWarning.safe,
+        popularFn: (s, page) => _comiclandList(s, '/comics/popular', page, {}),
+        latestFn: (s, page) => _comiclandList(s, '/comics', page, {'status': 'ongoing'}),
+        searchFn: (s, page, q) => _comiclandList(s, '/comic/search', page, {'q': q}),
+        detailsFn: (s, url) async {
+          final slug = url.split('/').where((e) => e.isNotEmpty).last;
+          final d = await _comiclandData(s, '/comic/detail', {'slug': slug}) as Map;
+          String names(String k) => [for (final e in ((d[k] as List?) ?? const []).cast<Map>()) '${e['name']}'].join(', ');
+          final chapters = [
+            for (final c in ((d['chapters'] as List?) ?? const []).cast<Map>())
+              SourceChapter(
+                url: '${s.baseUrl}/comic/$slug/chapter/${'${c['chapter_index']}'.replaceFirst(RegExp(r'\.0$'), '')}',
+                name: '${c['title']}',
+                number: (c['chapter_index'] as num?)?.toDouble(),
+              ),
+          ].reversed.toList();
+          return SourceMangaDetails(
+            url: url,
+            title: '${d['title']}',
+            thumbnailUrl: d['cover_url'] as String?,
+            description: d['description'] as String?,
+            author: names('authors'),
+            artist: names('artists'),
+            genres: [for (final e in ((d['genres'] as List?) ?? const []).cast<Map>()) '${e['name']}'],
+            chapters: chapters,
+          );
+        },
+        pagesFn: (s, ch) async {
+          final slug = ch.url.split('/comic/').last.split('/chapter/').first;
+          final idx = ch.url.split('/chapter/').last;
+          final d = await _comiclandData(s, '/chapter/pages_by_index', {'slug': slug, 'index': idx}) as Map;
+          return [for (final p in (d['pages'] as List? ?? const [])) '$p'];
+        },
+      ),
+      FnSource(
+        id: 'en.tinyview',
+        name: 'Tinyview',
+        baseUrl: 'https://tinyview.com',
+        contentWarning: ContentWarning.safe,
+        popularFn: (s, page) async => page > 1 ? const MangaPage([], hasNextPage: false) : _tinyDirectory(s, ''),
+        searchFn: (s, page, q) async => page > 1 ? const MangaPage([], hasNextPage: false) : _tinyDirectory(s, q),
+        detailsFn: (s, url) async {
+          final path = url.replaceFirst(s.baseUrl, '');
+          final comic = await _tinyComic(s, path);
+          final panels = [for (final p in (comic['panels'] as List).cast<Map>()) p];
+          final series = path.replaceFirst('/', '');
+          final now = DateTime.now().toUtc();
+          final comics = <Map>[];
+          final seen = <String>{};
+          for (final p in panels) {
+            final a = p['action'] as String?;
+            if (a == null || !a.startsWith('/$series/') || !a.endsWith('/index.json')) continue;
+            if ((p['actionType'] as String?)?.isNotEmpty == true || p['inAppProducts'] != null) continue;
+            final when = DateTime.tryParse('${p['datetime']}');
+            if (when != null && when.isAfter(now)) continue;
+            if (seen.add(a)) comics.add(p);
+          }
+          final cover = panels.where((p) => p['image'] != null && p['action'] == null).firstOrNull;
+          return SourceMangaDetails(
+            url: url,
+            title: clean('${comic['title']}'),
+            thumbnailUrl: cover == null ? null : _tinyImage(s, path, '${cover['image']}'),
+            description: clean(html_parser.parseFragment('${comic['description'] ?? ''}').text),
+            chapters: [
+              for (var i = 0; i < comics.length; i++)
+                SourceChapter(
+                  url: '${s.baseUrl}${(comics[i]['action'] as String).replaceFirst('/index.json', '')}',
+                  name: (comics[i]['showTo'] ?? comics[i]['show-to']) == 'subscribers-only'
+                      ? '🔒 ${clean('${comics[i]['title']}')}'
+                      : clean('${comics[i]['title']}'),
+                  number: (comics.length - i).toDouble(),
+                ),
+            ],
+          );
+        },
+        pagesFn: (s, ch) async {
+          final path = ch.url.replaceFirst(s.baseUrl, '');
+          final comic = await _tinyComic(s, path);
+          if (comic['show-to'] == 'subscribers-only') return const [];
+          return [
+            for (final p in (comic['panels'] as List).cast<Map>())
+              if (p['image'] != null && p['action'] == null && p['template'] != 'bonus') _tinyImage(s, path, '${p['image']}'),
+          ];
+        },
+      ),
+      FnSource(
+        id: 'en.manhwaz',
+        name: 'ManhwaZ',
+        baseUrl: 'https://manhwaz.cc',
+        contentWarning: ContentWarning.safe,
+        popularFn: (s, page) async {
+          if (page > 1) return const MangaPage([], hasNextPage: false);
+          final res = await s.fetchHtml(Uri.parse(s.baseUrl));
+          return MangaPage(_manhwazCards(res.document, res.url, 'article.popular-card'), hasNextPage: false);
+        },
+        latestFn: (s, page) async {
+          final res = await s.fetchHtml(Uri.parse('${s.baseUrl}/?page=$page'));
+          return MangaPage(_manhwazCards(res.document, res.url, 'article.latest-card'),
+              hasNextPage: res.document.querySelector('nav.pagination a[aria-label="Next page"]') != null);
+        },
+        searchFn: (s, page, q) async {
+          final res = await s.fetchHtml(Uri.parse('${s.baseUrl}/search?s=${Uri.encodeQueryComponent(q)}&page=$page'));
+          return MangaPage(_manhwazCards(res.document, res.url, 'article.popular-card'),
+              hasNextPage: res.document.querySelector('nav.pagination a[aria-label="Next page"]') != null);
+        },
+        detailsFn: (s, url) async {
+          var res = await s.fetchHtml(Uri.parse(url));
+          final first = res.document;
+          final facts = <String, Element>{};
+          for (final row in first.querySelectorAll('div.series-facts dl > div')) {
+            final dt = row.querySelector('dt');
+            final dd = row.querySelector('dd');
+            if (dt != null && dd != null) facts[clean(dt.text).toLowerCase()] = dd;
+          }
+          final chapters = <SourceChapter>[];
+          final seen = <String>{};
+          var doc = first;
+          for (var i = 0; i < 80; i++) {
+            for (final a in doc.querySelectorAll('a.release-row')) {
+              final href = attrAbs(a, 'href', res.url);
+              if (href == null || !seen.add(href)) continue;
+              final label = clean(a.querySelector('strong')?.text);
+              chapters.add(SourceChapter(
+                url: href,
+                name: label,
+                number: double.tryParse(RegExp(r'(\d+(?:\.\d+)?)').firstMatch(label)?[1] ?? ''),
+              ));
+            }
+            final next = attrAbs(doc.querySelector('nav.pagination a[aria-label="Next page"]'), 'href', res.url);
+            if (next == null) break;
+            res = await s.fetchHtml(Uri.parse(next));
+            doc = res.document;
+          }
+          final h1 = first.querySelector('section.profile-manga h1');
+          final statusText = clean(facts['status']?.text).toLowerCase();
+          return SourceMangaDetails(
+            url: url,
+            title: clean(h1 == null ? '' : (h1.nodes.whereType<Text>().map((t) => t.text).join().trim().isEmpty ? h1.text : h1.nodes.whereType<Text>().map((t) => t.text).join())),
+            thumbnailUrl: attrAbs(first.querySelector('div.series-cover-frame img'), 'src', res.url),
+            author: clean(facts['author(s)']?.text),
+            description: clean(first.querySelector('p.series-summary')?.text),
+            genres: [for (final a in facts['genre(s)']?.querySelectorAll('a') ?? <Element>[]) clean(a.text)],
+            status: statusText.contains('ongoing')
+                ? SourceMangaStatus.ongoing
+                : statusText.contains('completed')
+                    ? SourceMangaStatus.completed
+                    : SourceMangaStatus.unknown,
+            chapters: chapters,
+          );
+        },
+        pagesFn: (s, ch) async {
+          final res = await s.fetchHtml(Uri.parse(ch.url));
+          return [
+            for (final img in res.document.querySelectorAll('div.reader-pages figure.reader-page-image img'))
+              if ((attrAbs(img, 'src', res.url) ?? attrAbs(img, 'data-src', res.url)) case final u? when u.isNotEmpty) u,
+          ];
+        },
+      ),
       SingleSeriesSource(
         id: 'en.megatokyo',
         name: 'Megatokyo',
@@ -538,4 +767,97 @@ Future<MangaPage> _nuxPage(HttpSource s, int page, String q) async {
       if (lq.isEmpty || e.title.toLowerCase().contains(lq))
         SourceManga(url: e.url, title: e.title, thumbnailUrl: e.thumbnailUrl),
   ], hasNextPage: false);
+}
+
+Uri _kappaApi(HttpSource s, String path, Map<String, String> q) =>
+    Uri.https('strapi.${Uri.parse(s.baseUrl).host}', '/api/$path', q);
+
+SourceManga _kappaManga(HttpSource s, Map d) {
+  final media = (d['media'] as List?)?.cast<Map>();
+  final cover = media == null || media.isEmpty ? null : (media.first['coverImage'] as Map?)?['url'] as String?;
+  return SourceManga(
+    url: '${s.baseUrl}/series/${d['slug']}#${d['documentId']}',
+    title: clean('${d['title']}'),
+    thumbnailUrl: cover == null ? null : 'https://strapi.${Uri.parse(s.baseUrl).host}$cover',
+  );
+}
+
+Future<MangaPage> _kappaList(HttpSource s, int page, String query, String sort) async {
+  final json = await s.fetchJson(_kappaApi(s, 'mangas', {
+    if (query.isNotEmpty) r'filters[title][$containsi]': query,
+    'pagination[page]': '$page',
+    'pagination[pageSize]': '20',
+    'populate[media][populate]': '*',
+    'populate[category][fields][0]': 'name',
+    if (sort.isNotEmpty) 'sort[0]': sort,
+  })) as Map;
+  final p = (json['meta'] as Map)['pagination'] as Map;
+  return MangaPage(
+    [for (final d in (json['data'] as List).cast<Map>()) _kappaManga(s, d)],
+    hasNextPage: (p['page'] as int) < (p['pageCount'] as int),
+  );
+}
+
+String _kappaFull(String href) {
+  final u = Uri.parse(href);
+  final seg = [...u.pathSegments];
+  if (seg.length > 4) seg[4] = 's0';
+  return u.replace(pathSegments: seg).toString();
+}
+
+Future<Object?> _comiclandData(HttpSource s, String path, Map<String, String> q) async {
+  final json = await s.fetchJson(Uri.https('api.comicland.org', '/api$path', q)) as Map;
+  return json['data'];
+}
+
+Future<MangaPage> _comiclandList(HttpSource s, String path, int page, Map<String, String> q) async {
+  final data = await _comiclandData(s, path, {...q, 'offset': '${(page - 1) * 20}', 'limit': '20'}) as Map?;
+  final list = ((data?['list'] ?? data?['items']) as List? ?? const []).cast<Map>();
+  return MangaPage(
+    [
+      for (final c in list)
+        SourceManga(url: '${s.baseUrl}/comic/${c['slug']}', title: clean('${c['title']}'), thumbnailUrl: c['cover_url'] as String?),
+    ],
+    hasNextPage: data?['has_more'] as bool? ?? list.length == 20,
+  );
+}
+
+String _tinyCdn(HttpSource s) => 'https://cdn.${Uri.parse(s.baseUrl).host}';
+
+Future<Map> _tinyComic(HttpSource s, String path) async =>
+    ((await s.fetchJson(Uri.parse('${_tinyCdn(s)}$path/index.json'))) as Map)['comics'] as Map;
+
+String _tinyImage(HttpSource s, String path, String image) => Uri.parse('${_tinyCdn(s)}$path/').resolve(image).toString();
+
+Future<MangaPage> _tinyDirectory(HttpSource s, String query) async {
+  final dir = await _tinyComic(s, '/tinyview/comic-series-directory');
+  final q = query.trim().toLowerCase();
+  final out = <SourceManga>[];
+  for (final p in (dir['panels'] as List).cast<Map>()) {
+    final action = p['action'] as String?;
+    if (action == null || p['title'] == null) continue;
+    if (q.isNotEmpty && !'${p['title']}'.toLowerCase().contains(q) && !'${p['description'] ?? ''}'.toLowerCase().contains(q)) continue;
+    out.add(SourceManga(
+      url: '${s.baseUrl}${action.replaceFirst('/index.json', '')}',
+      title: clean('${p['title']}'),
+      thumbnailUrl: p['image'] == null ? null : Uri.parse('${_tinyCdn(s)}/').resolve('${p['image']}').toString(),
+    ));
+  }
+  return MangaPage(out, hasNextPage: false);
+}
+
+List<SourceManga> _manhwazCards(Document doc, Uri base, String sel) {
+  final out = <SourceManga>[];
+  for (final card in doc.querySelectorAll(sel)) {
+    final a = card.querySelector('h3 a');
+    final href = attrAbs(a, 'href', base);
+    if (a == null || href == null) continue;
+    final img = card.querySelector('img');
+    out.add(SourceManga(
+      url: href,
+      title: clean(a.text),
+      thumbnailUrl: attrAbs(img, 'src', base) ?? attrAbs(img, 'data-src', base),
+    ));
+  }
+  return out;
 }
