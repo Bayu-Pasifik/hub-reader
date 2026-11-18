@@ -625,6 +625,79 @@ List<MangaSource> safeExtra() => [
           return [for (final p in ((d['chapter_images'] as List?) ?? const []).cast<Map>()) '${p['image']}'];
         },
       ),
+      FnSource(
+        id: 'en.chikari',
+        name: 'Chikari',
+        baseUrl: 'https://chikari.moe',
+        contentWarning: ContentWarning.mixed,
+        popularFn: (s, page) => _chikariList(s, page, '', 'popular'),
+        latestFn: (s, page) => _chikariList(s, page, '', 'latest'),
+        searchFn: (s, page, q) => _chikariList(s, page, q, 'popular'),
+        detailsFn: (s, url) async {
+          final slug = url.split('/').where((e) => e.isNotEmpty).last;
+          final d = await s.fetchJson(Uri.parse('${s.baseUrl}/api/series/$slug')) as Map;
+          final authors = ((d['authors'] as List?) ?? const []).cast<Map>();
+          String role(bool artist) =>
+              authors.where((a) => (a['role'] == 'artist') == artist).map((a) => '${a['name']}').join(', ');
+          final chapters = <SourceChapter>[];
+          var total = 1 << 30;
+          for (var off = 0; off < total; off += 200) {
+            final r = await s.fetchJson(Uri.parse('${s.baseUrl}/api/series/$slug/chapters?order=desc&limit=200&offset=$off')) as Map;
+            total = r['total'] as int;
+            final items = (r['items'] as List).cast<Map>();
+            if (items.isEmpty) break;
+            for (final c in items) {
+              final n = (c['number'] as num?)?.toDouble();
+              final token = n == null ? 'oneshot' : '$n'.replaceFirst(RegExp(r'\.0$'), '');
+              final title = clean('${c['title'] ?? ''}').replaceFirst(RegExp(r'^(?:chapter|ch\.?)\s*[\d.]+\s*[-:.]?\s*', caseSensitive: false), '');
+              final name = '${n == null ? 'Oneshot' : 'Chapter $token'}${title.isEmpty ? '' : ': $title'}';
+              final scans = ((c['scans'] as List?) ?? const []).cast<Map>();
+              if (scans.isEmpty) {
+                chapters.add(SourceChapter(url: '${s.baseUrl}/series/$slug/$token', name: name, number: n));
+              } else {
+                for (final sc in scans) {
+                  chapters.add(SourceChapter(
+                    url: '${s.baseUrl}/series/$slug/$token?scan=${sc['slug']}',
+                    name: name,
+                    number: n,
+                    scanlator: '${sc['name']}',
+                  ));
+                }
+              }
+            }
+          }
+          return SourceMangaDetails(
+            url: url,
+            title: clean('${d['title']}'),
+            thumbnailUrl: d['cover_url'] as String?,
+            author: role(false).isEmpty ? null : role(false),
+            artist: role(true).isEmpty ? null : role(true),
+            description: d['description'] as String?,
+            genres: [
+              if (d['type'] is String) '${d['type']}',
+              for (final g in ((d['genres'] as List?) ?? const []).cast<Map>()) '${g['name']}',
+            ],
+            status: switch (d['status']) {
+              'releasing' => SourceMangaStatus.ongoing,
+              'completed' => SourceMangaStatus.completed,
+              'hiatus' => SourceMangaStatus.hiatus,
+              'cancelled' => SourceMangaStatus.cancelled,
+              _ => SourceMangaStatus.unknown,
+            },
+            chapters: chapters,
+          );
+        },
+        pagesFn: (s, ch) async {
+          final u = Uri.parse(ch.url);
+          final seg = u.pathSegments;
+          final scan = u.queryParameters['scan'];
+          final r = await s.fetchJson(
+            Uri.parse('${s.baseUrl}/api/series/${seg[1]}/chapters/${seg[2]}${scan == null ? '' : '?scan=$scan'}'),
+            headers: {'Referer': ch.url},
+          ) as Map;
+          return [for (final p in (r['pages'] as List? ?? const [])) '$p'];
+        },
+      ),
       SingleSeriesSource(
         id: 'en.megatokyo',
         name: 'Megatokyo',
@@ -1012,5 +1085,17 @@ Future<MangaPage> _mangadeList(HttpSource s, int page, String query, String sort
         ),
     ],
     hasNextPage: int.parse('${d['page']}') < (d['totalPage'] as int),
+  );
+}
+
+Future<MangaPage> _chikariList(HttpSource s, int page, String query, String sort) async {
+  final r = await s.fetchJson(Uri.parse(
+      '${s.baseUrl}/api/series?sort=$sort${query.isEmpty ? '' : '&q=${Uri.encodeQueryComponent(query)}'}&limit=36&offset=${(page - 1) * 36}')) as Map;
+  return MangaPage(
+    [
+      for (final c in (r['items'] as List).cast<Map>())
+        SourceManga(url: '${s.baseUrl}/series/${c['slug']}', title: clean('${c['title']}'), thumbnailUrl: c['cover_url'] as String?),
+    ],
+    hasNextPage: page * 36 < (r['total'] as int),
   );
 }
