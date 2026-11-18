@@ -371,4 +371,79 @@ FnSource _bbato() => FnSource(
       },
     );
 
-List<MangaSource> portsAa() => [_myadultcomics(), _schalescans(), _mythtoons(), _bbato()];
+// ------------------------------------------------------------------ Inkora
+
+const _inkApi = 'https://api.spacely.tech/manhwa/index';
+
+Future<MangaPage> _inkList(FnSource s, Uri uri) async {
+  final j = await s.fetchJson(uri, headers: const {'Accept': 'application/json'}) as Map;
+  return MangaPage([
+    for (final m in (j['results'] as List).cast<Map>())
+      SourceManga(url: '${s.baseUrl}/title/${m['id']}', title: '${m['title']}', thumbnailUrl: m['image'] as String?),
+  ], hasNextPage: j['hasNextPage'] == true);
+}
+
+FnSource _inkora() => FnSource(
+      id: 'en.inkora',
+      name: 'Inkora',
+      baseUrl: 'https://inkora.spacely.tech',
+      contentWarning: ContentWarning.mixed,
+      popularFn: (s, page) => _inkList(s, _u('$_inkApi/advanced-search').replace(queryParameters: {'page': '$page', 'per_page': '24', 'sort': 'follows', 'order': 'desc'})),
+      latestFn: (s, page) => _inkList(s, _u('$_inkApi/latest?page=$page')),
+      searchFn: (s, page, q) => _inkList(s, _u('$_inkApi/advanced-search').replace(queryParameters: {'page': '$page', 'per_page': '24', 'q': q, 'sort': 'follows', 'order': 'desc'})),
+      detailsFn: (s, url) async {
+        final id = _u(url).pathSegments.where((e) => e.isNotEmpty).last;
+        final d = await s.fetchJson(_u('$_inkApi/info/$id'), headers: const {'Accept': 'application/json'}) as Map;
+        final alts = [for (final a in (d['altTitles'] as List? ?? const [])) if (a != d['title']) '$a'];
+        final seen = <String>{};
+        final chapters = <SourceChapter>[];
+        void add(Map c) {
+          if (!seen.add('${c['id']}')) return;
+          final n = (c['chapterNumber'] as num?)?.toDouble();
+          final t = '${c['title'] ?? ''}'.trim();
+          chapters.add(SourceChapter(
+            url: '${s.baseUrl}/manhwa/$id/read/${c['id']}',
+            name: t.isNotEmpty ? t : 'Chapter ${n == null ? '?' : (n == n.roundToDouble() ? n.toInt() : n)}',
+            number: n ?? -1,
+            scanlator: (c['scanGroup'] as Map?)?['name'] as String?,
+            uploadedAt: DateTime.tryParse('${c['releaseDate']}'),
+          ));
+        }
+
+        for (final c in (d['chapters'] as List? ?? const []).cast<Map>()) {
+          add(c);
+          for (final v in (c['versions'] as List? ?? const []).cast<Map>()) {
+            add(v);
+          }
+        }
+        final desc = '${d['description'] ?? ''}'.trim();
+        return SourceMangaDetails(
+          url: url,
+          title: '${d['title']}',
+          thumbnailUrl: d['image'] as String?,
+          author: (d['authors'] as List? ?? const []).join(', '),
+          artist: (d['artists'] as List? ?? const []).join(', '),
+          genres: {
+            if (d['type'] != null) '${d['type']}',
+            for (final g in (d['genres'] as List? ?? const [])) '$g'.replaceAll('_', ' ').replaceFirstMapped(RegExp(r'^\w'), (m) => m[0]!.toUpperCase()),
+          }.toList(),
+          description: [if (desc.isNotEmpty) desc, if (alts.isNotEmpty) 'Alternative titles:\n${alts.join('\n')}'].join('\n\n'),
+          status: switch ('${d['status']}') {
+            'releasing' || 'ongoing' => SourceMangaStatus.ongoing,
+            'finished' || 'completed' => SourceMangaStatus.completed,
+            'on_hiatus' || 'hiatus' => SourceMangaStatus.hiatus,
+            'discontinued' || 'cancelled' => SourceMangaStatus.cancelled,
+            _ => SourceMangaStatus.unknown,
+          },
+          chapters: chapters,
+        );
+      },
+      pagesFn: (s, ch) async {
+        final id = _u(ch.url).pathSegments.last;
+        final j = await s.fetchJson(_u('$_inkApi/read/$id'), headers: const {'Accept': 'application/json'}) as Map;
+        final pages = (j['pages'] as List).cast<Map>()..sort((a, b) => (a['page'] as num).compareTo(b['page'] as num));
+        return [for (final p in pages) '${p['img']}'];
+      },
+    );
+
+List<MangaSource> portsAa() => [_myadultcomics(), _schalescans(), _mythtoons(), _bbato(), _inkora()];
