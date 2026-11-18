@@ -523,4 +523,98 @@ FnSource _kaliscans() => FnSource(
       },
     );
 
-List<MangaSource> portsAa() => [_myadultcomics(), _schalescans(), _mythtoons(), _bbato(), _inkora(), _kaliscans()];
+// ------------------------------------------------------------- MyMangaList
+
+Future<MangaPage> _mmlList(FnSource s, int page, Map<String, String> q) async {
+  final res = await s.fetchHtml(_u('${s.baseUrl}/advanced-search').replace(queryParameters: {'content_type': 'Series', ...q, 'page': '$page'}));
+  final out = <SourceManga>[];
+  for (final card in res.document.querySelectorAll('[data-results-feed] a.cardish')) {
+    final href = absUrl(res.url, card.attributes['href']);
+    if (href == null) continue;
+    out.add(SourceManga(url: href, title: clean(card.querySelector('.card-copy strong')?.text ?? ''), thumbnailUrl: attrAbs(card.querySelector('img'), 'src', res.url)));
+  }
+  final shell = res.document.querySelector('[data-search-results-shell]');
+  return MangaPage(out, hasNextPage: (shell?.attributes['data-next-page-url'] ?? '').isNotEmpty);
+}
+
+FnSource _mymangalist() => FnSource(
+      id: 'en.mymangalist',
+      name: 'MyMangaList',
+      baseUrl: 'https://www5.mymangalist.org',
+      contentWarning: ContentWarning.mixed,
+      popularFn: (s, page) => _mmlList(s, page, {'sort': 'popular'}),
+      latestFn: (s, page) => _mmlList(s, page, {'sort': 'newest'}),
+      searchFn: (s, page, q) => _mmlList(s, page, {'q': q}),
+      detailsFn: (s, url) async {
+        final res = await s.fetchHtml(_u(url));
+        final d = res.document;
+        String? meta(String label) {
+          for (final c in d.querySelectorAll('.meta-grid .meta-card')) {
+            if (clean(c.querySelector('small')?.text) == label) {
+              final v = clean(c.querySelector('strong')?.text);
+              return (v.isEmpty || v == '-') ? null : v;
+            }
+          }
+          return null;
+        }
+
+        final title = clean(d.querySelector('h1.page-heading')?.text);
+        final alts = clean(d.querySelector('p.page-lead')?.text)
+            .replaceFirst('Alternative title:', '')
+            .split(',')
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty && e.toLowerCase() != title.toLowerCase() && e.runes.any((r) => r != 0x3f))
+            .toList();
+        var story = '';
+        for (final p in d.querySelectorAll('section.panel')) {
+          if (clean(p.querySelector('h2')?.text).contains('Story Overview')) {
+            story = clean(p.querySelector('p')?.text);
+            break;
+          }
+        }
+        final permalink = d.querySelector('#chapterGroups')?.attributes['data-title-permalink'];
+        final chapters = <SourceChapter>[];
+        if (permalink != null) {
+          var offset = 0;
+          while (true) {
+            final j = await s.fetchJson(
+              _u('${s.baseUrl}/api/titles/chapters.php').replace(queryParameters: {'permalink': permalink, 'offset': '$offset', 'limit': '50'}),
+              headers: {'Accept': 'application/json', 'Referer': url},
+            ) as Map;
+            for (final c in ((j['group'] as Map)['items'] as List).cast<Map>()) {
+              chapters.add(SourceChapter(
+                url: '${s.baseUrl}/${c['href']}',
+                name: '${c['label']}',
+                number: parseChapterNumber('${c['label']}'),
+                uploadedAt: parseLooseDate('${c['published_date'] ?? ''}'),
+              ));
+            }
+            offset = (j['next_offset'] as num).toInt();
+            if (j['has_more'] != true) break;
+          }
+        }
+        return SourceMangaDetails(
+          url: url,
+          title: title,
+          thumbnailUrl: attrAbs(d.querySelector('section.hero img'), 'src', res.url),
+          author: meta('Author'),
+          artist: meta('Artist'),
+          genres: [for (final c in d.querySelectorAll('.genre-cluster .chip')) clean(c.text)],
+          description: [if (story.isNotEmpty) story, if (alts.isNotEmpty) 'Alternative titles: ${alts.join(', ')}'].join('\n\n'),
+          status: switch ((meta('Status') ?? '').toLowerCase()) {
+            'ongoing' || 'on-going' || 'ong' => SourceMangaStatus.ongoing,
+            'completed' || 'complete' || 'c' => SourceMangaStatus.completed,
+            _ => SourceMangaStatus.unknown,
+          },
+          chapters: chapters,
+        );
+      },
+      pagesFn: (s, ch) async {
+        final res = await s.fetchHtml(_u(ch.url));
+        final m = RegExp(r'MYMANGALIST_READER = (\{.*\});').firstMatch(res.body);
+        if (m == null) throw StateError('reader not found');
+        return [for (final p in (jsonDecode(m[1]!) as Map)['pageUrls'] as List) '$p'];
+      },
+    );
+
+List<MangaSource> portsAa() => [_myadultcomics(), _schalescans(), _mythtoons(), _bbato(), _inkora(), _kaliscans(), _mymangalist()];
