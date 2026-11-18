@@ -35,6 +35,8 @@ class ChapterSource extends HttpSource {
     this.reverseChapters = false,
     this.thumbFromUrl,
     this.cardHref,
+    this.coverRegex,
+    this.chapterLabel,
     this.cleanTitle,
     this.localSearch = false,
     this.contentWarning = ContentWarning.nsfw,
@@ -82,6 +84,12 @@ class ChapterSource extends HttpSource {
 
   /// Hanya kartu yang URL-nya cocok pola ini (menyaring tautan menu/navigasi).
   final RegExp? cardHref;
+
+  /// Sampul dari HTML mentah (kecocokan pertama) bila tidak ada elemen yang cocok.
+  final RegExp? coverRegex;
+
+  /// Nama bab dari label asli dan URL; default memakai teks tautan.
+  final String Function(String label, String href)? chapterLabel;
 
   /// Rapikan judul seri di halaman detail (mis. buang awalan SEO).
   final String Function(String title)? cleanTitle;
@@ -144,14 +152,15 @@ class ChapterSource extends HttpSource {
       final href = attrAbs(a, 'href', res.url);
       if (a == null || href == null || !seen.add(href)) continue;
       final label = clean(chapterNameSel == null ? el.text : el.querySelector(chapterNameSel!)?.text ?? a.text);
-      chapters.add(SourceChapter(url: href, name: label.isEmpty ? href.split('/').last : label, number: _number(label, href)));
+      final shown = chapterLabel != null ? chapterLabel!(label, href) : (label.isEmpty ? href.split('/').last : label);
+      chapters.add(SourceChapter(url: href, name: shown, number: _number(label, href)));
     }
     final ordered = reverseChapters ? chapters.reversed.toList() : chapters;
     final statusText = statusSel == null ? '' : clean(doc.querySelector(statusSel!)?.text).toLowerCase();
     return SourceMangaDetails(
       url: mangaUrl,
       title: title,
-      thumbnailUrl: coverSel == null ? null : _thumb(doc.querySelector(coverSel!), res.url),
+      thumbnailUrl: _cover(doc, res.url),
       description: descSel == null ? null : clean(doc.querySelector(descSel!)?.text),
       author: authorSel == null ? null : clean(doc.querySelector(authorSel!)?.text),
       genres: tagSel == null
@@ -164,6 +173,15 @@ class ChapterSource extends HttpSource {
               : SourceMangaStatus.unknown,
       chapters: ordered,
     );
+  }
+
+  String? _cover(Document doc, Uri base) {
+    final rx = coverRegex;
+    if (rx != null) {
+      final m = rx.firstMatch(doc.outerHtml);
+      if (m != null) return absUrl(base, m[0]);
+    }
+    return coverSel == null ? null : _thumb(doc.querySelector(coverSel!), base);
   }
 
   static String _text(Element? el) =>

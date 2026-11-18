@@ -79,6 +79,9 @@ List<MangaSource> adultChapters() => [
         nextSel: 'a[href*="page="][rel=next], a[aria-label*="ext"][href*="page="]',
         titleSel: 'h1',
         coverSel: 'meta[property="og:image"]',
+        // og:image situs ini adalah kartu dinamis; sampul asli ada di /uploads/series/.../cover-<hash>.webp.
+        coverRegex: RegExp(r'https://[^"\s\x5C]*desirescans\.com/[^"\s\x5C]*cover-[0-9a-f]+\.webp'),
+        chapterLabel: (label, href) => 'Chapter ${Uri.parse(href).pathSegments.last}',
         chapterSel: 'a[href*="/chapter/"]',
         imagesOf: (d, u) {
           final html = d.outerHtml.replaceAll(r'\"', '"').replaceAll(r'\/', '/');
