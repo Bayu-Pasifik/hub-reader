@@ -37,6 +37,7 @@ class ChapterSource extends HttpSource {
     this.cardHref,
     this.coverRegex,
     this.chapterLabel,
+    this.chapterUrlOf,
     this.cleanTitle,
     this.localSearch = false,
     this.contentWarning = ContentWarning.nsfw,
@@ -90,6 +91,9 @@ class ChapterSource extends HttpSource {
 
   /// Nama bab dari label asli dan URL; default memakai teks tautan.
   final String Function(String label, String href)? chapterLabel;
+
+  /// Ubah URL bab yang dipakai untuk memuat gambar (mis. tambah `/all`).
+  final String Function(String href)? chapterUrlOf;
 
   /// Rapikan judul seri di halaman detail (mis. buang awalan SEO).
   final String Function(String title)? cleanTitle;
@@ -153,7 +157,7 @@ class ChapterSource extends HttpSource {
       if (a == null || href == null || !seen.add(href)) continue;
       final label = clean(chapterNameSel == null ? el.text : el.querySelector(chapterNameSel!)?.text ?? a.text);
       final shown = chapterLabel != null ? chapterLabel!(label, href) : (label.isEmpty ? href.split('/').last : label);
-      chapters.add(SourceChapter(url: href, name: shown, number: _number(label, href)));
+      chapters.add(SourceChapter(url: chapterUrlOf?.call(href) ?? href, name: shown, number: _number(label, href)));
     }
     final ordered = reverseChapters ? chapters.reversed.toList() : chapters;
     final statusText = statusSel == null ? '' : clean(doc.querySelector(statusSel!)?.text).toLowerCase();
