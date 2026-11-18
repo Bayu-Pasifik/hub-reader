@@ -527,6 +527,104 @@ List<MangaSource> safeExtra() => [
           ];
         },
       ),
+      FnSource(
+        id: 'en.hyakuro',
+        name: 'Hyakuro Translations',
+        baseUrl: 'https://hyakuro.net',
+        contentWarning: ContentWarning.safe,
+        popularFn: (s, page) => _hyakuroList(s, page, '', 'Title:asc'),
+        latestFn: (s, page) => _hyakuroList(s, page, '', 'updatedAt:desc'),
+        searchFn: (s, page, q) => _hyakuroList(s, page, q, 'updatedAt:desc'),
+        detailsFn: (s, url) async {
+          final slug = url.split('/').where((e) => e.isNotEmpty).last;
+          final a = await _hyakuroOne(s, slug, 'Cover,Chapters');
+          final one = a['Oneshot'] == true;
+          final chapters = <SourceChapter>[];
+          for (final c in ((a['Chapters'] as List?) ?? const []).cast<Map>()) {
+            final n = (c['Chapter'] as num?)?.toDouble() ?? 0;
+            final shown = n % 1 == 0 ? n.toInt().toString() : n.toString();
+            final title = clean('${c['Title'] ?? ''}');
+            chapters.add(SourceChapter(
+              url: '${s.baseUrl}/manga/$slug#${c['id']}',
+              name: one
+                  ? (title.isEmpty ? 'Oneshot' : 'Oneshot - $title')
+                  : (title.isEmpty ? 'Chapter $shown' : 'Chapter $shown - $title'),
+              number: n,
+            ));
+          }
+          chapters.sort((x, y) => (y.number ?? 0).compareTo(x.number ?? 0));
+          final m = _hyakuroManga(s, a);
+          return SourceMangaDetails(
+            url: m.url,
+            title: m.title,
+            thumbnailUrl: m.thumbnailUrl,
+            author: a['Author'] as String?,
+            artist: a['Artist'] as String?,
+            description: a['Synopsis'] as String?,
+            genres: [for (final c in ((a['Categories'] as List?) ?? const [])) '$c'],
+            status: switch (a['Status']) {
+              'Ongoing' => SourceMangaStatus.ongoing,
+              'Completed' => SourceMangaStatus.completed,
+              'Dropped' => SourceMangaStatus.cancelled,
+              _ => SourceMangaStatus.unknown,
+            },
+            chapters: chapters,
+          );
+        },
+        pagesFn: (s, ch) async {
+          final parts = ch.url.split('#');
+          final slug = parts.first.split('/').where((e) => e.isNotEmpty).last;
+          final id = int.parse(parts.last);
+          final a = await _hyakuroOne(s, slug, '*', key: 'populate[Chapters][populate]');
+          final c = ((a['Chapters'] as List).cast<Map>()).firstWhere((e) => e['id'] == id);
+          final pages = (((c['Pages'] as Map?)?['data']) as List? ?? const []).cast<Map>();
+          final urls = [for (final p in pages) '${(p['attributes'] as Map)['url']}']..sort();
+          return [for (final u in urls) '${s.baseUrl}/backend$u'];
+        },
+      ),
+      FnSource(
+        id: 'en.mangade',
+        name: 'MangaDE',
+        baseUrl: 'https://mangade.io',
+        contentWarning: ContentWarning.safe,
+        popularFn: (s, page) => _mangadeList(s, page, '', 'most-viewed'),
+        latestFn: (s, page) => _mangadeList(s, page, '', 'newest'),
+        searchFn: (s, page, q) => _mangadeList(s, page, q, 'newest'),
+        detailsFn: (s, url) async {
+          final mid = Uri.parse(url).queryParameters['mid']!;
+          final d = await _mangadeData(s, '/comics/$mid/view', {}) as Map;
+          final slug = '${d['slug']}';
+          final chapters = <SourceChapter>[];
+          for (final c in ((d['news_chapters'] as List?) ?? const []).cast<Map>()) {
+            chapters.add(SourceChapter(
+              url: '${s.baseUrl}/$slug/${c['slug']}?cid=${c['id']}&mid=$mid',
+              name: clean('${c['name']}'),
+              number: double.tryParse('${c['chapter_number']}'),
+            ));
+          }
+          final st = '${d['status']}';
+          return SourceMangaDetails(
+            url: url,
+            title: clean('${d['name']}'),
+            thumbnailUrl: d['image'] as String?,
+            description: d['description'] as String?,
+            genres: [for (final g in '${d['genre_names'] ?? ''}'.split(',')) if (g.trim().isNotEmpty) g.trim()],
+            status: st == 'Ongoing' || st == 'Releasing'
+                ? SourceMangaStatus.ongoing
+                : st == 'Completed'
+                    ? SourceMangaStatus.completed
+                    : st == 'On Hiatus'
+                        ? SourceMangaStatus.hiatus
+                        : SourceMangaStatus.unknown,
+            chapters: chapters,
+          );
+        },
+        pagesFn: (s, ch) async {
+          final cid = Uri.parse(ch.url).queryParameters['cid']!;
+          final d = await _mangadeData(s, '/chapters/$cid/view', {}) as Map;
+          return [for (final p in ((d['chapter_images'] as List?) ?? const []).cast<Map>()) '${p['image']}'];
+        },
+      ),
       SingleSeriesSource(
         id: 'en.megatokyo',
         name: 'Megatokyo',
@@ -860,4 +958,59 @@ List<SourceManga> _manhwazCards(Document doc, Uri base, String sel) {
     ));
   }
   return out;
+}
+
+Uri _hyakuroApi(HttpSource s, Map<String, String> q) => Uri.https(Uri.parse(s.baseUrl).host, '/backend/api/mangas', q);
+
+SourceManga _hyakuroManga(HttpSource s, Map a) {
+  final cover = (((a['Cover'] as Map?)?['data'] as Map?)?['attributes'] as Map?)?['url'];
+  return SourceManga(
+    url: '${s.baseUrl}/manga/${a['slug']}',
+    title: clean('${a['Title']}'),
+    thumbnailUrl: cover == null ? null : '${s.baseUrl}/backend$cover',
+  );
+}
+
+Future<MangaPage> _hyakuroList(HttpSource s, int page, String query, String sort) async {
+  final json = await s.fetchJson(_hyakuroApi(s, {
+    'populate': 'Cover,Chapters',
+    'sort': sort,
+    'pagination[page]': '$page',
+    if (query.isNotEmpty) r'filters[Title][$containsi]': query,
+  })) as Map;
+  final p = (json['meta'] as Map)['pagination'] as Map;
+  return MangaPage(
+    [for (final e in (json['data'] as List).cast<Map>()) _hyakuroManga(s, e['attributes'] as Map)],
+    hasNextPage: (p['page'] as int) < (p['pageCount'] as int),
+  );
+}
+
+Future<Map> _hyakuroOne(HttpSource s, String slug, String populate, {String key = 'populate'}) async {
+  final json = await s.fetchJson(_hyakuroApi(s, {r'filters[slug][$eq]': slug, key: populate})) as Map;
+  return ((json['data'] as List).first as Map)['attributes'] as Map;
+}
+
+Future<Object?> _mangadeData(HttpSource s, String path, Map<String, String> q) async {
+  final json = await s.fetchJson(Uri.https('api.${Uri.parse(s.baseUrl).host}', '/api$path', q)) as Map;
+  return json['data'];
+}
+
+Future<MangaPage> _mangadeList(HttpSource s, int page, String query, String sort) async {
+  final d = await _mangadeData(s, '/comics', {
+    'page': '$page',
+    'size': '20',
+    'sort': sort,
+    if (query.isNotEmpty) 'name': query,
+  }) as Map;
+  return MangaPage(
+    [
+      for (final c in (d['list'] as List).cast<Map>())
+        SourceManga(
+          url: '${s.baseUrl}/${c['slug']}?mid=${c['id']}',
+          title: clean('${c['name']}'),
+          thumbnailUrl: c['image'] as String?,
+        ),
+    ],
+    hasNextPage: int.parse('${d['page']}') < (d['totalPage'] as int),
+  );
 }
