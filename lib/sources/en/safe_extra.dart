@@ -1,6 +1,8 @@
 // Sumber kelompok Aman (seri-bab HTML), port Dart dari extension
 // keiyoushi/extensions-source (Apache-2.0): src/en/*.
 
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:html/dom.dart';
 import 'package:html/parser.dart' as html_parser;
@@ -767,6 +769,61 @@ List<MangaSource> safeExtra() => [
           ];
         },
       ),
+      FnSource(
+        id: 'en.hentaihere',
+        name: 'HentaiHere',
+        baseUrl: 'https://hentaihere.com',
+        contentWarning: ContentWarning.nsfw,
+        popularFn: (s, page) => _hentaiHereList(s, '${s.baseUrl}/browse/most-viewed${page > 1 ? '/page-$page' : ''}'),
+        latestFn: (s, page) => _hentaiHereList(s, '${s.baseUrl}/browse/newest/page-$page'),
+        searchFn: (s, page, q) => _hentaiHereList(s, '${s.baseUrl}/search?q=${Uri.encodeQueryComponent(q)}&page=$page'),
+        detailsFn: (s, url) async {
+          final res = await s.fetchHtml(Uri.parse(url));
+          final d = res.document;
+          String? detail(String label) {
+            for (final dt in d.querySelectorAll('dl[aria-label=Details] dt')) {
+              if (dt.text.contains(label)) {
+                final v = clean(dt.nextElementSibling?.text);
+                return v.isEmpty ? null : v;
+              }
+            }
+            return null;
+          }
+          final chapters = <SourceChapter>[];
+          for (final o in d.querySelectorAll('#preview-chapter option')) {
+            final href = attrAbs(o, 'data-read', res.url);
+            if (href == null) continue;
+            final name = clean(o.text).replaceFirst(RegExp(r'\(latest\)$'), '').trim();
+            chapters.add(SourceChapter(
+              url: href,
+              name: name,
+              number: double.tryParse(RegExp(r'Chapter\s+([\d.]+)').firstMatch(name)?[1] ?? ''),
+            ));
+          }
+          if (chapters.isEmpty) chapters.add(SourceChapter(url: url, name: 'Oneshot', number: 1));
+          final status = detail('Status')?.toLowerCase();
+          return SourceMangaDetails(
+            url: url,
+            title: clean(d.querySelector('h1#book-title')?.text),
+            thumbnailUrl: d.querySelector('meta[property="og:image"]')?.attributes['content'],
+            author: detail('Artist') ?? detail('Author'),
+            genres: [for (final a in d.querySelectorAll('ul[aria-label=Tags] a')) clean(a.text)],
+            status: status == 'completed'
+                ? SourceMangaStatus.completed
+                : status == 'ongoing'
+                    ? SourceMangaStatus.ongoing
+                    : SourceMangaStatus.unknown,
+            chapters: chapters,
+          );
+        },
+        pagesFn: (s, ch) async {
+          final res = await s.fetchHtml(Uri.parse(ch.url));
+          final raw = res.document.querySelector('script[data-reader-data]')?.text;
+          if (raw == null) return const [];
+          final data = jsonDecode(raw) as Map;
+          return [for (final u in (data['images'] as List)) '$u'];
+        },
+      ),
       SingleSeriesSource(
         id: 'en.megatokyo',
         name: 'Megatokyo',
@@ -1187,4 +1244,17 @@ Future<MangaPage> _kuraSearch(HttpSource s, int page, String query) async {
     ],
     hasNextPage: data.length == 18 && (total == 0 || page * 18 < total),
   );
+}
+
+Future<MangaPage> _hentaiHereList(HttpSource s, String url) async {
+  final res = await s.fetchHtml(Uri.parse(url));
+  final out = <SourceManga>[];
+  final seen = <String>{};
+  for (final card in res.document.querySelectorAll('article.card[data-card]')) {
+    final href = attrAbs(card.querySelector('a'), 'href', res.url);
+    final title = clean(card.querySelector('h3')?.text);
+    if (href == null || title.isEmpty || !seen.add(href)) continue;
+    out.add(SourceManga(url: href, title: title, thumbnailUrl: attrAbs(card.querySelector('img'), 'src', res.url)));
+  }
+  return MangaPage(out, hasNextPage: res.document.querySelector('a[rel=next]') != null);
 }

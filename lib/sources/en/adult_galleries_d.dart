@@ -1,8 +1,8 @@
 // Sumber galeri dewasa (satu entri = satu bab), port Dart dari extension
 // keiyoushi/extensions-source (Apache-2.0): src/en/*.
 
-import '../html_utils.dart';
 import '../source.dart';
+import 'chapter_source.dart';
 import 'gallery_source.dart';
 
 List<MangaSource> adultGalleriesD() => [
@@ -36,6 +36,24 @@ List<MangaSource> adultGalleriesD() => [
         titleSel: 'div.reading-page-header h1',
         tagSel: '.table-row .table-value a',
         imagesOf: (d, u) => imagesFrom(d, u, 'div.reading-pages-content img.lazy', ['data-src', 'src']),
+      ),
+      ChapterSource(
+        id: 'en.hentaiyoga',
+        name: 'Hentai.yoga',
+        baseUrl: 'https://hentai.yoga',
+        popularUrl: (b, p) => '$b/manga' + (p > 1 ? '?page=$p' : ''),
+        searchUrl: (b, p, q) => '$b/manga?s=' + Uri.encodeQueryComponent(q) + (p > 1 ? '&page=$p' : ''),
+        cardSel: 'section.gallery-grid-section article.mcard',
+        cardLinkSel: 'a.mcard-title-link',
+        cardTitleSel: '.mcard-title',
+        nextSel: 'a[rel=next]',
+        titleSel: '.manga-title-section h1',
+        coverSel: '.manga-thumbnail-large img',
+        descSel: '.manga-description',
+        tagSel: 'dl.manhwa-info dd.manhwa-genres a',
+        chapterSel: 'ul.manga-chapters-list a.manga-chapter-list-link',
+        chapterNameSel: '.manga-chapter-list-title',
+        imagesOf: (d, u) => imagesFrom(d, u, 'img.chapter-image', ['data-src', 'src']),
       ),
       // ADD
     ];
