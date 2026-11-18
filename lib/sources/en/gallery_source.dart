@@ -76,7 +76,7 @@ class GallerySource extends HttpSource {
       final href = attrAbs(link, 'href', res.url);
       if (link == null || href == null || !seen.add(href)) continue;
       final title = clean(cardTitleSel == null
-          ? (link.attributes['title'] ?? link.text)
+          ? (link.attributes['title'] ?? link.attributes['aria-label'] ?? (link.text.trim().isEmpty ? link.querySelector('img')?.attributes['alt'] : link.text))
           : card.querySelector(cardTitleSel!)?.text);
       if (title.isEmpty) continue;
       items.add(SourceManga(url: href, title: title, thumbnailUrl: imgAttr(card.querySelector(cardThumbSel), res.url)));

@@ -1,0 +1,56 @@
+// Sumber dewasa seri-bab (HTML statis), port Dart dari extension
+// keiyoushi/extensions-source (Apache-2.0): src/en/*.
+
+import '../source.dart';
+import 'chapter_source.dart';
+import 'gallery_source.dart';
+
+List<MangaSource> adultChapters() => [
+      ChapterSource(
+        id: 'en.manhwa18dash',
+        name: 'Manhwa18Dash',
+        baseUrl: 'https://manhwa18dash.com',
+        popularUrl: (b, p) => '$b/manhwa?sort=popular',
+        searchUrl: (b, p, q) => null,
+        localSearch: true,
+        cardSel: 'a.manga-card',
+        cardTitleSel: '.manga-title',
+        titleSel: '#mangaTitle',
+        coverSel: 'meta[property="og:image"]',
+        chapterSel: 'a[href*="/chapter-"]',
+        reverseChapters: true,
+        imagesOf: (d, u) => imagesFrom(d, u, 'img[data-src*="/mangas/"], img[src*="/mangas/"]', ['data-src', 'src']),
+      ),
+      ChapterSource(
+        id: 'en.hentara',
+        name: 'Hentara',
+        baseUrl: 'https://hentara.com',
+        popularUrl: (b, p) => '$b/',
+        searchUrl: (b, p, q) => p > 1 ? null : '$b/search?q=${Uri.encodeQueryComponent(q)}',
+        cardSel: 'a.ssr-card',
+        cardTitleSel: '.ssr-card-title',
+        titleSel: 'h1',
+        coverSel: 'meta[property="og:image"]',
+        tagSel: '.ssr-genre',
+        statusSel: '.ssr-status',
+        chapterSel: 'a.ssr-chapter',
+        cleanTitle: (t) => t.replaceFirst(RegExp(r'^Read\s+'), '').replaceFirst(RegExp(r'\s+Manhwa Online Free.*$'), ''),
+        imagesOf: (d, u) => imagesFrom(d, u, 'img[src*="/chapter-"], img[data-src*="/chapter-"]', ['data-src', 'src']),
+      ),
+      ChapterSource(
+        id: 'en.manhwa210',
+        name: 'Manhwa210',
+        baseUrl: 'https://manhwa210.com',
+        popularUrl: (b, p) => p > 1 ? '$b/?page=$p' : '$b/',
+        searchUrl: (b, p, q) => '$b/search?q=${Uri.encodeQueryComponent(q)}',
+        cardSel: 'div.manga-vertical',
+        cardLinkSel: 'a.text-ellipsis',
+        cardTitleSel: 'a.text-ellipsis',
+        cardThumbSel: '.cover',
+        titleSel: 'meta[property="og:title"]',
+        coverSel: 'meta[property="og:image"]',
+        chapterSel: 'a[href*="/chapter-"]',
+        cleanTitle: (t) => t.replaceFirst(RegExp(r'\s*[-|–].*$'), ''),
+        imagesOf: (d, u) => imagesFrom(d, u, 'img.lazy', ['data-src', 'src']),
+      ),
+    ];

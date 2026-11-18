@@ -1,6 +1,8 @@
 import 'catalog.dart';
 import 'en/adult_galleries.dart';
 import 'en/adult_galleries_b.dart';
+import 'en/adult_fn.dart';
+import 'en/adult_chapters.dart';
 import 'en/adult_webcomics.dart';
 import 'en/webcomics_a.dart';
 import 'en/webcomics_b.dart';
@@ -79,6 +81,8 @@ List<MangaSource> customSources() => [
       ...adultWebcomics(),
       ...adultGalleries(),
       ...adultGalleriesB(),
+      ...adultFn(),
+      ...adultChapters(),
       ...webcomicsA(),
       ...webcomicsB(),
       ...webcomicsC(),

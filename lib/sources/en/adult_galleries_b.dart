@@ -1,6 +1,8 @@
 // Sumber galeri dewasa (satu entri = satu bab), port Dart dari extension
 // keiyoushi/extensions-source (Apache-2.0): src/en/*.
 
+import 'package:html/dom.dart';
+
 import '../source.dart';
 import 'gallery_source.dart';
 
@@ -144,4 +146,33 @@ List<MangaSource> adultGalleriesB() => [
             m[1]!.replaceFirst('/styles/juicebox_medium/public', ''),
         ],
       ),
+      GallerySource(
+        id: 'en.eahentai',
+        name: 'EAHentai',
+        baseUrl: 'https://eahentai.com',
+        popularUrl: (b, p) => p > 1 ? '$b/latest?p=$p' : '$b/latest',
+        searchUrl: (b, p, q) => '$b/?q=${Uri.encodeQueryComponent(q)}${p > 1 ? '&p=$p' : ''}',
+        cardSel: 'a[href^="/a/"][aria-label]',
+        cardThumbSel: 'img',
+        nextSel: 'a[href*="p="]',
+        titleSel: 'h1',
+        tagSel: 'a[href^="/tag/"], a[href^="/tags/"]',
+        imagesOf: (d, u) => _eaImages(d, u),
+      ),
     ];
+
+// Miniatur dimuat lewat /_next/image?url=<encoded>, jadi cari langsung di HTML mentah.
+List<String> _eaImages(Document d, Uri u) {
+  final html = d.outerHtml.replaceAll('%2F', '/').replaceAll('%3A', ':');
+  final re = RegExp(r'(https://[^"\s&]+/galleries/([0-9a-f]+))/thumbnail/image(\d+)t\.\w+');
+  final matches = re.allMatches(html).toList();
+  if (matches.isEmpty) return const [];
+  final hash = matches.first[2];
+  final out = <int, String>{};
+  for (final m in matches) {
+    if (m[2] != hash) continue;
+    out[int.parse(m[3]!)] = '${m[1]}/image${m[3]}.webp';
+  }
+  final keys = out.keys.toList()..sort();
+  return [for (final k in keys) out[k]!];
+}

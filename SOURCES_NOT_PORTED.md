@@ -6,7 +6,7 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 | Bahasa / Language | Belum di-port / Not ported |
 |---|---|
 | Indonesia (id) | 14 (6 sudah di-port: Bacami, MG Komik, West Manga, Komik AV, Hentai Crot, Pix Hentai) |
-| English (en) | 172 (64 sudah di-port dari kelompok Aman / 64 ported from the Safe group) |
+| English (en) | 167 (64 sudah di-port dari kelompok Aman / 64 ported from the Safe group) |
 
 > Catatan / Notes
 > - ID: Pencocokan berdasarkan nama folder dan nama tampilan; beberapa situs bisa salah terdeteksi. Sumber multi-bahasa (`all`) tidak termasuk.
@@ -49,7 +49,7 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 
 ---
 
-## 2. English (en) — 172 sumber / sources
+## 2. English (en) — 167 sumber / sources
 
 #### Aman / Safe (36 belum di-port / not yet ported; 64 sudah di-port / ported)
 
@@ -170,7 +170,7 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 | 72 | XoManga | https://www.xomanga.site |  |
 | 73 | Yurivan | https://www.yurivan.com |  |
 
-#### Dewasa (NSFW) / Adult (NSFW) (63 tersisa dari 79; 16 sudah di-port: Multporn, Oh Joy Sex Toy, Rule34Comic, KingComiX, XlecX, HentaiForce, Only The Best Hentai, Vixen Logic, Oglaf, I Roved Out, Mahouirexnohentaikarte, XYZ Comics, ILikeComix, Cutie Comics, PornComix, Eggporncomics. XYZ Comics dan PornComix di balik Cloudflare, belum terverifikasi)
+#### Dewasa (NSFW) / Adult (NSFW) (58 tersisa dari 79; 21 sudah di-port: EAHentai, HentaiKisu, Manhwa18Dash, Hentara, Manhwa210, Multporn, Oh Joy Sex Toy, Rule34Comic, KingComiX, XlecX, HentaiForce, Only The Best Hentai, Vixen Logic, Oglaf, I Roved Out, Mahouirexnohentaikarte, XYZ Comics, ILikeComix, Cutie Comics, PornComix, Eggporncomics. XYZ Comics dan PornComix di balik Cloudflare, belum terverifikasi)
 
 | # | Nama / Name | Situs / Site | Catatan / Note |
 |---|---|---|---|
@@ -183,7 +183,6 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 | 8 | DesireScans | https://desirescans.com |  |
 | 9 | Doujin.io - J18 | https://doujin.io |  |
 | 10 | Doujins | https://doujins.com |  |
-| 11 | EAHentai | https://eahentai.com |  |
 | 13 | Erofus | https://www.erofus.com | template: eromuse |
 | 14 | Fairies vs Tentacles | https://eldrikdgt.com |  |
 | 15 | Futapo | https://futapo.com |  |
@@ -196,7 +195,6 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 | 22 | HentaiFC | https://hentaifc.com |  |
 | 24 | HentaiFull | https://hentaifull.net |  |
 | 25 | HentaiHere | https://hentaihere.com |  |
-| 26 | HentaiKisu | https://hentaikisu.com |  |
 | 27 | HentaiKun | https://hentaikun.com |  |
 | 28 | HentaiNexus | https://hentainexus.com |  |
 | 29 | HentaiPill | https://hentaipill.com |  |
@@ -204,13 +202,10 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 | 31 | HentaiRead.io | https://hentairead.io |  |
 | 32 | HentaiSco | https://hentaisco.cc |  |
 | 33 | HentaiTnT | https://hentaitnt.net |  |
-| 34 | Hentara | https://hentara.com |  |
 | 35 | HotComics | https://hotcomics.io |  |
 | 39 | Kotokotek | https://kotokotek.wixsite.com |  |
 | 40 | LGBToon | https://lgbtoon.com |  |
 | 42 | Manhwa18 | https://manhwa18.com |  |
-| 43 | Manhwa18Dash | https://manhwa18dash.com |  |
-| 44 | Manhwa210 | https://manhwa210.com |  |
 | 45 | ManhwaH | https://manhwah.com |  |
 | 46 | Manhwalike | https://manhwalike.com |  |
 | 47 | ManhwaX (unoriginal) | https://manhwax.pro |  |
