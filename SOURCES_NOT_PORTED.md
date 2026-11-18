@@ -107,7 +107,7 @@ Generated 2026-11-17 by diffing `keiyoushi/extensions-source` (`src/en` and `src
 | 24 | Mangago | https://www.mangago.me | Gambar bab diacak lewat deobfuscator JS (SoJsonV4); belum di-port. / Chapter images use a JS deobfuscator (SoJsonV4); not ported. |
 | 25 | MangaLix | https://mangalix.com | Katalog dibaca dari berkas JS terbundel lewat parser literal JS; belum di-port. / Catalog is read from a bundled JS file via a JS-literal parser; not ported. |
 | 26 | MangaPlaza | https://mangaplaza.com |  |
-| 27 | Mangastash | https://mangastash.org |  |
+| 27 | Mangastash | https://mangastash.org | Dicoba 2026-11-18: daftar, detail, bab jalan, tetapi gambar bab dijawab 403 oleh server asal untuk semua klien. / Tried: lists, details, chapters work, but the origin answers 403 for chapter images to every client. |
 | 28 | ManhuaTop | https://manhuatop.org | Dicoba 2026-11-18: API membalas 403 Cloudflare ke klien aplikasi walau curl lolos. / Tried: API answers 403 (Cloudflare) to the app client although curl passes. |
 | 29 | ManhwaRead | - | Dilindungi Cloudflare (HTTP 403). / Cloudflare-protected (HTTP 403). |
 | 30 | ManhwaZone | https://manhwazone.com |  |
