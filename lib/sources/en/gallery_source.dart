@@ -103,7 +103,8 @@ class GallerySource extends HttpSource {
   Future<SourceMangaDetails> details(String mangaUrl) async {
     final res = await fetchHtml(Uri.parse(mangaUrl));
     final doc = res.document;
-    final title = clean(doc.querySelector(titleSel)?.text);
+    final titleEl = doc.querySelector(titleSel);
+    final title = clean(titleEl?.attributes['content'] ?? titleEl?.text);
     if (title.isEmpty) {
       throw SourceException(SourceErrorKind.parse, detail: tr('Judul seri tidak ditemukan.'));
     }
