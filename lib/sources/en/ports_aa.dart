@@ -712,4 +712,99 @@ FnSource _hentaikun() => FnSource(
       },
     );
 
-List<MangaSource> portsAa() => [_myadultcomics(), _schalescans(), _mythtoons(), _bbato(), _inkora(), _kaliscans(), _mymangalist(), _hentaikun()];
+// ---------------------------------------------------------------- Pornhwa.me
+
+String _pmOriginal(String url) {
+  final u = Uri.tryParse(url);
+  if (u != null && u.host.endsWith('.wp.com')) return 'https://${u.path.replaceFirst('/', '')}';
+  return url;
+}
+
+Future<MangaPage> _pmList(FnSource s, Uri uri) async {
+  final res = await s.fetchHtml(uri);
+  final out = <SourceManga>[];
+  for (final card in res.document.querySelectorAll('#komikbaru [itemtype]')) {
+    if (!(card.attributes['itemtype'] ?? '').endsWith('ComicSeries')) continue;
+    final link = card.querySelector('a[itemprop=url][title]');
+    final href = absUrl(res.url, link?.attributes['href']);
+    if (link == null || href == null) continue;
+    final cover = attrAbs(card.querySelector('img'), 'src', res.url);
+    out.add(SourceManga(url: href, title: clean(link.querySelector('[itemprop=name]')?.text), thumbnailUrl: cover == null ? null : _pmOriginal(cover)));
+  }
+  return MangaPage(out, hasNextPage: out.isNotEmpty && res.document.querySelector('link[rel=next]') != null);
+}
+
+Uri _pmListing(FnSource s, String path, int page) => _u('${s.baseUrl}/$path/${page > 1 ? '$page/' : ''}');
+
+FnSource _pornhwame() => FnSource(
+      id: 'en.pornhwame',
+      name: 'Pornhwa.me',
+      baseUrl: 'https://pornhwa.me',
+      contentWarning: ContentWarning.nsfw,
+      popularFn: (s, page) => _pmList(s, _pmListing(s, 'trending', page)),
+      latestFn: (s, page) => _pmList(s, _pmListing(s, 'latest-update', page)),
+      searchFn: (s, page, q) => _pmList(s, _u('${s.baseUrl}/search/${Uri.encodeComponent(q)}/')),
+      detailsFn: (s, url) async {
+        final res = await s.fetchHtml(_u(url));
+        final d = res.document;
+        String? info(String label) {
+          for (final sp in d.querySelectorAll('span')) {
+            final b = sp.children.isNotEmpty && sp.children.first.localName == 'b' ? sp.children.first : null;
+            if (b != null && ownText(b).contains(label)) {
+              final v = clean(sp.text.replaceFirst(b.text, ''));
+              return (v.isEmpty || v == '-') ? null : v;
+            }
+          }
+          return null;
+        }
+
+        String? synopsis;
+        for (final sc in d.querySelectorAll('script[type="application/ld+json"]')) {
+          try {
+            final j = jsonDecode(sc.text);
+            if (j is Map && j['@type'] == 'CreativeWorkSeries') synopsis = j['description'] as String?;
+          } on FormatException {
+            continue;
+          }
+        }
+        final title = clean(d.querySelector('article h1')?.text);
+        var alt = info('Alternative Title');
+        if (alt != null && alt.startsWith('(') && alt.endsWith(')')) alt = alt.substring(1, alt.length - 1);
+        if (alt != null && alt.toLowerCase().contains(title.toLowerCase())) alt = null;
+        final chapters = <SourceChapter>[];
+        for (final li in d.querySelectorAll('ul#chapter-list > li[data-ch]')) {
+          final a = li.querySelector('a');
+          final href = absUrl(res.url, a?.attributes['href']);
+          if (a == null || href == null) continue;
+          final name = clean(a.querySelector('span')?.text);
+          chapters.add(SourceChapter(url: href, name: name, number: double.tryParse(li.attributes['data-ch'] ?? '') ?? parseChapterNumber(name)));
+        }
+        return SourceMangaDetails(
+          url: url,
+          title: title,
+          thumbnailUrl: attrAbs(d.querySelector('[itemprop=image] img'), 'src', res.url),
+          author: info('Author'),
+          artist: info('Artist'),
+          genres: {
+            for (final a in d.querySelectorAll('article a')) if ((a.attributes['href'] ?? '').startsWith('/genre/')) clean(a.text),
+            if (info('Type') != null) info('Type')!,
+          }.toList(),
+          description: [if (synopsis != null && synopsis.isNotEmpty) synopsis, if (alt != null) 'Alternative titles: $alt'].join('\n\n'),
+          status: switch (info('Status')) {
+            'on-going' => SourceMangaStatus.ongoing,
+            'completed' => SourceMangaStatus.completed,
+            _ => SourceMangaStatus.unknown,
+          },
+          chapters: chapters,
+        );
+      },
+      pagesFn: (s, ch) async {
+        final res = await s.fetchHtml(_u(ch.url));
+        return [
+          for (final img in res.document.querySelectorAll('img.chapter-img'))
+            if (attrAbs(img, 'src', res.url) case final u? when u.isNotEmpty) u,
+        ];
+      },
+    );
+
+List<MangaSource> portsAa() => [_myadultcomics(), _schalescans(), _mythtoons(), _bbato(), _inkora(), _kaliscans(), _mymangalist(), _hentaikun(), _pornhwame()];
