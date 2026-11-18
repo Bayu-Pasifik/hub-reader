@@ -446,4 +446,81 @@ FnSource _inkora() => FnSource(
       },
     );
 
-List<MangaSource> portsAa() => [_myadultcomics(), _schalescans(), _mythtoons(), _bbato(), _inkora()];
+// --------------------------------------------------------------- KaliScans
+
+Future<MangaPage> _kaliList(FnSource s, Uri uri) async {
+  final res = await s.fetchHtml(uri);
+  final out = <SourceManga>[];
+  for (final el in res.document.querySelectorAll('div.book-item')) {
+    final link = el.querySelector('h3 a[href]');
+    final href = absUrl(res.url, link?.attributes['href']);
+    if (link == null || href == null) continue;
+    final img = el.querySelector('.thumb img');
+    out.add(SourceManga(url: href, title: clean(link.text), thumbnailUrl: attrAbs(img, 'data-src', res.url)));
+  }
+  final next = res.document.querySelector('.paginator a.active ~ a.btn') != null;
+  return MangaPage(out, hasNextPage: next);
+}
+
+String? _kaliMeta(Element info, String label, String sel) {
+  for (final p in info.querySelectorAll('.meta p')) {
+    if (p.querySelector('strong')?.text.contains(label) ?? false) return clean(p.querySelector(sel)?.text);
+  }
+  return null;
+}
+
+FnSource _kaliscans() => FnSource(
+      id: 'en.kaliscans',
+      name: 'KaliScans',
+      baseUrl: 'https://kaliscans.org',
+      contentWarning: ContentWarning.mixed,
+      popularFn: (s, page) => _kaliList(s, _u('${s.baseUrl}/popular?page=$page')),
+      latestFn: (s, page) => _kaliList(s, _u('${s.baseUrl}/latest?page=$page')),
+      searchFn: (s, page, q) => _kaliList(s, _u('${s.baseUrl}/search').replace(queryParameters: {'q': q, 'status': 'all', 'sort': 'popular', 'page': '$page'})),
+      detailsFn: (s, url) async {
+        final res = await s.fetchHtml(_u(url));
+        final d = res.document;
+        final info = d.querySelector('.book-info');
+        if (info == null) throw StateError('series not found');
+        final slug = _u(url).pathSegments.where((e) => e.isNotEmpty).last;
+        final seen = <String>{};
+        final chapters = <SourceChapter>[];
+        for (final a in d.querySelectorAll('#chapter-list li a')) {
+          final href = absUrl(res.url, a.attributes['href']);
+          if (href == null || !seen.add(href)) continue;
+          chapters.add(SourceChapter(
+            url: href,
+            name: clean(a.querySelector('.chapter-title')?.text ?? ''),
+            number: double.tryParse(_u(href).pathSegments.last.replaceAll('-', '.')),
+            uploadedAt: parseLooseDate(a.querySelector('.chapter-update')?.text),
+          ));
+        }
+        chapters.sort((a, b) => (b.number ?? -1).compareTo(a.number ?? -1));
+        final alt = clean(info.querySelector('.name h2')?.text).split(';').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+        final title = clean(info.querySelector('.name h1')?.text);
+        alt.removeWhere((e) => e.toLowerCase() == title.toLowerCase());
+        final summary = clean(d.querySelector('.summary .content')?.text);
+        return SourceMangaDetails(
+          url: '${s.baseUrl}/series/$slug',
+          title: title,
+          thumbnailUrl: attrAbs(info.querySelector('#cover img'), 'data-src', res.url),
+          author: _kaliMeta(info, 'Authors', 'span'),
+          genres: [
+            for (final p in info.querySelectorAll('.meta p'))
+              if (p.querySelector('strong')?.text.contains('Genres') ?? false) for (final a in p.querySelectorAll('a')) clean(a.text).replaceAll(RegExp(r'[, ]+$'), ''),
+          ],
+          description: [if (summary.isNotEmpty) summary, if (alt.isNotEmpty) 'Alternative titles: ${alt.join(' · ')}'].join('\n\n'),
+          status: parseStatus(_kaliMeta(info, 'Status', 'span')),
+          chapters: chapters,
+        );
+      },
+      pagesFn: (s, ch) async {
+        final res = await s.fetchHtml(_u(ch.url));
+        return [
+          for (final img in res.document.querySelectorAll('#chapter-images img'))
+            if (attrAbs(img, 'src', res.url) case final u? when u.isNotEmpty) u,
+        ];
+      },
+    );
+
+List<MangaSource> portsAa() => [_myadultcomics(), _schalescans(), _mythtoons(), _bbato(), _inkora(), _kaliscans()];
