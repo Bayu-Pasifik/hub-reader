@@ -40,5 +40,23 @@ List<MangaSource> adultGalleriesC() => [
           return [for (var i = 1; i <= count; i++) '${base}p${i.toString().padLeft(3, '0')}.webp'];
         },
       ),
+      GallerySource(
+        id: 'en.hdporncomics',
+        name: 'HD Porn Comics',
+        baseUrl: 'https://hdporncomics.com',
+        popularUrl: (b, p) => p > 1 ? '$b/page/$p/' : '$b/',
+        searchUrl: (b, p, q) => '$b/${p > 1 ? 'page/$p/' : ''}?s=${Uri.encodeQueryComponent(q)}',
+        cardSel: 'div.comic-image',
+        cardLinkSel: 'a[href]',
+        cardTitleSel: 'img',
+        nextSel: 'a.next.page-numbers, a[rel=next]',
+        titleSel: 'h1',
+        tagSel: 'a[rel=tag]',
+        imagesOf: (d, u) => {
+          for (final m in RegExp(r'https://im\.hdporncomics\.com/uploads/[^"\s\x5C]+\.(?:jpg|jpeg|png|webp)')
+              .allMatches(d.outerHtml.replaceAll(r'\/', '/')))
+            m[0]!,
+        }.toList(),
+      ),
       // ADD
     ];
