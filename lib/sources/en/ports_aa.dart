@@ -959,4 +959,92 @@ FnSource _babesource() => FnSource(
       },
     );
 
-List<MangaSource> portsAa() => [_myadultcomics(), _schalescans(), _mythtoons(), _bbato(), _inkora(), _kaliscans(), _mymangalist(), _hentaikun(), _pornhwame(), _streamex(), _babesource()];
+// ------------------------------------------------------------------ GirlsTop
+
+const _gtUa = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36'};
+
+MangaPage _gtPage(HtmlResponse res) {
+  final out = <SourceManga>[];
+  for (final el in res.document.querySelectorAll('.thumbs .thumb')) {
+    final a = el.querySelector('.post_title a');
+    final href = absUrl(res.url, a?.attributes['href']);
+    if (a == null || href == null) continue;
+    out.add(SourceManga(url: href, title: clean(a.text), thumbnailUrl: attrAbs(el.querySelector('picture img'), 'src', res.url)));
+  }
+  return MangaPage(out, hasNextPage: res.document.querySelector('li.next a') != null);
+}
+
+Future<MangaPage> _gtGet(FnSource s, String path, int page) async {
+  final sep = path.contains('?') ? '&' : '?';
+  final url = page == 1 ? '${s.baseUrl}/$path' : '${s.baseUrl}/$path${sep}page=${page - 1}';
+  return _gtPage(await s.fetchHtml(_u(url), headers: _gtUa));
+}
+
+FnSource _girlstop() => FnSource(
+      id: 'en.girlstop',
+      name: 'GirlsTop',
+      baseUrl: 'https://en.girlstop.info',
+      contentWarning: ContentWarning.nsfw,
+      popularFn: (s, page) => _gtGet(s, 'filter.php?srt=viw', page),
+      latestFn: (s, page) => _gtGet(s, 'index.php', page),
+      searchFn: (s, page, q) async {
+        if (page > 1) return const MangaPage([], hasNextPage: false);
+        final r = await s.dio.postUri<String>(
+          _u('${s.baseUrl}/models.php'),
+          data: {'text': q},
+          options: Options(contentType: Headers.formUrlEncodedContentType, headers: _gtUa),
+        );
+        return _gtPage(HtmlResponse(html.parse(r.data ?? ''), r.data ?? '', r.realUri));
+      },
+      detailsFn: (s, url) async {
+        final res = await s.fetchHtml(_u(url), headers: _gtUa);
+        final d = res.document;
+        if (url.contains('psto.php')) {
+          return SourceMangaDetails(
+            url: url,
+            title: clean(d.querySelector('h1')?.text),
+            thumbnailUrl: attrAbs(d.querySelector('.tiles-wrap img'), 'src', res.url),
+            author: clean(d.querySelector(".ps-desc a[href*='user.php']")?.text),
+            genres: [for (final a in d.querySelectorAll('.ps-tags a')) clean(a.text)],
+            description: [for (final p in d.querySelectorAll('.ps-desc')) if (!p.classes.contains('ps-tags')) clean(p.text)].join('\n').trim(),
+            status: SourceMangaStatus.completed,
+            chapters: [SourceChapter(url: url, name: 'Gallery', number: 1)],
+          );
+        }
+        final chapters = <SourceChapter>[];
+        var doc = d;
+        var base = res.url;
+        while (true) {
+          for (final el in doc.querySelectorAll('.thumbs .thumb')) {
+            final a = el.querySelector('.post_title a');
+            final href = absUrl(base, a?.attributes['href']);
+            if (a == null || href == null) continue;
+            String? date;
+            for (final tr in el.querySelectorAll('tr')) {
+              final tds = tr.querySelectorAll('td');
+              if (tds.isNotEmpty && tds.first.text.contains('Approved')) date = tds.last.text;
+            }
+            chapters.add(SourceChapter(url: href, name: clean(a.text), uploadedAt: parseLooseDate(date)));
+          }
+          final next = doc.querySelector('li.next a')?.attributes['href'];
+          if (next == null) break;
+          final nr = await s.fetchHtml(_u('${s.baseUrl}/$next'), headers: _gtUa);
+          doc = nr.document;
+          base = nr.url;
+        }
+        return SourceMangaDetails(
+          url: url,
+          title: clean(d.querySelector('h1.index')?.text).replaceFirst(RegExp(r' - nude galleries.*'), ''),
+          thumbnailUrl: attrAbs(d.querySelector('.model-cover img'), 'src', res.url),
+          description: clean(d.querySelector('#modeldesc')?.text),
+          status: SourceMangaStatus.ongoing,
+          chapters: chapters,
+        );
+      },
+      pagesFn: (s, ch) async {
+        final res = await s.fetchHtml(_u(ch.url), headers: _gtUa);
+        return [for (final a in res.document.querySelectorAll('a.fullimg')) if (absUrl(res.url, a.attributes['href']) case final u?) u];
+      },
+    );
+
+List<MangaSource> portsAa() => [_myadultcomics(), _schalescans(), _mythtoons(), _bbato(), _inkora(), _kaliscans(), _mymangalist(), _hentaikun(), _pornhwame(), _streamex(), _babesource(), _girlstop()];
