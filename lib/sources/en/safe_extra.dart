@@ -824,6 +824,62 @@ List<MangaSource> safeExtra() => [
           return [for (final u in (data['images'] as List)) '$u'];
         },
       ),
+      FnSource(
+        id: 'en.hentaitnt',
+        name: 'HentaiTnT',
+        baseUrl: 'https://hentaitnt.net',
+        contentWarning: ContentWarning.nsfw,
+        popularFn: (s, page) => _tntList(s, '${s.baseUrl}/recommended${page > 1 ? '/page/$page' : ''}'),
+        latestFn: (s, page) => _tntList(s, '${s.baseUrl}/latest-updates${page > 1 ? '/page/$page' : ''}'),
+        searchFn: (s, page, q) => _tntList(s, '${s.baseUrl}${page > 1 ? '/page/$page' : ''}/?s=${Uri.encodeQueryComponent(q)}'),
+        detailsFn: (s, url) async {
+          final res = await s.fetchHtml(Uri.parse(url));
+          final d = res.document;
+          final id = d.querySelector('#post_manga_id')?.attributes['value'];
+          final chapters = <SourceChapter>[];
+          if (id != null) {
+            final r = await s.postFormJson(Uri.parse('${s.baseUrl}/wp-admin/admin-ajax.php'), {
+              'action': 'baka_ajax',
+              'type': 'load_chapters_paginated',
+              'parent_id': id,
+              'per_page': '10000',
+              'order': 'newest_first',
+            }) as Map;
+            final frag = html_parser.parseFragment('${((r['data'] as Map)['html'])}');
+            for (final el in frag.querySelectorAll('.comic-card')) {
+              final a = el.querySelector('a');
+              final href = attrAbs(a, 'href', Uri.parse(s.baseUrl));
+              if (a == null || href == null) continue;
+              final vip = el.querySelector('.fa-crown') != null;
+              final name = clean(a.attributes['title'] ?? a.text);
+              chapters.add(SourceChapter(
+                url: href,
+                name: '${vip ? '🔒 ' : ''}$name',
+                number: double.tryParse(RegExp(r'(\d+(?:\.\d+)?)').firstMatch(name)?[1] ?? ''),
+              ));
+            }
+          }
+          final status = clean(d.querySelector('i[title=Status]')?.parent?.text).toLowerCase();
+          return SourceMangaDetails(
+            url: url,
+            title: clean(d.querySelector('meta[property="og:title"]')?.attributes['content'] ?? d.querySelector('h1')?.text),
+            thumbnailUrl: d.querySelector('meta[property="og:image"]')?.attributes['content'],
+            author: clean(d.querySelector('i[title=Artists] + span a')?.text),
+            description: clean(d.querySelector('#synopsisText')?.text),
+            genres: [for (final g in d.querySelectorAll('.genre-item')) clean(g.text)],
+            status: status.contains('completed')
+                ? SourceMangaStatus.completed
+                : status.contains('ongoing')
+                    ? SourceMangaStatus.ongoing
+                    : SourceMangaStatus.unknown,
+            chapters: chapters,
+          );
+        },
+        pagesFn: (s, ch) async {
+          final res = await s.fetchHtml(Uri.parse(ch.url));
+          return imagesFrom(res.document, res.url, '.page-image', ['src', 'data-src']);
+        },
+      ),
       SingleSeriesSource(
         id: 'en.megatokyo',
         name: 'Megatokyo',
@@ -1257,4 +1313,17 @@ Future<MangaPage> _hentaiHereList(HttpSource s, String url) async {
     out.add(SourceManga(url: href, title: title, thumbnailUrl: attrAbs(card.querySelector('img'), 'src', res.url)));
   }
   return MangaPage(out, hasNextPage: res.document.querySelector('a[rel=next]') != null);
+}
+
+Future<MangaPage> _tntList(HttpSource s, String url) async {
+  final res = await s.fetchHtml(Uri.parse(url));
+  final out = <SourceManga>[];
+  final seen = <String>{};
+  for (final a in res.document.querySelectorAll('.comic-card a')) {
+    final href = attrAbs(a, 'href', res.url);
+    final title = clean(a.attributes['title']);
+    if (href == null || title.isEmpty || !seen.add(href)) continue;
+    out.add(SourceManga(url: href, title: title, thumbnailUrl: attrAbs(a.querySelector('img'), 'src', res.url)));
+  }
+  return MangaPage(out, hasNextPage: res.document.querySelector('a[title=Next]') != null);
 }
