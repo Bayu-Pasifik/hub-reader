@@ -359,6 +359,14 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
                           : _hiddenGroups.isNotEmpty && ordered.isNotEmpty
                               ? tr('Semua bab disembunyikan filter scanlator')
                               : tr('Belum ada bab'),
+                      // Daftar memang kosong (bukan karena filter): beri jalan keluar.
+                      action: ordered.isEmpty
+                          ? FilledButton.icon(
+                              onPressed: () => ref.invalidate(sourceDetailsProvider(_key)),
+                              icon: const Icon(Icons.refresh),
+                              label: Text(tr('Coba lagi')),
+                            )
+                          : null,
                     ),
                   )
                 else

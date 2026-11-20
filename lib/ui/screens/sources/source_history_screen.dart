@@ -84,6 +84,11 @@ class SourceHistoryScreen extends ConsumerWidget {
               icon: Icons.history,
               title: tr('Belum ada riwayat'),
               message: tr('Bab yang kamu buka akan muncul di sini.'),
+              action: FilledButton.icon(
+                onPressed: () => context.go('/sources'),
+                icon: const Icon(Icons.explore_outlined),
+                label: Text(tr('Jelajahi komik')),
+              ),
             )
           : ListView.separated(
               itemCount: history.length,

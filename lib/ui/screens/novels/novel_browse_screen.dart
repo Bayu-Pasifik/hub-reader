@@ -203,7 +203,7 @@ class NovelGrid extends ConsumerWidget {
       );
     }
     if (state.isLoading && state.items.isEmpty) {
-      return const LoadingView();
+      return const BrowseSkeleton();
     }
     if (state.isEmpty) {
       return EmptyView(

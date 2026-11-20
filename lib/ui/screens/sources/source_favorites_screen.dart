@@ -284,6 +284,11 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
                       icon: Icons.favorite_outline,
                       title: tr('Belum ada favorit'),
                       message: tr('Ketuk ikon hati di halaman detail seri untuk menyimpannya ke sini.'),
+                      action: FilledButton.icon(
+                        onPressed: () => context.go('/sources'),
+                        icon: const Icon(Icons.explore_outlined),
+                        label: Text(tr('Jelajahi komik')),
+                      ),
                     )
                   : TabBarView(
                       children: [

@@ -41,6 +41,11 @@ class DownloadsScreen extends ConsumerWidget {
           icon: Icons.download_outlined,
           title: tr('Belum ada unduhan'),
           message: tr('Ketuk ikon unduh di daftar bab untuk menyimpan bab agar bisa dibaca offline.'),
+          action: FilledButton.icon(
+            onPressed: () => context.go('/sources'),
+            icon: const Icon(Icons.explore_outlined),
+            label: Text(tr('Jelajahi komik')),
+          ),
         ),
       );
     }

@@ -1,3 +1,4 @@
+import '../../haptics.dart';
 import '../../theme/neo_brutal.dart';
 import 'dart:io';
 import '../../../core/i18n/strings.dart';
@@ -269,6 +270,11 @@ class _Pages extends ConsumerStatefulWidget {
 class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMixin {
   final _positions = ItemPositionsListener.create();
   final _offsetController = ScrollOffsetController();
+  final _itemController = ItemScrollController();
+
+  /// Petunjuk ketuk-tepi/slider; tampil sekali pada pembukaan reader pertama.
+  static const _hintKey = 'reader.hint.v1';
+  bool _showHint = false;
 
   // ---- gulir otomatis (webtoon)
   late final Ticker _ticker = createTicker(_onTick);
@@ -305,6 +311,14 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
   void initState() {
     super.initState();
     _current = _initialPage;
+    final prefs = ref.read(sharedPreferencesProvider);
+    if (prefs.getBool(_hintKey) != true) {
+      _showHint = true;
+      prefs.setBool(_hintKey, true);
+      Future<void>.delayed(const Duration(seconds: 5), () {
+        if (mounted && _showHint) setState(() => _showHint = false);
+      });
+    }
     _positions.itemPositions.addListener(_onScroll);
     _session.activity();
     _lifecycle = AppLifecycleListener(onPause: _session.pause, onResume: _session.activity);
@@ -414,6 +428,90 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
     // Spread dicatat sebagai halaman terakhirnya (supaya bab selesai terdeteksi).
     _setPage(spread ? pagesOfSpread(index, _total).last : index);
   }
+
+  /// Lompat ke halaman [page] (indeks 0): mode per halaman atau webtoon.
+  void _jumpToPage(int page) {
+    if (_total == 0) return;
+    final p = page.clamp(0, _total - 1);
+    if (widget.mode.isPaged) {
+      final c = _pageController;
+      if (c != null && c.hasClients) c.jumpToPage(_spreadActive ? spreadOfPage(p) : p);
+    } else if (_itemController.isAttached) {
+      _itemController.jumpTo(index: p);
+    }
+  }
+
+  /// Lembar bawah dengan slider untuk lompat cepat ke halaman tertentu.
+  void _showPageSlider() {
+    if (_total < 2) return;
+    var value = _current.toDouble();
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheet) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(trp('Halaman {i} dari {n}', {'i': value.round() + 1, 'n': _total}),
+                    style: Theme.of(ctx).textTheme.titleMedium),
+                Slider(
+                  min: 0,
+                  max: (_total - 1).toDouble(),
+                  divisions: _total - 1,
+                  value: value.clamp(0, (_total - 1).toDouble()),
+                  label: '${value.round() + 1}',
+                  semanticFormatterCallback: (v) => trp('Halaman {i} dari {n}', {'i': v.round() + 1, 'n': _total}),
+                  onChanged: (v) {
+                    if (v.round() != value.round()) Haptics.tick();
+                    setSheet(() => value = v);
+                  },
+                  onChangeEnd: (v) => _jumpToPage(v.round()),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Petunjuk satu kali: ketuk tepi untuk pindah halaman, ketuk angka untuk lompat.
+  Widget _hintOverlay() => Positioned.fill(
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => setState(() => _showHint = false),
+          child: ColoredBox(
+            color: Colors.black54,
+            child: Center(
+              child: DecoratedBox(
+                decoration: NeoBrutal.box(context, r: 8, offset: const Offset(4, 4)),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(tr('Tips membaca'), style: Theme.of(context).textTheme.titleMedium),
+                      const SizedBox(height: 8),
+                      Text(
+                        widget.mode.isPaged
+                            ? tr('Ketuk tepi kiri/kanan untuk pindah halaman.')
+                            : tr('Gulir ke bawah untuk membaca.'),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(tr('Ketuk angka halaman di pojok untuk lompat cepat.'), textAlign: TextAlign.center),
+                      const SizedBox(height: 4),
+                      Text(tr('Tekan lama gambar untuk simpan atau bagikan.'), textAlign: TextAlign.center),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
 
   String _counter(int total) {
     if (!widget.mode.isPaged || !_spreadActive) return '${_current + 1} / $total';
@@ -707,6 +805,7 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
               doubleTapScale: 2,
               child: ScrollablePositionedList.builder(
                 scrollOffsetController: _offsetController,
+                itemScrollController: _itemController,
                 itemCount: urls.length + 1,
                 initialScrollIndex: initial,
                 itemPositionsListener: _positions,
@@ -751,23 +850,29 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
               // pembaca layar mengumumkan halaman baru setiap ganti halaman.
               child: Semantics(
                 liveRegion: true,
+                button: true,
                 label: trp('Halaman {c}', {'c': _counter(urls.length)}),
-                child: IgnorePointer(
+                onTap: _showPageSlider,
                 child: ExcludeSemantics(
-                child: DecoratedBox(
-                  decoration: NeoBrutal.box(context, color: Theme.of(context).colorScheme.secondary, r: 4, offset: const Offset(2, 2)),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    child: Text(
-                      _counter(urls.length),
-                      style: TextStyle(color: Theme.of(context).colorScheme.onSecondary, fontSize: 12.5, fontWeight: FontWeight.w800),
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: _showPageSlider,
+                    child: DecoratedBox(
+                      decoration: NeoBrutal.box(context, color: Theme.of(context).colorScheme.secondary, r: 4, offset: const Offset(2, 2)),
+                      child: Padding(
+                        // Area ketuk lebih lega dari tampilan chip.
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        child: Text(
+                          _counter(urls.length),
+                          style: TextStyle(color: Theme.of(context).colorScheme.onSecondary, fontSize: 12.5, fontWeight: FontWeight.w800),
+                        ),
+                      ),
                     ),
                   ),
                 ),
-                ),
-              ),
               ),
             ),
+            if (_showHint) _hintOverlay(),
           ],
         );
       },

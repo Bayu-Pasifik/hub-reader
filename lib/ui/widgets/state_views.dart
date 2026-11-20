@@ -1,3 +1,4 @@
+import '../../core/i18n/strings.dart';
 import '../theme/neo_brutal.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
@@ -285,5 +286,80 @@ class LoadMoreFooter extends StatelessWidget {
     // Ditunda: provider tidak boleh diubah saat build.
     Future.microtask(onShown);
     return const LoadingView(size: 56);
+  }
+}
+
+/// Kerangka grid sampul yang berdenyut, sebagai pengganti spinner saat daftar
+/// jelajah pertama kali dimuat. Tata letaknya mirip grid asli sehingga
+/// tidak ada lompatan saat data datang. Tanpa denyut bila animasi dimatikan.
+class BrowseSkeleton extends StatefulWidget {
+  const BrowseSkeleton({super.key});
+
+  @override
+  State<BrowseSkeleton> createState() => _BrowseSkeletonState();
+}
+
+class _BrowseSkeletonState extends State<BrowseSkeleton> with SingleTickerProviderStateMixin {
+  late final AnimationController _pulse = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 900),
+  );
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _pulse.stop();
+    } else if (!_pulse.isAnimating) {
+      _pulse.repeat(reverse: true);
+    }
+  }
+
+  @override
+  void dispose() {
+    _pulse.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Semantics(
+      label: tr('Memuat…'),
+      child: ExcludeSemantics(
+        child: GridView.builder(
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(12),
+          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+            maxCrossAxisExtent: 130,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: 3 / 4.7,
+          ),
+          itemCount: 18,
+          itemBuilder: (_, __) => AnimatedBuilder(
+            animation: _pulse,
+            builder: (_, __) {
+              final color = Color.lerp(scheme.surfaceContainerHighest, scheme.surfaceContainerHigh, _pulse.value)!;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: DecoratedBox(
+                      decoration: NeoBrutal.box(context, color: color, r: 8, offset: const Offset(3, 3)),
+                      child: const SizedBox.expand(),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(height: 10, width: double.infinity, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(3))),
+                  const SizedBox(height: 4),
+                  Container(height: 10, width: 60, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(3))),
+                ],
+              );
+            },
+          ),
+        ),
+      ),
+    );
   }
 }
