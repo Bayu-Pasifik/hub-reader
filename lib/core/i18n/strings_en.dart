@@ -17,6 +17,8 @@ const Map<String, String> stringsEn = {
   'Komga, Kavita, Calibre-Web: unduh buku & komik': 'Komga, Kavita, Calibre-Web: download books & comics',
   // Navigasi
   'Komik': 'Comics',
+  'Selengkapnya': 'Read more',
+  'Ciutkan': 'Show less',
   'Novel': 'Novels',
   'Favorit': 'Favorites',
   'Riwayat': 'History',

@@ -1,5 +1,6 @@
 import '../../haptics.dart';
 import 'package:flutter/material.dart';
+import '../../widgets/series_info_widgets.dart';
 import '../../../core/i18n/strings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -52,7 +53,6 @@ class NovelDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
-  bool _descExpanded = false;
   bool _newestFirst = false;
 
   /// Tampilkan hanya bab ber-bookmark.
@@ -617,22 +617,11 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
           ),
           if (novel.genres.isNotEmpty) ...[
             const SizedBox(height: 12),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: [for (final g in novel.genres) Chip(label: Text(g), visualDensity: VisualDensity.compact)],
-            ),
+            GenreChips(genres: novel.genres),
           ],
           if (summary != null && summary.isNotEmpty) ...[
             const SizedBox(height: 12),
-            InkWell(
-              onTap: () => setState(() => _descExpanded = !_descExpanded),
-              child: Text(
-                summary,
-                maxLines: _descExpanded ? null : 5,
-                overflow: _descExpanded ? null : TextOverflow.ellipsis,
-              ),
-            ),
+            ExpandableDescription(text: summary, maxLines: 5),
           ],
           SeriesNoteCard(series: _libKey),
         ],

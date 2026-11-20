@@ -124,7 +124,7 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
                 decoration: InputDecoration(hintText: tr('Cari sumber…'), border: InputBorder.none),
                 onChanged: (_) => setState(() {}),
               )
-            : Text(tr('Sumber')),
+            : Text(tr('Komik')),
         actions: [
           IconButton(
             tooltip: _searching ? tr('Tutup pencarian') : tr('Cari sumber'),

@@ -1,5 +1,6 @@
 import '../../haptics.dart';
 import 'package:flutter/material.dart';
+import '../../widgets/series_info_widgets.dart';
 import '../../../core/i18n/strings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -44,7 +45,6 @@ class SourceMangaScreen extends ConsumerStatefulWidget {
 }
 
 class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
-  bool _descExpanded = false;
 
   /// Situs mengurutkan terbaru dulu; pengguna bisa membalik.
   bool _oldestFirst = false;
@@ -445,7 +445,11 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
             ? FloatingActionButton.extended(
                 onPressed: () => _openChapter(lastRead.chapterUrl),
                 icon: const Icon(Icons.play_arrow),
-                label: Text('${tr('Lanjutkan')} · ${lastRead.chapterName}'),
+                // Nama bab panjang dipotong agar tombol tidak melebar ke tepi layar.
+                label: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 220),
+                  child: Text('${tr('Lanjutkan')} · ${lastRead.chapterName}', overflow: TextOverflow.ellipsis),
+                ),
               )
             : FloatingActionButton.extended(
                 // Bab terakhir di list situs = bab pertama.
@@ -496,24 +500,11 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
           ),
           if (manga.genres.isNotEmpty) ...[
             const SizedBox(height: 12),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: [
-                for (final g in manga.genres) Chip(label: Text(g), visualDensity: VisualDensity.compact),
-              ],
-            ),
+            GenreChips(genres: manga.genres),
           ],
           if (manga.description != null) ...[
             const SizedBox(height: 12),
-            InkWell(
-              onTap: () => setState(() => _descExpanded = !_descExpanded),
-              child: Text(
-                manga.description!,
-                maxLines: _descExpanded ? null : 4,
-                overflow: _descExpanded ? null : TextOverflow.ellipsis,
-              ),
-            ),
+            ExpandableDescription(text: manga.description!, maxLines: 4),
           ],
           SeriesNoteCard(series: _key),
           if (ref.read(sourceProvider(widget.sourceId)) is! LocalSource) _SimilarSeries(sourceId: widget.sourceId, url: widget.url, headers: headers),

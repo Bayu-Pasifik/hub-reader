@@ -838,7 +838,7 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
                 left: 12,
                 bottom: 12,
                 child: IconButton.filledTonal(
-                  tooltip: _autoScroll ? 'Hentikan gulir otomatis' : 'Gulir otomatis',
+                  tooltip: _autoScroll ? tr('Hentikan gulir otomatis') : tr('Gulir otomatis'),
                   icon: Icon(_autoScroll ? Icons.pause : Icons.keyboard_double_arrow_down),
                   onPressed: _toggleAutoScroll,
                 ),
