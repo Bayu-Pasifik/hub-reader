@@ -1,3 +1,4 @@
+import '../../haptics.dart';
 import 'package:flutter/material.dart';
 import '../../../core/i18n/strings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -171,6 +172,7 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
     final item = _item(n);
     if (!was && !await confirmAddDuplicateFavorite(context, ref, item)) return;
     if (!mounted) return;
+    Haptics.tap();
     ref.read(sourceFavoritesProvider.notifier).toggle(item);
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()

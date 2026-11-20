@@ -1,3 +1,4 @@
+import '../haptics.dart';
 import 'package:flutter/material.dart';
 
 import 'cover_image.dart';
@@ -28,7 +29,12 @@ class SeriesCard extends StatelessWidget {
       width: width,
       child: InkWell(
         onTap: onTap,
-        onLongPress: onLongPress,
+        onLongPress: onLongPress == null
+            ? null
+            : () {
+                Haptics.tap();
+                onLongPress!();
+              },
         borderRadius: BorderRadius.circular(8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

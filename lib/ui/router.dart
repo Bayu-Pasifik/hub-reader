@@ -86,13 +86,11 @@ final routerProvider = Provider<GoRouter>((ref) {
     const ShellTab('/sources', Icons.extension_outlined, Icons.extension, 'Komik'),
     const ShellTab('/novels', Icons.menu_book_outlined, Icons.menu_book, 'Novel'),
     const ShellTab('/favorites', Icons.favorite_outline, Icons.favorite, 'Favorit'),
-    const ShellTab('/history', Icons.history_outlined, Icons.history, 'Riwayat'),
     const ShellTab('/settings', Icons.settings_outlined, Icons.settings, 'Pengaturan'),
   ];
 
   Widget tabScreen(String path) => switch (path) {
         '/favorites' => const SourceFavoritesScreen(),
-        '/history' => const SourceHistoryScreen(),
         '/novels' => const NovelSourcesScreen(),
         '/settings' => const AppSettingsScreen(),
         _ => const SourcesScreen(),
@@ -110,6 +108,12 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(path: tab.path, builder: (_, __) => tabScreen(tab.path)),
             ]),
         ],
+      ),
+      // Riwayat: dibuka dari app bar Favorit (bukan tab lagi).
+      GoRoute(
+        path: '/history',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (_, __) => const SourceHistoryScreen(),
       ),
       GoRoute(
         path: '/migrate',

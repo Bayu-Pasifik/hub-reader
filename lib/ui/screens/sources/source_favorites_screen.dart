@@ -1,3 +1,4 @@
+import '../../haptics.dart';
 import 'dart:math' show Random, max;
 
 import 'package:flutter/material.dart';
@@ -229,6 +230,11 @@ class _SourceFavoritesScreenState extends ConsumerState<SourceFavoritesScreen> {
                 icon: Badge(isLabelVisible: filtered, smallSize: 8, child: const Icon(Icons.filter_list)),
                 onPressed: () => _openFilter(tabs[DefaultTabController.of(context).index.clamp(0, tabs.length - 1)]),
               ),
+            ),
+            IconButton(
+              tooltip: tr('Riwayat'),
+              icon: const Icon(Icons.history),
+              onPressed: () => context.push('/history'),
             ),
             IconButton(
               tooltip: tr('Pembaruan'),
@@ -744,6 +750,7 @@ class _FavoriteActionsSheet extends ConsumerWidget {
               title: Text(tr('Hapus dari favorit')),
               onTap: () {
                 final messenger = ScaffoldMessenger.of(context);
+                Haptics.thud();
                 favorites.remove(entry.item.key);
                 Navigator.pop(context);
                 messenger
@@ -751,7 +758,10 @@ class _FavoriteActionsSheet extends ConsumerWidget {
                   ..showSnackBar(SnackBar(
                     content: Text(trp('"{title}" dihapus dari favorit', {'title': entry.item.title})),
                     persist: false,
-                    action: SnackBarAction(label: tr('Urungkan'), onPressed: () => favorites.restore(entry)),
+                    action: SnackBarAction(label: tr('Urungkan'), onPressed: () {
+                      Haptics.tap();
+                      favorites.restore(entry);
+                    }),
                   ));
               },
             ),
@@ -806,7 +816,23 @@ class _CategoriesDialog extends ConsumerWidget {
                           IconButton(
                             tooltip: tr('Hapus'),
                             icon: const Icon(Icons.delete_outline, size: 20),
-                            onPressed: () => n.remove(categories[i]),
+                            onPressed: () async {
+                              final ok = await showDialog<bool>(
+                                context: context,
+                                builder: (ctx) => AlertDialog(
+                                  title: Text(trp('Hapus kategori "{name}"?', {'name': categories[i]})),
+                                  content: Text(tr('Seri di dalamnya tidak dihapus, hanya dilepas dari kategori ini.')),
+                                  actions: [
+                                    TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(tr('Batal'))),
+                                    FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(tr('Hapus'))),
+                                  ],
+                                ),
+                              );
+                              if (ok == true) {
+                                Haptics.thud();
+                                await n.remove(categories[i]);
+                              }
+                            },
                           ),
                         ],
                       ),

@@ -431,6 +431,15 @@ class SourceHistoryNotifier extends Notifier<List<SourceHistoryEntry>> {
     state = [];
     await _store.writeHistory(state);
   }
+
+  /// Untuk tombol "Urungkan": kembalikan [entries] ke daftar (urut terbaru dulu).
+  Future<void> restore(List<SourceHistoryEntry> entries) async {
+    final have = {for (final e in state) e.item.key};
+    final merged = [...state, ...entries.where((e) => !have.contains(e.item.key))]
+      ..sort((a, b) => b.readAt.compareTo(a.readAt));
+    state = merged.take(maxEntries).toList();
+    await _store.writeHistory(state);
+  }
 }
 
 final sourceLastReadProvider = Provider.autoDispose.family<SourceHistoryEntry?, SourceItemKey>(

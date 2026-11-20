@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import '../../haptics.dart';
 import '../../../core/i18n/strings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -288,7 +289,23 @@ class _SeriesDownloads extends ConsumerWidget {
                 IconButton(
                   tooltip: tr('Hapus'),
                   icon: const Icon(Icons.close),
-                  onPressed: () => ref.read(downloadIndexProvider.notifier).remove(c.key),
+                  onPressed: () async {
+                    final ok = await showDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: Text(trp('Hapus "{name}"?', {'name': c.chapterName})),
+                        content: Text(tr('File unduhan akan dihapus dari perangkat.')),
+                        actions: [
+                          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(tr('Batal'))),
+                          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(tr('Hapus'))),
+                        ],
+                      ),
+                    );
+                    if (ok == true) {
+                      Haptics.thud();
+                      await ref.read(downloadIndexProvider.notifier).remove(c.key);
+                    }
+                  },
                 ),
               ],
             ),

@@ -3,6 +3,7 @@ import '../../core/i18n/strings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../haptics.dart';
 import '../../state/app_settings_provider.dart';
 import '../../state/auto_sync.dart';
 import '../../state/library_updates_provider.dart';
@@ -72,7 +73,10 @@ class _MainShellState extends ConsumerState<MainShell> with WidgetsBindingObserv
     final scheme = Theme.of(context).colorScheme;
     final wide = MediaQuery.sizeOf(context).width >= railBreakpoint;
 
-    void select(int index) => shell.goBranch(index, initialLocation: index == shell.currentIndex);
+    void select(int index) {
+      if (index != shell.currentIndex) Haptics.tick();
+      shell.goBranch(index, initialLocation: index == shell.currentIndex);
+    }
     Widget icon(ShellTab tab) => Badge(
           isLabelVisible: tab.path == '/favorites' && unseen > 0,
           label: Text('$unseen'),

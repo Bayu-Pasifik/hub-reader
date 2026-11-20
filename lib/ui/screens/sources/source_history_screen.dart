@@ -1,9 +1,11 @@
+import '../../haptics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/utils/formatters.dart';
 import '../../../state/app_settings_provider.dart';
+import '../../../data/models/source_library.dart';
 import '../../../state/source_library_providers.dart';
 import '../../widgets/library_routing.dart';
 import '../../widgets/source_widgets.dart';
@@ -14,19 +16,25 @@ import '../../../core/i18n/strings.dart';
 class SourceHistoryScreen extends ConsumerWidget {
   const SourceHistoryScreen({super.key});
 
-  Future<void> _confirmClear(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(tr('Hapus semua riwayat?')),
-        content: Text(tr('Riwayat baca di perangkat ini akan dihapus permanen.')),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr('Batal'))),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(tr('Hapus'))),
-        ],
-      ),
-    );
-    if (confirmed == true) await ref.read(sourceHistoryProvider.notifier).clear();
+  /// Hapus lalu tawarkan "Urungkan" (tanpa dialog konfirmasi).
+  void _removeWithUndo(BuildContext context, WidgetRef ref, List<SourceHistoryEntry> removed, String message,
+      Future<void> Function() action) {
+    final notifier = ref.read(sourceHistoryProvider.notifier);
+    Haptics.thud();
+    action();
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        content: Text(message),
+        persist: false,
+        action: SnackBarAction(
+          label: tr('Urungkan'),
+          onPressed: () {
+            Haptics.tap();
+            notifier.restore(removed);
+          },
+        ),
+      ));
   }
 
   @override
@@ -60,7 +68,13 @@ class SourceHistoryScreen extends ConsumerWidget {
             IconButton(
               tooltip: tr('Hapus semua'),
               icon: const Icon(Icons.delete_sweep_outlined),
-              onPressed: () => _confirmClear(context, ref),
+              onPressed: () => _removeWithUndo(
+                context,
+                ref,
+                history,
+                tr('Riwayat dihapus'),
+                ref.read(sourceHistoryProvider.notifier).clear,
+              ),
             ),
         ],
       ),
@@ -78,7 +92,30 @@ class SourceHistoryScreen extends ConsumerWidget {
                 final entry = history[i];
                 final item = entry.item;
                 final source = librarySourceInfo(ref, item.sourceId);
-                return ListTile(
+                return Dismissible(
+                  key: ValueKey(item.key),
+                  background: ColoredBox(
+                    color: Theme.of(context).colorScheme.errorContainer,
+                    child: const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Padding(padding: EdgeInsets.symmetric(horizontal: 20), child: Icon(Icons.delete_outline)),
+                    ),
+                  ),
+                  secondaryBackground: ColoredBox(
+                    color: Theme.of(context).colorScheme.errorContainer,
+                    child: const Align(
+                      alignment: Alignment.centerRight,
+                      child: Padding(padding: EdgeInsets.symmetric(horizontal: 20), child: Icon(Icons.delete_outline)),
+                    ),
+                  ),
+                  onDismissed: (_) => _removeWithUndo(
+                    context,
+                    ref,
+                    [entry],
+                    trp('"{title}" dihapus dari riwayat', {'title': item.title}),
+                    () => ref.read(sourceHistoryProvider.notifier).remove(item.key),
+                  ),
+                  child: ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                   leading: SourceCover(
                     url: item.thumbnailUrl,
@@ -97,7 +134,14 @@ class SourceHistoryScreen extends ConsumerWidget {
                   trailing: IconButton(
                     tooltip: tr('Hapus dari riwayat'),
                     icon: const Icon(Icons.close),
-                    onPressed: () => ref.read(sourceHistoryProvider.notifier).remove(item.key),
+                    onPressed: () => _removeWithUndo(
+                      context,
+                      ref,
+                      [entry],
+                      trp('"{title}" dihapus dari riwayat', {'title': item.title}),
+                      () => ref.read(sourceHistoryProvider.notifier).remove(item.key),
+                    ),
+                  ),
                   ),
                 );
               },
