@@ -21,7 +21,7 @@
   }
 }
 
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: clip; }
 body {
   background-color: var(--color-paper);
   background-image: radial-gradient(#11111122 1.2px, transparent 1.2px);

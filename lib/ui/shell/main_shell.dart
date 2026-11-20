@@ -89,18 +89,27 @@ class _MainShellState extends ConsumerState<MainShell> with WidgetsBindingObserv
             color: scheme.tertiaryContainer,
             child: InkWell(
               onTap: () => ref.read(appSettingsProvider.notifier).update((s) => s.copyWith(incognito: false)),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.visibility_off, size: 14, color: scheme.onTertiaryContainer),
-                    const SizedBox(width: 6),
-                    Text(
-                      tr('Mode samaran · ketuk untuk mematikan'),
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(color: scheme.onTertiaryContainer),
-                    ),
-                  ],
+              child: ConstrainedBox(
+                // Target ketuk memadai (sebelumnya hanya ~22dp).
+                constraints: const BoxConstraints(minHeight: 40),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.visibility_off, size: 18, color: scheme.onTertiaryContainer),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          tr('Mode samaran · ketuk untuk mematikan'),
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelMedium
+                              ?.copyWith(color: scheme.onTertiaryContainer, fontWeight: FontWeight.w800),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

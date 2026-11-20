@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import {
   Archive,
   BookOpen,
@@ -21,6 +22,37 @@ import { Accordion } from './components/ui/accordion'
 const REPO = 'https://github.com/Bayu-Pasifik/hub-reader'
 const RELEASE = `${REPO}/releases/latest`
 const ICON = `${import.meta.env.BASE_URL}icon.png`
+const API = 'https://api.github.com/repos/Bayu-Pasifik/hub-reader/releases/latest'
+const shot = (name) => `${import.meta.env.BASE_URL}shots/${name}`
+
+const screens = [
+  { src: 'sumber.png', title: 'Pilih sumber', text: 'Ratusan sumber, difilter per bahasa.' },
+  { src: 'sumber-gelap.png', title: 'Tema gelap', text: 'Nyaman di mata, hemat baterai.' },
+  { src: 'pengaturan.png', title: 'Pengaturan', text: 'Tema, warna aksen, dan tata letak jelajah.' },
+  { src: 'pengaturan-gelap.png', title: 'Kunci & privasi', text: 'Kunci aplikasi dan blokir tangkapan layar.' },
+]
+
+/** Rilis terbaru dari GitHub: tautan APK langsung. Gagal = tombol ke halaman rilis. */
+function useLatestRelease() {
+  const [release, setRelease] = useState(null)
+  useEffect(() => {
+    const ctrl = new AbortController()
+    fetch(API, { signal: ctrl.signal })
+      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+      .then((data) => {
+        const apks = (data.assets ?? []).filter((a) => a.name.endsWith('.apk'))
+        const find = (re) => apks.find((a) => re.test(a.name))?.browser_download_url
+        setRelease({
+          tag: data.tag_name,
+          arm64: find(/arm64-v8a/),
+          universal: find(/^hub-reader-[d.]+.apk$/),
+        })
+      })
+      .catch(() => {})
+    return () => ctrl.abort()
+  }, [])
+  return release
+}
 
 const features = [
   {
@@ -113,6 +145,7 @@ function Nav() {
           Hub Reader
         </a>
         <nav className="hidden items-center gap-6 font-bold md:flex">
+          <a href="#tampilan" className="hover:underline decoration-4 underline-offset-4">Tampilan</a>
           <a href="#fitur" className="hover:underline decoration-4 underline-offset-4">Fitur</a>
           <a href="#cara" className="hover:underline decoration-4 underline-offset-4">Cara pasang</a>
           <a href="#faq" className="hover:underline decoration-4 underline-offset-4">FAQ</a>
@@ -204,6 +237,37 @@ function Stats() {
   )
 }
 
+function Screens() {
+  return (
+    <section id="tampilan" className="scroll-mt-20 py-20">
+      <div className="mx-auto max-w-6xl px-4">
+        <h2 className="text-4xl font-bold sm:text-5xl">
+          Tampilan <span className="bg-sun px-2">asli</span>
+        </h2>
+        <p className="mt-3 max-w-2xl text-lg">Tangkapan layar langsung dari aplikasi, terang dan gelap.</p>
+      </div>
+      <ul className="mt-10 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 pb-8 [&>li:first-child]:ml-auto [&>li:last-child]:mr-auto">
+        {screens.map((s) => (
+          <li key={s.src} className="w-56 shrink-0 snap-center sm:w-60">
+            <div className="rounded-[1.75rem] border-[4px] border-ink bg-ink shadow-brutal">
+              <img
+                src={shot(s.src)}
+                alt={`${s.title}: ${s.text}`}
+                width="1080"
+                height="2400"
+                loading="lazy"
+                className="aspect-[9/20] w-full rounded-[1.4rem] object-cover object-top"
+              />
+            </div>
+            <h3 className="mt-4 text-lg font-bold">{s.title}</h3>
+            <p className="text-sm leading-snug">{s.text}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
 function Features() {
   return (
     <section id="fitur" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-20">
@@ -227,6 +291,7 @@ function Features() {
 }
 
 function Steps() {
+  const release = useLatestRelease()
   return (
     <section id="cara" className="scroll-mt-20 border-y-[3px] border-ink bg-sun py-20">
       <div className="mx-auto max-w-6xl px-4">
@@ -240,9 +305,19 @@ function Steps() {
             </Card>
           ))}
         </div>
-        <div className="mt-10">
-          <Button href={RELEASE} size="lg" variant="dark">
-            <Download className="size-5" strokeWidth={3} /> Ke halaman rilis
+        <div className="mt-10 flex flex-wrap items-center gap-4">
+          {release?.arm64 && (
+            <Button href={release.arm64} size="lg" variant="dark">
+              <Download className="size-5" strokeWidth={3} /> APK arm64 {release.tag}
+            </Button>
+          )}
+          {release?.universal && (
+            <Button href={release.universal} size="lg" variant="outline">
+              APK universal
+            </Button>
+          )}
+          <Button href={RELEASE} size="lg" variant={release?.arm64 ? 'outline' : 'dark'}>
+            {release?.arm64 ? 'Semua versi' : (<><Download className="size-5" strokeWidth={3} /> Ke halaman rilis</>)}
           </Button>
         </div>
       </div>
@@ -301,6 +376,7 @@ export default function App() {
         <Hero />
         <Marquee items={marqueeItems} className="-rotate-1 scale-105" />
         <Stats />
+        <Screens />
         <Features />
         <Steps />
         <Faq />
