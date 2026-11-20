@@ -454,6 +454,7 @@ const Map<String, String> stringsEn = {
   '"{title}" dihapus dari favorit': '"{title}" removed from favorites',
   'Halaman {n} gagal dibaca dari unduhan': 'Page {n} could not be read from the download',
   'Halaman {n} gagal dimuat': 'Page {n} failed to load',
+  'Ketuk untuk coba lagi': 'Tap to retry',
   'Memakai salinan terakhir. {err}': 'Using the last copy. {err}',
   'Terbanyak {x}': 'Most {x}',
   'j': 'h',

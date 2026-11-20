@@ -30,6 +30,7 @@ import '../../../state/tracker_providers.dart';
 import '../../../state/source_providers.dart';
 import '../../widgets/cropped_page_image.dart';
 import '../../widgets/reader_settings_sheet.dart';
+import '../../widgets/retry_scope.dart';
 import '../../widgets/source_widgets.dart';
 import '../../widgets/state_views.dart';
 import '../../widgets/brightness_strip.dart';
@@ -579,40 +580,48 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
   Widget _imageBody(String url, int i, Map<String, String> headers, BoxFit fit) {
     if (widget.display.cropBorders) {
       final local = !url.startsWith('http');
-      return CroppedPageImage(
-        cacheKey: url,
-        image: local ? FileImage(File(url)) : CachedNetworkImageProvider(cacheManager: AppImageCache.instance, url, headers: imageHeadersFor(headers, url)),
-        vertical: widget.mode.isPaged,
-        placeholder: (_) => const SizedBox(height: 400, child: LoadingView()),
-        error: (_) => SizedBox(
-          height: 200,
-          child: Center(
-              child: Text(local ? trp('Halaman {i} gagal dibaca dari unduhan', {'i': i + 1}) : trp('Halaman {i} gagal dimuat', {'i': i + 1}))),
+      return RetryScope(
+        builder: (_, retry) => CroppedPageImage(
+          cacheKey: url,
+          image: local ? FileImage(File(url)) : CachedNetworkImageProvider(cacheManager: AppImageCache.instance, url, headers: imageHeadersFor(headers, url)),
+          vertical: widget.mode.isPaged,
+          placeholder: (_) => const SizedBox(height: 400, child: LoadingView()),
+          error: (_) => RetryPlaceholder(
+            height: 200,
+            onRetry: retry,
+            message: local ? trp('Halaman {i} gagal dibaca dari unduhan', {'i': i + 1}) : trp('Halaman {i} gagal dimuat', {'i': i + 1}),
+          ),
         ),
       );
     }
     // Bab yang diunduh: path absolut di penyimpanan aplikasi.
     if (!url.startsWith('http')) {
-      return Image.file(
-        File(url),
-        fit: fit,
-        errorBuilder: (_, __, ___) => SizedBox(
-          height: 200,
-          child: Center(child: Text(trp('Halaman {n} gagal dibaca dari unduhan', {'n': i + 1}))),
+      return RetryScope(
+        builder: (_, retry) => Image.file(
+          File(url),
+          fit: fit,
+          errorBuilder: (_, __, ___) => RetryPlaceholder(
+            height: 200,
+            onRetry: retry,
+            message: trp('Halaman {n} gagal dibaca dari unduhan', {'n': i + 1}),
+          ),
         ),
       );
     }
-    return CachedNetworkImage(cacheManager: AppImageCache.instance, 
-      imageUrl: url,
-      httpHeaders: imageHeadersFor(headers, url),
-      fit: fit,
-      placeholder: (_, __) => const SizedBox(
-        height: 400,
-        child: LoadingView(),
-      ),
-      errorWidget: (_, __, ___) => SizedBox(
-        height: 200,
-        child: Center(child: Text(trp('Halaman {n} gagal dimuat', {'n': i + 1}))),
+    return RetryScope(
+      builder: (_, retry) => CachedNetworkImage(cacheManager: AppImageCache.instance,
+        imageUrl: url,
+        httpHeaders: imageHeadersFor(headers, url),
+        fit: fit,
+        placeholder: (_, __) => const SizedBox(
+          height: 400,
+          child: LoadingView(),
+        ),
+        errorWidget: (_, __, ___) => RetryPlaceholder(
+          height: 200,
+          onRetry: retry,
+          message: trp('Halaman {n} gagal dimuat', {'n': i + 1}),
+        ),
       ),
     );
   }
