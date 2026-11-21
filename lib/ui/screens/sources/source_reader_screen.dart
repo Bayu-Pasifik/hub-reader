@@ -29,6 +29,7 @@ import '../../../state/reading_stats_provider.dart';
 import '../../../state/source_library_providers.dart';
 import '../../../state/tracker_providers.dart';
 import '../../../state/source_providers.dart';
+import '../../widgets/chapter_picker_sheet.dart';
 import '../../widgets/cropped_page_image.dart';
 import '../../widgets/reader_settings_sheet.dart';
 import '../../widgets/retry_scope.dart';
@@ -111,6 +112,26 @@ class _SourceReaderScreenState extends ConsumerState<SourceReaderScreen> {
 
   void _goTo(SourceChapter chapter) => setState(() => _chapterUrl = chapter.url);
 
+  /// Daftar bab: pilih bab lain tanpa keluar dari reader.
+  void _showChapterList(List<SourceChapter> chapters, String? title) {
+    final series = (sourceId: widget.sourceId, url: widget.mangaUrl);
+    final progress = ref.read(sourceSeriesProgressProvider(series));
+    final marked = ref.read(seriesBookmarksProvider(series));
+    showChapterPickerSheet(
+      context,
+      subtitle: title,
+      currentId: _chapterUrl,
+      chapters: [
+        for (final c in chapters)
+          (id: c.url, title: c.name, read: progress[c.url]?.done ?? false, bookmarked: marked.contains(c.url)),
+      ],
+      onSelect: (url) {
+        final target = chapters.where((c) => c.url == url).firstOrNull;
+        if (target != null) _goTo(target);
+      },
+    );
+  }
+
   /// Layar penuh: sembunyikan app bar, bilah bawah, dan bilah sistem.
   bool _fullscreen = false;
 
@@ -167,6 +188,12 @@ class _SourceReaderScreenState extends ConsumerState<SourceReaderScreen> {
           ],
         ),
         actions: [
+          if (chapters.isNotEmpty)
+            IconButton(
+              tooltip: tr('Daftar bab'),
+              icon: const Icon(Icons.format_list_bulleted),
+              onPressed: () => _showChapterList(chapters, manga?.title),
+            ),
           if (index >= 0)
             Builder(builder: (context) {
               final series = (sourceId: widget.sourceId, url: widget.mangaUrl);
@@ -226,7 +253,10 @@ class _SourceReaderScreenState extends ConsumerState<SourceReaderScreen> {
                     label: Text(tr('Sebelumnya')),
                   ),
                   const Spacer(),
-                  Text('${chapters.length - index}/${chapters.length}'),
+                  TextButton(
+                    onPressed: () => _showChapterList(chapters, manga?.title),
+                    child: Text('${chapters.length - index}/${chapters.length}'),
+                  ),
                   const Spacer(),
                   TextButton(
                     onPressed: next == null ? null : () => _goTo(next),

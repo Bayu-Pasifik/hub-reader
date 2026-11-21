@@ -25,6 +25,7 @@ import '../../../sources/models.dart';
 import '../../../state/bookmarks_provider.dart';
 import '../../../state/download_providers.dart' show downloadIndexProvider;
 import '../../../state/novel_highlights.dart';
+import '../../widgets/chapter_picker_sheet.dart';
 import '../../widgets/highlight_note_dialog.dart';
 import '../../../state/novel_providers.dart';
 import '../../../state/reading_stats_provider.dart';
@@ -437,6 +438,25 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
       _chrome = true;
     });
     if (_scroll.hasClients) _scroll.jumpTo(0);
+  }
+
+  /// Daftar bab (halaman daftar saat ini): pilih bab lain tanpa keluar reader.
+  void _showChapterList(List<NovelChapter> chapters, String? title) {
+    final progress = ref.read(sourceSeriesProgressProvider(_libKey));
+    final marked = ref.read(seriesBookmarksProvider(_libKey));
+    showChapterPickerSheet(
+      context,
+      subtitle: title,
+      currentId: _chapterPath,
+      chapters: [
+        for (final c in chapters)
+          (id: c.path, title: c.name, read: progress[c.path]?.done ?? false, bookmarked: marked.contains(c.path)),
+      ],
+      onSelect: (path) {
+        final target = chapters.where((c) => c.path == path).firstOrNull;
+        if (target != null) _goTo(target, _page);
+      },
+    );
   }
 
   /// Tarik melewati akhir bab: pindah ke bab berikutnya.
@@ -879,12 +899,16 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
                               icon: const Icon(Icons.skip_previous),
                             ),
                             Expanded(
-                              child: Text(
-                                index >= 0
-                                    ? trp('Bab {n} dari {total}', {'n': index + 1, 'total': chapters.length}) + (totalPages > 1 ? ' · ' + trp('hal. {p}/{total}', {'p': _page, 'total': totalPages}) : '')
-                                    : '',
-                                textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.bodySmall,
+                              child: TextButton.icon(
+                                onPressed: chapters.isEmpty ? null : () => _showChapterList(chapters, details.valueOrNull?.name),
+                                icon: const Icon(Icons.format_list_bulleted, size: 18),
+                                label: Text(
+                                  index >= 0
+                                      ? trp('Bab {n} dari {total}', {'n': index + 1, 'total': chapters.length}) + (totalPages > 1 ? ' · ' + trp('hal. {p}/{total}', {'p': _page, 'total': totalPages}) : '')
+                                      : tr('Daftar bab'),
+                                  textAlign: TextAlign.center,
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
                               ),
                             ),
                             IconButton(
