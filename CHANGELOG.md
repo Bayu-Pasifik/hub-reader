@@ -13,6 +13,15 @@ Semua perubahan penting pada Hub Reader dicatat di sini. Format mengikuti
 - Daftar bab di dalam reader komik dan novel untuk pindah bab tanpa keluar (dengan cari, tanda selesai, dan bookmark).
 - Pengaturan "Lanjut bab otomatis" di reader komik: tarik/geser melewati akhir bab, atau matikan untuk memakai tombol saja.
 
+### Diubah (UI/UX)
+- Reader komik: ikon daftar bab baru di bilah atas.
+- Penghitung bab di bilah bawah (komik dan novel) kini tombol yang membuka daftar bab.
+- Daftar bab berupa lembar bawah (75% layar) yang menggulir ke bab saat ini; bab saat ini disorot, bab selesai diberi centang dan diredupkan, bab ber-bookmark diberi ikon.
+- Kolom cari bab muncul otomatis bila bab lebih dari 12.
+- Webtoon: bilah progres di tepi bawah saat menarik melewati akhir bab.
+- Mode per halaman: geser melewati halaman terakhir pindah bab; bila dimatikan, kartu "Lanjut ke bab berikutnya" tetap tampil.
+- Sakelar "Lanjut bab otomatis" di Pengaturan baca; teks baru tersedia dalam bahasa Indonesia dan Inggris.
+
 ## [3.4.1] - 2026-11-20
 
 ### Diperbaiki

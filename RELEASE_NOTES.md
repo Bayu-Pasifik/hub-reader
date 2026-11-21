@@ -1,8 +1,21 @@
 ## Hub Reader v3.5.0
 
 ### Baru
-- Daftar bab di dalam reader: pindah ke bab mana pun tanpa keluar. Ketuk ikon daftar di bilah atas reader komik, atau penghitung bab di bilah bawah (komik dan novel). Bab yang sedang dibaca disorot, bab selesai dan bookmark diberi tanda, dan ada kolom cari untuk daftar panjang.
-- Pengaturan "Lanjut bab otomatis" di reader komik: tarik melewati akhir bab (webtoon) atau geser melewati halaman terakhir (per halaman) untuk lanjut ke bab berikutnya, seperti di novel. Matikan bila ingin pindah bab hanya lewat tombol.
+- Daftar bab di dalam reader: pindah ke bab mana pun tanpa keluar dari reader.
+- Pengaturan "Lanjut bab otomatis" di reader komik: tarik/geser melewati akhir bab untuk lanjut, seperti di novel. Bisa dimatikan bila ingin pindah bab hanya lewat tombol.
+
+### Perubahan tampilan dan pengalaman pakai (UI/UX)
+- Reader komik: ikon daftar baru di bilah atas, di sebelah bookmark.
+- Penghitung bab di bilah bawah ("242/243" di komik, "Bab n dari total" di novel) sekarang tombol yang bisa diketuk untuk membuka daftar bab. Di novel tombol ini diberi ikon daftar.
+- Daftar bab muncul sebagai lembar bawah setinggi 75% layar, berisi judul seri dan jumlah bab.
+- Daftar langsung menggulir ke bab yang sedang dibaca; bab itu disorot dengan ikon buku dan teks tebal.
+- Bab yang sudah selesai dibaca diberi tanda centang dan teks diredupkan; bab ber-bookmark diberi ikon bookmark.
+- Kolom "Cari bab" muncul otomatis bila bab lebih dari 12.
+- Mengetuk bab langsung berpindah dan menutup lembar; mengetuk bab yang sedang dibaca hanya menutup lembar.
+- Reader komik mode webtoon: saat ditarik melewati akhir bab muncul bilah progres di tepi bawah layar sebagai tanda tarikan menuju bab berikutnya.
+- Reader komik mode per halaman: geser melewati halaman terakhir pindah ke bab berikutnya; bila fitur dimatikan, kartu "Lanjut ke bab berikutnya" tetap di tempat sampai tombolnya diketuk.
+- Sakelar "Lanjut bab otomatis" ada di lembar Pengaturan baca (dekat zoom ketuk dua kali dan pra-muat halaman), lengkap dengan keterangan singkat.
+- Semua teks baru tersedia dalam bahasa Indonesia dan Inggris.
 
 ### Catatan
 - Pasang APK yang sesuai ABI HP (arm64-v8a untuk kebanyakan HP).
