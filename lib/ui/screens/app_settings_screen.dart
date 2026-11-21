@@ -65,6 +65,15 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
   /// Bagian yang sedang terbuka (bertahan selama layar hidup).
   final _open = <String>{'Tampilan'};
 
+  final _searchController = TextEditingController();
+  bool _searching = false;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -223,11 +232,42 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
     final theme = Theme.of(context);
     final sizes = _sizes;
     // Bagian bisa dilipat agar daftar tidak terlalu panjang; hanya "Tampilan" terbuka awalnya.
-    List<Widget> section(String title, IconData icon, List<Widget> children) => [
+    final query = _searchController.text.trim().toLowerCase();
+    var anyShown = false;
+    // Teks judul + keterangan sebuah tile (null bila bukan ListTile/SwitchListTile).
+    String? textOf(Widget w) {
+      final (Widget? t, Widget? sub) = switch (w) {
+        ListTile() => (w.title, w.subtitle),
+        SwitchListTile() => (w.title, w.subtitle),
+        _ => (null, null),
+      };
+      if (t == null && sub == null) return null;
+      String d(Widget? x) => x is Text ? (x.data ?? x.textSpan?.toPlainText() ?? '') : '';
+      return '${d(t)} ${d(sub)}'.toLowerCase();
+    }
+
+    // Saat mencari: bagian yang judulnya cocok tampil utuh, selain itu hanya
+    // tile yang cocok; bagian tanpa kecocokan disembunyikan.
+    List<Widget> section(String title, IconData icon, List<Widget> children) {
+      var shown = children;
+      var open = _open.contains(title);
+      if (query.isNotEmpty) {
+        final titleHit = tr(title).toLowerCase().contains(query);
+        if (!titleHit) {
+          shown = [for (final c in children) if ((textOf(c) ?? '').contains(query)) c];
+          if (shown.isEmpty) return const [];
+        }
+        open = true;
+      }
+      anyShown = true;
+      return [
           ExpansionTile(
-            key: PageStorageKey('settings.$title'),
-            initiallyExpanded: _open.contains(title),
-            onExpansionChanged: (v) => v ? _open.add(title) : _open.remove(title),
+            key: ValueKey('settings.$title.${query.isEmpty}'),
+            initiallyExpanded: open,
+            onExpansionChanged: (v) {
+              if (query.isNotEmpty) return;
+              v ? _open.add(title) : _open.remove(title);
+            },
             leading: Icon(icon, color: theme.colorScheme.primary),
             title: Text(tr(title), style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800)),
             shape: const Border(),
@@ -236,14 +276,34 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
             childrenPadding: EdgeInsets.zero,
             expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
             expandedAlignment: Alignment.centerLeft,
-            children: children,
+            children: shown,
           ),
           const Divider(height: 1),
         ];
+    }
     String sizeOf(int? v) => v == null ? 'menghitung…' : _size(v);
 
     return Scaffold(
-      appBar: AppBar(title: Text(tr('Pengaturan'))),
+      appBar: AppBar(
+        title: _searching
+            ? TextField(
+                controller: _searchController,
+                autofocus: true,
+                decoration: InputDecoration(hintText: tr('Cari pengaturan…'), border: InputBorder.none),
+                onChanged: (_) => setState(() {}),
+              )
+            : Text(tr('Pengaturan')),
+        actions: [
+          IconButton(
+            tooltip: _searching ? tr('Tutup pencarian') : tr('Cari'),
+            icon: Icon(_searching ? Icons.close : Icons.search),
+            onPressed: () => setState(() {
+              _searching = !_searching;
+              if (!_searching) _searchController.clear();
+            }),
+          ),
+        ],
+      ),
       body: ListView(
         children: [
           ...section('Tampilan', Icons.palette_outlined, [
@@ -583,6 +643,11 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
             onChanged: (v) => ref.read(checkUpdatesProvider.notifier).set(v),
           ),
           ]),
+          if (query.isNotEmpty && !anyShown)
+            Padding(
+              padding: const EdgeInsets.all(32),
+              child: Center(child: Text(tr('Tidak ada pengaturan yang cocok'))),
+            ),
           const SizedBox(height: 24),
         ],
       ),

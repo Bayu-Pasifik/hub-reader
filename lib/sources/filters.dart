@@ -84,3 +84,21 @@ class FilterValues {
   @override
   String toString() => 'FilterValues($_canonical)';
 }
+
+/// Filter yang cocok dengan [genre] (nama genre pada detail seri), atau null
+/// bila sumber tidak punya filter genre dengan label itu (pemanggil lalu
+/// jatuh ke pencarian teks). Pencocokan tidak membedakan huruf besar/kecil.
+FilterValues? filterForGenre(List<FilterDef> defs, String genre) {
+  final wanted = genre.trim().toLowerCase();
+  if (wanted.isEmpty) return null;
+  for (final def in defs) {
+    for (final option in def.options) {
+      if (option.value.isEmpty || option.label.trim().toLowerCase() != wanted) continue;
+      return switch (def) {
+        MultiSelectFilterDef() => FilterValues.empty.toggleMulti(def.key, option.value),
+        SelectFilterDef() => FilterValues.empty.withSingle(def.key, option.value),
+      };
+    }
+  }
+  return null;
+}

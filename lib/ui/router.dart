@@ -32,7 +32,11 @@ import 'widgets/cover_hero.dart' show SeriesPreview;
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
-String sourceBrowseLocation(String sourceId) => '/source/${Uri.encodeComponent(sourceId)}';
+/// [genre]: buka jelajah langsung terfilter/tercari menurut genre (ketuk genre di detail).
+String sourceBrowseLocation(String sourceId, {String? genre}) => Uri(
+      path: '/source/${Uri.encodeComponent(sourceId)}',
+      queryParameters: genre == null || genre.isEmpty ? null : {'genre': genre},
+    ).toString();
 
 String sourceMangaLocation(String sourceId, String mangaUrl) => Uri(
       path: '/source/${Uri.encodeComponent(sourceId)}/manga',
@@ -44,7 +48,11 @@ String sourceReaderLocation(String sourceId, String mangaUrl, String chapterUrl)
       queryParameters: {'manga': mangaUrl, 'chapter': chapterUrl},
     ).toString();
 
-String novelBrowseLocation(String pluginId) => '/novel/${Uri.encodeComponent(pluginId)}';
+/// [query]: buka jelajah novel langsung mencari teks itu (ketuk genre di detail).
+String novelBrowseLocation(String pluginId, {String? query}) => Uri(
+      path: '/novel/${Uri.encodeComponent(pluginId)}',
+      queryParameters: query == null || query.isEmpty ? null : {'q': query},
+    ).toString();
 
 String novelDetailLocation(String pluginId, String path) => Uri(
       path: '/novel/${Uri.encodeComponent(pluginId)}/info',
@@ -195,7 +203,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/novel/:pid',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (_, state) => NovelBrowseScreen(pluginId: state.pathParameters['pid'] ?? ''),
+        builder: (_, state) => NovelBrowseScreen(
+          pluginId: state.pathParameters['pid'] ?? '',
+          initialQuery: state.uri.queryParameters['q'],
+        ),
         routes: [
           GoRoute(
             path: 'info',
@@ -221,7 +232,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/source/:sid',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (_, state) => SourceBrowseScreen(sourceId: state.pathParameters['sid'] ?? ''),
+        builder: (_, state) => SourceBrowseScreen(
+          sourceId: state.pathParameters['sid'] ?? '',
+          genre: state.uri.queryParameters['genre'],
+        ),
         routes: [
           GoRoute(
             path: 'manga',

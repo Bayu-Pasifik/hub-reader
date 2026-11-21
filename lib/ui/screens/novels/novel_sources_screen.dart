@@ -9,7 +9,9 @@ import '../../../novels/local_epub.dart';
 import '../../../novels/novel_models.dart';
 import '../../../novels/plugin_repository.dart';
 import '../../../state/download_providers.dart';
+import '../../haptics.dart';
 import '../../../state/novel_health_provider.dart';
+import '../../../state/pinned_sources_provider.dart';
 import '../../../state/novel_providers.dart';
 import '../../../state/source_health_provider.dart';
 import '../../router.dart';
@@ -160,6 +162,19 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
     if (hideBroken) filtered.removeWhere((p) => !novelUsable(health[p.id]));
     final rows = <Object>[];
     if (query.isEmpty && lang == null) rows.add(LocalNovelSource.pluginInfo);
+    final pinned = ref.watch(pinnedNovelSourcesProvider);
+    // Disematkan: tampil apa pun filter bahasanya (pencarian & "sembunyikan rusak" tetap berlaku).
+    final pinnedRows = unique
+        .where((p) => pinned.contains(p.id))
+        .where((p) => query.isEmpty || p.name.toLowerCase().contains(query) || p.site.toLowerCase().contains(query))
+        .where((p) => !hideBroken || novelUsable(health[p.id]))
+        .toList()
+      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    if (pinnedRows.isNotEmpty) {
+      rows.add((title: tr('Disematkan'), count: pinnedRows.length));
+      rows.addAll(pinnedRows);
+    }
+    filtered.removeWhere((p) => pinned.contains(p.id));
     final used = filtered.where((p) => p.orphaned || installed.contains(NovelPluginRepository.safeId(p.id))).toList()
       ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
     if (used.isNotEmpty && query.isEmpty) {
@@ -279,7 +294,7 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
                           onTap: () => context.push(novelBrowseLocation(p.id)),
                         );
                       }
-                      return _PluginTile(plugin: p, health: health[p.id]);
+                      return _PluginTile(plugin: p, health: health[p.id], pinned: pinned.contains(p.id));
                     },
                   ),
                 ),
@@ -290,10 +305,11 @@ class _NovelSourcesScreenState extends ConsumerState<NovelSourcesScreen> {
 }
 
 class _PluginTile extends ConsumerWidget {
-  const _PluginTile({required this.plugin, required this.health});
+  const _PluginTile({required this.plugin, required this.health, required this.pinned});
 
   final NovelPluginInfo plugin;
   final SourceHealth? health;
+  final bool pinned;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -325,7 +341,22 @@ class _PluginTile extends ConsumerWidget {
       ),
       title: Text(p.name),
       subtitle: Text(info, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: subtitleColor)),
-      trailing: Text(p.lang.toUpperCase(), style: Theme.of(context).textTheme.labelSmall),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(p.lang.toUpperCase(), style: Theme.of(context).textTheme.labelSmall),
+          IconButton(
+            tooltip: pinned ? tr('Lepas sematan') : tr('Sematkan'),
+            isSelected: pinned,
+            icon: const Icon(Icons.push_pin_outlined),
+            selectedIcon: const Icon(Icons.push_pin),
+            onPressed: () {
+              Haptics.tap();
+              ref.read(pinnedNovelSourcesProvider.notifier).toggle(p.id);
+            },
+          ),
+        ],
+      ),
       onTap: () => context.push(novelBrowseLocation(p.id)),
       // Tekan lama = cek ulang plugin ini saja.
       onLongPress: () async {

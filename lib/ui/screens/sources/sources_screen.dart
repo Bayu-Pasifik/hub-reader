@@ -8,7 +8,9 @@ import '../../../core/net/cleartext.dart';
 import '../../../sources/models.dart';
 import '../../../sources/local/local_source.dart';
 import '../../../sources/source.dart';
+import '../../haptics.dart';
 import '../../../state/download_providers.dart';
+import '../../../state/pinned_sources_provider.dart';
 import '../../../state/source_health_provider.dart';
 import '../../../state/source_settings_provider.dart';
 import '../../../state/source_providers.dart';
@@ -42,6 +44,9 @@ const _languageNames = {
   'vi': 'Tiếng Việt',
   'zh': '中文 (Tionghoa)',
 };
+
+/// Penanda kelompok "Disematkan" pada baris daftar (bukan kode bahasa).
+const _pinnedGroup = '_pinned';
 
 String languageName(String code) => tr(_languageNames[code] ?? code.toUpperCase());
 
@@ -81,6 +86,7 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
     final health = ref.watch(sourceHealthProvider);
     final hideDead = ref.watch(hideDeadSourcesProvider);
     final run = ref.watch(healthRunProvider);
+    final pinned = ref.watch(pinnedComicSourcesProvider);
     final scheme = Theme.of(context).colorScheme;
 
     final visible = registry.sources
@@ -101,11 +107,21 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
       return s.name.toLowerCase().contains(query) || s.baseUrl.toLowerCase().contains(query);
     }).toList();
 
-    // Baris datar: header bahasa lalu sumbernya (urut nama).
+    // Baris datar: sumber yang disematkan, lalu header bahasa dan sumbernya (urut nama).
+    // Yang disematkan tampil apa pun filter bahasanya (pencarian tetap berlaku).
     final rows = <Object>[];
+    final pinnedRows = visible
+        .where((s) => pinned.contains(s.id))
+        .where((s) => query.isEmpty || s.name.toLowerCase().contains(query) || s.baseUrl.toLowerCase().contains(query))
+        .toList()
+      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    if (pinnedRows.isNotEmpty) {
+      rows.add((lang: _pinnedGroup, count: pinnedRows.length));
+      rows.addAll(pinnedRows);
+    }
     for (final l in languages) {
       // Yang jalan di atas, yang mati di bawah; lalu urut nama.
-      final group = filtered.where((s) => s.lang == l).toList()
+      final group = filtered.where((s) => s.lang == l && !pinned.contains(s.id)).toList()
         ..sort((a, b) {
           final r = healthRank(health[a.id]).compareTo(healthRank(health[b.id]));
           return r != 0 ? r : a.name.toLowerCase().compareTo(b.name.toLowerCase());
@@ -222,7 +238,7 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
                     color: scheme.surfaceContainerHigh,
                     padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
                     child: Text(
-                      '${languageName(row.lang)} · ${row.count}',
+                      '${row.lang == _pinnedGroup ? tr('Disematkan') : languageName(row.lang)} · ${row.count}',
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                   );
@@ -232,6 +248,7 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
                   source: source,
                   experimental: registry.experimentalIds.contains(source.id),
                   health: health[source.id],
+                  pinned: pinned.contains(source.id),
                 );
               },
             ),
@@ -240,11 +257,12 @@ class _SourcesScreenState extends ConsumerState<SourcesScreen> {
 }
 
 class _SourceTile extends ConsumerWidget {
-  const _SourceTile({required this.source, required this.experimental, required this.health});
+  const _SourceTile({required this.source, required this.experimental, required this.health, required this.pinned});
 
   final MangaSource source;
   final bool experimental;
   final SourceHealth? health;
+  final bool pinned;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -298,6 +316,16 @@ class _SourceTile extends ConsumerWidget {
                 spacing: 6,
         children: [
           ContentWarningChip(warning: s.contentWarning),
+          IconButton(
+            tooltip: pinned ? tr('Lepas sematan') : tr('Sematkan'),
+            isSelected: pinned,
+            icon: const Icon(Icons.push_pin_outlined),
+            selectedIcon: const Icon(Icons.push_pin),
+            onPressed: () {
+              Haptics.tap();
+              ref.read(pinnedComicSourcesProvider.notifier).toggle(s.id);
+            },
+          ),
           if (s is HttpSource)
             IconButton(
               tooltip: tr('Ganti domain'),

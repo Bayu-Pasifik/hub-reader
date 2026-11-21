@@ -5,9 +5,12 @@ import '../../core/i18n/strings.dart';
 /// Genre dalam satu baris yang bisa digeser, supaya header detail tidak
 /// memakan separuh layar saat genre banyak.
 class GenreChips extends StatelessWidget {
-  const GenreChips({super.key, required this.genres});
+  const GenreChips({super.key, required this.genres, this.onTap});
 
   final List<String> genres;
+
+  /// Dipanggil saat genre diketuk (mis. cari seri bergenre sama). Null = chip biasa.
+  final void Function(String genre)? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +20,16 @@ class GenreChips extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         itemCount: genres.length,
         separatorBuilder: (_, __) => const SizedBox(width: 6),
-        itemBuilder: (_, i) => Center(child: Chip(label: Text(genres[i]), visualDensity: VisualDensity.compact)),
+        itemBuilder: (_, i) => Center(
+          child: onTap == null
+              ? Chip(label: Text(genres[i]), visualDensity: VisualDensity.compact)
+              : ActionChip(
+                  label: Text(genres[i]),
+                  visualDensity: VisualDensity.compact,
+                  tooltip: trp('Cari genre {name}', {'name': genres[i]}),
+                  onPressed: () => onTap!(genres[i]),
+                ),
+        ),
       ),
     );
   }

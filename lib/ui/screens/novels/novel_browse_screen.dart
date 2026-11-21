@@ -18,9 +18,12 @@ import 'novel_settings_sheet.dart';
 
 /// Jelajah satu plugin novel: Populer (dengan filter) / Terbaru + pencarian.
 class NovelBrowseScreen extends ConsumerStatefulWidget {
-  const NovelBrowseScreen({super.key, required this.pluginId});
+  const NovelBrowseScreen({super.key, required this.pluginId, this.initialQuery});
 
   final String pluginId;
+
+  /// Kata pencarian awal (dari ketukan genre di detail novel).
+  final String? initialQuery;
 
   @override
   ConsumerState<NovelBrowseScreen> createState() => _NovelBrowseScreenState();
@@ -31,6 +34,17 @@ class _NovelBrowseScreenState extends ConsumerState<NovelBrowseScreen> {
   bool _searching = false;
   String _submitted = '';
   NovelFilterValues _filters = const {};
+
+  @override
+  void initState() {
+    super.initState();
+    final q = widget.initialQuery;
+    if (q != null && q.isNotEmpty) {
+      _searching = true;
+      _searchController.text = q;
+      _submitted = q;
+    }
+  }
 
   @override
   void dispose() {

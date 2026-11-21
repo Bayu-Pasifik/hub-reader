@@ -14,9 +14,13 @@ import '../../widgets/state_views.dart';
 
 /// Jelajah satu sumber: tab Populer / Terbaru + pencarian.
 class SourceBrowseScreen extends ConsumerStatefulWidget {
-  const SourceBrowseScreen({super.key, required this.sourceId});
+  const SourceBrowseScreen({super.key, required this.sourceId, this.genre});
 
   final String sourceId;
+
+  /// Genre dari ketukan di detail seri: dipakai sebagai filter bila sumber punya
+  /// filter genre yang cocok, selain itu sebagai kata pencarian.
+  final String? genre;
 
   @override
   ConsumerState<SourceBrowseScreen> createState() => _SourceBrowseScreenState();
@@ -29,6 +33,42 @@ class _SourceBrowseScreenState extends ConsumerState<SourceBrowseScreen> {
   /// Query yang sudah dikirim (Enter). Kosong + tanpa filter = tampilkan tab.
   String _submitted = '';
   FilterValues _filters = FilterValues.empty;
+
+  @override
+  void initState() {
+    super.initState();
+    final genre = widget.genre;
+    if (genre != null && genre.isNotEmpty) _applyGenre(genre);
+  }
+
+  Future<void> _applyGenre(String genre) async {
+    List<FilterDef> defs = const [];
+    try {
+      defs = await ref.read(sourceFiltersProvider(widget.sourceId).future);
+    } on Object {
+      // tanpa filter: jatuh ke pencarian teks
+    }
+    if (!mounted) return;
+    final match = filterForGenre(defs, genre);
+    setState(() {
+      if (match != null) {
+        _filters = match;
+      } else {
+        _searching = true;
+        _searchController.text = genre;
+        _submitted = genre;
+      }
+    });
+    if (match == null) {
+      // Tanpa filter genre, hasilnya hanya judul yang memuat kata itu; beri tahu agar tidak menyesatkan.
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(
+          content: Text(trp('Sumber ini tidak punya filter genre "{genre}", jadi mencari judul yang memuat kata itu', {'genre': genre})),
+          duration: const Duration(seconds: 5),
+        ));
+    }
+  }
 
   Future<void> _openFilters(MangaSource source) async {
     final result = await showModalBottomSheet<FilterValues>(

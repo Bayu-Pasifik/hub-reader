@@ -17,6 +17,13 @@ const Map<String, String> stringsEn = {
   'Komga, Kavita, Calibre-Web: unduh buku & komik': 'Komga, Kavita, Calibre-Web: download books & comics',
   // Navigasi
   'Komik': 'Comics',
+  'Sumber ini tidak punya filter genre "{genre}", jadi mencari judul yang memuat kata itu': 'This source has no "{genre}" genre filter, so it searches titles containing that word',
+  'Cari pengaturan…': 'Search settings…',
+  'Tidak ada pengaturan yang cocok': 'No matching settings',
+  'Cari genre {name}': 'Search genre {name}',
+  'Disematkan': 'Pinned',
+  'Sematkan': 'Pin',
+  'Lepas sematan': 'Unpin',
   'Selengkapnya': 'Read more',
   'Ciutkan': 'Show less',
   'Novel': 'Novels',

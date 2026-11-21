@@ -617,7 +617,10 @@ class _NovelDetailScreenState extends ConsumerState<NovelDetailScreen> {
           ),
           if (novel.genres.isNotEmpty) ...[
             const SizedBox(height: 12),
-            GenreChips(genres: novel.genres),
+            GenreChips(
+              genres: novel.genres,
+              onTap: (g) => context.push(novelBrowseLocation(widget.pluginId, query: g)),
+            ),
           ],
           if (summary != null && summary.isNotEmpty) ...[
             const SizedBox(height: 12),

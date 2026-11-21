@@ -500,7 +500,10 @@ class _SourceMangaScreenState extends ConsumerState<SourceMangaScreen> {
           ),
           if (manga.genres.isNotEmpty) ...[
             const SizedBox(height: 12),
-            GenreChips(genres: manga.genres),
+            GenreChips(
+              genres: manga.genres,
+              onTap: (g) => context.push(sourceBrowseLocation(widget.sourceId, genre: g)),
+            ),
           ],
           if (manga.description != null) ...[
             const SizedBox(height: 12),
