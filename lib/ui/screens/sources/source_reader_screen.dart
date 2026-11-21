@@ -321,6 +321,25 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
   int _total = 0;
   bool _nextPrecached = false;
 
+  /// Jarak tarik (overscroll) di akhir bab webtoon, untuk lanjut otomatis.
+  double _pull = 0;
+  static const _pullToNext = 140.0;
+
+  bool _onWebtoonScroll(ScrollNotification n) {
+    if (!widget.display.autoNext || widget.onNext == null) return false;
+    if (n is OverscrollNotification && n.overscroll > 0 && n.metrics.extentAfter == 0) {
+      setState(() => _pull += n.overscroll);
+      if (_pull >= _pullToNext) {
+        _pull = 0;
+        _setPage(_total - 1);
+        widget.onNext?.call();
+      }
+    } else if (n is ScrollEndNotification && _pull > 0) {
+      setState(() => _pull = 0);
+    }
+    return false;
+  }
+
   /// Mulai pra-muat bab berikutnya saat tersisa sekian halaman.
   static const _preloadWithin = 3;
 
@@ -452,7 +471,7 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
       // Menggeser melewati halaman terakhir = niat lanjut; bab tetap
       // ditandai selesai lalu pindah ke bab berikutnya.
       _setPage(_total - 1);
-      widget.onNext?.call();
+      if (widget.display.autoNext) widget.onNext?.call();
       return;
     }
     // Spread dicatat sebagai halaman terakhirnya (supaya bab selesai terdeteksi).
@@ -833,17 +852,20 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
               doubleTapZoom: widget.display.doubleTapZoom,
               maxScale: 3,
               doubleTapScale: 2,
-              child: ScrollablePositionedList.builder(
-                scrollOffsetController: _offsetController,
-                itemScrollController: _itemController,
-                itemCount: urls.length + 1,
-                initialScrollIndex: initial,
-                itemPositionsListener: _positions,
-                // Pra-muat beberapa layar ke bawah.
-                minCacheExtent: 2500,
-                itemBuilder: (_, i) => i >= urls.length
-                    ? SizedBox(height: 320, child: transition)
-                    : _image(urls[i], i, headers, BoxFit.fitWidth),
+              child: NotificationListener<ScrollNotification>(
+                onNotification: _onWebtoonScroll,
+                child: ScrollablePositionedList.builder(
+                  scrollOffsetController: _offsetController,
+                  itemScrollController: _itemController,
+                  itemCount: urls.length + 1,
+                  initialScrollIndex: initial,
+                  itemPositionsListener: _positions,
+                  // Pra-muat beberapa layar ke bawah.
+                  minCacheExtent: 2500,
+                  itemBuilder: (_, i) => i >= urls.length
+                      ? SizedBox(height: 320, child: transition)
+                      : _image(urls[i], i, headers, BoxFit.fitWidth),
+                ),
               ),
             ),
           );
@@ -902,6 +924,13 @@ class _PagesState extends ConsumerState<_Pages> with SingleTickerProviderStateMi
                 ),
               ),
             ),
+            if (_pull > 0)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: LinearProgressIndicator(value: (_pull / _pullToNext).clamp(0.0, 1.0)),
+              ),
             if (_showHint) _hintOverlay(),
           ],
         );

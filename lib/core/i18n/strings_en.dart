@@ -45,6 +45,8 @@ const Map<String, String> stringsEn = {
   'Coba lagi': 'Retry',
   'Tips membaca': 'Reading tips',
   'Daftar bab': 'Chapters',
+  'Lanjut bab otomatis': 'Auto-continue to next chapter',
+  'Tarik/geser melewati akhir bab untuk lanjut. Mati: pakai tombol saja': 'Pull/swipe past the end of a chapter to continue. Off: buttons only',
   'Cari bab': 'Search chapters',  'Ketuk tepi kiri/kanan untuk pindah halaman.': 'Tap the left/right edge to turn the page.',
   'Gulir ke bawah untuk membaca.': 'Scroll down to read.',
   'Ketuk angka halaman di pojok untuk lompat cepat.': 'Tap the page number in the corner to jump quickly.',

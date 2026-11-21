@@ -176,6 +176,12 @@ class _ReaderSettingsSheet extends ConsumerWidget {
               value: global.doubleTapZoom,
               onChanged: (v) => setDisplay(global.copyWith(doubleTapZoom: v)),
             ),
+            SwitchListTile(
+              title: Text(tr('Lanjut bab otomatis')),
+              subtitle: Text(tr('Tarik/geser melewati akhir bab untuk lanjut. Mati: pakai tombol saja')),
+              value: global.autoNext,
+              onChanged: (v) => setDisplay(global.copyWith(autoNext: v)),
+            ),
             ListTile(
               title: Text(tr('Pra-muat halaman')),
               subtitle: Text(tr('Mode per halaman: halaman di depan dimuat lebih dulu')),

@@ -7,6 +7,12 @@ Semua perubahan penting pada Hub Reader dicatat di sini. Format mengikuti
 
 ## [Belum dirilis]
 
+## [3.5.0] - 2026-11-21
+
+### Ditambahkan
+- Daftar bab di dalam reader komik dan novel untuk pindah bab tanpa keluar (dengan cari, tanda selesai, dan bookmark).
+- Pengaturan "Lanjut bab otomatis" di reader komik: tarik/geser melewati akhir bab, atau matikan untuk memakai tombol saja.
+
 ## [3.4.1] - 2026-11-20
 
 ### Diperbaiki

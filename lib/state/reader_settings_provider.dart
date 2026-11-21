@@ -174,7 +174,11 @@ class ReaderDisplay {
     this.preload = 2,
     this.orientation = ReaderOrientation.auto,
     this.brightnessGesture = false,
+    this.autoNext = true,
   });
+
+  /// Geser/tarik melewati akhir bab untuk lanjut otomatis; mati = hanya lewat tombol.
+  final bool autoNext;
 
   /// Geser vertikal di tepi kiri layar mengatur kecerahan.
   final bool brightnessGesture;
@@ -225,6 +229,7 @@ class ReaderDisplay {
     int? preload,
     ReaderOrientation? orientation,
     bool? brightnessGesture,
+    bool? autoNext,
   }) =>
       ReaderDisplay(
         cropBorders: cropBorders ?? this.cropBorders,
@@ -239,10 +244,11 @@ class ReaderDisplay {
         preload: preload ?? this.preload,
         orientation: orientation ?? this.orientation,
         brightnessGesture: brightnessGesture ?? this.brightnessGesture,
+        autoNext: autoNext ?? this.autoNext,
       );
 
   Map<String, Object> toJson() =>
-      {'crop': cropBorders, 'gray': grayscale, 'invert': invert, 'dim': dim, 'spread': spread, 'keep': keepScreenOn, 'transition': transition.name, 'dtz': doubleTapZoom, 'bright': brightness, 'preload': preload, 'orient': orientation.name, 'bgest': brightnessGesture};
+      {'crop': cropBorders, 'gray': grayscale, 'invert': invert, 'dim': dim, 'spread': spread, 'keep': keepScreenOn, 'transition': transition.name, 'dtz': doubleTapZoom, 'bright': brightness, 'preload': preload, 'orient': orientation.name, 'bgest': brightnessGesture, 'anext': autoNext};
 
   factory ReaderDisplay.fromJson(Map<String, Object?> json) => ReaderDisplay(
         cropBorders: json['crop'] == true,
@@ -257,6 +263,7 @@ class ReaderDisplay {
         preload: ((json['preload'] as num?)?.toInt() ?? 2).clamp(0, 6),
         orientation: ReaderOrientation.byName(json['orient']),
         brightnessGesture: json['bgest'] == true,
+        autoNext: json['anext'] != false,
       );
 
   @override
@@ -273,10 +280,11 @@ class ReaderDisplay {
       other.brightness == brightness &&
       other.preload == preload &&
       other.orientation == orientation &&
-      other.brightnessGesture == brightnessGesture;
+      other.brightnessGesture == brightnessGesture &&
+      other.autoNext == autoNext;
 
   @override
-  int get hashCode => Object.hash(cropBorders, grayscale, invert, dim, spread, keepScreenOn, transition, doubleTapZoom, brightness, preload, orientation, brightnessGesture);
+  int get hashCode => Object.hash(cropBorders, grayscale, invert, dim, spread, keepScreenOn, transition, doubleTapZoom, brightness, preload, orientation, brightnessGesture, autoNext);
 }
 
 /// Lebar minimum (dp) layar landscape agar dua halaman ditampilkan.
