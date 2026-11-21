@@ -2,7 +2,15 @@ import { useEffect, useState } from 'react'
 import {
   Archive,
   BookOpen,
+  ChevronsRight,
   Download,
+  Languages,
+  List,
+  Palette,
+  RefreshCw,
+  Search,
+  ShieldCheck,
+  WifiOff,
   Github,
   Globe,
   Heart,
@@ -103,6 +111,85 @@ const features = [
     title: 'Kunci aplikasi',
     text: 'Amankan perpustakaanmu dengan kunci. Sumber 18+ disembunyikan secara default.',
   },
+  {
+    icon: List,
+    tone: 'sun',
+    title: 'Daftar bab di reader',
+    text: 'Pindah bab tanpa keluar. Ada kolom cari, tanda bab selesai, dan ikon bookmark.',
+  },
+  {
+    icon: ChevronsRight,
+    tone: 'mint',
+    title: 'Lanjut bab otomatis',
+    text: 'Tarik atau geser melewati akhir bab untuk lanjut. Bisa dimatikan bila lebih suka tombol.',
+  },
+  {
+    icon: Palette,
+    tone: 'pink',
+    title: 'Tema & warna aksen',
+    text: 'Terang, gelap, atau ikut sistem. Pilih warna aksen dan tata letak jelajah sesukamu.',
+  },
+  {
+    icon: Search,
+    tone: 'white',
+    title: 'Cari & genre',
+    text: 'Cari judul per sumber, ketuk genre untuk menjelajah, dan sematkan sumber favorit di atas.',
+  },
+  {
+    icon: RefreshCw,
+    tone: 'sun',
+    title: 'Coba ulang gambar',
+    text: 'Gambar gagal dimuat? Ketuk untuk mencoba lagi tanpa keluar dari bab.',
+  },
+  {
+    icon: Languages,
+    tone: 'mint',
+    title: 'Dua bahasa antarmuka',
+    text: 'Antarmuka tersedia dalam bahasa Indonesia dan Inggris. Sumber komik mencakup 16 bahasa.',
+  },
+  {
+    icon: ShieldCheck,
+    tone: 'pink',
+    title: 'Privasi terjaga',
+    text: 'Blokir tangkapan layar dan kunci aplikasi. Data bacaanmu tersimpan di perangkat.',
+  },
+  {
+    icon: WifiOff,
+    tone: 'white',
+    title: 'Baca offline',
+    text: 'Bab yang sudah diunduh tetap bisa dibaca tanpa internet, cocok untuk perjalanan.',
+  },
+]
+
+const readerModes = [
+  {
+    tag: 'Webtoon',
+    tone: 'bg-pink',
+    text: 'Gulir vertikal tanpa putus. Tarik melewati akhir bab dan bilah progres menandai kapan pindah bab.',
+  },
+  {
+    tag: 'Per halaman',
+    tone: 'bg-mint',
+    text: 'Geser kiri atau kanan seperti buku. Geser melewati halaman terakhir langsung masuk bab berikutnya.',
+  },
+  {
+    tag: 'Novel',
+    tone: 'bg-sun',
+    text: 'Teks nyaman dibaca dengan layar penuh, daftar bab, dan ekspor ke EPUB.',
+  },
+]
+
+const howItWorks = [
+  { title: 'Katalog sumber', text: 'Daftar sumber diambil dari repo dan diperbarui tiap 12 jam. Sumber baru muncul tanpa update APK.' },
+  { title: 'Langsung dari situs', text: 'HP kamu meminta halaman ke situs sumber, lalu aplikasi merapikannya jadi daftar judul dan bab.' },
+  { title: 'Disimpan lokal', text: 'Favorit, riwayat, unduhan, dan pengaturan tersimpan di perangkat. Cadangkan kapan saja.' },
+]
+
+const updates = [
+  { v: '3.5.0', d: '21 Nov 2026', text: 'Daftar bab di reader, lanjut bab otomatis, dan penyegaran UI/UX reader.' },
+  { v: '3.4.1', d: '20 Nov 2026', text: 'Gambar gagal bisa diketuk untuk dicoba lagi. Landing page hadir.' },
+  { v: '3.4.0', d: '18 Nov 2026', text: '15 sumber Inggris baru, puluhan sumber lain, dan ikon aplikasi baru.' },
+  { v: '3.3.0', d: '17 Nov 2026', text: 'Mode layar penuh dan katalog naik jadi 561 sumber.' },
 ]
 
 const steps = [
@@ -132,6 +219,26 @@ const faqs = [
     q: 'Apakah ada konten 18+?',
     a: 'Sumber 18+ disembunyikan secara default. Aktifkan sendiri lewat Pengaturan, Sumber, Tampilkan sumber NSFW.',
   },
+  {
+    q: 'Apakah Hub Reader menyimpan data saya?',
+    a: 'Tidak ada akun dan tidak ada server milik Hub Reader. Favorit, riwayat, dan pengaturan hanya ada di HP kamu. Cadangkan sendiri lewat fitur cadangan.',
+  },
+  {
+    q: 'Bisa baca tanpa internet?',
+    a: 'Bisa. Unduh bab terlebih dulu, lalu baca kapan saja tanpa koneksi.',
+  },
+  {
+    q: 'Bagaimana cara memperbarui aplikasi?',
+    a: 'Unduh APK terbaru dari halaman rilis dan pasang di atas versi lama. Data kamu tetap aman. Katalog sumber sendiri diperbarui otomatis tanpa APK baru.',
+  },
+  {
+    q: 'Bisa mengimpor novel sendiri?',
+    a: 'Bisa. Impor file EPUB lokal ke perpustakaan, dan ekspor novel web ke EPUB untuk dibaca di aplikasi lain.',
+  },
+  {
+    q: 'Bagaimana melaporkan sumber yang rusak atau meminta fitur?',
+    a: 'Buka Issues di GitHub, atau ketuk laporkan dari layar error sumber. Setiap laporan membantu menjaga katalog tetap hidup.',
+  },
 ]
 
 const marqueeItems = ['Komik', 'Novel', 'Madara', 'MangaThemesia', 'Keyoapp', 'EPUB', 'AniList', 'MyAnimeList', 'Kitsu', 'Offline']
@@ -147,6 +254,7 @@ function Nav() {
         <nav className="hidden items-center gap-6 font-bold md:flex">
           <a href="#tampilan" className="hover:underline decoration-4 underline-offset-4">Tampilan</a>
           <a href="#fitur" className="hover:underline decoration-4 underline-offset-4">Fitur</a>
+          <a href="#reader" className="hover:underline decoration-4 underline-offset-4">Pembaca</a>
           <a href="#cara" className="hover:underline decoration-4 underline-offset-4">Cara pasang</a>
           <a href="#faq" className="hover:underline decoration-4 underline-offset-4">FAQ</a>
         </nav>
@@ -290,6 +398,71 @@ function Features() {
   )
 }
 
+function ReaderModes() {
+  return (
+    <section id="reader" className="scroll-mt-20 border-y-[3px] border-ink bg-white py-20">
+      <div className="mx-auto max-w-6xl px-4">
+        <h2 className="text-4xl font-bold sm:text-5xl">
+          Pembaca yang <span className="bg-pink px-2">nyaman</span>
+        </h2>
+        <p className="mt-3 max-w-2xl text-lg">Tiga cara membaca, semuanya dengan layar penuh dan daftar bab di dalam reader.</p>
+        <div className="mt-10 grid gap-6 md:grid-cols-3">
+          {readerModes.map((m) => (
+            <div key={m.tag} className={`rounded-lg border-[3px] border-ink p-6 shadow-brutal ${m.tone}`}>
+              <Badge tone="white" className="mb-4">{m.tag}</Badge>
+              <p className="text-lg leading-relaxed">{m.text}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function HowItWorks() {
+  return (
+    <section id="cara-kerja" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-20">
+      <h2 className="text-4xl font-bold sm:text-5xl">
+        Cara <span className="bg-sun px-2">kerjanya</span>
+      </h2>
+      <p className="mt-3 max-w-2xl text-lg">Tanpa server perantara. Semua terjadi di HP kamu.</p>
+      <div className="mt-10 grid gap-6 md:grid-cols-3">
+        {howItWorks.map((h, i) => (
+          <Card key={h.title} tone="paper">
+            <div className="font-mono text-sm font-bold uppercase">Tahap {i + 1}</div>
+            <h3 className="mt-1 text-2xl font-bold">{h.title}</h3>
+            <p className="mt-2 leading-relaxed">{h.text}</p>
+          </Card>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function Updates() {
+  return (
+    <section id="kabar" className="mx-auto max-w-3xl scroll-mt-20 px-4 pb-20">
+      <h2 className="mb-8 text-4xl font-bold sm:text-5xl">
+        Kabar <span className="bg-mint px-2">terbaru</span>
+      </h2>
+      <ol className="space-y-4">
+        {updates.map((u) => (
+          <li key={u.v} className="flex gap-4 rounded-lg border-[3px] border-ink bg-white p-4 shadow-brutal">
+            <div className="shrink-0">
+              <Badge tone="sun">v{u.v}</Badge>
+              <div className="mt-2 font-mono text-xs font-bold">{u.d}</div>
+            </div>
+            <p className="leading-relaxed">{u.text}</p>
+          </li>
+        ))}
+      </ol>
+      <Button href={`${REPO}/releases`} variant="outline" className="mt-6">
+        Semua catatan rilis
+      </Button>
+    </section>
+  )
+}
+
 function Steps() {
   const release = useLatestRelease()
   return (
@@ -378,7 +551,10 @@ export default function App() {
         <Stats />
         <Screens />
         <Features />
+        <ReaderModes />
+        <HowItWorks />
         <Steps />
+        <Updates />
         <Faq />
         <Cta />
       </main>
