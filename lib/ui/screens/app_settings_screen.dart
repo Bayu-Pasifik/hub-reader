@@ -62,6 +62,9 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
 
   _CacheSizes? _sizes;
 
+  /// Bagian yang sedang terbuka (bertahan selama layar hidup).
+  final _open = <String>{'Tampilan'};
+
   @override
   void initState() {
     super.initState();
@@ -219,17 +222,31 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
     final n = ref.read(appSettingsProvider.notifier);
     final theme = Theme.of(context);
     final sizes = _sizes;
-    Widget header(String text) => Padding(
-          padding: const EdgeInsets.fromLTRB(16, 20, 16, 4),
-          child: Text(tr(text), style: theme.textTheme.titleSmall?.copyWith(color: theme.colorScheme.primary)),
-        );
+    // Bagian bisa dilipat agar daftar tidak terlalu panjang; hanya "Tampilan" terbuka awalnya.
+    List<Widget> section(String title, IconData icon, List<Widget> children) => [
+          ExpansionTile(
+            key: PageStorageKey('settings.$title'),
+            initiallyExpanded: _open.contains(title),
+            onExpansionChanged: (v) => v ? _open.add(title) : _open.remove(title),
+            leading: Icon(icon, color: theme.colorScheme.primary),
+            title: Text(tr(title), style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800)),
+            shape: const Border(),
+            collapsedShape: const Border(),
+            tilePadding: const EdgeInsets.symmetric(horizontal: 16),
+            childrenPadding: EdgeInsets.zero,
+            expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
+            expandedAlignment: Alignment.centerLeft,
+            children: children,
+          ),
+          const Divider(height: 1),
+        ];
     String sizeOf(int? v) => v == null ? 'menghitung…' : _size(v);
 
     return Scaffold(
       appBar: AppBar(title: Text(tr('Pengaturan'))),
       body: ListView(
         children: [
-          header(tr('Tampilan')),
+          ...section('Tampilan', Icons.palette_outlined, [
           ListTile(
             title: Text(tr('Bahasa')),
             subtitle: Text(tr('Bahasa antarmuka aplikasi')),
@@ -316,7 +333,8 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
               title: tr('Tampilan jelajah novel'),
             ),
           ),
-          header('Privasi & keamanan'),
+          ]),
+          ...section('Privasi & keamanan', Icons.lock_outline, [
           SwitchListTile(
             secondary: const Icon(Icons.fingerprint),
             title: Text(tr('Kunci aplikasi')),
@@ -360,6 +378,8 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
             value: s.incognito,
             onChanged: (v) => n.update((x) => x.copyWith(incognito: v)),
           ),
+          ]),
+          ...section('Unduhan', Icons.download_outlined, [
           SwitchListTile(
             secondary: const Icon(Icons.auto_delete_outlined),
             title: Text(tr('Hapus unduhan yang sudah dibaca')),
@@ -409,7 +429,8 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
               onChanged: (v) => n.update((x) => x.copyWith(downloadParallel: v ?? 2)),
             ),
           ),
-          header(tr('Jaringan')),
+          ]),
+          ...section('Jaringan', Icons.language_outlined, [
           ListTile(
             leading: const Icon(Icons.shield_outlined),
             title: Text(tr('DNS over HTTPS (DoH)')),
@@ -426,7 +447,8 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
             subtitle: Text(ref.watch(proxyConfigProvider)?.toString() ?? tr('Mati (koneksi langsung)')),
             onTap: _proxyDialog,
           ),
-          header(tr('Sumber')),
+          ]),
+          ...section('Sumber', Icons.extension_outlined, [
           SwitchListTile(
             secondary: const Icon(Icons.eighteen_up_rating_outlined),
             title: Text(tr('Tampilkan sumber NSFW (18+)')),
@@ -457,9 +479,11 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/novel-repos'),
           ),
-          header('Tracker'),
+          ]),
+          ...section('Tracker', Icons.sync_alt, [
           for (final t in ref.watch(trackersProvider)) TrackerSettingsTile(tracker: t),
-          header('Penyimpanan'),
+          ]),
+          ...section('Penyimpanan', Icons.storage_outlined, [
           ListTile(
             leading: const Icon(Icons.image_outlined),
             title: Text(tr('Cache gambar')),
@@ -512,7 +536,8 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
             subtitle: Text(ref.watch(downloadStoreProvider).root.path, style: const TextStyle(fontSize: 12)),
             onTap: _pickDownloadLocation,
           ),
-          header('Data'),
+          ]),
+          ...section('Data', Icons.folder_open_outlined, [
           ListTile(
             leading: const Icon(Icons.insights_outlined),
             title: Text(tr('Statistik baca')),
@@ -539,7 +564,8 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/crash-log'),
           ),
-          header('Tentang'),
+          ]),
+          ...section('Tentang', Icons.info_outline, [
           ListTile(
             leading: const Icon(Icons.system_update_outlined),
             title: Text(tr('Periksa pembaruan')),
@@ -556,6 +582,7 @@ class _AppSettingsScreenState extends ConsumerState<AppSettingsScreen> {
             value: ref.watch(checkUpdatesProvider),
             onChanged: (v) => ref.read(checkUpdatesProvider.notifier).set(v),
           ),
+          ]),
           const SizedBox(height: 24),
         ],
       ),
