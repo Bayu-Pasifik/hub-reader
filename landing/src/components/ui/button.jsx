@@ -15,9 +15,9 @@ const buttonVariants = cva(
         outline: 'bg-white text-ink',
       },
       size: {
-        sm: 'h-10 px-4 text-sm',
-        default: 'h-12 px-6 text-base',
-        lg: 'h-14 px-8 text-lg',
+        sm: 'h-10 px-3 text-sm sm:px-4',
+        default: 'h-12 px-5 text-base sm:px-6',
+        lg: 'h-12 px-5 text-base sm:h-14 sm:px-8 sm:text-lg',
       },
     },
     defaultVariants: { variant: 'default', size: 'default' },

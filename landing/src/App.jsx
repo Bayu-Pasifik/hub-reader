@@ -19,7 +19,9 @@ import {
   Link as LinkIcon,
   Lock,
   Maximize,
+  Menu,
   Smartphone,
+  X,
 } from 'lucide-react'
 import { Button } from './components/ui/button'
 import { Card } from './components/ui/card'
@@ -243,25 +245,59 @@ const faqs = [
 
 const marqueeItems = ['Komik', 'Novel', 'Madara', 'MangaThemesia', 'Keyoapp', 'EPUB', 'AniList', 'MyAnimeList', 'Kitsu', 'Offline']
 
+const navLinks = [
+  ['#tampilan', 'Tampilan'],
+  ['#fitur', 'Fitur'],
+  ['#reader', 'Pembaca'],
+  ['#cara', 'Cara pasang'],
+  ['#faq', 'FAQ'],
+]
+
 function Nav() {
+  const [open, setOpen] = useState(false)
   return (
     <header className="sticky top-0 z-50 border-b-[3px] border-ink bg-paper/95 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-        <a href="#top" className="flex items-center gap-3 text-xl font-bold">
-          <img src={ICON} alt="" className="size-9 rounded-md border-[3px] border-ink" />
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4">
+        <a href="#top" className="flex items-center gap-2 text-lg font-bold sm:gap-3 sm:text-xl">
+          <img src={ICON} alt="" className="size-8 rounded-md border-[3px] border-ink sm:size-9" />
           Hub Reader
         </a>
+        <div className="flex items-center gap-2 md:hidden">
+          <Button href={RELEASE} size="sm">
+            <Download className="size-4" strokeWidth={3} /> Unduh
+          </Button>
+          <button
+            aria-label="Menu"
+            aria-expanded={open}
+            onClick={() => setOpen(!open)}
+            className="grid size-10 place-items-center rounded-md border-[3px] border-ink bg-white shadow-brutal active:translate-x-[3px] active:translate-y-[3px] active:shadow-none"
+          >
+            {open ? <X className="size-5" strokeWidth={3} /> : <Menu className="size-5" strokeWidth={3} />}
+          </button>
+        </div>
         <nav className="hidden items-center gap-6 font-bold md:flex">
-          <a href="#tampilan" className="hover:underline decoration-4 underline-offset-4">Tampilan</a>
-          <a href="#fitur" className="hover:underline decoration-4 underline-offset-4">Fitur</a>
-          <a href="#reader" className="hover:underline decoration-4 underline-offset-4">Pembaca</a>
-          <a href="#cara" className="hover:underline decoration-4 underline-offset-4">Cara pasang</a>
-          <a href="#faq" className="hover:underline decoration-4 underline-offset-4">FAQ</a>
+          {navLinks.map(([href, label]) => (
+            <a key={href} href={href} className="hover:underline decoration-4 underline-offset-4">{label}</a>
+          ))}
         </nav>
-        <Button href={RELEASE} size="sm">
+        <Button href={RELEASE} size="sm" className="hidden md:inline-flex">
           <Download className="size-4" strokeWidth={3} /> Unduh
         </Button>
       </div>
+      {open && (
+        <nav className="border-t-[3px] border-ink bg-paper px-4 py-3 md:hidden">
+          {navLinks.map(([href, label]) => (
+            <a
+              key={href}
+              href={href}
+              onClick={() => setOpen(false)}
+              className="block border-b-2 border-ink/20 py-3 text-lg font-bold last:border-b-0"
+            >
+              {label}
+            </a>
+          ))}
+        </nav>
+      )}
     </header>
   )
 }
@@ -300,17 +336,17 @@ function PhoneMock() {
 
 function Hero() {
   return (
-    <section id="top" className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-16 md:grid-cols-2 md:py-24">
+    <section id="top" className="mx-auto grid max-w-6xl items-center gap-14 px-4 py-10 md:grid-cols-2 md:gap-12 md:py-24">
       <div>
         <Badge tone="sun" className="mb-6 shadow-brutal">Android · Flutter · Open source</Badge>
-        <h1 className="text-5xl font-bold leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl">
+        <h1 className="text-4xl font-bold leading-[1.1] tracking-tight min-[400px]:text-5xl sm:text-6xl lg:text-7xl">
           Baca komik &amp; novel,{' '}
           <span className="inline-block -rotate-1 border-[3px] border-ink bg-sun px-2 shadow-brutal">satu aplikasi.</span>
         </h1>
         <p className="mt-6 max-w-xl text-lg leading-relaxed sm:text-xl">
           Hub Reader bergaya Aniyomi/Mihon. Ambil konten langsung dari situs sumbernya di HP, tanpa server dan tanpa akun.
         </p>
-        <div className="mt-8 flex flex-wrap gap-4">
+        <div className="mt-8 flex flex-wrap gap-4 [&>a]:flex-1 sm:[&>a]:flex-none">
           <Button href={RELEASE} size="lg">
             <Download className="size-5" strokeWidth={3} /> Unduh APK
           </Button>
@@ -332,12 +368,12 @@ function Stats() {
     { v: '0', l: 'Server', tone: 'bg-white' },
   ]
   return (
-    <section className="mx-auto max-w-6xl px-4 pb-20">
-      <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
+    <section className="mx-auto max-w-6xl px-4 pb-14 sm:pb-20">
+      <div className="grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-4">
         {stats.map((s) => (
-          <div key={s.l} className={`rounded-lg border-[3px] border-ink p-5 text-center shadow-brutal ${s.tone}`}>
-            <div className="text-4xl font-bold sm:text-5xl">{s.v}</div>
-            <div className="mt-1 font-mono text-sm font-bold uppercase">{s.l}</div>
+          <div key={s.l} className={`rounded-lg border-[3px] border-ink p-4 text-center shadow-brutal sm:p-5 ${s.tone}`}>
+            <div className="text-3xl font-bold sm:text-5xl">{s.v}</div>
+            <div className="mt-1 font-mono text-xs font-bold uppercase sm:text-sm">{s.l}</div>
           </div>
         ))}
       </div>
@@ -349,7 +385,7 @@ function Screens() {
   return (
     <section id="tampilan" className="scroll-mt-20 py-20">
       <div className="mx-auto max-w-6xl px-4">
-        <h2 className="text-4xl font-bold sm:text-5xl">
+        <h2 className="text-3xl font-bold sm:text-5xl">
           Tampilan <span className="bg-sun px-2">asli</span>
         </h2>
         <p className="mt-3 max-w-2xl text-lg">Tangkapan layar langsung dari aplikasi, terang dan gelap.</p>
@@ -379,7 +415,7 @@ function Screens() {
 function Features() {
   return (
     <section id="fitur" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-20">
-      <h2 className="text-4xl font-bold sm:text-5xl">
+      <h2 className="text-3xl font-bold sm:text-5xl">
         Fitur <span className="bg-mint px-2">lengkap</span>
       </h2>
       <p className="mt-3 max-w-2xl text-lg">Semua yang kamu butuhkan untuk membaca, tanpa ribet.</p>
@@ -402,7 +438,7 @@ function ReaderModes() {
   return (
     <section id="reader" className="scroll-mt-20 border-y-[3px] border-ink bg-white py-20">
       <div className="mx-auto max-w-6xl px-4">
-        <h2 className="text-4xl font-bold sm:text-5xl">
+        <h2 className="text-3xl font-bold sm:text-5xl">
           Pembaca yang <span className="bg-pink px-2">nyaman</span>
         </h2>
         <p className="mt-3 max-w-2xl text-lg">Tiga cara membaca, semuanya dengan layar penuh dan daftar bab di dalam reader.</p>
@@ -422,7 +458,7 @@ function ReaderModes() {
 function HowItWorks() {
   return (
     <section id="cara-kerja" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-20">
-      <h2 className="text-4xl font-bold sm:text-5xl">
+      <h2 className="text-3xl font-bold sm:text-5xl">
         Cara <span className="bg-sun px-2">kerjanya</span>
       </h2>
       <p className="mt-3 max-w-2xl text-lg">Tanpa server perantara. Semua terjadi di HP kamu.</p>
@@ -442,15 +478,15 @@ function HowItWorks() {
 function Updates() {
   return (
     <section id="kabar" className="mx-auto max-w-3xl scroll-mt-20 px-4 pb-20">
-      <h2 className="mb-8 text-4xl font-bold sm:text-5xl">
+      <h2 className="mb-8 text-3xl font-bold sm:text-5xl">
         Kabar <span className="bg-mint px-2">terbaru</span>
       </h2>
       <ol className="space-y-4">
         {updates.map((u) => (
-          <li key={u.v} className="flex gap-4 rounded-lg border-[3px] border-ink bg-white p-4 shadow-brutal">
-            <div className="shrink-0">
+          <li key={u.v} className="flex flex-col gap-2 rounded-lg border-[3px] border-ink bg-white p-4 shadow-brutal sm:flex-row sm:gap-4">
+            <div className="flex shrink-0 items-center gap-3 sm:block">
               <Badge tone="sun">v{u.v}</Badge>
-              <div className="mt-2 font-mono text-xs font-bold">{u.d}</div>
+              <div className="font-mono text-xs font-bold sm:mt-2">{u.d}</div>
             </div>
             <p className="leading-relaxed">{u.text}</p>
           </li>
@@ -468,7 +504,7 @@ function Steps() {
   return (
     <section id="cara" className="scroll-mt-20 border-y-[3px] border-ink bg-sun py-20">
       <div className="mx-auto max-w-6xl px-4">
-        <h2 className="text-4xl font-bold sm:text-5xl">Pasang dalam 3 langkah</h2>
+        <h2 className="text-3xl font-bold sm:text-5xl">Pasang dalam 3 langkah</h2>
         <div className="mt-10 grid gap-6 md:grid-cols-3">
           {steps.map((s) => (
             <Card key={s.n} tone="white">
@@ -478,7 +514,7 @@ function Steps() {
             </Card>
           ))}
         </div>
-        <div className="mt-10 flex flex-wrap items-center gap-4">
+        <div className="mt-10 flex flex-col items-stretch gap-4 sm:flex-row sm:flex-wrap sm:items-center">
           {release?.arm64 && (
             <Button href={release.arm64} size="lg" variant="dark">
               <Download className="size-5" strokeWidth={3} /> APK arm64 {release.tag}
@@ -501,7 +537,7 @@ function Steps() {
 function Faq() {
   return (
     <section id="faq" className="mx-auto max-w-3xl scroll-mt-20 px-4 py-20">
-      <h2 className="mb-10 text-4xl font-bold sm:text-5xl">
+      <h2 className="mb-10 text-3xl font-bold sm:text-5xl">
         Sering <span className="bg-pink px-2">ditanya</span>
       </h2>
       <Accordion items={faqs} />
@@ -512,10 +548,10 @@ function Faq() {
 function Cta() {
   return (
     <section className="mx-auto max-w-6xl px-4 pb-20">
-      <div className="rounded-xl border-[4px] border-ink bg-pink p-8 text-center shadow-brutal-lg sm:p-14">
-        <h2 className="text-4xl font-bold sm:text-6xl">Siap membaca?</h2>
-        <p className="mx-auto mt-4 max-w-xl text-lg">Gratis, open source, dan terus bertambah sumbernya.</p>
-        <div className="mt-8 flex flex-wrap justify-center gap-4">
+      <div className="rounded-xl border-[4px] border-ink bg-pink p-6 text-center shadow-brutal sm:p-14 sm:shadow-brutal-lg">
+        <h2 className="text-3xl font-bold sm:text-6xl">Siap membaca?</h2>
+        <p className="mx-auto mt-4 max-w-xl text-base sm:text-lg">Gratis, open source, dan terus bertambah sumbernya.</p>
+        <div className="mt-8 flex flex-col items-stretch justify-center gap-4 sm:flex-row sm:flex-wrap sm:items-center">
           <Button href={RELEASE} size="lg" variant="dark">
             <Download className="size-5" strokeWidth={3} /> Unduh versi terbaru
           </Button>
@@ -533,7 +569,7 @@ function Footer() {
     <footer className="border-t-[3px] border-ink bg-ink py-8 text-paper">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 font-mono text-sm sm:flex-row">
         <span>© {new Date().getFullYear()} Hub Reader</span>
-        <a href={REPO} className="font-bold underline decoration-sun decoration-2 underline-offset-4">
+        <a href={REPO} className="break-all text-center font-bold underline decoration-sun decoration-2 underline-offset-4">
           github.com/Bayu-Pasifik/hub-reader
         </a>
       </div>
