@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../novels/novel_models.dart';
+import '../../../sources/source_exception.dart';
 import '../../../novels/novel_source.dart';
 import '../../../state/novel_health_provider.dart';
 import '../../../state/novel_providers.dart';
@@ -39,7 +40,7 @@ class NovelGlobalSearchScreen extends ConsumerStatefulWidget {
 class _NovelGlobalSearchScreenState extends ConsumerState<NovelGlobalSearchScreen> {
   /// Plugin yang dicari bersamaan.
   static const _parallel = 4;
-  static const _timeout = Duration(seconds: 40);
+  static const _timeout = Duration(seconds: 120);
 
   late final _controller = TextEditingController(text: widget.initialQuery);
 
@@ -91,12 +92,7 @@ class _NovelGlobalSearchScreenState extends ConsumerState<NovelGlobalSearchScree
     Future<void> worker() async {
       while (next < results.length && run == _run) {
         final r = results[next++];
-        try {
-          final source = await ref.read(novelSourceProvider(r.info.id).future).timeout(_timeout);
-          r.items = await source.search(query, 1).timeout(_timeout);
-        } catch (e) {
-          r.error = e is TimeoutException ? tr('Waktu habis') : novelError(e, site: r.info.site).title;
-        }
+        await _searchOne(r, query, run);
         if (mounted && run == _run) setState(() {});
       }
     }
@@ -107,6 +103,38 @@ class _NovelGlobalSearchScreenState extends ConsumerState<NovelGlobalSearchScree
       int rank(_PluginResult r) => r.error != null ? 2 : (r.items!.isEmpty ? 1 : 0);
       setState(() => _results = [...results]..sort((a, b) => rank(a).compareTo(rank(b))));
     }
+  }
+
+  /// Cari satu plugin. Gagal karena sinyal lemot (timeout/tanpa koneksi) dicoba
+  /// sekali lagi sebelum dianggap gagal.
+  Future<void> _searchOne(_PluginResult r, String query, int run) async {
+    for (var attempt = 0; attempt < 2; attempt++) {
+      try {
+        final source = await ref.read(novelSourceProvider(r.info.id).future).timeout(_timeout);
+        r.items = await source.search(query, 1).timeout(_timeout);
+        r.error = null;
+        return;
+      } catch (e) {
+        if (run != _run) return;
+        final ex = e is TimeoutException ? const SourceException(SourceErrorKind.timeout) : novelError(e, site: r.info.site);
+        r.error = e is TimeoutException ? tr('Waktu habis') : ex.title;
+        final flaky = ex.kind == SourceErrorKind.timeout || ex.kind == SourceErrorKind.noConnection;
+        if (!flaky) return;
+      }
+    }
+  }
+
+  /// Ulangi pencarian untuk satu plugin yang gagal (ketuk ikon refresh).
+  Future<void> _retry(_PluginResult r) async {
+    final query = _controller.text.trim();
+    if (query.isEmpty || r.loading) return;
+    final run = _run;
+    setState(() {
+      r.error = null;
+      r.items = null;
+    });
+    await _searchOne(r, query, run);
+    if (mounted && run == _run) setState(() {});
   }
 
   @override
@@ -202,16 +230,17 @@ class _NovelGlobalSearchScreenState extends ConsumerState<NovelGlobalSearchScree
             )
           : ListView.builder(
               itemCount: shown.length,
-              itemBuilder: (context, i) => _PluginRow(result: shown[i]),
+              itemBuilder: (context, i) => _PluginRow(result: shown[i], onRetry: () => _retry(shown[i])),
             ),
     );
   }
 }
 
 class _PluginRow extends ConsumerWidget {
-  const _PluginRow({required this.result});
+  const _PluginRow({required this.result, required this.onRetry});
 
   final _PluginResult result;
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -235,7 +264,9 @@ class _PluginRow extends ConsumerWidget {
           subtitle: Text('${languageName(info.lang)} · $status'),
           trailing: result.loading
               ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2))
-              : const Icon(Icons.chevron_right),
+              : result.error != null
+                  ? IconButton(tooltip: tr('Coba lagi'), icon: const Icon(Icons.refresh), onPressed: onRetry)
+                  : const Icon(Icons.chevron_right),
           onTap: () => context.push(novelBrowseLocation(info.id)),
         ),
         if (items != null && items.isNotEmpty)
