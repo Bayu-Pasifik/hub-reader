@@ -23,7 +23,19 @@ class NovelSource {
         webStorageUtilized = meta['webStorageUtilized'] == true,
         imageHeaders = {
           for (final e in asMap(asMap(meta['imageRequestInit'])['headers']).entries) e.key: '${e.value}',
-        };
+        } {
+    _seedDefaults();
+  }
+
+  /// WTR-LAB: pembaca anonim dibatasi (Turnstile) per permintaan. Mode AI butuh
+  /// login setelah bab 20 dan memakai satu permintaan ekstra per bab, jadi
+  /// defaultnya Web. Hanya diisi bila pengguna belum memilih sendiri.
+  void _seedDefaults() {
+    if (id != 'WTRLAB') return;
+    final mode = settings.where((s) => s.key == 'preferredMode').firstOrNull;
+    if (mode == null || engine.readStorage(_storageKey(mode.key)) != null) return;
+    setSetting(mode, 'web');
+  }
 
   /// true untuk sumber tanpa plugin JS (EPUB lokal).
   bool get isLocal => _engine == null;

@@ -673,27 +673,31 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
                 child: content.when(
                   loading: () => Center(child: CircularProgressIndicator(color: fg)),
                   error: (e, _) => SafeArea(
-                    child: Column(
-                      children: [
-                        Expanded(
-                          child: SourceErrorView(
-                            error: novelError(e, site: source?.site),
-                            verifyUrl: source?.site,
-                            reportSource: novelReportTarget(source),
-                            onRetry: () => ref
-                                .invalidate(novelChapterProvider((pluginId: widget.pluginId, path: _chapterPath))),
-                          ),
-                        ),
-                        if (source != null && '$e'.toLowerCase().contains('turnstile'))
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: FilledButton.icon(
-                              onPressed: () => _readViaWebView(source.site),
-                              icon: const Icon(Icons.public),
-                              label: Text(tr('Baca lewat WebView')),
+                    child: Center(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SourceErrorView(
+                              compact: true,
+                              error: novelError(e, site: source?.site),
+                              verifyUrl: source?.site,
+                              reportSource: novelReportTarget(source),
+                              onRetry: () => ref
+                                  .invalidate(novelChapterProvider((pluginId: widget.pluginId, path: _chapterPath))),
                             ),
-                          ),
-                      ],
+                            if (source != null && '$e'.toLowerCase().contains('turnstile'))
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: FilledButton.icon(
+                                  onPressed: () => _readViaWebView(source.site),
+                                  icon: const Icon(Icons.public),
+                                  label: Text(tr('Baca lewat WebView')),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                   data: (html) {
@@ -883,7 +887,9 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
                         ),
                       ];
                     // Font sistem besar: tombol aksi pindah ke baris sendiri supaya judul tidak terpotong.
-                    final large = MediaQuery.textScalerOf(context).scale(1) > 1.3;
+                    // Layar sempit (ponsel) juga begitu: 7 ikon + judul tidak muat satu baris,
+                    // ListTile gagal layout dan seluruh layar baca berhenti menerima ketukan di debug.
+                    final large = MediaQuery.textScalerOf(context).scale(1) > 1.3 || MediaQuery.sizeOf(context).width < 560;
                     final tile = ListTile(
                     leading: IconButton(
                       tooltip: tr('Kembali'),
