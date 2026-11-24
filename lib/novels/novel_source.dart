@@ -169,6 +169,17 @@ SourceException novelError(Object error, {String? site}) {
   final message = error is LnPluginException || error is LnNetworkException ? '$error' : error.toString();
   final lower = message.toLowerCase();
   final siteUri = site == null ? null : Uri.tryParse(site);
+  // Turnstile di API situs (mis. WTR-LAB) butuh token browser; verifikasi
+  // WebView biasa tidak membantu, jadi jangan arahkan ke "Buka di WebView".
+  if (lower.contains('turnstile')) {
+    return SourceException(
+      SourceErrorKind.unknown,
+      detail: trp(
+        'Situs meminta tantangan Turnstile untuk membaca bab ini. Plugin belum bisa menyelesaikannya. Coba bab lain, masuk ke akun situs lewat pengaturan plugin, atau baca bab ini di browser. Detail: {err}',
+        {'err': message},
+      ),
+    );
+  }
   if (lower.contains('webview') ||
       lower.contains('cloudflare') ||
       lower.contains('bot check') ||
