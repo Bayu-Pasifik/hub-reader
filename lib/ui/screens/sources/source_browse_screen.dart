@@ -29,6 +29,7 @@ class SourceBrowseScreen extends ConsumerStatefulWidget {
 class _SourceBrowseScreenState extends ConsumerState<SourceBrowseScreen> {
   final _searchController = TextEditingController();
   bool _searching = false;
+  bool _focusSearch = false;
 
   /// Query yang sudah dikirim (Enter). Kosong + tanpa filter = tampilkan tab.
   String _submitted = '';
@@ -115,7 +116,9 @@ class _SourceBrowseScreenState extends ConsumerState<SourceBrowseScreen> {
           title: _searching
               ? TextField(
                   controller: _searchController,
-                  autofocus: true,
+                  // Fokus otomatis hanya saat pengguna sendiri mengetuk ikon cari;
+                  // kata dari genre tidak boleh memunculkan keyboard (juga saat kembali).
+                  autofocus: _focusSearch,
                   textInputAction: TextInputAction.search,
                   decoration: InputDecoration(
                     hintText: trp('Cari di {name}…', {'name': source.name}),
@@ -146,7 +149,12 @@ class _SourceBrowseScreenState extends ConsumerState<SourceBrowseScreen> {
             IconButton(
               tooltip: _searching ? tr('Tutup pencarian') : tr('Cari'),
               icon: Icon(_searching ? Icons.close : Icons.search),
-              onPressed: _searching ? _closeSearch : () => setState(() => _searching = true),
+              onPressed: _searching
+                  ? _closeSearch
+                  : () => setState(() {
+                        _searching = true;
+                        _focusSearch = true;
+                      }),
             ),
           ],
           bottom: showResults

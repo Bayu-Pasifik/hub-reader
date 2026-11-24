@@ -32,6 +32,7 @@ class NovelBrowseScreen extends ConsumerStatefulWidget {
 class _NovelBrowseScreenState extends ConsumerState<NovelBrowseScreen> {
   final _searchController = TextEditingController();
   bool _searching = false;
+  bool _focusSearch = false;
   String _submitted = '';
   NovelFilterValues _filters = const {};
 
@@ -120,7 +121,7 @@ class _NovelBrowseScreenState extends ConsumerState<NovelBrowseScreen> {
           title: _searching
               ? TextField(
                   controller: _searchController,
-                  autofocus: true,
+                  autofocus: _focusSearch,
                   textInputAction: TextInputAction.search,
                   decoration: InputDecoration(hintText: trp('Cari di {name}…', {'name': source.name}), border: InputBorder.none),
                   onSubmitted: (text) => setState(() => _submitted = text.trim()),
@@ -149,7 +150,12 @@ class _NovelBrowseScreenState extends ConsumerState<NovelBrowseScreen> {
             IconButton(
               tooltip: _searching ? tr('Tutup pencarian') : tr('Cari'),
               icon: Icon(_searching ? Icons.close : Icons.search),
-              onPressed: _searching ? _closeSearch : () => setState(() => _searching = true),
+              onPressed: _searching
+                  ? _closeSearch
+                  : () => setState(() {
+                        _searching = true;
+                        _focusSearch = true;
+                      }),
             ),
             PopupMenuButton<String>(
               onSelected: (v) async {
