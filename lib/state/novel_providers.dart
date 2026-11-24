@@ -282,7 +282,8 @@ class NovelListNotifier extends AutoDisposeFamilyNotifier<NovelListState, NovelL
       state = NovelListState(items: current.items, page: current.page, isLoading: true);
     }
     try {
-      final source = await ref.read(novelSourceProvider(arg.pluginId).future);
+      // Batas keras: plugin/engine yang menggantung tidak boleh membuat skeleton tanpa akhir.
+      final source = await ref.read(novelSourceProvider(arg.pluginId).future).timeout(const Duration(seconds: 150));
       final filters = arg.filtersJson.isEmpty
           ? const <String, Object?>{}
           : (jsonDecode(arg.filtersJson) as Map).cast<String, Object?>();
@@ -290,7 +291,8 @@ class NovelListNotifier extends AutoDisposeFamilyNotifier<NovelListState, NovelL
         NovelListing.popular => source.popular(next, filters: filters),
         NovelListing.latest => source.popular(next, latest: true, filters: filters),
         NovelListing.search => source.search(arg.query, next),
-      };
+      }
+          .timeout(const Duration(seconds: 150));
       if (next == 1 && arg.listing == NovelListing.popular && arg.filtersJson.isEmpty) {
         ref.read(novelHealthProvider.notifier).recordResult(arg.pluginId, empty: items.isEmpty);
       }
@@ -308,7 +310,7 @@ class NovelListNotifier extends AutoDisposeFamilyNotifier<NovelListState, NovelL
         ref.read(novelHealthProvider.notifier).recordResult(arg.pluginId, error: error);
       }
       if (_disposed || generation != _generation) return;
-      final e = novelError(error);
+      final e = error is TimeoutException ? const SourceException(SourceErrorKind.timeout) : novelError(error);
       state = current.page == 0
           ? NovelListState(error: e)
           : NovelListState(items: current.items, page: current.page, loadMoreError: e);

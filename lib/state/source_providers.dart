@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -270,11 +272,13 @@ class SourceListNotifier extends AutoDisposeFamilyNotifier<SourceListState, Sour
       );
     }
     try {
+      // Batas keras: request yang menggantung tidak boleh membuat skeleton tanpa akhir.
       final result = await switch (arg.listing) {
         SourceListing.popular => source.popular(next),
         SourceListing.latest => source.latest(next),
         SourceListing.search => source.search(next, arg.query, filters: arg.filters),
-      };
+      }
+          .timeout(const Duration(seconds: 150));
       if (_disposed || generation != _generation) return;
       // Membuka sumber = cek kesehatan gratis.
       if (current.page == 0 && arg.listing != SourceListing.search) {
@@ -295,7 +299,9 @@ class SourceListNotifier extends AutoDisposeFamilyNotifier<SourceListState, Sour
       );
     } catch (error) {
       if (_disposed || generation != _generation) return;
-      final e = toSourceException(error);
+      final e = error is TimeoutException
+          ? const SourceException(SourceErrorKind.timeout)
+          : toSourceException(error);
       if (current.page == 0 && arg.listing != SourceListing.search) {
         ref.read(sourceHealthProvider.notifier).record(arg.sourceId, SourceHealth.fromError(e));
       }
