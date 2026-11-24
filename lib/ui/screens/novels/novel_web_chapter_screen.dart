@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../../core/i18n/strings.dart';
+import '../../../core/platform/webview_bridge.dart';
 import '../../../sources/source.dart';
 
 /// Membuka satu bab novel di WebView supaya pengguna bisa menyelesaikan
@@ -75,8 +76,13 @@ class _NovelWebChapterScreenState extends State<NovelWebChapterScreen> {
     } catch (_) {
       html = '';
     }
+    // Cookie hasil verifikasi (Turnstile menghitung per klien) disalin supaya
+    // permintaan plugin berikutnya ikut lolos, termasuk bab-bab selanjutnya.
+    final uri = Uri.parse(widget.url);
+    final cookies = await WebViewBridge.cookiesFor(uri);
+    if (cookies != null && cookies.isNotEmpty) HttpSource.cookies.save(uri, cookies);
     if (!mounted) return;
-    if (html.trim().isEmpty) {
+    if (html.trim().isEmpty && (cookies == null || cookies.isEmpty)) {
       setState(() => _busy = false);
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
@@ -85,6 +91,7 @@ class _NovelWebChapterScreenState extends State<NovelWebChapterScreen> {
         ));
       return;
     }
+    // Teks kosong: pembaca mencoba plugin lagi dengan cookie yang baru.
     Navigator.of(context).pop(html);
   }
 

@@ -175,7 +175,7 @@ SourceException novelError(Object error, {String? site}) {
     return SourceException(
       SourceErrorKind.unknown,
       detail: trp(
-        'Situs meminta tantangan Turnstile untuk membaca bab ini. Plugin belum bisa menyelesaikannya. Coba bab lain, masuk ke akun situs lewat pengaturan plugin, atau baca bab ini di browser. Detail: {err}',
+        'Situs membatasi pembaca anonim dan meminta tantangan Turnstile. Ketuk "Baca lewat WebView", selesaikan verifikasinya, lalu ketuk "Ambil bab". Cookie verifikasi disimpan untuk bab berikutnya. Detail: {err}',
         {'err': message},
       ),
     );

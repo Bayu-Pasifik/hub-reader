@@ -315,7 +315,7 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
     );
     if (html == null || !mounted) return;
     final key = (pluginId: widget.pluginId, path: path);
-    ref.read(novelWebChapterProvider(key).notifier).state = html;
+    if (html.trim().isNotEmpty) ref.read(novelWebChapterProvider(key).notifier).state = html;
     ref.invalidate(novelChapterProvider(key));
   }
 
