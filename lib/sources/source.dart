@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
@@ -12,6 +13,15 @@ import 'models.dart';
 export 'filters.dart';
 import 'source_exception.dart';
 import '../core/i18n/strings.dart';
+
+const _cancelKey = #hubCancelToken;
+
+/// Jalankan [body] sehingga semua request `HttpSource` di dalamnya ikut
+/// dibatalkan saat [token] dibatalkan (mis. pencarian global ditutup).
+Future<T> runCancellable<T>(CancelToken token, Future<T> Function() body) =>
+    runZoned(body, zoneValues: {_cancelKey: token});
+
+CancelToken? get _zoneCancelToken => Zone.current[_cancelKey] as CancelToken?;
 
 /// Kontrak satu extension sumber (padanan `Source`/`KeiSource` di Mihon).
 ///
@@ -109,8 +119,8 @@ abstract class HttpSource extends MangaSource {
 
   late final Dio dio = _injectedDio ??
       (Dio(BaseOptions(
-        connectTimeout: const Duration(seconds: 15),
-        receiveTimeout: const Duration(seconds: 25),
+        connectTimeout: const Duration(seconds: 45),
+        receiveTimeout: const Duration(seconds: 90),
         responseType: ResponseType.plain,
         headers: {
           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -158,6 +168,7 @@ abstract class HttpSource extends MangaSource {
       final response = await dio.getUri<String>(
         rewriteToCurrentHost(url),
         options: Options(headers: headers),
+        cancelToken: _zoneCancelToken,
       );
       final body = response.data ?? '';
       return HtmlResponse(html_parser.parse(body), body, response.realUri);
@@ -175,6 +186,7 @@ abstract class HttpSource extends MangaSource {
         rewriteToCurrentHost(url),
         data: form,
         options: Options(contentType: Headers.formUrlEncodedContentType, headers: headers),
+        cancelToken: _zoneCancelToken,
       );
       final body = response.data ?? '';
       return HtmlResponse(html_parser.parse(body), body, response.realUri);
@@ -191,6 +203,7 @@ abstract class HttpSource extends MangaSource {
         rewriteToCurrentHost(url),
         data: FormData.fromMap(fields),
         options: Options(headers: headers),
+        cancelToken: _zoneCancelToken,
       );
       return response.data ?? '';
     } catch (error) {
@@ -202,7 +215,7 @@ abstract class HttpSource extends MangaSource {
   Future<String> fetchText(Uri url, {Map<String, String>? headers}) async {
     await _throttle();
     try {
-      final response = await dio.getUri<String>(rewriteToCurrentHost(url), options: Options(headers: headers));
+      final response = await dio.getUri<String>(rewriteToCurrentHost(url), options: Options(headers: headers), cancelToken: _zoneCancelToken);
       return response.data ?? '';
     } catch (error) {
       throw toSourceException(error);
@@ -217,6 +230,7 @@ abstract class HttpSource extends MangaSource {
         url,
         data: jsonEncode(body),
         options: Options(contentType: Headers.jsonContentType, headers: {'Accept': 'application/json', ...?headers}),
+        cancelToken: _zoneCancelToken,
       );
       return jsonDecode(response.data ?? 'null');
     } on FormatException {

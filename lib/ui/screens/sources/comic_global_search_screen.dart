@@ -1,6 +1,7 @@
 import 'dart:async';
 import '../../../core/i18n/strings.dart';
 
+import 'package:dio/dio.dart' show CancelToken;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -43,8 +44,8 @@ class ComicGlobalSearchScreen extends ConsumerStatefulWidget {
 
 class _ComicGlobalSearchScreenState extends ConsumerState<ComicGlobalSearchScreen> {
   /// Sumber yang dicari bersamaan.
-  static const _parallel = 5;
-  static const _timeout = Duration(seconds: 30);
+  static const _parallel = 6;
+  static const _timeout = Duration(seconds: 120);
 
   late final _controller = TextEditingController(text: widget.initialQuery);
 
@@ -52,6 +53,9 @@ class _ComicGlobalSearchScreenState extends ConsumerState<ComicGlobalSearchScree
   ComicSearchScope? _scope;
   List<_SourceResult> _results = const [];
   int _run = 0;
+
+  /// Membatalkan request pencarian yang masih jalan (tutup layar / cari ulang).
+  CancelToken? _cancel;
   bool _onlyWithResults = false;
 
   @override
@@ -65,6 +69,7 @@ class _ComicGlobalSearchScreenState extends ConsumerState<ComicGlobalSearchScree
   @override
   void dispose() {
     _run++;
+    _cancel?.cancel();
     _controller.dispose();
     super.dispose();
   }
@@ -86,6 +91,8 @@ class _ComicGlobalSearchScreenState extends ConsumerState<ComicGlobalSearchScree
     if (query.isEmpty) return;
     FocusScope.of(context).unfocus();
     final run = ++_run;
+    _cancel?.cancel();
+    final cancel = _cancel = CancelToken();
     final targets = comicSearchTargets(
       ref.read(sourceRegistryProvider).sources,
       scope: _scope ?? const UsedSourcesScope(),
@@ -100,12 +107,7 @@ class _ComicGlobalSearchScreenState extends ConsumerState<ComicGlobalSearchScree
     Future<void> worker() async {
       while (next < results.length && run == _run) {
         final r = results[next++];
-        try {
-          final page = await r.source.search(1, query).timeout(_timeout);
-          r.items = page.items.toSet().toList();
-        } catch (e) {
-          r.error = e is TimeoutException ? tr('Waktu habis') : toSourceException(e).title;
-        }
+        await _searchOne(r, query, cancel, run);
         if (mounted && run == _run) setState(() {});
       }
     }
@@ -116,6 +118,39 @@ class _ComicGlobalSearchScreenState extends ConsumerState<ComicGlobalSearchScree
       int rank(_SourceResult r) => r.error != null ? 2 : (r.items!.isEmpty ? 1 : 0);
       setState(() => _results = [...results]..sort((a, b) => rank(a).compareTo(rank(b))));
     }
+  }
+
+  /// Cari satu sumber. Gagal karena sinyal lemot (timeout/tanpa koneksi) dicoba
+  /// sekali lagi sebelum dianggap gagal, supaya jaringan lambat tidak menghabiskan hasil.
+  Future<void> _searchOne(_SourceResult r, String query, CancelToken cancel, int run) async {
+    for (var attempt = 0; attempt < 2; attempt++) {
+      try {
+        final page = await runCancellable(cancel, () => r.source.search(1, query)).timeout(_timeout);
+        r.items = page.items.toSet().toList();
+        r.error = null;
+        return;
+      } catch (e) {
+        if (run != _run) return;
+        final ex = e is TimeoutException ? const SourceException(SourceErrorKind.timeout) : toSourceException(e);
+        final flaky = ex.kind == SourceErrorKind.timeout || ex.kind == SourceErrorKind.noConnection;
+        r.error = e is TimeoutException ? tr('Waktu habis') : ex.title;
+        if (!flaky) return;
+      }
+    }
+  }
+
+  /// Ulangi pencarian untuk satu sumber yang gagal (ketuk barisnya).
+  Future<void> _retry(_SourceResult r) async {
+    final query = _controller.text.trim();
+    if (query.isEmpty || r.loading) return;
+    final run = _run;
+    final cancel = _cancel ??= CancelToken();
+    setState(() {
+      r.error = null;
+      r.items = null;
+    });
+    await _searchOne(r, query, cancel, run);
+    if (mounted && run == _run) setState(() {});
   }
 
   void _setScope(ComicSearchScope scope) {
@@ -248,7 +283,8 @@ class _ComicGlobalSearchScreenState extends ConsumerState<ComicGlobalSearchScree
                     ),
                   );
                 }
-                return _SourceRow(result: shown[i - 1]);
+                final row = shown[i - 1];
+                return _SourceRow(result: row, onRetry: () => _retry(row));
               },
             ),
     );
@@ -256,9 +292,10 @@ class _ComicGlobalSearchScreenState extends ConsumerState<ComicGlobalSearchScree
 }
 
 class _SourceRow extends ConsumerWidget {
-  const _SourceRow({required this.result});
+  const _SourceRow({required this.result, required this.onRetry});
 
   final _SourceResult result;
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -286,7 +323,9 @@ class _SourceRow extends ConsumerWidget {
           ),
           trailing: result.loading
               ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2))
-              : const Icon(Icons.chevron_right),
+              : result.error != null
+                  ? IconButton(tooltip: tr('Coba lagi'), icon: const Icon(Icons.refresh), onPressed: onRetry)
+                  : const Icon(Icons.chevron_right),
           onTap: () => context.push(sourceBrowseLocation(source.id)),
         ),
         if (items != null && items.isNotEmpty)
