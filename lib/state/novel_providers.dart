@@ -369,6 +369,10 @@ final novelChapterPageProvider =
   },
 );
 
+/// Isi bab yang diambil pengguna lewat WebView (mis. setelah Turnstile).
+/// Dipakai [novelChapterProvider] sebagai pengganti hasil plugin.
+final novelWebChapterProvider = StateProvider.family<String?, ({String pluginId, String path})>((ref, key) => null);
+
 /// Isi bab (HTML). Disimpan sebentar setelah tidak dipakai supaya bab
 /// sebelumnya/berikutnya yang sudah dimuat tidak diunduh ulang.
 final novelChapterProvider = FutureProvider.autoDispose.family<String, ({String pluginId, String path})>(
@@ -381,6 +385,8 @@ final novelChapterProvider = FutureProvider.autoDispose.family<String, ({String 
       final html = await ref.read(downloadStoreProvider).readNovelChapter(offline);
       if (html != null) return html;
     }
+    final fromWeb = ref.read(novelWebChapterProvider(key));
+    if (fromWeb != null && fromWeb.trim().isNotEmpty) return fromWeb;
     final source = await ref.watch(novelSourceProvider(key.pluginId).future);
     final html = await source.chapter(key.path);
     if (html.trim().isEmpty) {

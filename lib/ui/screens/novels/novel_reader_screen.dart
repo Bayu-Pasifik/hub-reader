@@ -36,6 +36,7 @@ import '../../widgets/layout.dart';
 import '../../widgets/novel_html.dart';
 import '../../widgets/source_widgets.dart';
 import 'novel_detail_screen.dart';
+import 'novel_web_chapter_screen.dart';
 
 /// Pembaca novel: teks bab dengan gaya sendiri (ukuran huruf, tema), posisi
 /// baca tersimpan per bab, dan pindah bab sebelumnya/berikutnya.
@@ -300,6 +301,22 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
       if (y + box.size.height > top) return i;
     }
     return 0;
+  }
+
+  /// Fallback saat situs menuntut Turnstile: pengguna menyelesaikannya di
+  /// WebView, teks bab diambil dari halaman lalu dipakai sebagai isi bab.
+  Future<void> _readViaWebView(String site) async {
+    final path = _chapterPath;
+    final url = Uri.tryParse(path)?.hasScheme == true
+        ? path
+        : '${site.endsWith('/') ? site : '$site/'}${path.startsWith('/') ? path.substring(1) : path}';
+    final html = await Navigator.of(context).push<String>(
+      MaterialPageRoute(builder: (_) => NovelWebChapterScreen(url: url, title: tr('Baca lewat WebView'))),
+    );
+    if (html == null || !mounted) return;
+    final key = (pluginId: widget.pluginId, path: path);
+    ref.read(novelWebChapterProvider(key).notifier).state = html;
+    ref.invalidate(novelChapterProvider(key));
   }
 
   Future<void> _startTts({int? from}) async {
@@ -656,12 +673,27 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
                 child: content.when(
                   loading: () => Center(child: CircularProgressIndicator(color: fg)),
                   error: (e, _) => SafeArea(
-                    child: SourceErrorView(
-                      error: novelError(e, site: source?.site),
-                      verifyUrl: source?.site,
-                      reportSource: novelReportTarget(source),
-                      onRetry: () =>
-                          ref.invalidate(novelChapterProvider((pluginId: widget.pluginId, path: _chapterPath))),
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: SourceErrorView(
+                            error: novelError(e, site: source?.site),
+                            verifyUrl: source?.site,
+                            reportSource: novelReportTarget(source),
+                            onRetry: () => ref
+                                .invalidate(novelChapterProvider((pluginId: widget.pluginId, path: _chapterPath))),
+                          ),
+                        ),
+                        if (source != null && '$e'.toLowerCase().contains('turnstile'))
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: FilledButton.icon(
+                              onPressed: () => _readViaWebView(source.site),
+                              icon: const Icon(Icons.public),
+                              label: Text(tr('Baca lewat WebView')),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                   data: (html) {

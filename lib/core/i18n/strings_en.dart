@@ -611,6 +611,12 @@ const Map<String, String> stringsEn = {
   'Sumber {id} tidak memakai plugin JS.': 'Source {id} does not use a JS plugin.',
   'Situs meminta tantangan Turnstile untuk membaca bab ini. Plugin belum bisa menyelesaikannya. Coba bab lain, masuk ke akun situs lewat pengaturan plugin, atau baca bab ini di browser. Detail: {err}':
       'The site requires a Turnstile challenge to read this chapter, and the plugin cannot solve it yet. Try another chapter, sign in to the site in the plugin settings, or read this chapter in a browser. Details: {err}',
+  'Baca lewat WebView': 'Read via WebView',
+  'Ambil bab': 'Grab chapter',
+  'Teks bab belum ditemukan. Selesaikan verifikasi, tunggu bab tampil, lalu coba lagi.':
+      'Chapter text not found yet. Finish the verification, wait for the chapter to appear, then try again.',
+  'Selesaikan verifikasi (dan login bila perlu). Setelah teks bab tampil, ketuk "Ambil bab".':
+      'Complete the verification (and sign in if needed). Once the chapter text shows, tap "Grab chapter".',
   'Plugin gagal membaca halaman situs: {err}': 'The plugin failed to read the site page: {err}',
   'Sumber "{id}" tidak terdaftar.': 'Source "{id}" is not registered.',
   'Belum login ke {name}': 'Not logged in to {name}',
