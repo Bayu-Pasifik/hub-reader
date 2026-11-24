@@ -609,14 +609,24 @@ const Map<String, String> stringsEn = {
   'Folder "{name}" tidak ada lagi.': 'Folder "{name}" no longer exists.',
   'Arsip rusak: {err}': 'Corrupt archive: {err}',
   'Sumber {id} tidak memakai plugin JS.': 'Source {id} does not use a JS plugin.',
-  'Situs membatasi pembaca anonim dan meminta tantangan Turnstile. Ketuk "Baca lewat WebView", selesaikan verifikasinya, lalu ketuk "Ambil bab". Cookie verifikasi disimpan untuk bab berikutnya. Detail: {err}':
-      'The site limits anonymous readers and requires a Turnstile challenge. Tap "Read via WebView", complete it, then tap "Grab chapter". The verification cookie is kept for the next chapters. Details: {err}',
+  'Situs membatasi pembaca anonim dan meminta tantangan Turnstile. Ketuk "Baca lewat WebView", selesaikan verifikasinya, lalu ketuk "Ambil bab". Pindah bab dengan tombol Next di situs dan ketuk "Ambil bab" lagi untuk tiap bab. Detail: {err}':
+      'The site limits anonymous readers and requires a Turnstile challenge. Tap "Read via WebView", complete it, then tap "Grab chapter". Move between chapters with the Next button on the site and tap "Grab chapter" again for each one. Details: {err}',
   'Baca lewat WebView': 'Read via WebView',
   'Ambil bab': 'Grab chapter',
   'Teks bab belum ditemukan. Selesaikan verifikasi, tunggu bab tampil, lalu coba lagi.':
       'Chapter text not found yet. Finish the verification, wait for the chapter to appear, then try again.',
   'Selesaikan verifikasi (dan login bila perlu). Setelah teks bab tampil, ketuk "Ambil bab".':
       'Complete the verification (and sign in if needed). Once the chapter text shows, tap "Grab chapter".',
+  'Halaman ini tidak cocok dengan bab mana pun di daftar. Buka halaman bab lalu coba lagi.':
+      'This page does not match any chapter in the list. Open a chapter page and try again.',
+  'Gagal mengambil bab.': 'Failed to grab the chapter.',
+  'Halaman belum berganti ke bab baru. Tunggu teksnya dimuat, lalu ketuk "Ambil bab" lagi.':
+      'The page has not switched to the new chapter yet. Wait for the text to load, then tap "Grab chapter" again.',
+  'Tersimpan: {name}. Pindah bab dengan tombol Next di situs, lalu ketuk "Ambil bab" lagi.':
+      'Saved: {name}. Move on with the Next button on the site, then tap "Grab chapter" again.',
+  'Ambil bab ({n})': 'Grab chapter ({n})',
+  'Selesaikan verifikasi (dan login bila perlu). Saat teks bab tampil, ketuk "Ambil bab". Pindah bab dengan tombol Next di situs, ketuk "Ambil bab" lagi, lalu kembali untuk membaca.':
+      'Complete the verification (and sign in if needed). When the chapter text shows, tap "Grab chapter". Move on with the Next button on the site, tap "Grab chapter" again, then go back to read.',
   'Plugin gagal membaca halaman situs: {err}': 'The plugin failed to read the site page: {err}',
   'Sumber "{id}" tidak terdaftar.': 'Source "{id}" is not registered.',
   'Belum login ke {name}': 'Not logged in to {name}',

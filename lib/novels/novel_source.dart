@@ -187,7 +187,7 @@ SourceException novelError(Object error, {String? site}) {
     return SourceException(
       SourceErrorKind.unknown,
       detail: trp(
-        'Situs membatasi pembaca anonim dan meminta tantangan Turnstile. Ketuk "Baca lewat WebView", selesaikan verifikasinya, lalu ketuk "Ambil bab". Cookie verifikasi disimpan untuk bab berikutnya. Detail: {err}',
+        'Situs membatasi pembaca anonim dan meminta tantangan Turnstile. Ketuk "Baca lewat WebView", selesaikan verifikasinya, lalu ketuk "Ambil bab". Pindah bab dengan tombol Next di situs dan ketuk "Ambil bab" lagi untuk tiap bab. Detail: {err}',
         {'err': message},
       ),
     );

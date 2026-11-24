@@ -310,13 +310,49 @@ class _NovelReaderScreenState extends ConsumerState<NovelReaderScreen> with Sing
     final url = Uri.tryParse(path)?.hasScheme == true
         ? path
         : '${site.endsWith('/') ? site : '$site/'}${path.startsWith('/') ? path.substring(1) : path}';
-    final html = await Navigator.of(context).push<String>(
-      MaterialPageRoute(builder: (_) => NovelWebChapterScreen(url: url, title: tr('Baca lewat WebView'))),
+    // Layar WebView tetap terbuka selama pengguna berpindah bab di situs; tiap
+    // "Ambil bab" disimpan untuk bab yang cocok dengan alamat halamannya.
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) => NovelWebChapterScreen(
+          url: url,
+          title: tr('Baca lewat WebView'),
+          onGrab: (pageUrl, html) async {
+            final chapter = _chapterForPage(pageUrl);
+            if (chapter == null) return null;
+            ref.read(novelWebChapterProvider((pluginId: widget.pluginId, path: chapter.path)).notifier).state = html;
+            return chapter.name;
+          },
+        ),
+      ),
     );
-    if (html == null || !mounted) return;
-    final key = (pluginId: widget.pluginId, path: path);
-    if (html.trim().isNotEmpty) ref.read(novelWebChapterProvider(key).notifier).state = html;
-    ref.invalidate(novelChapterProvider(key));
+    if (!mounted) return;
+    // Bab yang sedang dibuka: pakai hasil tangkapan atau coba plugin lagi (cookie baru).
+    ref.invalidate(novelChapterProvider((pluginId: widget.pluginId, path: path)));
+  }
+
+  /// Bab di daftar yang alamat webnya sama dengan [pageUrl] (abaikan query dan garis miring).
+  NovelChapter? _chapterForPage(String pageUrl) {
+    String norm(String value) {
+      final path = Uri.tryParse(value)?.path ?? value;
+      return path.replaceAll(RegExp(r'^/+|/+$'), '');
+    }
+
+    // Beberapa situs memakai id berbeda di alamat web dan di path plugin
+    // (mis. WTR-LAB: serie-23892 vs novel/24688), jadi bandingkan juga
+    // "slug/chapter-N" di ujung alamat.
+    String? tail(String path) => RegExp(r'([^/]+/chapter-\d+)$').firstMatch(path)?.group(1);
+
+    final page = norm(pageUrl);
+    if (page.isEmpty) return null;
+    final pageTail = tail(page);
+    for (final c in _chapters) {
+      final p = norm(c.path);
+      if (p.isEmpty) continue;
+      if (page == p || page.endsWith('/$p') || p.endsWith('/$page')) return c;
+      if (pageTail != null && pageTail == tail(p)) return c;
+    }
+    return null;
   }
 
   Future<void> _startTts({int? from}) async {
