@@ -22,6 +22,12 @@ Semua perubahan penting pada Hub Reader dicatat di sini. Format mengikuti
 - Mode per halaman: geser melewati halaman terakhir pindah bab; bila dimatikan, kartu "Lanjut ke bab berikutnya" tetap tampil.
 - Sakelar "Lanjut bab otomatis" di Pengaturan baca; teks baru tersedia dalam bahasa Indonesia dan Inggris.
 
+### Diperbaiki
+- Keyboard tidak lagi muncul sendiri di jelajah komik/novel setelah memilih genre lalu kembali dari detail.
+- List sumber komik/novel tidak lagi menampilkan skeleton tanpa akhir bila request menggantung; kini muncul pesan timeout dengan tombol coba lagi.
+- Search global komik: request dibatalkan saat layar ditutup atau mencari ulang; sumber yang gagal karena sinyal lemot dicoba ulang otomatis dan bisa diulang per sumber. Search global novel ikut dicoba ulang otomatis dan bisa diulang per plugin.
+- Batas waktu situs diperlonggar (koneksi 45 dtk, terima data 90 dtk) agar jaringan lambat tetap mendapat hasil.
+
 ## [3.4.1] - 2026-11-20
 
 ### Diperbaiki

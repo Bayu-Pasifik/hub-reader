@@ -17,6 +17,12 @@
 - Sakelar "Lanjut bab otomatis" ada di lembar Pengaturan baca (dekat zoom ketuk dua kali dan pra-muat halaman), lengkap dengan keterangan singkat.
 - Semua teks baru tersedia dalam bahasa Indonesia dan Inggris.
 
+### Perbaikan
+- Keyboard tidak lagi muncul sendiri di jelajah komik/novel setelah memilih genre lalu kembali dari detail.
+- List sumber tidak lagi macet di skeleton tanpa akhir; bila situs menggantung muncul pesan timeout dengan tombol coba lagi.
+- Search global komik bisa dibatalkan, dan sumber yang gagal karena sinyal lemot dicoba ulang otomatis (juga bisa diulang per sumber). Search global novel ikut dicoba ulang otomatis.
+- Batas waktu situs diperlonggar agar jaringan lambat tetap mendapat hasil.
+
 ### Catatan
 - Pasang APK yang sesuai ABI HP (arm64-v8a untuk kebanyakan HP).
 - Pasang di atas versi lama hanya bila ditandatangani dengan kunci yang sama.
